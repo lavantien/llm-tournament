@@ -39,8 +39,17 @@
     {{template "nav"}}
     <div class="sticky-header">
       <h2>Add Model</h2>
-      <form action="/add_model" method="post" style="display: flex; align-items: center;">
-        <input type="text" name="model" placeholder="Enter new model name" style="margin-right: 10px;"/>
+      <form
+        action="/add_model"
+        method="post"
+        style="display: flex; align-items: center"
+      >
+        <input
+          type="text"
+          name="model"
+          placeholder="Enter new model name"
+          style="margin-right: 10px"
+        />
         <input type="submit" value="Add" />
       </form>
     </div>
@@ -67,11 +76,10 @@
         </tr>
       </thead>
       <tbody>
-        {{$i := 0}}
-        {{range $model, $results := .Results}} {{if or (eq $.ModelFilter "") (eq
-        $.ModelFilter $model)}}
+        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
+        $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
-          <td>{{$i = inc $i}}</td>
+          <td>{{$i = inc $i}}{{$i}}</td>
           <td>{{$model}}</td>
           {{range $index, $pass := $results}}
           <td>
@@ -101,19 +109,24 @@
       </tbody>
     </table>
     <div class="sticky-footer">
-        <h2>Manage Results</h2>
-        <div style="display: flex; align-items: center;">
-            <form action="/reset_results" method="post" style="margin-right: 10px;">
-                <input type="submit" value="Reset Results" />
-            </form>
-            <form action="/export_results" method="post" style="margin-right: 10px;">
-                <input type="submit" value="Export Results" />
-            </form>
-            <form action="/import_results" method="post" enctype="multipart/form-data" style="display: flex; align-items: center;">
-                <input type="file" name="results_file" style="margin-right: 10px;"/>
-                <input type="submit" value="Import Results" />
-            </form>
-        </div>
+      <h2>Manage Results</h2>
+      <div style="display: flex; align-items: center">
+        <form action="/reset_results" method="post" style="margin-right: 10px">
+          <input type="submit" value="Reset Results" />
+        </form>
+        <form action="/export_results" method="post" style="margin-right: 10px">
+          <input type="submit" value="Export Results" />
+        </form>
+        <form
+          action="/import_results"
+          method="post"
+          enctype="multipart/form-data"
+          style="display: flex; align-items: center"
+        >
+          <input type="file" name="results_file" style="margin-right: 10px" />
+          <input type="submit" value="Import Results" />
+        </form>
+      </div>
     </div>
   </body>
 </html>

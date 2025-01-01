@@ -63,9 +63,9 @@ func addModelHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	modelName := r.Form.Get("model")
 	results := readResults()
-    if results == nil {
-        results = make(map[string]Result)
-    }
+	if results == nil {
+		results = make(map[string]Result)
+	}
 	if _, ok := results[modelName]; !ok {
 		results[modelName] = Result{Passes: make([]bool, len(readPrompts()))}
 	}
@@ -251,6 +251,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
+			// slog.Info(strconv.Itoa(i))
 			return i + 1
 		},
 	}
