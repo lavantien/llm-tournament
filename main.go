@@ -8,11 +8,26 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
+
+	"github.com/gorilla/websocket"
 )
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+var clients = make(map[*websocket.Conn]bool)
+var clientsMutex sync.Mutex
 
 func main() {
 	log.Println("Starting the server...")
 	http.HandleFunc("/", router)
+	http.HandleFunc("/ws", handleWebSocket)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 	log.Println("Server is listening on :8080")
 	http.ListenAndServe(":8080", nil)
@@ -50,6 +65,104 @@ func router(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling websocket connection")
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Printf("Error upgrading connection: %v", err)
+		return
+	}
+	defer conn.Close()
+
+	clientsMutex.Lock()
+	clients[conn] = true
+	clientsMutex.Unlock()
+
+	defer func() {
+		clientsMutex.Lock()
+		delete(clients, conn)
+		clientsMutex.Unlock()
+	}()
+
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Websocket error: %v", err)
+			}
+			break
+		}
+	}
+}
+
+func broadcastResults() {
+	prompts := readPrompts()
+	results := readResults()
+
+	modelScores := make(map[string]int)
+	for model, result := range results {
+		score := 0
+		for _, pass := range result.Passes {
+			if pass {
+				score++
+			}
+		}
+		modelScores[model] = score
+	}
+
+	models := make([]string, 0, len(results))
+	for model := range results {
+		models = append(models, model)
+	}
+	sort.Slice(models, func(i, j int) bool {
+		return modelScores[models[i]] > modelScores[models[j]]
+	})
+
+	modelPassPercentages := make(map[string]float64)
+	modelTotalScores := make(map[string]int)
+	for model, result := range results {
+		score := 0
+		for _, pass := range result.Passes {
+			if pass {
+				score++
+			}
+		}
+		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
+		modelTotalScores[model] = score
+	}
+
+	payload := struct {
+		Results         map[string][]bool
+		Models          []string
+		PassPercentages map[string]float64
+		TotalScores     map[string]int
+	}{
+		Results:         resultsToBoolMap(results),
+		Models:          models,
+		PassPercentages: modelPassPercentages,
+		TotalScores:     modelTotalScores,
+	}
+
+	clientsMutex.Lock()
+	defer clientsMutex.Unlock()
+	for client := range clients {
+		err := client.WriteJSON(payload)
+		if err != nil {
+			log.Printf("Error broadcasting message: %v", err)
+			client.Close()
+			delete(clients, client)
+		}
+	}
+}
+
+func resultsToBoolMap(results map[string]Result) map[string][]bool {
+	resultsForTemplate := make(map[string][]bool)
+	for model, result := range results {
+		resultsForTemplate[model] = result.Passes
+	}
+	return resultsForTemplate
 }
 
 // Handle update prompts order
@@ -550,6 +663,8 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error writing results", http.StatusInternalServerError)
 		return
 	}
+
+	broadcastResults()
 
 	_, err = w.Write([]byte("OK"))
 	if err != nil {
