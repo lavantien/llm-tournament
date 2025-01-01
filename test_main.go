@@ -161,6 +161,78 @@ func TestUpdateResultHandler(t *testing.T) {
 	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
+func TestExportPromptsHandler(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create test prompts
+    initialPrompts := []Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}}
+    writePrompts(initialPrompts)
+
+    // Send a POST request to export the prompts
+    resp, err := http.PostForm(ts.URL+"/export_prompts", nil)
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusOK {
+        t.Errorf("Expected status %d, got %d", http.StatusOK, resp.StatusCode)
+    }
+
+    // Check the content type
+    if resp.Header.Get("Content-Type") != "text/csv" {
+        t.Errorf("Expected Content-Type to be text/csv, got %s", resp.Header.Get("Content-Type"))
+    }
+
+    // Check the content disposition
+    if resp.Header.Get("Content-Disposition") != "attachment;filename=prompts.csv" {
+        t.Errorf("Expected Content-Disposition to be attachment;filename=prompts.csv, got %s", resp.Header.Get("Content-Disposition"))
+    }
+
+    // Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
+
+func TestImportPromptsHandler(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create a test CSV file
+    csvData := `Prompt
+Prompt 1
+Prompt 2
+`
+    // Send a POST request to import the prompts
+    resp, err := http.PostForm(ts.URL+"/import_prompts", url.Values{
+        "prompts_file": {csvData},
+    })
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+
+    // Check if the prompts were imported correctly
+    prompts := readPrompts()
+    if len(prompts) != 2 {
+        t.Errorf("Expected 2 prompts to be imported, got %d", len(prompts))
+    }
+    if prompts[0].Text != "Prompt 1" || prompts[1].Text != "Prompt 2" {
+        t.Errorf("Expected prompts to be [Prompt 1, Prompt 2], got %v", prompts)
+    }
+
+    // Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
+
 func TestImportResultsHandler(t *testing.T) {
 	// Set up a test server
 	ts := httptest.NewServer(http.HandlerFunc(router))

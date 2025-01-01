@@ -33,3 +33,7 @@
 - Added visual indicators for pass/fail in `results.html`.
 - Improved the styling of the results table in `results.html`.
 - Added a loading indicator when updating results in `results.html`.
+- Added import and export buttons to `templates/prompt_list.html`.
+- Created handlers `exportPromptsHandler` and `importPromptsHandler` in `main.go`.
+- Created a new template `templates/import_prompts.html` for the import functionality.
+- Added tests for the new handlers in `test_main.go`.

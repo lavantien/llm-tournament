@@ -41,7 +41,11 @@ func router(w http.ResponseWriter, r *http.Request) {
         exportResultsHandler(w, r)
     } else if r.URL.Path == "/import_results" {
 		importResultsHandler(w, r)
-	} else {
+    } else if r.URL.Path == "/export_prompts" {
+        exportPromptsHandler(w, r)
+    } else if r.URL.Path == "/import_prompts" {
+        importPromptsHandler(w, r)
+    } else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -80,6 +84,69 @@ func addModelHandler(w http.ResponseWriter, r *http.Request) {
     }
     writeResults(results)
     http.Redirect(w, r, "/results", http.StatusSeeOther)
+}
+
+// Handle export prompts
+func exportPromptsHandler(w http.ResponseWriter, r *http.Request) {
+    prompts := readPrompts()
+
+    // Create CSV string
+    csvString := "Prompt\n"
+    for _, prompt := range prompts {
+        csvString += prompt.Text + "\n"
+    }
+
+    // Set headers for CSV download
+    w.Header().Set("Content-Type", "text/csv")
+    w.Header().Set("Content-Disposition", "attachment;filename=prompts.csv")
+
+    // Write CSV to response
+    w.Write([]byte(csvString))
+}
+
+// Handle import prompts
+func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method == "POST" {
+        file, _, err := r.FormFile("prompts_file")
+        if err != nil {
+            http.Error(w, "Error uploading file", http.StatusBadRequest)
+            return
+        }
+        defer file.Close()
+
+        // Read the file content
+        data := make([]byte, 0)
+        buf := make([]byte, 1024)
+        for {
+            n, err := file.Read(buf)
+            if n > 0 {
+                data = append(data, buf[:n]...)
+            }
+            if err != nil {
+                break
+            }
+        }
+
+        // Parse CSV data
+        lines := strings.Split(string(data), "\n")
+        if len(lines) <= 1 {
+            http.Error(w, "Invalid CSV format", http.StatusBadRequest)
+            return
+        }
+
+        var prompts []Prompt
+        for _, line := range lines {
+            if line == "" || line == "Prompt" {
+                continue
+            }
+            prompts = append(prompts, Prompt{Text: line})
+        }
+        writePrompts(prompts)
+        http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+    } else {
+        t, _ := template.ParseFiles("templates/import_prompts.html")
+        t.Execute(w, nil)
+    }
 }
 
 // Handle edit prompt
