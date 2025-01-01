@@ -44,6 +44,7 @@ func router(w http.ResponseWriter, r *http.Request) {
     } else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
+}
 
 // Handle add prompt
 func addPromptHandler(w http.ResponseWriter, r *http.Request) {
