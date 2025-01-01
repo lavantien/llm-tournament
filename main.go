@@ -21,8 +21,6 @@ func router(w http.ResponseWriter, r *http.Request) {
 		resultsHandler(w, r)
 	} else if r.URL.Path == "/update_result" {
 		updateResultHandler(w, r)
-	} else {
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	} else if r.URL.Path == "/add_prompt" {
 		addPromptHandler(w, r)
 	} else if r.URL.Path == "/edit_prompt" {
