@@ -196,8 +196,11 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	prompts := readPrompts()
     promptTexts := make([]string, len(prompts))
+    promptTexts := make([]string, len(prompts))
+    promptIndices := make([]int, len(prompts))
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
+        promptIndices[i] = i + 1
     }
 	t, err := template.ParseFiles("templates/prompt_list.html")
     if err != nil {
@@ -276,6 +279,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         PassPercentages map[string]float64
         ModelFilter string
         TotalScores map[string]int
+        PromptIndices []int
 	}{
 		Prompts:  promptTexts,
 		Results:  resultsForTemplate,
@@ -283,6 +287,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         PassPercentages: modelPassPercentages,
         ModelFilter: modelFilter,
         TotalScores: modelTotalScores,
+        PromptIndices: promptIndices,
 	})
 }
 

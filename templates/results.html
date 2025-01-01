@@ -50,8 +50,8 @@
       <thead>
         <tr>
           <th>Model</th>
-          {{range $index, $prompt := .Prompts}}
-          <th>Prompt {{add $index 1}}</th>
+          {{range $index, $prompt := .PromptIndices}}
+          <th>Prompt {{$prompt}}</th>
           {{end}}
           <th>Total</th>
         </tr>
