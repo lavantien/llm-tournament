@@ -5,8 +5,8 @@
     <link rel="stylesheet" href="/templates/style.css">
   </head>
   <body>
+    {{template "nav"}}
     <div class="sticky-header">
-        <a href="/results">Go to Results</a>
         <h2>Add Prompt</h2>
         <form action="/add_prompt" method="post">
             <input type="text" name="prompt" placeholder="Enter new prompt" />
