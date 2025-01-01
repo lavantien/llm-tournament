@@ -36,7 +36,8 @@ func TestAddPromptHandler(t *testing.T) {
 		t.Errorf("Expected prompt '%s' to be added to the file, got '%v'", newPrompt, prompts)
 	}
 
-	// Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
 
 func TestDeletePromptHandler(t *testing.T) {
     // Set up a test server
