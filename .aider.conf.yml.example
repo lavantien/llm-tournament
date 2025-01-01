@@ -21,7 +21,7 @@ model: gemini/gemini-2.0-flash-exp
 # model: openai/hf:Qwen/Qwen2.5-72B-Instruct
 # model: openai/hf:nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
 # model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
-edit-format: diff
+edit-format: whole
 # editor-model: gemini/gemini-exp-1206
 # editor-model: gemini/gemini-2.0-flash-exp
 # editor-model: mistral/mistral-large-latest
