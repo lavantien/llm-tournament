@@ -1,2 +1,1 @@
-FAIL	llm-tournament [build failed]
-FAIL
+	llm-tournament		coverage: 0.0% of statements
