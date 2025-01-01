@@ -38,7 +38,9 @@ func router(w http.ResponseWriter, r *http.Request) {
         resetResultsHandler(w, r)
     } else if r.URL.Path == "/export_results" {
         exportResultsHandler(w, r)
-    } else {
+    } else if r.URL.Path == "/import_results" {
+		importResultsHandler(w, r)
+	} else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -278,4 +280,63 @@ func exportResultsHandler(w http.ResponseWriter, r *http.Request) {
 
     // Write CSV to response
     w.Write([]byte(csvString))
+}
+
+// Handle import results
+func importResultsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		file, _, err := r.FormFile("results_file")
+		if err != nil {
+			http.Error(w, "Error uploading file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// Read the file content
+		data := make([]byte, 0)
+		buf := make([]byte, 1024)
+		for {
+			n, err := file.Read(buf)
+			if n > 0 {
+				data = append(data, buf[:n]...)
+			}
+			if err != nil {
+				break
+			}
+		}
+
+		// Parse CSV data
+		lines := strings.Split(string(data), "\n")
+		if len(lines) <= 1 {
+			http.Error(w, "Invalid CSV format", http.StatusBadRequest)
+			return
+		}
+
+		results := make(map[string]Result)
+		prompts := readPrompts()
+		for i, line := range lines {
+			if i == 0 || line == "" {
+				continue
+			}
+			parts := strings.Split(line, ",")
+			if len(parts) < 2 {
+				continue
+			}
+			model := parts[0]
+			var passes []bool
+			for _, passStr := range parts[1:] {
+				pass, _ := strconv.ParseBool(passStr)
+				passes = append(passes, pass)
+			}
+			if len(passes) < len(prompts) {
+				passes = append(passes, make([]bool, len(prompts) - len(passes))...)
+			}
+			results[model] = Result{Passes: passes}
+		}
+		writeResults(results)
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+	} else {
+		t, _ := template.ParseFiles("templates/import_results.html")
+		t.Execute(w, nil)
+	}
 }

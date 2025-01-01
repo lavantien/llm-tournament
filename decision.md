@@ -28,3 +28,5 @@
 - Added a button to `results.html` to trigger the `resetResultsHandler`.
 - Implemented `exportResultsHandler` to export the results to a CSV file.
 - Added a button to `results.html` to trigger the `exportResultsHandler`.
+- Implemented `importResultsHandler` to import the results from a CSV file.
+- Added a button to `results.html` to trigger the `importResultsHandler`.

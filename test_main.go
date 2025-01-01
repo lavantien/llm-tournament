@@ -161,6 +161,46 @@ func TestUpdateResultHandler(t *testing.T) {
 	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
+func TestImportResultsHandler(t *testing.T) {
+	// Set up a test server
+	ts := httptest.NewServer(http.HandlerFunc(router))
+	defer ts.Close()
+
+	// Create a test CSV file
+	csvData := `Model,Prompt 1,Prompt 2
+Model A,true,false
+Model B,false,true
+`
+	// Send a POST request to import the results
+	resp, err := http.PostForm(ts.URL+"/import_results", url.Values{
+		"results_file": {csvData},
+	})
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+	}
+
+	// Check if the results were imported correctly
+	results := readResults()
+	if len(results) != 2 {
+		t.Errorf("Expected 2 models to be imported, got %d", len(results))
+	}
+	if results["Model A"].Passes[0] != true || results["Model A"].Passes[1] != false {
+		t.Errorf("Expected Model A results to be [true, false], got %v", results["Model A"].Passes)
+	}
+	if results["Model B"].Passes[0] != false || results["Model B"].Passes[1] != true {
+		t.Errorf("Expected Model B results to be [false, true], got %v", results["Model B"].Passes)
+	}
+
+	// Clean up the test file
+	os.WriteFile("data/results.json", []byte("{}"), 0644)
+}
+
 func TestAddModelHandler(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))
