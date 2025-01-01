@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Prompt List</title>
+    <link rel="stylesheet" href="/templates/style.css">
   </head>
   <body>
     <h1>Prompt List</h1>
@@ -9,8 +10,10 @@
       {{range $index, $prompt := .}}
       <li>
         {{$prompt}}
-        <a href="/edit_prompt?index={{$index}}">Edit</a>
-        <a href="/delete_prompt?index={{$index}}">Delete</a>
+        <div>
+            <a href="/edit_prompt?index={{$index}}">Edit</a>
+            <a href="/delete_prompt?index={{$index}}">Delete</a>
+        </div>
       </li>
       {{end}}
     </ul>
@@ -19,6 +22,7 @@
       <input type="text" name="prompt" placeholder="Enter new prompt" />
       <input type="submit" value="Add" />
     </form>
+    <h2>Export/Import Prompts</h2>
     <form action="/export_prompts" method="post">
         <input type="submit" value="Export Prompts" />
     </form>
