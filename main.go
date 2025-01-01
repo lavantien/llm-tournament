@@ -210,7 +210,7 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
             return i + 1
         },
     }
-	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html")
+	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
     if err != nil {
         http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
         return
@@ -253,7 +253,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
             return i + 1
         },
     }
-	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html")
+	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html", "templates/nav.html")
     if err != nil {
         http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
         return
