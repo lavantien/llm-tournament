@@ -35,17 +35,23 @@
       }
 
       function updateScore(model) {
-        var totalScoreCell = document.querySelector('tr:has(td:first-child:contains("' + model + '")) td:last-child');
-        if (totalScoreCell) {
-          var checkboxes = document.querySelectorAll('tr:has(td:first-child:contains("' + model + '")) input[type="checkbox"]');
-          var score = 0;
-          checkboxes.forEach(function(checkbox) {
-            if (checkbox.checked) {
-              score++;
+        var rows = document.querySelectorAll('table tbody tr');
+        rows.forEach(function(row) {
+            var firstCell = row.querySelector('td:first-child');
+            if (firstCell && firstCell.textContent.trim() === model) {
+                var totalScoreCell = row.querySelector('td:last-child');
+                if (totalScoreCell) {
+                    var checkboxes = row.querySelectorAll('input[type="checkbox"]');
+                    var score = 0;
+                    checkboxes.forEach(function(checkbox) {
+                        if (checkbox.checked) {
+                            score++;
+                        }
+                    });
+                    totalScoreCell.innerHTML = score + '<div class="progress-bar-container"><div class="progress-bar" style="width: ' + (score / checkboxes.length * 100) + '%;"></div></div>';
+                }
             }
-          });
-          totalScoreCell.innerHTML = score + '<div class="progress-bar-container"><div class="progress-bar" style="width: ' + (score / checkboxes.length * 100) + '%;"></div></div>';
-        }
+        });
       }
 
       function updateCheckmark(checkbox, pass) {
