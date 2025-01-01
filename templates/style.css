@@ -238,4 +238,65 @@ nav {
 .result-button:hover {
     opacity: 0.8;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-size: 1.2em;
+        margin-top: 20px;
+    }
+
+    li {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .prompt-actions button.copy-button,
+    .prompt-actions a.edit-button,
+    .prompt-actions a.delete-button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+
+    table {
+        overflow-x: auto;
+        display: block;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 0.8em;
+        white-space: nowrap;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    input[type="submit"] {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .sticky-header, .sticky-footer {
+        padding: 8px 10px;
+    }
+
+    nav {
+        gap: 10px;
+        padding: 8px 0;
+    }
+}
 </style>
