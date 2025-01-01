@@ -227,13 +227,15 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
     }
     
     prompts := readPrompts()
-    if len(results[model].Passes) < len(prompts) {
-        results[model].Passes = append(results[model].Passes, make([]bool, len(prompts) - len(results[model].Passes))...)
+    result := results[model]
+    if len(result.Passes) < len(prompts) {
+        result.Passes = append(result.Passes, make([]bool, len(prompts) - len(result.Passes))...)
     }
     
-    if promptIndex >= 0 && promptIndex < len(results[model].Passes) {
-        results[model].Passes[promptIndex] = pass
+    if promptIndex >= 0 && promptIndex < len(result.Passes) {
+        result.Passes[promptIndex] = pass
     }
+    results[model] = result
     writeResults(results)
 
     w.Write([]byte("OK"))
