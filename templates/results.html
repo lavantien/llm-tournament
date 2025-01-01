@@ -37,6 +37,13 @@
 
   <body>
     {{template "nav"}}
+    <div class="sticky-header">
+        <h2>Add Model</h2>
+        <form action="/add_model" method="post">
+            <input type="text" name="model" placeholder="Enter new model name" />
+            <input type="submit" value="Add" />
+        </form>
+    </div>
     <h1>Results</h1>
     <form action="/results" method="get">
       <label for="model_filter">Filter by Model:</label>

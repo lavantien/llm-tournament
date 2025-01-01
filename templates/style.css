@@ -164,6 +164,12 @@ select {
     padding-bottom: 0;
 }
 
+.sticky-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 .sticky-header form, .sticky-footer form {
     margin-bottom: 0;
 }
