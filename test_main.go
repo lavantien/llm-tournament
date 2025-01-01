@@ -359,6 +359,45 @@ func TestAddModelHandler(t *testing.T) {
 	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
+func TestResultsAdjustsToNewPrompts(t *testing.T) {
+	// Set up a test server
+	ts := httptest.NewServer(http.HandlerFunc(router))
+	defer ts.Close()
+
+	// Create initial prompts
+	initialPrompts := []Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}}
+	writePrompts(initialPrompts)
+
+	// Create initial results
+	results := map[string]Result{
+		"Model A": {Passes: []bool{true, false}},
+	}
+	writeResults(results)
+
+	// Add a new prompt
+	newPrompt := "Prompt 3"
+	resp, err := http.PostForm(ts.URL+"/add_prompt", url.Values{"prompt": {newPrompt}})
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+	}
+
+	// Check if the results were adjusted correctly
+	updatedResults := readResults()
+	if len(updatedResults["Model A"].Passes) != 3 {
+		t.Errorf("Expected 3 passes for Model A, got %d", len(updatedResults["Model A"].Passes))
+	}
+
+	// Clean up the test files
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+	os.WriteFile("data/results.json", []byte("{}"), 0644)
+}
+
 func TestResultsHandlerSorting(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))

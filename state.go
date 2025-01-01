@@ -36,10 +36,23 @@ func writePrompts(prompts []Prompt) error {
 
 // Read results from results.json
 func readResults() map[string]Result {
-    data, _ := os.ReadFile("data/results.json")
-    var results map[string]Result
-    json.Unmarshal(data, &results)
-    return results
+	data, _ := os.ReadFile("data/results.json")
+	var results map[string]Result
+	json.Unmarshal(data, &results)
+
+	prompts := readPrompts()
+	if results == nil {
+		return make(map[string]Result)
+	}
+	for model, result := range results {
+		if len(result.Passes) < len(prompts) {
+			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
+			results[model] = result
+		} else if len(result.Passes) > len(prompts) {
+			results[model] = Result{Passes: result.Passes[:len(prompts)]}
+		}
+	}
+	return results
 }
 
 // Write results to results.json
