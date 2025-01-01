@@ -71,7 +71,6 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
         prompts := readPrompts()
         if index >= 0 && index < len(prompts) {
             t, _ := template.ParseFiles("templates/edit_prompt.html")
-            t, _ := template.ParseFiles("templates/edit_prompt.html")
             t.Execute(w, struct {
                 Index int
                 Prompt string
@@ -190,7 +189,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
     }
-	t, _ := template.ParseFiles("templates/results.html")
 	t.Execute(w, struct {
 		Prompts  []string
 		Results  map[string][]bool
