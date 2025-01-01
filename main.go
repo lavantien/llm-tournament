@@ -201,6 +201,10 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
     }
 	t, err := template.ParseFiles("templates/prompt_list.html")
     if err != nil {
+        http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if t == nil {
         http.Error(w, "Error parsing template", http.StatusInternalServerError)
         return
     }
@@ -234,6 +238,48 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     })
 
 	t, _ := template.ParseFiles("templates/results.html")
+    promptTexts := make([]string, len(prompts))
+    for i, prompt := range prompts {
+        promptTexts[i] = prompt.Text
+    }
+    resultsForTemplate := make(map[string][]bool)
+    for model, result := range results {
+        resultsForTemplate[model] = result.Passes
+    }
+    modelPassPercentages := make(map[string]float64)
+    for model, result := range results {
+        score := 0
+        for _, pass := range result.Passes {
+            if pass {
+                score++
+            }
+        }
+        modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
+    }
+
+    modelFilter := r.FormValue("model_filter")
+
+	t.Execute(w, struct {
+		Prompts  []string
+		Results  map[string][]bool
+		Models   []string
+        PassPercentages map[string]float64
+        ModelFilter string
+	}{
+		Prompts:  promptTexts,
+		Results:  resultsForTemplate,
+		Models:   models,
+        PassPercentages: modelPassPercentages,
+        ModelFilter: modelFilter,
+	t, err := template.ParseFiles("templates/results.html")
+    if err != nil {
+        http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if t == nil {
+        http.Error(w, "Error parsing template", http.StatusInternalServerError)
+        return
+    }
     promptTexts := make([]string, len(prompts))
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
