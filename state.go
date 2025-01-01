@@ -22,9 +22,16 @@ func readPrompts() []Prompt {
 }
 
 // Write prompts to prompts.json
-func writePrompts(prompts []Prompt) {
-	data, _ := json.Marshal(prompts)
-	os.WriteFile("data/prompts.json", data, 0644)
+func writePrompts(prompts []Prompt) error {
+	data, err := json.Marshal(prompts)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile("data/prompts.json", data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Read results from results.json
@@ -36,7 +43,14 @@ func readResults() map[string]Result {
 }
 
 // Write results to results.json
-func writeResults(results map[string]Result) {
-    data, _ := json.Marshal(results)
-    os.WriteFile("data/results.json", data, 0644)
+func writeResults(results map[string]Result) error {
+    data, err := json.Marshal(results)
+	if err != nil {
+		return err
+	}
+    err = os.WriteFile("data/results.json", data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }

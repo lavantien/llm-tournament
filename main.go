@@ -50,18 +50,38 @@ func add(a, b int) int {
 
 // Handle add prompt
 func addPromptHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
 	promptText := r.Form.Get("prompt")
+	if promptText == "" {
+		http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
+		return
+	}
 	prompts := readPrompts()
 	prompts = append(prompts, Prompt{Text: promptText})
-	writePrompts(prompts)
+	err = writePrompts(prompts)
+	if err != nil {
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
 // Handle add model
 func addModelHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
 	modelName := r.Form.Get("model")
+	if modelName == "" {
+		http.Error(w, "Model name cannot be empty", http.StatusBadRequest)
+		return
+	}
 	results := readResults()
 	if results == nil {
 		results = make(map[string]Result)
@@ -69,7 +89,11 @@ func addModelHandler(w http.ResponseWriter, r *http.Request) {
 	if _, ok := results[modelName]; !ok {
 		results[modelName] = Result{Passes: make([]bool, len(readPrompts()))}
 	}
-	writeResults(results)
+	err = writeResults(results)
+	if err != nil {
+		http.Error(w, "Error writing results", http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
@@ -88,7 +112,11 @@ func exportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment;filename=prompts.csv")
 
 	// Write CSV to response
-	w.Write([]byte(csvString))
+	_, err := w.Write([]byte(csvString))
+	if err != nil {
+		http.Error(w, "Error writing response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle import prompts
@@ -106,6 +134,10 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		buf := make([]byte, 1024)
 		for {
 			n, err := file.Read(buf)
+			if err != nil && err.Error() != "EOF" {
+				http.Error(w, "Error reading file", http.StatusInternalServerError)
+				return
+			}
 			if n > 0 {
 				data = append(data, buf[:n]...)
 			}
@@ -117,7 +149,7 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		// Parse CSV data
 		lines := strings.Split(string(data), "\n")
 		if len(lines) <= 1 {
-			http.Error(w, "Invalid CSV format", http.StatusBadRequest)
+			http.Error(w, "Invalid CSV format: No data found", http.StatusBadRequest)
 			return
 		}
 
@@ -139,30 +171,62 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 // Handle edit prompt
 func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
 		indexStr := r.Form.Get("index")
-		index, _ := strconv.Atoi(indexStr)
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-			t, _ := template.ParseFiles("templates/edit_prompt.html")
-			t.Execute(w, struct {
+			t, err := template.ParseFiles("templates/edit_prompt.html")
+			if err != nil {
+				http.Error(w, "Error parsing template", http.StatusInternalServerError)
+				return
+			}
+			err = t.Execute(w, struct {
 				Index  int
 				Prompt string
 			}{
 				Index:  index,
 				Prompt: prompts[index].Text,
 			})
+			if err != nil {
+				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				return
+			}
 		}
 	} else if r.Method == "POST" {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
 		indexStr := r.Form.Get("index")
-		index, _ := strconv.Atoi(indexStr)
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
 		editedPrompt := r.Form.Get("prompt")
+		if editedPrompt == "" {
+			http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
+			return
+		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts[index].Text = editedPrompt
 		}
-		writePrompts(prompts)
+		err = writePrompts(prompts)
+		if err != nil {
+			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+			return
+		}
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -170,29 +234,57 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 // Handle delete prompt
 func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
 		indexStr := r.Form.Get("index")
-		index, _ := strconv.Atoi(indexStr)
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-			t, _ := template.ParseFiles("templates/delete_prompt.html")
-			t.Execute(w, struct {
+			t, err := template.ParseFiles("templates/delete_prompt.html")
+			if err != nil {
+				http.Error(w, "Error parsing template", http.StatusInternalServerError)
+				return
+			}
+			err = t.Execute(w, struct {
 				Index  int
 				Prompt string
 			}{
 				Index:  index,
 				Prompt: prompts[index].Text,
 			})
+			if err != nil {
+				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				return
+			}
 		}
 	} else if r.Method == "POST" {
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
 		indexStr := r.Form.Get("index")
-		index, _ := strconv.Atoi(indexStr)
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts = append(prompts[:index], prompts[index+1:]...)
 		}
-		writePrompts(prompts)
+		err = writePrompts(prompts)
+		if err != nil {
+			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+			return
+		}
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -220,7 +312,11 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing template", http.StatusInternalServerError)
 		return
 	}
-	t.Execute(w, promptTexts)
+	err = t.Execute(w, promptTexts)
+	if err != nil {
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle results page
@@ -291,7 +387,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 	modelFilter := r.FormValue("model_filter")
 
-	t.Execute(w, struct {
+	err = t.Execute(w, struct {
 		Prompts         []string
 		Results         map[string][]bool
 		Models          []string
@@ -308,6 +404,10 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores:     modelTotalScores,
 		PromptIndices:   promptIndices,
 	})
+	if err != nil {
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle AJAX requests to update results
@@ -317,9 +417,16 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 	promptIndexStr := r.Form.Get("promptIndex")
 	passStr := r.Form.Get("pass")
 	promptIndex, _ := strconv.Atoi(promptIndexStr)
-	pass, _ := strconv.ParseBool(passStr)
+	pass, err := strconv.ParseBool(passStr)
+	if err != nil {
+		http.Error(w, "Invalid pass value", http.StatusBadRequest)
+		return
+	}
 
 	results := readResults()
+	if results == nil {
+		results = make(map[string]Result)
+	}
 	if _, ok := results[model]; !ok {
 		results[model] = Result{Passes: make([]bool, len(readPrompts()))}
 	}
@@ -334,15 +441,27 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 		result.Passes[promptIndex] = pass
 	}
 	results[model] = result
-	writeResults(results)
+	err = writeResults(results)
+	if err != nil {
+		http.Error(w, "Error writing results", http.StatusInternalServerError)
+		return
+	}
 
-	w.Write([]byte("OK"))
+	_, err = w.Write([]byte("OK"))
+	if err != nil {
+		http.Error(w, "Error writing response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle reset results
 func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
 	emptyResults := make(map[string]Result)
-	writeResults(emptyResults)
+	err := writeResults(emptyResults)
+	if err != nil {
+		http.Error(w, "Error writing results", http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
@@ -400,7 +519,7 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 		// Parse CSV data
 		lines := strings.Split(string(data), "\n")
 		if len(lines) <= 1 {
-			http.Error(w, "Invalid CSV format", http.StatusBadRequest)
+			http.Error(w, "Invalid CSV format: No data found", http.StatusBadRequest)
 			return
 		}
 
@@ -425,10 +544,22 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			results[model] = Result{Passes: passes}
 		}
-		writeResults(results)
+		err = writeResults(results)
+		if err != nil {
+			http.Error(w, "Error writing results", http.StatusInternalServerError)
+			return
+		}
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	} else {
-		t, _ := template.ParseFiles("templates/import_results.html")
-		t.Execute(w, nil)
+		t, err := template.ParseFiles("templates/import_results.html")
+		if err != nil {
+			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+			return
+		}
+		err = t.Execute(w, nil)
+		if err != nil {
+			http.Error(w, "Error executing template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
