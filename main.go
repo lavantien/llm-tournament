@@ -44,6 +44,10 @@ func router(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func add(a, b int) int {
+    return a + b
+}
+
 // Handle add prompt
 func addPromptHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
@@ -196,13 +200,17 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	prompts := readPrompts()
     promptTexts := make([]string, len(prompts))
-    promptTexts := make([]string, len(prompts))
     promptIndices := make([]int, len(prompts))
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
         promptIndices[i] = i + 1
     }
-	t, err := template.ParseFiles("templates/prompt_list.html")
+    funcMap := template.FuncMap{
+        "inc": func(i int) int {
+            return i + 1
+        },
+    }
+	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html")
     if err != nil {
         http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
         return
@@ -240,7 +248,12 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         return modelScores[models[i]] > modelScores[models[j]]
     })
 
-	t, err := template.ParseFiles("templates/results.html")
+	funcMap := template.FuncMap{
+        "inc": func(i int) int {
+            return i + 1
+        },
+    }
+	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html")
     if err != nil {
         http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
         return
