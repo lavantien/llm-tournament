@@ -94,8 +94,15 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 	passStr := r.Form.Get("pass")
 	promptIndex, _ := strconv.Atoi(promptIndexStr)
 	pass, _ := strconv.ParseBool(passStr)
-	// Update the result in results.csv
-	// Recalculate total scores and sort
-	// Send back the updated scores
+
+    results := readResults()
+    if _, ok := results[model]; !ok {
+        results[model] = make([]bool, len(readPrompts()))
+    }
+    if promptIndex >= 0 && promptIndex < len(results[model]) {
+        results[model][promptIndex] = pass
+    }
+    writeResults(results)
+
 	w.Write([]byte("OK"))
 }
