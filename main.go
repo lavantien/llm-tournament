@@ -108,9 +108,6 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handle delete prompt
 func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	indexStr := r.Form.Get("index")
-	index, _ := strconv.Atoi(indexStr)
 	if r.Method == "GET" {
 		r.ParseForm()
 		indexStr := r.Form.Get("index")
