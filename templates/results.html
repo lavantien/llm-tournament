@@ -5,12 +5,17 @@
     <link rel="stylesheet" href="/templates/style.css" />
     <script>
       let socket;
+      let connectionRetries = 0;
+      const maxRetries = 3;
 
       function connectWebSocket() {
         socket = new WebSocket("ws://" + window.location.host + "/ws");
 
         socket.onopen = function(e) {
           console.log("[open] Connection established");
+          connectionRetries = 0; // Reset retries on successful connection
+          document.getElementById('connection-status').textContent = 'Connected';
+          document.getElementById('connection-status').style.color = 'green';
         };
 
         socket.onmessage = function(event) {
@@ -25,11 +30,23 @@
           } else {
             console.log('[close] Connection died');
           }
-          setTimeout(connectWebSocket, 1000);
+          document.getElementById('connection-status').textContent = 'Disconnected';
+          document.getElementById('connection-status').style.color = 'red';
+          if (connectionRetries < maxRetries) {
+              connectionRetries++;
+              console.log(`Attempting to reconnect (${connectionRetries}/${maxRetries})...`);
+              setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
+          } else {
+              document.getElementById('connection-status').textContent = 'Connection failed';
+              document.getElementById('connection-status').style.color = 'red';
+              console.log('Max retries reached. Connection failed.');
+          }
         };
 
         socket.onerror = function(error) {
           console.log(`[error] ${error.message}`);
+          document.getElementById('connection-status').textContent = 'Error';
+          document.getElementById('connection-status').style.color = 'red';
         };
       }
 
@@ -123,6 +140,7 @@
         />
         <input type="submit" value="Add" />
       </form>
+      <span id="connection-status" style="margin-left: 10px;"></span>
     </div>
     <h1>Results</h1>
     <form action="/results" method="get">
