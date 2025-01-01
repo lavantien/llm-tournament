@@ -2,8 +2,45 @@
 <html>
   <head>
     <title>Results</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        .pass {
+            color: green;
+            font-size: 20px;
+        }
+        .fail {
+            color: red;
+            font-size: 20px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
     <script>
-      function updateResult(model, promptIndex, pass) {
+      function updateResult(model, promptIndex, pass, checkbox) {
+        var loadingIndicator = document.createElement('span');
+        loadingIndicator.className = 'loading';
+        checkbox.parentNode.appendChild(loadingIndicator);
+        checkbox.style.display = 'none';
+
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "/update_result", true);
         xhr.setRequestHeader(
@@ -12,6 +49,8 @@
         );
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
+            checkbox.style.display = '';
+            loadingIndicator.remove();
             // Handle response if needed
           }
         };
@@ -46,10 +85,10 @@
           <td>
             <input
               type="checkbox"
-              {{if
-              $pass}}checked{{end}}
-              onchange="updateResult('{{$model}}', {{$index}}, this.checked)"
+              {{if $pass}}checked{{end}}
+              onchange="updateResult('{{$model}}', {{$index}}, this.checked, this)"
             />
+            {{if $pass}}<span class="pass">&#10004;</span>{{else}}<span class="fail">&#10008;</span>{{end}}
           </td>
           {{end}}
           <td>

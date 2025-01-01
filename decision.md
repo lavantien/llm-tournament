@@ -30,3 +30,6 @@
 - Added a button to `results.html` to trigger the `exportResultsHandler`.
 - Implemented `importResultsHandler` to import the results from a CSV file.
 - Added a button to `results.html` to trigger the `importResultsHandler`.
+- Added visual indicators for pass/fail in `results.html`.
+- Improved the styling of the results table in `results.html`.
+- Added a loading indicator when updating results in `results.html`.
