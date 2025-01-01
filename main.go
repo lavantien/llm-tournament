@@ -285,16 +285,20 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
     }
 
+    modelFilter := r.FormValue("model_filter")
+
 	t.Execute(w, struct {
 		Prompts  []string
 		Results  map[string][]bool
 		Models   []string
         PassPercentages map[string]float64
+        ModelFilter string
 	}{
 		Prompts:  promptTexts,
 		Results:  resultsForTemplate,
 		Models:   models,
         PassPercentages: modelPassPercentages,
+        ModelFilter: modelFilter,
 	})
 }
 

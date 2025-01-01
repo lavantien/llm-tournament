@@ -67,6 +67,16 @@
   </head>
   <body>
     <h1>Results</h1>
+    <form action="/results" method="get">
+        <label for="model_filter">Filter by Model:</label>
+        <select name="model_filter" id="model_filter">
+            <option value="">All Models</option>
+            {{range $model := .Models}}
+            <option value="{{$model}}">{{$model}}</option>
+            {{end}}
+        </select>
+        <input type="submit" value="Filter">
+    </form>
     <table border="1">
       <thead>
         <tr>
@@ -79,10 +89,11 @@
       </thead>
       <tbody>
         {{range $model, $results := .Results}}
+        {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$model}}</td>
           {{range $index, $pass := $results}}
-          <td>
+          <td >
             <input
               type="checkbox"
               {{if $pass}}checked{{end}}
@@ -102,6 +113,7 @@
             </div>
           </td>
         </tr>
+        {{end}}
         {{end}}
       </tbody>
     </table>
