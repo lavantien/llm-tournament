@@ -115,16 +115,6 @@ input[type="submit"]:hover {
     background-color: #03dac6;
 }
 
-.pass {
-    color: #4caf50;
-    font-size: 20px;
-}
-
-.fail {
-    color: #f44336;
-    font-size: 20px;
-}
-
 .loading {
     display: inline-block;
     width: 20px;
@@ -208,4 +198,11 @@ nav {
     border-bottom: 1px solid #333;
 }
 
+.result-button {
+    width: 20px;
+    height: 20px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
 </style>
