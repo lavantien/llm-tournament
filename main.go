@@ -26,6 +26,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		resultsHandler(w, r)
 	} else if r.URL.Path == "/update_result" {
 		updateResultHandler(w, r)
+	} else if r.URL.Path == "/add_model" {
+		addModelHandler(w, r)
 	} else if r.URL.Path == "/add_prompt" {
 		addPromptHandler(w, r)
 	} else if r.URL.Path == "/edit_prompt" {
@@ -59,6 +61,18 @@ func addPromptHandler(w http.ResponseWriter, r *http.Request) {
 	prompts = append(prompts, Prompt{Text: promptText})
 	writePrompts(prompts)
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+}
+
+// Handle add model
+func addModelHandler(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    modelName := r.Form.Get("model")
+    results := readResults()
+    if _, ok := results[modelName]; !ok {
+        results[modelName] = Result{Passes: make([]bool, len(readPrompts()))}
+    }
+    writeResults(results)
+    http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
 // Handle edit prompt

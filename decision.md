@@ -10,3 +10,6 @@
 - Implemented score calculation directly in the `results.html` template.
 - Added a test case to `test_main.go` to verify that the models are sorted correctly by score.
 - Removed duplicate test function `TestDeletePromptHandler` from `test_main.go`.
+- Added a form to `results.html` to add new models.
+- Created `addModelHandler` in `main.go` to handle adding new models.
+- Added a test case for `addModelHandler` in `test_main.go`.

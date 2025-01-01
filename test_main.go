@@ -122,6 +122,36 @@ func TestUpdateResultHandler(t *testing.T) {
 	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
+func TestAddModelHandler(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create a new model
+    newModel := "Test Model"
+
+    // Send a POST request to add the model
+    resp, err := http.PostForm(ts.URL+"/add_model", url.Values{"model": {newModel}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+
+    // Check if the model was added to the file
+    results := readResults()
+    if _, ok := results[newModel]; !ok {
+        t.Errorf("Expected model '%s' to be added to the results", newModel)
+    }
+
+    // Clean up the test file
+	os.WriteFile("data/results.json", []byte("{}"), 0644)
+}
+
 func TestResultsHandlerSorting(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))
