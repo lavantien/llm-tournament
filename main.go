@@ -94,12 +94,28 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	for {
-		_, _, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("Websocket error: %v", err)
 			}
 			break
+		}
+
+		var message struct {
+			Type  string      `json:"type"`
+			Order []int       `json:"order"`
+		}
+		if err := json.Unmarshal(msg, &message); err != nil {
+			log.Printf("Error unmarshalling message: %v", err)
+			continue
+		}
+
+		switch message.Type {
+		case "update_prompts_order":
+			updatePromptsOrder(message.Order)
+		default:
+			log.Printf("Unknown message type: %s", message.Type)
 		}
 	}
 }
@@ -145,11 +161,13 @@ func broadcastResults() {
 		Models          []string
 		PassPercentages map[string]float64
 		TotalScores     map[string]int
+		Prompts         []string
 	}{
 		Results:         resultsToBoolMap(results),
 		Models:          models,
 		PassPercentages: modelPassPercentages,
 		TotalScores:     modelTotalScores,
+		Prompts:         promptsToStringArray(prompts),
 	}
 
 	clientsMutex.Lock()
@@ -170,6 +188,14 @@ func resultsToBoolMap(results map[string]Result) map[string][]bool {
 		resultsForTemplate[model] = result.Passes
 	}
 	return resultsForTemplate
+}
+
+func promptsToStringArray(prompts []Prompt) []string {
+	promptsTexts := make([]string, len(prompts))
+	for i, prompt := range prompts {
+		promptsTexts[i] = prompt.Text
+	}
+	return promptsTexts
 }
 
 // Handle update prompts order
@@ -194,29 +220,31 @@ func updatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing order", http.StatusBadRequest)
 		return
 	}
+	updatePromptsOrder(order)
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+}
+
+func updatePromptsOrder(order []int) {
 	prompts := readPrompts()
 	if len(order) != len(prompts) {
 		log.Println("Invalid order length")
-		http.Error(w, "Invalid order length", http.StatusBadRequest)
 		return
 	}
 	orderedPrompts := make([]Prompt, len(prompts))
 	for i, index := range order {
 		if index < 0 || index >= len(prompts) {
 			log.Println("Invalid index in order")
-			http.Error(w, "Invalid index in order", http.StatusBadRequest)
 			return
 		}
 		orderedPrompts[i] = prompts[index]
 	}
-	err = writePrompts(orderedPrompts)
+	err := writePrompts(orderedPrompts)
 	if err != nil {
 		log.Printf("Error writing prompts: %v", err)
-		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompts order updated successfully")
-	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	broadcastResults()
 }
 
 // Handle add prompt
@@ -243,6 +271,7 @@ func addPromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("Prompt added successfully")
+	broadcastResults()
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
@@ -275,6 +304,7 @@ func addModelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("Model added successfully")
+	broadcastResults()
 	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
@@ -350,6 +380,7 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		writePrompts(prompts)
 		log.Println("Prompts imported successfully")
+		broadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	} else {
 		t, _ := template.ParseFiles("templates/import_prompts.html")
@@ -426,6 +457,7 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Prompt edited successfully")
+		broadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -493,6 +525,7 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Prompt deleted successfully")
+		broadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -693,6 +726,7 @@ func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("Results reset successfully")
+	broadcastResults()
 	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
@@ -792,6 +826,7 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Results imported successfully")
+		broadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	} else {
 		t, err := template.ParseFiles("templates/import_results.html")
