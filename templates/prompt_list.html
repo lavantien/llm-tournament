@@ -53,6 +53,57 @@
 
         const promptList = document.getElementById('prompt-list');
         let draggedItem = null;
+        let socket;
+
+        function connectWebSocket() {
+            socket = new WebSocket("ws://" + window.location.host + "/ws");
+
+            socket.onopen = function(e) {
+                console.log("[open] Connection established");
+            };
+
+            socket.onmessage = function(event) {
+                console.log(`[message] Data received from server: ${event.data}`);
+                const payload = JSON.parse(event.data);
+                if (payload.Prompts) {
+                    updatePrompts(payload.Prompts);
+                }
+            };
+
+            socket.onclose = function(event) {
+                if (event.wasClean) {
+                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                } else {
+                    console.log('[close] Connection died');
+                }
+                setTimeout(connectWebSocket, 1000);
+            };
+
+            socket.onerror = function(error) {
+                console.log(`[error] ${error.message}`);
+            };
+        }
+
+        function updatePrompts(prompts) {
+            const promptList = document.getElementById('prompt-list');
+            promptList.innerHTML = '';
+            prompts.forEach((prompt, index) => {
+                const li = document.createElement('li');
+                li.draggable = true;
+                li.setAttribute('data-index', index);
+                li.innerHTML = `
+                    ${index + 1}. ${prompt}
+                    <div class="prompt-actions">
+                        <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
+                        <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
+                        <a class="delete-button" href="/delete_prompt?index=${index}">Delete</a>
+                    </div>
+                `;
+                promptList.appendChild(li);
+            });
+            updateOrder();
+        }
+
 
         promptList.addEventListener('dragstart', (e) => {
             draggedItem = e.target;
@@ -77,6 +128,7 @@
                     parent.insertBefore(draggedItem, dropTarget);
                 }
                 updateOrder();
+                sendOrderUpdate();
             }
         });
 
@@ -85,6 +137,19 @@
             const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
             document.getElementById('prompts-order-input').value = JSON.stringify(order);
         }
+
+        function sendOrderUpdate() {
+            const items = promptList.querySelectorAll('li');
+            const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'update_prompts_order', order: order }));
+            }
+        }
+
+        window.onload = () => {
+            connectWebSocket();
+            updateOrder();
+        };
     </script>
   </body>
 </html>
