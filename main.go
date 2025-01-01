@@ -265,7 +265,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         return modelScores[models[i]] > modelScores[models[j]]
     })
 
-
 	t, _ := template.ParseFiles("templates/results.html")
     promptTexts := make([]string, len(prompts))
     for i, prompt := range prompts {
@@ -275,7 +274,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     for model, result := range results {
         resultsForTemplate[model] = result.Passes
     }
-    modelScores := make(map[string]int)
     modelPassPercentages := make(map[string]float64)
     for model, result := range results {
         score := 0
@@ -284,7 +282,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
                 score++
             }
         }
-        modelScores[model] = score
         modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
     }
 
