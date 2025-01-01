@@ -44,6 +44,29 @@ li {
     align-items: center;
 }
 
+.prompt-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.prompt-actions button,
+.prompt-actions a {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    background-color: #bb86fc;
+    color: #1a1a1a;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    font-size: 0.9em;
+}
+
+.prompt-actions button:hover,
+.prompt-actions a:hover {
+    background-color: #03dac6;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
