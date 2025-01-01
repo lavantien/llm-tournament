@@ -17,7 +17,7 @@
     <ul>
       {{range $index, $prompt := .}}
       <li>
-        {{$prompt}}
+        {{inc $index}}. {{$prompt}}
         <div>
             <a href="/edit_prompt?index={{$index}}">Edit</a>
             <a href="/delete_prompt?index={{$index}}">Delete</a>

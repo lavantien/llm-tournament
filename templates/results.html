@@ -51,6 +51,7 @@
       <thead>
         <tr>
           <th>Model</th>
+          <th>#</th>
           {{range $index, $prompt := .PromptIndices}}
           <th>Prompt {{$prompt}}</th>
           {{end}}
@@ -62,8 +63,9 @@
         {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$model}}</td>
+          <td>{{inc $index}}</td>
           {{range $index, $pass := $results}}
-          <td >
+          <td>
             <input
               type="checkbox"
               {{if $pass}}checked{{end}}
