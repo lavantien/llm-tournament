@@ -199,12 +199,12 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handle AJAX requests to update results
 func updateResultHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	model := r.Form.Get("model")
-	promptIndexStr := r.Form.Get("promptIndex")
-	passStr := r.Form.Get("pass")
-	promptIndex, _ := strconv.Atoi(promptIndexStr)
-	pass, _ := strconv.ParseBool(passStr)
+    r.ParseForm()
+    model := r.Form.Get("model")
+    promptIndexStr := r.Form.Get("promptIndex")
+    passStr := r.Form.Get("pass")
+    promptIndex, _ := strconv.Atoi(promptIndexStr)
+    pass, _ := strconv.ParseBool(passStr)
 
     results := readResults()
     if _, ok := results[model]; !ok {
@@ -215,5 +215,5 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
     }
     writeResults(results)
 
-	w.Write([]byte("OK"))
+    w.Write([]byte("OK"))
 }

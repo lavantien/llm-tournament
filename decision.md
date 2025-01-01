@@ -13,3 +13,5 @@
 - Added a form to `results.html` to add new models.
 - Created `addModelHandler` in `main.go` to handle adding new models.
 - Added a test case for `addModelHandler` in `test_main.go`.
+- Modified `updateResultHandler` to correctly update the `results.json` file.
+- Added tests for `editPromptHandler` to ensure it's working as expected.

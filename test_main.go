@@ -152,6 +152,54 @@ func TestAddModelHandler(t *testing.T) {
 	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
+func TestEditPromptHandler(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create a test prompt
+    initialPrompt := "Initial prompt"
+	prompts := []Prompt{{Text: initialPrompt}}
+	writePrompts(prompts)
+
+    // Get the index of the prompt
+    index := 0
+
+    // Send a GET request to the edit prompt page
+    respGet, err := http.Get(ts.URL + "/edit_prompt?index=" + string(rune(index)))
+    if err != nil {
+        t.Fatalf("Failed to send GET request: %v", err)
+    }
+    defer respGet.Body.Close()
+
+    // Check the response status code
+    if respGet.StatusCode != http.StatusOK {
+        t.Errorf("Expected status %d, got %d", http.StatusOK, respGet.StatusCode)
+    }
+
+    // Send a POST request to edit the prompt
+    editedPrompt := "Edited prompt"
+    respPost, err := http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {string(rune(index))}, "prompt": {editedPrompt}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer respPost.Body.Close()
+
+    // Check the response status code
+    if respPost.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, respPost.StatusCode)
+    }
+
+    // Check if the prompt was edited in the file
+	prompts = readPrompts()
+    if len(prompts) == 0 || prompts[index].Text != editedPrompt {
+        t.Errorf("Expected prompt '%s' to be edited to '%s', got '%v'", initialPrompt, editedPrompt, prompts)
+    }
+
+    // Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
+
 func TestResultsHandlerSorting(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))
