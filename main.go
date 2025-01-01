@@ -78,10 +78,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error upgrading connection: %v", err)
 		return
 	}
-	defer func() {
-		log.Println("Closing websocket connection")
-		conn.Close()
-	}()
 
 	clientsMutex.Lock()
 	clients[conn] = true
@@ -91,6 +87,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		clientsMutex.Lock()
 		delete(clients, conn)
 		clientsMutex.Unlock()
+		log.Println("Closing websocket connection")
+		conn.Close()
 	}()
 
 	for {
