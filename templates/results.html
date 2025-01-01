@@ -4,6 +4,71 @@
     <title>Results</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <script>
+      let socket;
+
+      function connectWebSocket() {
+        socket = new WebSocket("ws://" + window.location.host + "/ws");
+
+        socket.onopen = function(e) {
+          console.log("[open] Connection established");
+        };
+
+        socket.onmessage = function(event) {
+          console.log(`[message] Data received from server: ${event.data}`);
+          const payload = JSON.parse(event.data);
+          updateResults(payload);
+        };
+
+        socket.onclose = function(event) {
+          if (event.wasClean) {
+            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+          } else {
+            console.log('[close] Connection died');
+          }
+          setTimeout(connectWebSocket, 1000);
+        };
+
+        socket.onerror = function(error) {
+          console.log(`[error] ${error.message}`);
+        };
+      }
+
+      function updateResults(payload) {
+        const results = payload.Results;
+        const models = payload.Models;
+        const passPercentages = payload.PassPercentages;
+        const totalScores = payload.TotalScores;
+
+        const tbody = document.querySelector('table tbody');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        let i = 0;
+        models.forEach(model => {
+            i++;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${i}</td>
+                <td>${model}</td>
+                ${results[model].map((pass, index) => `
+                    <td>
+                        <button
+                            class="result-button"
+                            style="background-color: ${pass ? 'green' : 'red'}"
+                            onclick="updateResult('${model}', ${index}, ${!pass}, this)"
+                        ></button>
+                    </td>
+                `).join('')}
+                <td>
+                    ${totalScores[model]}
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${passPercentages[model]}%;"></div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+      }
+
       function updateResult(model, promptIndex, pass, button) {
         var loadingIndicator = document.createElement("span");
         loadingIndicator.className = "loading";
@@ -20,7 +85,6 @@
           if (xhr.readyState == 4 && xhr.status == 200) {
             button.style.display = "";
             loadingIndicator.remove();
-            updateScore(model);
             updateButtonColor(button, pass);
           }
         };
@@ -34,29 +98,11 @@
         xhr.send(params);
       }
 
-      function updateScore(model) {
-        var rows = document.querySelectorAll('table tbody tr');
-        rows.forEach(function(row) {
-            var firstCell = row.querySelector('td:first-child');
-            if (firstCell && firstCell.textContent.trim() === model) {
-                var totalScoreCell = row.querySelector('td:last-child');
-                if (totalScoreCell) {
-                    var buttons = row.querySelectorAll('button.result-button');
-                    var score = 0;
-                    buttons.forEach(function(button) {
-                        if (button.style.backgroundColor === 'green') {
-                            score++;
-                        }
-                    });
-                    totalScoreCell.innerHTML = score + '<div class="progress-bar-container"><div class="progress-bar" style="width: ' + (score / buttons.length * 100) + '%;"></div></div>';
-                }
-            }
-        });
-      }
-
       function updateButtonColor(button, pass) {
         button.style.backgroundColor = pass ? 'green' : 'red';
       }
+
+      window.onload = connectWebSocket;
     </script>
   </head>
 
