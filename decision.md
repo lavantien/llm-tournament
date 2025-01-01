@@ -37,3 +37,5 @@
 - Created handlers `exportPromptsHandler` and `importPromptsHandler` in `main.go`.
 - Created a new template `templates/import_prompts.html` for the import functionality.
 - Added tests for the new handlers in `test_main.go`.
+- Added a progress bar to the results page in `templates/results.html`.
+- Updated the `resultsHandler` in `main.go` to calculate the pass percentage for each model and pass it to the template.

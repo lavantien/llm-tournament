@@ -275,14 +275,29 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     for model, result := range results {
         resultsForTemplate[model] = result.Passes
     }
+    modelScores := make(map[string]int)
+    modelPassPercentages := make(map[string]float64)
+    for model, result := range results {
+        score := 0
+        for _, pass := range result.Passes {
+            if pass {
+                score++
+            }
+        }
+        modelScores[model] = score
+        modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
+    }
+
 	t.Execute(w, struct {
 		Prompts  []string
 		Results  map[string][]bool
 		Models   []string
+        PassPercentages map[string]float64
 	}{
 		Prompts:  promptTexts,
 		Results:  resultsForTemplate,
 		Models:   models,
+        PassPercentages: modelPassPercentages,
 	})
 }
 
