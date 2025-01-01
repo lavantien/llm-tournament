@@ -1,15 +1,17 @@
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #1a1a1a;
+    font-family: 'Roboto', sans-serif;
+    background-color: #121212;
     color: #e0e0e0;
     margin: 0;
     padding: 20px;
+    transition: background-color 0.3s ease;
 }
 
 h1 {
     color: #bb86fc;
     text-align: center;
     margin-bottom: 30px;
+    transition: color 0.3s ease;
 }
 
 h2 {
@@ -17,6 +19,7 @@ h2 {
     margin-top: 30px;
     border-bottom: 1px solid #333;
     padding-bottom: 5px;
+    transition: color 0.3s ease;
 }
 
 a {
@@ -43,10 +46,12 @@ li {
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 li:hover {
     background-color: #3a3a3a;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .prompt-actions {
@@ -66,12 +71,14 @@ li:hover {
     text-decoration: none;
     transition: background-color 0.3s ease;
     font-size: 0.9em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .prompt-actions button.copy-button:hover,
 .prompt-actions a.edit-button:hover,
 .prompt-actions a.delete-button:hover {
     background-color: #03dac6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 table {
@@ -81,6 +88,7 @@ table {
     background-color: #2a2a2a;
     border-radius: 5px;
     overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 th, td {
@@ -104,6 +112,14 @@ select {
     background-color: #333;
     color: #e0e0e0;
     width: calc(100% - 22px);
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="file"]:focus,
+select:focus {
+    border-color: #bb86fc;
+    background-color: #444;
 }
 
 input[type="submit"] {
@@ -114,10 +130,12 @@ input[type="submit"] {
     color: #1a1a1a;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 input[type="submit"]:hover {
     background-color: #03dac6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .loading {
@@ -147,6 +165,7 @@ input[type="submit"]:hover {
     background-color: #4caf50;
     height: 10px;
     border-radius: 5px;
+    transition: width 0.3s ease;
 }
 
 form {
@@ -167,6 +186,7 @@ select {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #333;
+    transition: background-color 0.3s ease;
 }
 
 .sticky-footer {
@@ -176,12 +196,14 @@ select {
     padding: 10px 20px;
     z-index: 100;
     border-top: 1px solid #333;
+    transition: background-color 0.3s ease;
 }
 
 .sticky-header h2, .sticky-footer h2 {
     margin-top: 0;
     border-bottom: none;
     padding-bottom: 0;
+    transition: color 0.3s ease;
 }
 
 .sticky-header {
@@ -201,6 +223,7 @@ nav {
     padding: 10px 0;
     background-color: #1a1a1a;
     border-bottom: 1px solid #333;
+    transition: background-color 0.3s ease;
 }
 
 .result-button {
@@ -209,7 +232,7 @@ nav {
     border: none;
     cursor: pointer;
     padding: 0;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
 .result-button:hover {
