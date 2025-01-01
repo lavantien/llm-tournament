@@ -51,7 +51,7 @@
         <tr>
           <th>Model</th>
           {{range $index, $prompt := .Prompts}}
-          <th>Prompt {{$index + 1}}</th>
+          <th>Prompt {{add $index 1}}</th>
           {{end}}
           <th>Total</th>
         </tr>
