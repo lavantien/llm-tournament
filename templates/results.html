@@ -38,11 +38,11 @@
   <body>
     {{template "nav"}}
     <div class="sticky-header">
-        <h2>Add Model</h2>
-        <form action="/add_model" method="post">
-            <input type="text" name="model" placeholder="Enter new model name" />
-            <input type="submit" value="Add" />
-        </form>
+      <h2>Add Model</h2>
+      <form action="/add_model" method="post">
+        <input type="text" name="model" placeholder="Enter new model name" />
+        <input type="submit" value="Add" />
+      </form>
     </div>
     <h1>Results</h1>
     <form action="/results" method="get">
@@ -55,6 +55,7 @@
       </select>
       <input type="submit" value="Filter" />
     </form>
+    {{$i := 0}}
     <table>
       <thead>
         <tr>
@@ -67,8 +68,8 @@
         </tr>
       </thead>
       <tbody>
-        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
-        $.ModelFilter "") (eq $.ModelFilter $model)}}
+        {{range $model, $results := .Results}} {{if or (eq $.ModelFilter "") (eq
+        $.ModelFilter $model)}}
         <tr>
           <td>{{inc $i}}</td>
           <td>{{$model}}</td>
