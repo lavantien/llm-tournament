@@ -1,4 +1,7 @@
 - Created `decision.md` to record implementation decisions.
 - Implemented handlers for adding, editing, and deleting prompts in `main.go`.
+- Implemented handlers for adding, editing, and deleting prompts in `main.go`.
 - Implemented logic to update `results.csv` in `main.go`.
 - Created `templates/edit_prompt.html` for editing prompts.
+- Added logic to handle new models in `updateResultHandler`.
+- Added logic to read and write prompts and results to their respective files.
