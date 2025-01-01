@@ -429,7 +429,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		modelScores[model] = score
-		log.Printf("Model: %s, Score: %d", model, score)
 	}
 
 	log.Println("Sorting models by score in descending order")
@@ -439,7 +438,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
-		log.Printf("Comparing %s (%d) with %s (%d)", models[i], modelScores[models[i]], models[j], modelScores[models[j]])
 		return modelScores[models[i]] > modelScores[models[j]]
 	})
 	log.Printf("Sorted models: %v", models)
