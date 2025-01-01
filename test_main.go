@@ -31,14 +31,13 @@ func TestAddPromptHandler(t *testing.T) {
 	}
 
 	// Check if the prompt was added to the file
-	data, _ := os.ReadFile("data/prompts.txt")
-	prompts := strings.Split(string(data), "\n")
-	if len(prompts) == 0 || prompts[len(prompts)-1] != newPrompt {
+	prompts := readPrompts()
+	if len(prompts) == 0 || prompts[len(prompts)-1].Text != newPrompt {
 		t.Errorf("Expected prompt '%s' to be added to the file, got '%v'", newPrompt, prompts)
 	}
 
 	// Clean up the test file
-	os.WriteFile("data/prompts.txt", []byte(""), 0644)
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }
 
 
@@ -49,10 +48,10 @@ func TestEditPromptHandler(t *testing.T) {
 
     // Create a test prompt
     initialPrompt := "Initial prompt"
-    os.WriteFile("data/prompts.txt", []byte(initialPrompt), 0644)
+	prompts := []Prompt{{Text: initialPrompt}}
+	writePrompts(prompts)
 
     // Get the index of the prompt
-    prompts := readPrompts()
     index := 0
 
     // Send a POST request to edit the prompt
@@ -69,14 +68,13 @@ func TestEditPromptHandler(t *testing.T) {
     }
 
     // Check if the prompt was edited in the file
-    data, _ := os.ReadFile("data/prompts.txt")
-    prompts = strings.Split(string(data), "\n")
-    if len(prompts) == 0 || prompts[len(prompts)-1] != editedPrompt {
+	prompts = readPrompts()
+    if len(prompts) == 0 || prompts[index].Text != editedPrompt {
         t.Errorf("Expected prompt '%s' to be edited to '%s', got '%v'", initialPrompt, editedPrompt, prompts)
     }
 
     // Clean up the test file
-    os.WriteFile("data/prompts.txt", []byte(""), 0644)
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }
 
 func TestUpdateResultHandler(t *testing.T) {
@@ -205,11 +203,11 @@ func TestDeletePromptHandler(t *testing.T) {
     defer ts.Close()
 
     // Create a test prompt
-    initialPrompt := "Initial prompt"
-    os.WriteFile("data/prompts.txt", []byte(initialPrompt), 0644)
+	initialPrompt := "Initial prompt"
+	prompts := []Prompt{{Text: initialPrompt}}
+	writePrompts(prompts)
 
     // Get the index of the prompt
-    prompts := readPrompts()
     index := 0
 
     // Send a GET request to delete the prompt
@@ -230,12 +228,11 @@ func TestDeletePromptHandler(t *testing.T) {
     }
 
     // Check if the prompt was deleted from the file
-    data, _ := os.ReadFile("data/prompts.txt")
-    prompts = strings.Split(string(data), "\n")
+	prompts = readPrompts()
     if len(prompts) != 0 {
         t.Errorf("Expected prompt '%s' to be deleted, got '%v'", initialPrompt, prompts)
     }
 
     // Clean up the test file
-    os.WriteFile("data/prompts.txt", []byte(""), 0644)
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }

@@ -71,12 +71,13 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
         prompts := readPrompts()
         if index >= 0 && index < len(prompts) {
             t, _ := template.ParseFiles("templates/edit_prompt.html")
+            t, _ := template.ParseFiles("templates/edit_prompt.html")
             t.Execute(w, struct {
                 Index int
                 Prompt string
             }{
                 Index: index,
-                Prompt: prompts[index],
+                Prompt: prompts[index].Text,
             })
         } else {
             http.Redirect(w, r, "/prompts", http.StatusSeeOther)
@@ -149,8 +150,12 @@ func writeResults(results map[string][]bool) {
 // Handle prompt list page
 func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	prompts := readPrompts()
+    promptTexts := make([]string, len(prompts))
+    for i, prompt := range prompts {
+        promptTexts[i] = prompt.Text
+    }
 	t, _ := template.ParseFiles("templates/prompt_list.html")
-	t.Execute(w, prompts)
+	t.Execute(w, promptTexts)
 }
 
 // Handle results page
@@ -181,12 +186,17 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
 
 	t, _ := template.ParseFiles("templates/results.html")
+    promptTexts := make([]string, len(prompts))
+    for i, prompt := range prompts {
+        promptTexts[i] = prompt.Text
+    }
+	t, _ := template.ParseFiles("templates/results.html")
 	t.Execute(w, struct {
 		Prompts  []string
 		Results  map[string][]bool
 		Models   []string
 	}{
-		Prompts:  prompts,
+		Prompts:  promptTexts,
 		Results:  results,
 		Models:   models,
 	})
