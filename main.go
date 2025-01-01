@@ -91,6 +91,17 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
                 Index: index,
                 Prompt: prompts[index].Text,
             })
+        } else if r.Method == "POST" {
+            r.ParseForm()
+            indexStr := r.Form.Get("index")
+            index, _ := strconv.Atoi(indexStr)
+            editedPrompt := r.Form.Get("prompt")
+            prompts := readPrompts()
+            if index >= 0 && index < len(prompts) {
+                prompts[index].Text = editedPrompt
+            }
+            writePrompts(prompts)
+            http.Redirect(w, r, "/prompts", http.StatusSeeOther)
         }
     }
 }
