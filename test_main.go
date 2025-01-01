@@ -163,6 +163,43 @@ func TestUpdateResultHandler(t *testing.T) {
 	os.WriteFile("data/results.csv", []byte(""), 0644)
 }
 
+func TestEditPromptHandler(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create a test prompt
+    initialPrompt := "Initial prompt"
+    os.WriteFile("data/prompts.txt", []byte(initialPrompt), 0644)
+
+    // Get the index of the prompt
+    prompts := readPrompts()
+    index := 0
+
+    // Send a POST request to edit the prompt
+    editedPrompt := "Edited prompt"
+    resp, err := http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {string(rune(index))}, "prompt": {editedPrompt}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+
+    // Check if the prompt was edited in the file
+    data, _ := os.ReadFile("data/prompts.txt")
+    prompts = strings.Split(string(data), "\n")
+    if len(prompts) == 0 || prompts[len(prompts)-1] != editedPrompt {
+        t.Errorf("Expected prompt '%s' to be edited to '%s', got '%v'", initialPrompt, editedPrompt, prompts)
+    }
+
+    // Clean up the test file
+    os.WriteFile("data/prompts.txt", []byte(""), 0644)
+}
+
 func TestResultsHandlerSorting(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))

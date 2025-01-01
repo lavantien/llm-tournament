@@ -9,3 +9,4 @@
 - Implemented sorting of models by score in `resultsHandler`.
 - Implemented score calculation directly in the `results.html` template.
 - Added a test case to `test_main.go` to verify that the models are sorted correctly by score.
+- Added a test case to `test_main.go` to verify that the edit prompt handler works correctly.
