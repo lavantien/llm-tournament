@@ -39,9 +39,49 @@ func router(w http.ResponseWriter, r *http.Request) {
 		exportPromptsHandler(w, r)
 	} else if r.URL.Path == "/import_prompts" {
 		importPromptsHandler(w, r)
+	} else if r.URL.Path == "/update_prompts_order" {
+		updatePromptsOrderHandler(w, r)
 	} else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+}
+
+// Handle update prompts order
+func updatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
 	}
+	orderStr := r.Form.Get("order")
+	if orderStr == "" {
+		http.Error(w, "Order cannot be empty", http.StatusBadRequest)
+		return
+	}
+	var order []int
+	err = json.Unmarshal([]byte(orderStr), &order)
+	if err != nil {
+		http.Error(w, "Error parsing order", http.StatusBadRequest)
+		return
+	}
+	prompts := readPrompts()
+	if len(order) != len(prompts) {
+		http.Error(w, "Invalid order length", http.StatusBadRequest)
+		return
+	}
+	orderedPrompts := make([]Prompt, len(prompts))
+	for i, index := range order {
+		if index < 0 || index >= len(prompts) {
+			http.Error(w, "Invalid index in order", http.StatusBadRequest)
+			return
+		}
+		orderedPrompts[i] = prompts[index]
+	}
+	err = writePrompts(orderedPrompts)
+	if err != nil {
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
 func add(a, b int) int {

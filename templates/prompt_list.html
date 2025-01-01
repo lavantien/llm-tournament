@@ -14,9 +14,9 @@
         </form>
     </div>
     <h1>Prompt List</h1>
-    <ul>
+    <ul id="prompt-list">
       {{range $index, $prompt := .}}
-      <li>
+      <li draggable="true" data-index="{{$index}}">
         {{inc $index}}. {{$prompt}}
         <div>
             <button onclick="copyPrompt('{{$prompt}}')">Copy</button>
@@ -26,6 +26,10 @@
       </li>
       {{end}}
     </ul>
+    <form action="/update_prompts_order" method="post">
+        <input type="hidden" name="order" id="prompts-order-input" value="">
+        <input type="submit" value="Confirm Order">
+    </form>
     <div class="sticky-footer">
         <h2>Export/Import Prompts</h2>
         <div style="display: flex; align-items: center;">
@@ -45,6 +49,41 @@
             }, function(err) {
                 console.error('Async: Could not copy text: ', err);
             });
+        }
+
+        const promptList = document.getElementById('prompt-list');
+        let draggedItem = null;
+
+        promptList.addEventListener('dragstart', (e) => {
+            draggedItem = e.target;
+            e.dataTransfer.setData('text/plain', ''); // Required for Firefox
+        });
+
+        promptList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        promptList.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.target.tagName === 'LI' && e.target !== draggedItem) {
+                const dropTarget = e.target;
+                const parent = dropTarget.parentNode;
+                const draggedIndex = parseInt(draggedItem.getAttribute('data-index'));
+                const dropIndex = parseInt(dropTarget.getAttribute('data-index'));
+
+                if (draggedIndex < dropIndex) {
+                    parent.insertBefore(draggedItem, dropTarget.nextSibling);
+                } else {
+                    parent.insertBefore(draggedItem, dropTarget);
+                }
+                updateOrder();
+            }
+        });
+
+        function updateOrder() {
+            const items = promptList.querySelectorAll('li');
+            const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
+            document.getElementById('prompts-order-input').value = JSON.stringify(order);
         }
     </script>
   </body>
