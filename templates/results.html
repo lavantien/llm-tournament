@@ -63,6 +63,7 @@
         {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$model}}</td>
+          {{$i := $index}}
           <td>{{inc $i}}</td>
           {{range $index, $pass := $results}}
           <td>
