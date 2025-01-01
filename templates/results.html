@@ -65,14 +65,13 @@
           <td>{{$model}}</td>
           {{$i := $index}}
           <td>{{inc $i}}</td>
-          {{range $index, $pass := $results}}
+          {{range $pass := $results}}
           <td>
             <input
               type="checkbox"
               {{if $pass}}checked{{end}}
               onchange="updateResult('{{$model}}', {{$index}}, this.checked, this)"
             />
-            {{if $pass}}<span class="pass">&#10004;</span>{{else}}<span class="fail">&#10008;</span>{{end}}
           </td>
           {{end}}
           <td>
