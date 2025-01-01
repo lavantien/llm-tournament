@@ -60,7 +60,7 @@
         </tr>
       </thead>
       <tbody>
-        {{$i := 1}} {{range $model, $results := .Results}} {{if or (eq
+        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
         $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{inc $i}}</td>
