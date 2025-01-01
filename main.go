@@ -8,11 +8,6 @@ import (
 	"strconv"
 )
 
-import (
-	"encoding/json"
-	"os"
-)
-
 func main() {
 	http.HandleFunc("/", router)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
