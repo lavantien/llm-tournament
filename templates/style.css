@@ -136,4 +136,35 @@ form {
 select {
     width: auto;
 }
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: #1a1a1a;
+    padding: 10px 20px;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+.sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background-color: #1a1a1a;
+    padding: 10px 20px;
+    z-index: 100;
+    border-top: 1px solid #333;
+}
+
+.sticky-header h2, .sticky-footer h2 {
+    margin-top: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.sticky-header form, .sticky-footer form {
+    margin-bottom: 0;
+}
 </style>
