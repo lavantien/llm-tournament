@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prompt List</title>
+  </head>
+  <body>
+    <h1>Prompt List</h1>
+    <ul>
+      {{range $index, $prompt := .}}
+      <li>
+        {{$prompt}}
+        <a href="/edit_prompt?index={{$index}}">Edit</a>
+        <a href="/delete_prompt?index={{$index}}">Delete</a>
+      </li>
+      {{end}}
+    </ul>
+    <h2>Add Prompt</h2>
+    <form action="/add_prompt" method="post">
+      <input type="text" name="prompt" placeholder="Enter new prompt" />
+      <input type="submit" value="Add" />
+    </form>
+    <a href="/results">Go to Results</a>
+  </body>
+</html>

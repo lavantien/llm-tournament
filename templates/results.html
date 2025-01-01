@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Results</title>
+    <script>
+      function updateResult(model, promptIndex, pass) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/update_result", true);
+        xhr.setRequestHeader(
+          "Content-type",
+          "application/x-www-form-urlencoded",
+        );
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            // Handle response if needed
+          }
+        };
+        var params =
+          "model=" +
+          encodeURIComponent(model) +
+          "&promptIndex=" +
+          promptIndex +
+          "&pass=" +
+          pass;
+        xhr.send(params);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Results</h1>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Model</th>
+          {{range $index, $prompt := .Prompts}}
+          <th>Prompt {{$index + 1}}</th>
+          {{end}}
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range $model, $results := .Results}}
+        <tr>
+          <td>{{$model}}</td>
+          {{range $index, $pass := $results}}
+          <td>
+            <input
+              type="checkbox"
+              {{if
+              $pass}}checked{{end}}
+              onchange="updateResult('{{$model}}', {{$index}}, this.checked)"
+            />
+          </td>
+          {{end}}
+          <td>{{len (filter $results true)}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    <a href="/prompts">Go to Prompt List</a>
+  </body>
+</html>
