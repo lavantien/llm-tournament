@@ -3,8 +3,6 @@ package main
 import (
 	"html/template"
 	"net/http"
-	"encoding/json"
-	"os"
 	"sort"
     "strings"
 	"strconv"
