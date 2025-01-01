@@ -27,8 +27,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		editPromptHandler(w, r)
 	} else if r.URL.Path == "/delete_prompt" {
 		deletePromptHandler(w, r)
-	}
-	else {
+	} else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
