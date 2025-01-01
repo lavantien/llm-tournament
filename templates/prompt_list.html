@@ -27,13 +27,15 @@
     </ul>
     <div class="sticky-footer">
         <h2>Export/Import Prompts</h2>
-        <form action="/export_prompts" method="post">
-            <input type="submit" value="Export Prompts" />
-        </form>
-        <form action="/import_prompts" method="post" enctype="multipart/form-data">
-            <input type="file" name="prompts_file" />
-            <input type="submit" value="Import Prompts" />
-        </form>
+        <div style="display: flex; align-items: center;">
+            <form action="/export_prompts" method="post" style="margin-right: 10px;">
+                <input type="submit" value="Export Prompts" />
+            </form>
+            <form action="/import_prompts" method="post" enctype="multipart/form-data" style="display: flex; align-items: center;">
+                <input type="file" name="prompts_file" style="margin-right: 10px;"/>
+                <input type="submit" value="Import Prompts" />
+            </form>
+        </div>
     </div>
   </body>
 </html>
