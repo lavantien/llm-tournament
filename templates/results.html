@@ -20,7 +20,8 @@
           if (xhr.readyState == 4 && xhr.status == 200) {
             checkbox.style.display = "";
             loadingIndicator.remove();
-            // Handle response if needed
+            updateScore(model);
+            updateCheckmark(checkbox, pass);
           }
         };
         var params =
@@ -31,6 +32,44 @@
           "&pass=" +
           pass;
         xhr.send(params);
+      }
+
+      function updateScore(model) {
+        var totalScoreCell = document.querySelector('tr:has(td:first-child:contains("' + model + '")) td:last-child');
+        if (totalScoreCell) {
+          var checkboxes = document.querySelectorAll('tr:has(td:first-child:contains("' + model + '")) input[type="checkbox"]');
+          var score = 0;
+          checkboxes.forEach(function(checkbox) {
+            if (checkbox.checked) {
+              score++;
+            }
+          });
+          totalScoreCell.innerHTML = score + '<div class="progress-bar-container"><div class="progress-bar" style="width: ' + (score / checkboxes.length * 100) + '%;"></div></div>';
+        }
+      }
+
+      function updateCheckmark(checkbox, pass) {
+        var passSpan = checkbox.parentNode.querySelector('.pass');
+        var failSpan = checkbox.parentNode.querySelector('.fail');
+        if (pass) {
+          if (passSpan) {
+            passSpan.style.display = 'inline';
+          } else {
+            checkbox.parentNode.innerHTML += '<span class="pass">&#10004;</span>';
+          }
+          if (failSpan) {
+            failSpan.style.display = 'none';
+          }
+        } else {
+          if (failSpan) {
+            failSpan.style.display = 'inline';
+          } else {
+            checkbox.parentNode.innerHTML += '<span class="fail">&#10008;</span>';
+          }
+          if (passSpan) {
+            passSpan.style.display = 'none';
+          }
+        }
       }
     </script>
   </head>
