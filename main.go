@@ -418,6 +418,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 	prompts := readPrompts()
 	results := readResults()
 
+	log.Println("Calculating total scores for each model")
 	// Calculate total scores for each model
 	modelScores := make(map[string]int)
 	for model, result := range results {
@@ -428,16 +429,20 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		modelScores[model] = score
+		log.Printf("Model: %s, Score: %d", model, score)
 	}
 
+	log.Println("Sorting models by score in descending order")
 	// Sort models by score in descending order
 	models := make([]string, 0, len(results))
 	for model := range results {
 		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
+		log.Printf("Comparing %s (%d) with %s (%d)", models[i], modelScores[models[i]], models[j], modelScores[models[j]])
 		return modelScores[models[i]] > modelScores[models[j]]
 	})
+	log.Printf("Sorted models: %v", models)
 
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
