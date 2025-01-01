@@ -77,6 +77,50 @@ func TestEditPromptHandler(t *testing.T) {
     os.WriteFile("data/prompts.txt", []byte(""), 0644)
 }
 
+func TestUpdateResultHandler(t *testing.T) {
+	// Set up a test server
+	ts := httptest.NewServer(http.HandlerFunc(router))
+	defer ts.Close()
+
+	// Create a test prompt
+	initialPrompt := "Test prompt"
+	os.WriteFile("data/prompts.txt", []byte(initialPrompt), 0644)
+
+	// Create a test result
+	model := "test_model"
+	promptIndex := 0
+	pass := true
+
+	// Send a POST request to update the result
+	resp, err := http.PostForm(ts.URL+"/update_result", url.Values{
+		"model":       {model},
+		"promptIndex": {string(rune(promptIndex))},
+		"pass":        {strconv.FormatBool(pass)},
+	})
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	// Check if the result was updated in the file
+	results := readResults()
+	if _, ok := results[model]; !ok {
+		t.Errorf("Expected model '%s' to be added to the results", model)
+	}
+	if len(results[model]) == 0 || results[model][promptIndex] != pass {
+		t.Errorf("Expected result for model '%s' at index %d to be %t, got %v", model, promptIndex, pass, results[model])
+	}
+
+	// Clean up the test file
+	os.WriteFile("data/prompts.txt", []byte(""), 0644)
+	os.WriteFile("data/results.csv", []byte(""), 0644)
+}
+
 func TestDeletePromptHandler(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))

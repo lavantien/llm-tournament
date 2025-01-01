@@ -5,3 +5,4 @@
 - Created `templates/edit_prompt.html` for editing prompts.
 - Added logic to handle new models in `updateResultHandler`.
 - Added logic to read and write prompts and results to their respective files.
+- Implemented `addPromptHandler`, `editPromptHandler`, and `deletePromptHandler` in `main.go`.
