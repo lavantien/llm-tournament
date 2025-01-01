@@ -67,23 +67,3 @@ func writeResults(results map[string]Result) error {
 	}
 	return nil
 }
-
-// Update prompts order
-func updatePromptsOrder(order []int) error {
-	prompts := readPrompts()
-	if len(order) != len(prompts) {
-		return  nil // Or return an error
-	}
-	orderedPrompts := make([]Prompt, len(prompts))
-	for i, index := range order {
-		if index < 0 || index >= len(prompts) {
-			return nil // Or return an error
-		}
-		orderedPrompts[i] = prompts[index]
-	}
-	err := writePrompts(orderedPrompts)
-	if err != nil {
-		return err
-	}
-	return nil
-}
