@@ -22,3 +22,4 @@
 - Implemented the POST request handling in `deletePromptHandler` to delete prompts.
 - Implemented the functionality to persist the changes made in `updateResultHandler` to the `results.json` file.
 - Added a test case for `addPromptHandler` in `test_main.go`.
+- Enhanced `deletePromptHandler` to handle the POST request and update the prompt in the `prompts.json` file.
