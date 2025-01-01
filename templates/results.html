@@ -158,8 +158,8 @@
         <tr>
           <th>#</th>
           <th>Model</th>
-          {{range $index, $prompt := .PromptIndices}}
-          <th>Prompt {{$prompt}}</th>
+          {{range $index := .PromptIndices}}
+          <th>{{$index}}</th>
           {{end}}
           <th>Total</th>
         </tr>
