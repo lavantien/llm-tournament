@@ -188,7 +188,7 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		writePrompts(prompts)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	}
+    }
 }
 
 

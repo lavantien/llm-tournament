@@ -45,3 +45,5 @@
 - Created `state.go` to manage the application state.
 - Modified `main.go` to use the new `state.go` file.
 - Moved handler functions outside the `router` function in `main.go`.
+- Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
+- Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
