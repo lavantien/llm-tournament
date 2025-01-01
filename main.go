@@ -255,6 +255,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         resultsForTemplate[model] = result.Passes
     }
     modelPassPercentages := make(map[string]float64)
+    modelTotalScores := make(map[string]int)
     for model, result := range results {
         score := 0
         for _, pass := range result.Passes {
@@ -263,6 +264,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
             }
         }
         modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
+        modelTotalScores[model] = score
     }
 
     modelFilter := r.FormValue("model_filter")
@@ -273,12 +275,14 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 		Models   []string
         PassPercentages map[string]float64
         ModelFilter string
+        TotalScores map[string]int
 	}{
 		Prompts:  promptTexts,
 		Results:  resultsForTemplate,
 		Models:   models,
         PassPercentages: modelPassPercentages,
         ModelFilter: modelFilter,
+        TotalScores: modelTotalScores,
 	})
 }
 
