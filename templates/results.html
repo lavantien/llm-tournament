@@ -55,7 +55,6 @@
       </select>
       <input type="submit" value="Filter" />
     </form>
-    {{$i := 0}}
     <table>
       <thead>
         <tr>
@@ -68,10 +67,11 @@
         </tr>
       </thead>
       <tbody>
+        {{$i := 0}}
         {{range $model, $results := .Results}} {{if or (eq $.ModelFilter "") (eq
         $.ModelFilter $model)}}
         <tr>
-          <td>{{inc $i}}</td>
+          <td>{{$i = inc $i}}</td>
           <td>{{$model}}</td>
           {{range $index, $pass := $results}}
           <td>
