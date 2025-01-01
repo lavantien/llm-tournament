@@ -115,12 +115,13 @@
         </tr>
       </thead>
       <tbody>
-        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
-        $.ModelFilter "") (eq $.ModelFilter $model)}}
+        {{$i := 0}}
+        {{range $model := .Models}}
+        {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$i = inc $i}}{{$i}}</td>
           <td>{{$model}}</td>
-          {{range $index, $pass := $results}}
+          {{range $index, $pass := index $.Results $model}}
           <td>
             <input
               type="checkbox"
@@ -144,7 +145,8 @@
             </div>
           </td>
         </tr>
-        {{end}} {{end}}
+        {{end}}
+        {{end}}
       </tbody>
     </table>
     <div class="sticky-footer">
