@@ -3,7 +3,7 @@ all:
 	test
 clean:
 updateaider:
-	python -m pip install --upgrade git+https://github.com/paul-gauthier/aider.git
+	curl -LsSf https://aider.chat/install.sh | sh
 test:
 	-go test ./... -v -race -cover > test_output.txt
 run:
