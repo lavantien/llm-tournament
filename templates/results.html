@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Results</title>
-    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="stylesheet" href="/templates/style.css" />
     <script>
       function updateResult(model, promptIndex, pass, checkbox) {
-        var loadingIndicator = document.createElement('span');
-        loadingIndicator.className = 'loading';
+        var loadingIndicator = document.createElement("span");
+        loadingIndicator.className = "loading";
         checkbox.parentNode.appendChild(loadingIndicator);
-        checkbox.style.display = 'none';
+        checkbox.style.display = "none";
 
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "/update_result", true);
@@ -18,7 +18,7 @@
         );
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
-            checkbox.style.display = '';
+            checkbox.style.display = "";
             loadingIndicator.remove();
             // Handle response if needed
           }
@@ -34,24 +34,25 @@
       }
     </script>
   </head>
+
   <body>
     {{template "nav"}}
     <h1>Results</h1>
     <form action="/results" method="get">
-        <label for="model_filter">Filter by Model:</label>
-        <select name="model_filter" id="model_filter">
-            <option value="">All Models</option>
-            {{range $model := .Models}}
-            <option value="{{$model}}">{{$model}}</option>
-            {{end}}
-        </select>
-        <input type="submit" value="Filter">
+      <label for="model_filter">Filter by Model:</label>
+      <select name="model_filter" id="model_filter">
+        <option value="">All Models</option>
+        {{range $model := .Models}}
+        <option value="{{$model}}">{{$model}}</option>
+        {{end}}
+      </select>
+      <input type="submit" value="Filter" />
     </form>
     <table>
       <thead>
         <tr>
-          <th>Model</th>
           <th>#</th>
+          <th>Model</th>
           {{range $index, $prompt := .PromptIndices}}
           <th>Prompt {{$prompt}}</th>
           {{end}}
@@ -59,48 +60,54 @@
         </tr>
       </thead>
       <tbody>
-        {{range $model, $results := .Results}}
-        {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
+        {{$i := 1}} {{range $model, $results := .Results}} {{if or (eq
+        $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
+          <td>{{inc $i}}</td>
           <td>{{$model}}</td>
-          <td>{{inc $index}}</td>
           {{range $index, $pass := $results}}
           <td>
             <input
               type="checkbox"
-              {{if $pass}}checked{{end}}
+              {{if
+              $pass}}checked{{end}}
               onchange="updateResult('{{$model}}', {{$index}}, this.checked, this)"
             />
-            {{if $pass}}<span class="pass">&#10004;</span>{{else}}<span class="fail">&#10008;</span>{{end}}
+            {{if $pass}}<span class="pass">&#10004;</span>{{else}}<span
+              class="fail"
+              >&#10008;</span
+            >{{end}}
           </td>
           {{end}}
           <td>
             {{index $.TotalScores $model}}
             <div class="progress-bar-container">
-                <div class="progress-bar" style="width: {{index $.PassPercentages $model}}%;"></div>
+              <div
+                class="progress-bar"
+                style="width: {{index $.PassPercentages $model}}%;"
+              ></div>
             </div>
           </td>
         </tr>
-        {{end}}
-        {{end}}
+        {{end}} {{end}}
       </tbody>
     </table>
     <a href="/prompts">Go to Prompt List</a>
     <h2>Add Model</h2>
     <form action="/add_model" method="post">
-        <input type="text" name="model" placeholder="Enter new model name" />
-        <input type="submit" value="Add" />
+      <input type="text" name="model" placeholder="Enter new model name" />
+      <input type="submit" value="Add" />
     </form>
     <h2>Manage Results</h2>
     <form action="/reset_results" method="post">
-        <input type="submit" value="Reset Results" />
+      <input type="submit" value="Reset Results" />
     </form>
     <form action="/export_results" method="post">
-        <input type="submit" value="Export Results" />
+      <input type="submit" value="Export Results" />
     </form>
     <form action="/import_results" method="post" enctype="multipart/form-data">
-        <input type="file" name="results_file" />
-        <input type="submit" value="Import Results" />
+      <input type="file" name="results_file" />
+      <input type="submit" value="Import Results" />
     </form>
   </body>
 </html>
