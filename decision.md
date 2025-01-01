@@ -41,3 +41,4 @@
 - Updated the `resultsHandler` in `main.go` to calculate the pass percentage for each model and pass it to the template.
 - Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
 - Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
+- Added a new test case `TestPromptsCRUD` to `test_main.go` to verify that the prompts are correctly added, edited, and deleted.

@@ -39,6 +39,62 @@ func TestAddPromptHandler(t *testing.T) {
 	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }
 
+func TestPromptsCRUD(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Test Create (Add)
+    newPrompt := "Test prompt"
+    resp, err := http.PostForm(ts.URL+"/add_prompt", url.Values{"prompt": {newPrompt}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+    prompts := readPrompts()
+    if len(prompts) == 0 || prompts[len(prompts)-1].Text != newPrompt {
+        t.Errorf("Expected prompt '%s' to be added to the file, got '%v'", newPrompt, prompts)
+    }
+
+    // Test Read (List) - implicitly tested by the above and below tests
+
+    // Test Update (Edit)
+    index := 0
+    editedPrompt := "Edited prompt"
+    resp, err = http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {string(rune(index))}, "prompt": {editedPrompt}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+    prompts = readPrompts()
+    if len(prompts) == 0 || prompts[index].Text != editedPrompt {
+        t.Errorf("Expected prompt '%s' to be edited to '%s', got '%v'", newPrompt, editedPrompt, prompts)
+    }
+
+    // Test Delete
+    resp, err = http.PostForm(ts.URL+"/delete_prompt", url.Values{"index": {string(rune(index))}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+    prompts = readPrompts()
+    if len(prompts) != 0 {
+        t.Errorf("Expected prompt '%s' to be deleted, got '%v'", editedPrompt, prompts)
+    }
+
+    // Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
+
 func TestDeletePromptHandler(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))
