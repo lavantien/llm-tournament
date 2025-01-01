@@ -26,3 +26,5 @@
 - Modified `updateResultHandler` to handle new prompts and update existing results.
 - Implemented `resetResultsHandler` to reset the results for all models.
 - Added a button to `results.html` to trigger the `resetResultsHandler`.
+- Implemented `exportResultsHandler` to export the results to a CSV file.
+- Added a button to `results.html` to trigger the `exportResultsHandler`.

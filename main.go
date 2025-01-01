@@ -36,6 +36,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		deletePromptHandler(w, r)
     } else if r.URL.Path == "/reset_results" {
         resetResultsHandler(w, r)
+    } else if r.URL.Path == "/export_results" {
+        exportResultsHandler(w, r)
     } else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
@@ -248,4 +250,32 @@ func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
     emptyResults := make(map[string]Result)
     writeResults(emptyResults)
     http.Redirect(w, r, "/results", http.StatusSeeOther)
+}
+
+// Handle export results
+func exportResultsHandler(w http.ResponseWriter, r *http.Request) {
+    results := readResults()
+    prompts := readPrompts()
+
+    // Create CSV string
+    csvString := "Model,"
+    for i := range prompts {
+        csvString += "Prompt " + strconv.Itoa(i+1) + ","
+    }
+    csvString += "\n"
+
+    for model, result := range results {
+        csvString += model + ","
+        for _, pass := range result.Passes {
+            csvString += strconv.FormatBool(pass) + ","
+        }
+        csvString += "\n"
+    }
+
+    // Set headers for CSV download
+    w.Header().Set("Content-Type", "text/csv")
+    w.Header().Set("Content-Disposition", "attachment;filename=results.csv")
+
+    // Write CSV to response
+    w.Write([]byte(csvString))
 }
