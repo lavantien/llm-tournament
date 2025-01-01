@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Prompt</title>
+</head>
+<body>
+    <h1>Edit Prompt</h1>
+    <form action="/edit_prompt" method="post">
+        <input type="hidden" name="index" value="{{.Index}}">
+        <input type="text" name="prompt" value="{{.Prompt}}">
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>
