@@ -25,11 +25,6 @@
         xhr.send(params);
       }
     </script>
-    {{define "add"}}
-      {{ $a := . }}
-      {{ $b := . }}
-      {{ return (add $a $b) }}
-    {{end}}
   </head>
   <body>
     <h1>Results</h1>
@@ -60,7 +55,7 @@
           <td>
             {{$total := 0}}
             {{range $pass := $results}}
-              {{if $pass}}{{$total = add $total 1}}{{end}}
+              {{if $pass}}{{$total = $total + 1}}{{end}}
             {{end}}
             {{$total}}
           </td>
