@@ -272,6 +272,10 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     }
     modelPassPercentages := make(map[string]float64)
     modelTotalScores := make(map[string]int)
+    promptIndices := make([]int, len(prompts))
+    for i := range prompts {
+        promptIndices[i] = i + 1
+    }
     for model, result := range results {
         score := 0
         for _, pass := range result.Passes {
