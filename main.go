@@ -150,12 +150,29 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 func resultsHandler(w http.ResponseWriter, r *http.Request) {
 	prompts := readPrompts()
 	results := readResults()
-	// Sort models by total score
-	models := make([]string, 0)
-	for model := range results {
-		models = append(models, model)
-	}
-	// Calculate total scores and sort
+
+    // Calculate total scores for each model
+    modelScores := make(map[string]int)
+    for model, passes := range results {
+        score := 0
+        for _, pass := range passes {
+            if pass {
+                score++
+            }
+        }
+        modelScores[model] = score
+    }
+
+    // Sort models by score in descending order
+    models := make([]string, 0, len(results))
+    for model := range results {
+        models = append(models, model)
+    }
+    sort.Slice(models, func(i, j int) bool {
+        return modelScores[models[i]] > modelScores[models[j]]
+    })
+
+
 	t, _ := template.ParseFiles("templates/results.html")
 	t.Execute(w, struct {
 		Prompts  []string

@@ -122,6 +122,82 @@ func TestUpdateResultHandler(t *testing.T) {
 	os.WriteFile("data/results.csv", []byte(""), 0644)
 }
 
+func TestResultsHandlerSorting(t *testing.T) {
+    // Set up a test server
+    ts := httptest.NewServer(http.HandlerFunc(router))
+    defer ts.Close()
+
+    // Create test prompts
+    initialPrompts := []string{"Prompt 1", "Prompt 2"}
+    os.WriteFile("data/prompts.txt", []byte(strings.Join(initialPrompts, "\n")), 0644)
+
+    // Create test results
+    results := map[string][]bool{
+        "Model A": {true, false},
+        "Model B": {true, true},
+        "Model C": {false, false},
+    }
+    var lines []string
+    for model, passes := range results {
+        line := model
+        for _, pass := range passes {
+            line += "," + strconv.FormatBool(pass)
+        }
+        lines = append(lines, line)
+    }
+    os.WriteFile("data/results.csv", []byte(strings.Join(lines, "\n")), 0644)
+
+    // Send a GET request to the results page
+    resp, err := http.Get(ts.URL + "/results")
+    if err != nil {
+        t.Fatalf("Failed to send GET request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusOK {
+        t.Errorf("Expected status %d, got %d", http.StatusOK, resp.StatusCode)
+    }
+
+    // Check if the models are sorted correctly
+    expectedOrder := []string{"Model B", "Model A", "Model C"}
+    actualOrder := getModelsOrderFromHTML(resp)
+
+    if len(actualOrder) != len(expectedOrder) {
+        t.Fatalf("Expected %d models, got %d", len(expectedOrder), len(actualOrder))
+    }
+
+    for i, model := range actualOrder {
+        if model != expectedOrder[i] {
+            t.Errorf("Expected model at index %d to be '%s', got '%s'", i, expectedOrder[i], model)
+        }
+    }
+
+    // Clean up the test files
+    os.WriteFile("data/prompts.txt", []byte(""), 0644)
+    os.WriteFile("data/results.csv", []byte(""), 0644)
+}
+
+func getModelsOrderFromHTML(resp *http.Response) []string {
+    // Parse the HTML response to extract the model order
+    // This is a simplified implementation and might need adjustments based on the actual HTML structure
+    // In a real application, you might want to use a proper HTML parsing library
+    var models []string
+    data := make([]byte, 1024)
+    n, _ := resp.Body.Read(data)
+    html := string(data[:n])
+    lines := strings.Split(html, "\n")
+    for _, line := range lines {
+        if strings.Contains(line, "<td>") && !strings.Contains(line, "<input") {
+            model := strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(line, "<td>", ""), "</td>", ""))
+            if model != "Model" && model != "Total" && model != "" {
+                models = append(models, model)
+            }
+        }
+    }
+    return models
+}
+
 func TestDeletePromptHandler(t *testing.T) {
     // Set up a test server
     ts := httptest.NewServer(http.HandlerFunc(router))

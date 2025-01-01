@@ -6,3 +6,6 @@
 - Added logic to handle new models in `updateResultHandler`.
 - Added logic to read and write prompts and results to their respective files.
 - Implemented `addPromptHandler`, `editPromptHandler`, and `deletePromptHandler` in `main.go`.
+- Implemented sorting of models by score in `resultsHandler`.
+- Implemented score calculation directly in the `results.html` template.
+- Added a test case to `test_main.go` to verify that the models are sorted correctly by score.
