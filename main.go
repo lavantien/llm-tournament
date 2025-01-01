@@ -3,11 +3,16 @@ package main
 import (
 	"html/template"
 	"net/http"
+	"encoding/json"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+type Prompt struct {
+	Text string `json:"text"`
+}
 
 func main() {
 	http.HandleFunc("/", router)
@@ -33,25 +38,26 @@ func router(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Read prompts from prompts.txt
-func readPrompts() []string {
-	data, _ := os.ReadFile("data/prompts.txt")
-	prompts := strings.Split(string(data), "\n")
+// Read prompts from prompts.json
+func readPrompts() []Prompt {
+	data, _ := os.ReadFile("data/prompts.json")
+	var prompts []Prompt
+	json.Unmarshal(data, &prompts)
 	return prompts
 }
 
-// Write prompts to prompts.txt
-func writePrompts(prompts []string) {
-	data := strings.Join(prompts, "\n")
-	os.WriteFile("data/prompts.txt", []byte(data), 0644)
+// Write prompts to prompts.json
+func writePrompts(prompts []Prompt) {
+	data, _ := json.Marshal(prompts)
+	os.WriteFile("data/prompts.json", data, 0644)
 }
 
 // Handle add prompt
 func addPromptHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	prompt := r.Form.Get("prompt")
+	promptText := r.Form.Get("prompt")
 	prompts := readPrompts()
-	prompts = append(prompts, prompt)
+	prompts = append(prompts, Prompt{Text: promptText})
 	writePrompts(prompts)
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
@@ -82,7 +88,7 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
         editedPrompt := r.Form.Get("prompt")
         prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-			prompts[index] = editedPrompt
+			prompts[index].Text = editedPrompt
 		}
         writePrompts(prompts)
         http.Redirect(w, r, "/prompts", http.StatusSeeOther)
