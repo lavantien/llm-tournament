@@ -30,38 +30,42 @@ func main() {
 	http.HandleFunc("/ws", handleWebSocket)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 	log.Println("Server is listening on :8080")
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 }
 
 func router(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received: %s %s", r.Method, r.URL.Path)
-	if r.URL.Path == "/prompts" {
+	switch r.URL.Path {
+	case "/prompts":
 		promptListHandler(w, r)
-	} else if r.URL.Path == "/results" {
+	case "/results":
 		resultsHandler(w, r)
-	} else if r.URL.Path == "/update_result" {
+	case "/update_result":
 		updateResultHandler(w, r)
-	} else if r.URL.Path == "/add_model" {
+	case "/add_model":
 		addModelHandler(w, r)
-	} else if r.URL.Path == "/add_prompt" {
+	case "/add_prompt":
 		addPromptHandler(w, r)
-	} else if r.URL.Path == "/edit_prompt" {
+	case "/edit_prompt":
 		editPromptHandler(w, r)
-	} else if r.URL.Path == "/delete_prompt" {
+	case "/delete_prompt":
 		deletePromptHandler(w, r)
-	} else if r.URL.Path == "/reset_results" {
+	case "/reset_results":
 		resetResultsHandler(w, r)
-	} else if r.URL.Path == "/export_results" {
+	case "/export_results":
 		exportResultsHandler(w, r)
-	} else if r.URL.Path == "/import_results" {
+	case "/import_results":
 		importResultsHandler(w, r)
-	} else if r.URL.Path == "/export_prompts" {
+	case "/export_prompts":
 		exportPromptsHandler(w, r)
-	} else if r.URL.Path == "/import_prompts" {
+	case "/import_prompts":
 		importPromptsHandler(w, r)
-	} else if r.URL.Path == "/update_prompts_order" {
+	case "/update_prompts_order":
 		updatePromptsOrderHandler(w, r)
-	} else {
+	default:
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
@@ -74,7 +78,10 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error upgrading connection: %v", err)
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		log.Println("Closing websocket connection")
+		conn.Close()
+	}()
 
 	clientsMutex.Lock()
 	clients[conn] = true
