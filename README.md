@@ -29,6 +29,12 @@ This application is designed to facilitate the evaluation of Large Language Mode
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with Gemini 2.0 Flash Exp free API.
 
+## UI
+
+![prompt-manager-page](./assets/ui-prompt-manager.png)
+
+![result-page](./assets/ui-result-page.png)
+
 ## Run
 
 ```bash
