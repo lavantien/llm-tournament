@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Prompt</title>
+</head>
+<body>
+    <h1>Delete Prompt</h1>
+    <p>Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
+    <form action="/delete_prompt" method="post">
+        <input type="hidden" name="index" value="{{.Index}}">
+        <input type="submit" value="Delete">
+    </form>
+</body>
+</html>

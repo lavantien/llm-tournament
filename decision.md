@@ -16,5 +16,5 @@
 - Modified `updateResultHandler` to correctly update the `results.json` file.
 - Added tests for `editPromptHandler` to ensure it's working as expected.
 - Implemented the POST request handling in `editPromptHandler` to update prompts.
+- Implemented the POST request handling in `deletePromptHandler` to delete prompts.
 - Added a test case for `deletePromptHandler` in `test_main.go`.
-- Implemented the POST request handling in `editPromptHandler` to update prompts.
