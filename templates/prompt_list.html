@@ -19,9 +19,9 @@
       <li draggable="true" data-index="{{$index}}">
         {{inc $index}}. {{$prompt}}
         <div class="prompt-actions">
-            <button onclick="copyPrompt('{{$prompt}}')">Copy</button>
-            <a href="/edit_prompt?index={{$index}}">Edit</a>
-            <a href="/delete_prompt?index={{$index}}">Delete</a>
+            <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
+            <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
+            <a class="delete-button" href="/delete_prompt?index={{$index}}">Delete</a>
         </div>
       </li>
       {{end}}

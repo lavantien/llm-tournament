@@ -49,8 +49,9 @@ li {
     gap: 5px;
 }
 
-.prompt-actions button,
-.prompt-actions a {
+.prompt-actions button.copy-button,
+.prompt-actions a.edit-button,
+.prompt-actions a.delete-button {
     padding: 5px 10px;
     border: none;
     border-radius: 3px;
@@ -62,8 +63,9 @@ li {
     font-size: 0.9em;
 }
 
-.prompt-actions button:hover,
-.prompt-actions a:hover {
+.prompt-actions button.copy-button:hover,
+.prompt-actions a.edit-button:hover,
+.prompt-actions a.delete-button:hover {
     background-color: #03dac6;
 }
 
