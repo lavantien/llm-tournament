@@ -123,17 +123,17 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 				Prompt: prompts[index].Text,
 			})
 		}
-	} else if r.Method == "POST" {
-		r.ParseForm()
-		indexStr := r.Form.Get("index")
-		index, _ := strconv.Atoi(indexStr)
-		prompts := readPrompts()
-		if index >= 0 && index < len(prompts) {
-			prompts = append(prompts[:index], prompts[index+1:]...)
-		}
-		writePrompts(prompts)
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	}
+    } else if r.Method == "POST" {
+        r.ParseForm()
+        indexStr := r.Form.Get("index")
+        index, _ := strconv.Atoi(indexStr)
+        prompts := readPrompts()
+        if index >= 0 && index < len(prompts) {
+            prompts = append(prompts[:index], prompts[index+1:]...)
+        }
+        writePrompts(prompts)
+        http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+    }
 }
 
 type Result struct {
