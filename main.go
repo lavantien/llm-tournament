@@ -228,7 +228,7 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
     if promptIndex >= 0 && promptIndex < len(results[model].Passes) {
         results[model].Passes[promptIndex] = pass
     }
-    writeResults(results)
+	writeResults(results)
 
     w.Write([]byte("OK"))
 }
