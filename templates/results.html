@@ -74,7 +74,7 @@
           <td>
             {{$total := 0}}
             {{range $pass := $results}}
-              {{if $pass}}{{$total = $total + 1}}{{end}}
+              {{if $pass}}{{$total = add $total 1}}{{end}}
             {{end}}
             {{$total}}
             <div class="progress-bar-container">
