@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"sort"
@@ -43,6 +44,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		updatePromptsOrderHandler(w, r)
 	} else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	}
 }
 
 // Handle update prompts order
@@ -82,10 +84,6 @@ func updatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-}
-
-func add(a, b int) int {
-	return a + b
 }
 
 // Handle add prompt
