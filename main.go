@@ -237,7 +237,15 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
         return modelScores[models[i]] > modelScores[models[j]]
     })
 
-	t, _ := template.ParseFiles("templates/results.html")
+	t, err := template.ParseFiles("templates/results.html")
+    if err != nil {
+        http.Error(w, "Error parsing template: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if t == nil {
+        http.Error(w, "Error parsing template", http.StatusInternalServerError)
+        return
+    }
     promptTexts := make([]string, len(prompts))
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
