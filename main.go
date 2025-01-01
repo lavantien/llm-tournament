@@ -7,7 +7,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 type Prompt struct {
@@ -144,9 +143,9 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 
     // Calculate total scores for each model
     modelScores := make(map[string]int)
-    for model, passes := range results {
+    for model, result := range results {
         score := 0
-        for _, pass := range passes {
+        for _, pass := range result.Passes {
             if pass {
                 score++
             }
@@ -169,13 +168,17 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
     for i, prompt := range prompts {
         promptTexts[i] = prompt.Text
     }
+    resultsForTemplate := make(map[string][]bool)
+    for model, result := range results {
+        resultsForTemplate[model] = result.Passes
+    }
 	t.Execute(w, struct {
 		Prompts  []string
 		Results  map[string][]bool
 		Models   []string
 	}{
 		Prompts:  promptTexts,
-		Results:  results,
+		Results:  resultsForTemplate,
 		Models:   models,
 	})
 }
