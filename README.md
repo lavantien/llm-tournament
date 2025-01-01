@@ -2,7 +2,7 @@
 
 A simple and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Sleek UI/UX with zero bloat.
 
-## Purpose
+## ✨ Purpose
 
 This application is designed to facilitate the evaluation of Large Language Models (LLMs) by allowing users to:
 
@@ -12,7 +12,7 @@ This application is designed to facilitate the evaluation of Large Language Mode
 - Export and import prompts and results.
 - Reorder prompts using drag and drop.
 
-## Features
+## 🚀 Features
 
 - **Real-time Updates**: Uses WebSockets for instant updates on the results page.
 - **Dynamic UI**: The user interface is designed to be responsive and intuitive.
@@ -24,18 +24,18 @@ This application is designed to facilitate the evaluation of Large Language Mode
 - **Filtering**: Allows filtering of results by model.
 - **Drag and Drop**: Enables reordering of prompts using drag and drop functionality.
 
-## Stack
+## 🛠️ Stack
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with Gemini 2.0 Flash Exp free API.
 
-## UI
+## 🖼️ UI
 
 ![prompt-manager-page](./assets/ui-prompt-manager.png)
 
 ![result-page](./assets/ui-result-page.png)
 
-## Run
+## 🏃 Run
 
 ```bash
 make run
@@ -43,7 +43,7 @@ make run
 
 Then go to <http://localhost:8080>
 
-## Develop
+## 🧑‍💻 Develop
 
 Require Linux environment with Python and Go installed (preferably via Brew).
 
@@ -53,6 +53,6 @@ make updateaider
 
 Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own API Key.
 
-## Contribute
+## 🤝 Contribute
 
 Anyone can just submit a PR and we'll discuss there.
