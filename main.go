@@ -34,7 +34,9 @@ func router(w http.ResponseWriter, r *http.Request) {
 		editPromptHandler(w, r)
 	} else if r.URL.Path == "/delete_prompt" {
 		deletePromptHandler(w, r)
-	} else {
+    } else if r.URL.Path == "/reset_results" {
+        resetResultsHandler(w, r)
+    } else {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
@@ -239,4 +241,11 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
     writeResults(results)
 
     w.Write([]byte("OK"))
+}
+
+// Handle reset results
+func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
+    emptyResults := make(map[string]Result)
+    writeResults(emptyResults)
+    http.Redirect(w, r, "/results", http.StatusSeeOther)
 }

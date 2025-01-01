@@ -24,3 +24,5 @@
 - Added a test case for `addPromptHandler` in `test_main.go`.
 - Enhanced `deletePromptHandler` to handle the POST request and update the prompt in the `prompts.json` file.
 - Modified `updateResultHandler` to handle new prompts and update existing results.
+- Implemented `resetResultsHandler` to reset the results for all models.
+- Added a button to `results.html` to trigger the `resetResultsHandler`.
