@@ -84,7 +84,8 @@ func TestUpdateResultHandler(t *testing.T) {
 
 	// Create a test prompt
 	initialPrompt := "Test prompt"
-	os.WriteFile("data/prompts.txt", []byte(initialPrompt), 0644)
+	prompts := []Prompt{{Text: initialPrompt}}
+	writePrompts(prompts)
 
 	// Create a test result
 	model := "test_model"
@@ -112,13 +113,13 @@ func TestUpdateResultHandler(t *testing.T) {
 	if _, ok := results[model]; !ok {
 		t.Errorf("Expected model '%s' to be added to the results", model)
 	}
-	if len(results[model]) == 0 || results[model][promptIndex] != pass {
+	if len(results[model].Passes) == 0 || results[model].Passes[promptIndex] != pass {
 		t.Errorf("Expected result for model '%s' at index %d to be %t, got %v", model, promptIndex, pass, results[model])
 	}
 
 	// Clean up the test file
-	os.WriteFile("data/prompts.txt", []byte(""), 0644)
-	os.WriteFile("data/results.csv", []byte(""), 0644)
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
 func TestResultsHandlerSorting(t *testing.T) {
@@ -127,24 +128,16 @@ func TestResultsHandlerSorting(t *testing.T) {
     defer ts.Close()
 
     // Create test prompts
-    initialPrompts := []string{"Prompt 1", "Prompt 2"}
-    os.WriteFile("data/prompts.txt", []byte(strings.Join(initialPrompts, "\n")), 0644)
+	initialPrompts := []Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}}
+	writePrompts(initialPrompts)
 
     // Create test results
-    results := map[string][]bool{
-        "Model A": {true, false},
-        "Model B": {true, true},
-        "Model C": {false, false},
+    results := map[string]Result{
+        "Model A": {Passes: []bool{true, false}},
+        "Model B": {Passes: []bool{true, true}},
+        "Model C": {Passes: []bool{false, false}},
     }
-    var lines []string
-    for model, passes := range results {
-        line := model
-        for _, pass := range passes {
-            line += "," + strconv.FormatBool(pass)
-        }
-        lines = append(lines, line)
-    }
-    os.WriteFile("data/results.csv", []byte(strings.Join(lines, "\n")), 0644)
+	writeResults(results)
 
     // Send a GET request to the results page
     resp, err := http.Get(ts.URL + "/results")
@@ -173,8 +166,8 @@ func TestResultsHandlerSorting(t *testing.T) {
     }
 
     // Clean up the test files
-    os.WriteFile("data/prompts.txt", []byte(""), 0644)
-    os.WriteFile("data/results.csv", []byte(""), 0644)
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+	os.WriteFile("data/results.json", []byte("{}"), 0644)
 }
 
 func getModelsOrderFromHTML(resp *http.Response) []string {

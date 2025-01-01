@@ -108,42 +108,22 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
-// Read results from results.csv
-func readResults() map[string][]bool {
-	data, _ := os.ReadFile("data/results.csv")
-	lines := strings.Split(string(data), "\n")
-	results := make(map[string][]bool)
-	prompts := readPrompts()
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		parts := strings.Split(line, ",")
-		if len(parts) != len(prompts)+1 {
-			continue
-		}
-		model := parts[0]
-		var passes []bool
-		for _, passStr := range parts[1:] {
-			passes = append(passes, passStr == "true")
-		}
-		results[model] = passes
-	}
-	return results
+type Result struct {
+	Passes []bool `json:"passes"`
 }
 
-// Write results to results.csv
-func writeResults(results map[string][]bool) {
-	var lines []string
-	for model, passes := range results {
-		line := model
-		for _, pass := range passes {
-			line += "," + strconv.FormatBool(pass)
-		}
-		lines = append(lines, line)
-	}
-	data := strings.Join(lines, "\n")
-	os.WriteFile("data/results.csv", []byte(data), 0644)
+// Read results from results.json
+func readResults() map[string]Result {
+    data, _ := os.ReadFile("data/results.json")
+    var results map[string]Result
+    json.Unmarshal(data, &results)
+    return results
+}
+
+// Write results to results.json
+func writeResults(results map[string]Result) {
+    data, _ := json.Marshal(results)
+    os.WriteFile("data/results.json", data, 0644)
 }
 
 // Handle prompt list page
@@ -211,10 +191,10 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 
     results := readResults()
     if _, ok := results[model]; !ok {
-        results[model] = make([]bool, len(readPrompts()))
+        results[model] = Result{Passes: make([]bool, len(readPrompts()))}
     }
-    if promptIndex >= 0 && promptIndex < len(results[model]) {
-        results[model][promptIndex] = pass
+    if promptIndex >= 0 && promptIndex < len(results[model].Passes) {
+        results[model].Passes[promptIndex] = pass
     }
     writeResults(results)
 
