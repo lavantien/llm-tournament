@@ -1,0 +1,3 @@
+- Please only proceed one file at a time, don't output multiple files in one respond, to avoid output limit.
+- Always write unit-test that cover all possible test-cases for the code you write if it's possible to do.
+- Record every decision you make with a short one-line summary and files affected in a document named decision.md, if it doesn't exist then creat it as well.
