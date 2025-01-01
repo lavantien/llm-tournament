@@ -37,38 +37,6 @@ func TestAddPromptHandler(t *testing.T) {
 	}
 
 	// Clean up the test file
-	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
-}
-
-func TestAddPromptHandler(t *testing.T) {
-	// Set up a test server
-	ts := httptest.NewServer(http.HandlerFunc(router))
-	defer ts.Close()
-
-	// Create a new prompt
-	newPrompt := "Test prompt"
-
-	// Send a POST request to add the prompt
-	resp, err := http.PostForm(ts.URL+"/add_prompt", url.Values{"prompt": {newPrompt}})
-	if err != nil {
-		t.Fatalf("Failed to send POST request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Check the response status code
-	if resp.StatusCode != http.StatusSeeOther {
-		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
-	}
-
-	// Check if the prompt was added to the file
-	prompts := readPrompts()
-	if len(prompts) == 0 || prompts[len(prompts)-1].Text != newPrompt {
-		t.Errorf("Expected prompt '%s' to be added to the file, got '%v'", newPrompt, prompts)
-	}
-
-	// Clean up the test file
-	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
-}
 
 func TestDeletePromptHandler(t *testing.T) {
     // Set up a test server
