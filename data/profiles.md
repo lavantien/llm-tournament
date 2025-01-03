@@ -187,6 +187,8 @@ You are a highly skilled translator specializing in translating ancient Buddhist
    - Fetter -> sợi xích
    - Five lower fetters - năm sợi xích đầu tiên
    - Mindfulness of breathing - phép nhớ tới hơi thở
+   - Craving - thèm khát
+   - Dependent origination - khởi nguồn phụ thuộc
 4. **Punctuation:** Pay meticulous attention to the use of quotation marks (both single and double) in the source text and replicate them accurately in the translation.
 
 **IV. Guiding Principles:**
