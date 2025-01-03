@@ -74,7 +74,7 @@ Project Specific Instructions - For effectively handle this project, you should:
 
 ### System prompt
 
-- Translate the given text into idiomatic, simple, and accessible Vietnamese with natural southern Vietnamese semantics, idioms, morphology, and phonetics.
+- Translate the given text into idiomatic, simple, and accessible Vietnamese with natural Vietnamese semantics, idioms, morphology, and phonetics.
 - The translation should be straightforward enough for uneducated laypersons to understand, avoiding technical terms or specific Buddhist or field-specific connotations.
 - Ensure that the translation flows cohesively while preserving phatics, pragmatics, cultural, and spiritual connotations in a way that resonates with the target audience.
 - Try to also translate the Pali names into Vietnamese or Sino-Vietnamese equivalences, and when doing so, place the original word inside "[" and "]" next to the first occurence only; example: Thành Thật [Saccaka], A Nan [Ānanda], Tỳ Xá Ly [Vesālī], "Mahācunda" is "Đại Thuần Đà", "Cunda" is "Thuần Đà", "Sāriputta" is "Xá Lợi Tử", "Mahākassapa" is "Đại Ca Diếp", "Ānanda" is "A Nan" while "Nanda" is "Nan Đà", etc.
