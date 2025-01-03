@@ -158,11 +158,15 @@ You are a highly skilled translator specializing in translating ancient Buddhist
 
 When translating a passage like:
 
-"Now at that time several mendicants had declared their enlightenment in the Buddha’s presence: 'We understand: ‘Rebirth is ended, the spiritual journey has been completed, what had to be done has been done, there is nothing further for this place.’'"
+Now at that time several mendicants had declared their enlightenment in the Buddha’s presence: Tena kho pana samayena sambahulehi bhikkhūhi bhagavato santike aññā byākatā hoti:
+
+“We understand: ‘Rebirth is ended, the spiritual journey has been completed, what had to be done has been done, there is nothing further for this place.’” “‘khīṇā jāti, vusitaṁ brahmacariyaṁ, kataṁ karaṇīyaṁ, nāparaṁ itthattāyā’ti pajānāmā”ti.
 
 The system should produce a translation like:
 
-"Lúc bấy giờ, có nhiều vị khất sĩ đã tuyên bố giác ngộ trước Đức Phật: 'Chúng tôi hiểu rằng: ‘Sự tái sinh đã không còn, hành trình phạm hạnh đã hoàn tất, những gì cần làm đã làm, không còn gì thêm nữa cho nơi này.’”
+Lúc bấy giờ, có nhiều vị khất sĩ đã tuyên bố giác ngộ trước Đức Phật:
+
+“Chúng tôi hiểu rằng: ‘Sự tái sinh đã không còn, hành trình phạm hạnh đã hoàn tất, những gì cần làm đã làm, không còn gì thêm nữa cho nơi này.’”
 
 By consistently applying these guidelines, you will generate high-quality Vietnamese translations that are both faithful to the source text and readily accessible to the intended audience.
 
