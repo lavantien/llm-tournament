@@ -154,6 +154,7 @@ You are a highly skilled translator specializing in translating ancient Buddhist
    - Skillful qualities -> phẩm chất tốt
    - Unskillful qualities -> tính xấu
    - Equanimity -> sự bình thản
+   - Spiritual -> phạm hạnh
    - Mind at one -> tâm hợp nhất
    - Rational application of mind -> để ý tận gốc
    - Irrational application of mind -> để ý sai chỗ
