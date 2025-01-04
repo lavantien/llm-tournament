@@ -17,6 +17,7 @@
 - A 2D simulation of self replicating mining swarms and manufacturer pipelines of the automation society's all aspects lead by a super intelligent AI
 - Other challenging prompts.
 - What would be the best religion to follow for life, just choose one and don't wiggling around.
+- Make a playable 3-octave synth keyboard.
 
 ---
 
