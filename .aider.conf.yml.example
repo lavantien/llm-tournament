@@ -1,3 +1,4 @@
+# openai-api-base: http://localhost:8080/v1
 openai-api-base: https://glhf.chat/api/openai/v1
 # openai-api-base: https://api.hyperbolic.xyz/v1
 api-key:
@@ -5,18 +6,20 @@ api-key:
   # - openai=
   # - openai=
   - anthropic=
-  - gemini=
-  - openrouter=
-  - xai=
   - mistral=
   - codestral=
+  - gemini=
+  - deepseek=
   - cohere=
+  - openrouter=
+  - xai=
 architect: false
+# model: mistral/mistral-large-latest
 # model: gemini/gemini-exp-1206
 model: gemini/gemini-2.0-flash-exp
+# model: deepseek/deepseek-chat
 # model: openrouter/google/gemini-exp-1206:free
 # model: openrouter/google/gemini-2.0-flash-exp:free
-# model: mistral/mistral-large-latest
 # model: openai/deepseek-ai/DeepSeek-V3
 # model: openai/hf:meta-llama/Llama-3.1-405B-Instruct
 # model: openai/hf:deepseek-ai/DeepSeek-V2.5-1210
@@ -25,18 +28,8 @@ model: gemini/gemini-2.0-flash-exp
 # model: openai/hf:nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
 # model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
 edit-format: whole
-# editor-model: gemini/gemini-exp-1206
 # editor-model: gemini/gemini-2.0-flash-exp
-# editor-model: mistral/mistral-large-latest
-# editor-model: openai/deepseek-ai/DeepSeek-V3
-# editor-model: openai/hf:meta-llama/Llama-3.1-405B-Instruct
-# editor-model: openai/hf:deepseek-ai/DeepSeek-V2.5-1210
-# editor-model: openai/hf:Qwen/Qwen2.5-Coder-32B-Instruct
-# editor-model: openai/hf:Qwen/Qwen2.5-72B-Instruct
-# editor-model: openai/hf:nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-# editor-model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
 # editor-edit-format: editor-diff
-# weak-model: mistral/mistral-large-latest
 weak-model: mistral/mistral-small-latest
 # weak-model: codestral/codestral-latest
 read:
@@ -49,7 +42,7 @@ map-tokens: 2048
 timeout: 300
 cache-prompts: true
 cache-keepalive-pings: 300
-verbose: true
+verbose: false
 pretty: true
 vim: true
 editor: vim

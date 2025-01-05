@@ -17,6 +17,15 @@
     "top_a": 0.1,
     "temperature": 0.1,
   },
+  "codestral/codestral-latest": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
   "gemini/gemini-exp-1206": {
     "max_tokens": -1,
     "repetition_penalty": 1.01,
@@ -28,6 +37,15 @@
   },
   "gemini/gemini-2.0-flash-exp": {
     "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "deepseek/deepseek-chat": {
+    "max_tokens": 8192,
     "repetition_penalty": 1.01,
     "top_k": 16,
     "top_p": 0.95,
@@ -54,8 +72,12 @@
     "temperature": 0.1,
   },
   "openai/deepseek-ai/DeepSeek-V3": {
-    "max_tokens": 131072,
-    "top_p": 0.95
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
     "temperature": 0.1,
   },
 }
