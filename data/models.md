@@ -444,6 +444,19 @@
 
 ---
 
+## SmallThinker-3B-Preview-f16
+
+- Path: "mradermacher/Phi-3.5-mini-instruct-GGUF/Phi-3.5-mini-instruct.f16.gguf"
+- Size: 6.8
+- Param: 3.4
+- Quant: "f16"
+- GPU Layers: 36
+- GPU Layers Used: 34
+- Ctx: 32768
+- Ctx Used: 32768
+
+---
+
 ## Ministral-3b-instruct.f16
 
 - Path: "mradermacher/Ministral-3b-instruct-GGUF/Ministral-3b-instruct.f16.gguf"
