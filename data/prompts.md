@@ -18,6 +18,7 @@
 - Other challenging prompts.
 - What would be the best religion to follow for life, just choose one and don't wiggling around.
 - Make a playable 3-octave synth keyboard.
+- Create a super factory with advanced ASI and a swarm of worker robots with a buffered stock storage that can produce anything unlimitedly. And everyone will have everything they want without a need for exploiting and crimes.
 
 ---
 
