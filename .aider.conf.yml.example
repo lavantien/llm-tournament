@@ -6,6 +6,7 @@ api-key:
   # - openai=
   - anthropic=
   - gemini=
+  - openrouter=
   - xai=
   - mistral=
   - codestral=
@@ -13,6 +14,8 @@ api-key:
 architect: false
 # model: gemini/gemini-exp-1206
 model: gemini/gemini-2.0-flash-exp
+# model: openrouter/google/gemini-exp-1206:free
+# model: openrouter/google/gemini-2.0-flash-exp:free
 # model: mistral/mistral-large-latest
 # model: openai/deepseek-ai/DeepSeek-V3
 # model: openai/hf:meta-llama/Llama-3.1-405B-Instruct

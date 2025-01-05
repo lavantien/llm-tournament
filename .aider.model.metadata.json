@@ -1,0 +1,62 @@
+{
+  "mistral/mistral-large-latest": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "mistral/mistral-small-latest": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "gemini/gemini-exp-1206": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "gemini/gemini-2.0-flash-exp": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "openrouter/google/gemini-exp-1206:free": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "openrouter/google/gemini-2.0-flash-exp:free": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.01,
+    "top_k": 16,
+    "top_p": 0.95,
+    "min_p": 0.05,
+    "top_a": 0.1,
+    "temperature": 0.1,
+  },
+  "openai/deepseek-ai/DeepSeek-V3": {
+    "max_tokens": 131072,
+    "top_p": 0.95
+    "temperature": 0.1,
+  },
+}
+
