@@ -66,8 +66,10 @@
             row.innerHTML = `
                 <td>${i}</td>
                 <td class="model-actions">
-                    <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                    <a class="delete-button" href="/delete_model?model=${model}">Delete</a>
+                    <div class="prompt-actions">
+                        <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
+                        <a class="delete-button" href="/delete_model?model=${model}">Delete</a>
+                    </div>
                 </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
@@ -176,8 +178,10 @@
         <tr>
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
-              <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-              <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
+              <div class="prompt-actions">
+                  <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
+                  <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
+              </div>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
