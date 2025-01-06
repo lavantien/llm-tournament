@@ -210,7 +210,7 @@
           <input type="submit" value="Reset Results" onclick="return confirm('Are you sure you want to reset all results? This action cannot be undone.');" />
         </form>
         <form action="/export_results" method="post" style="margin-right: 10px">
-          <input type="submit" value="Export Results" />
+          <input type="submit" value="Export Results" onclick="return confirm('Are you sure you want to export the results?');" />
         </form>
         <form
           action="/import_results"
