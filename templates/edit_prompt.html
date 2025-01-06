@@ -6,12 +6,12 @@
 </head>
 <body>
     <h1>Edit Prompt</h1>
-    <form action="/edit_prompt" method="post">
+    <form action="/edit_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
         <input type="text" name="prompt" value="{{.Prompt}}">
         <input type="submit" value="Save">
     </form>
-    <form action="/prompts" method="get">
+    <form action="/prompts" method="get" style="text-align: center;">
         <input type="submit" value="Cancel">
     </form>
 </body>

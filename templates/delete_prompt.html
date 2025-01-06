@@ -6,12 +6,12 @@
 </head>
 <body>
     <h1>Delete Prompt</h1>
-    <p>Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
-    <form action="/delete_prompt" method="post">
+    <p style="text-align: center;">Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
+    <form action="/delete_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
         <input type="submit" value="Delete">
     </form>
-    <form action="/prompts" method="get">
+    <form action="/prompts" method="get" style="text-align: center;">
         <input type="submit" value="Cancel">
     </form>
 </body>
