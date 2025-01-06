@@ -7,12 +7,16 @@
   <body>
     {{template "nav"}}
     <div class="sticky-header">
-        <h2>Add Prompt</h2>
-        <div style="display: flex; align-items: center;">
+        <div style="flex-grow: 1; text-align: center;">
+            <h2>Add Prompt</h2>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; flex-grow: 1;">
             <form action="/add_prompt" method="post" style="display: flex; align-items: center; margin-right: 10px;">
                 <input type="text" name="prompt" placeholder="Enter new prompt" style="margin-right: 10px;"/>
                 <input type="submit" value="Add" />
             </form>
+        </div>
+        <div style="flex-grow: 1; text-align: right;">
             <form action="/update_prompts_order" method="post">
                 <input type="hidden" name="order" id="prompts-order-input" value="">
                 <input type="submit" value="Confirm Order">
