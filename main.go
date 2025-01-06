@@ -47,6 +47,10 @@ func router(w http.ResponseWriter, r *http.Request) {
 		updateResultHandler(w, r)
 	case "/add_model":
 		addModelHandler(w, r)
+	case "/edit_model":
+		editModelHandler(w, r)
+	case "/delete_model":
+		deleteModelHandler(w, r)
 	case "/add_prompt":
 		addPromptHandler(w, r)
 	case "/edit_prompt":
@@ -293,6 +297,63 @@ func addModelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("Model added successfully")
+	broadcastResults()
+	http.Redirect(w, r, "/results", http.StatusSeeOther)
+}
+
+// Handle edit model
+func editModelHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling edit model")
+	modelName := r.URL.Query().Get("model")
+	if modelName == "" {
+		http.Error(w, "Model name is required", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == "POST" {
+		newModelName := r.FormValue("new_model_name")
+		if newModelName == "" {
+			http.Error(w, "New model name cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		results := readResults()
+		if _, exists := results[newModelName]; exists {
+			http.Error(w, "Model with this name already exists", http.StatusBadRequest)
+			return
+		}
+
+		results[newModelName] = results[modelName]
+		delete(results, modelName)
+		writeResults(results)
+
+		broadcastResults()
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		return
+	}
+
+	// Render the edit model form
+	tmpl, err := template.ParseFiles("templates/edit_model.html")
+	if err != nil {
+		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, map[string]string{"Model": modelName})
+}
+
+// Handle delete model
+func deleteModelHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling delete model")
+	modelName := r.URL.Query().Get("model")
+	if modelName == "" {
+		http.Error(w, "Model name is required", http.StatusBadRequest)
+		return
+	}
+
+	results := readResults()
+	delete(results, modelName)
+	writeResults(results)
+
 	broadcastResults()
 	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
