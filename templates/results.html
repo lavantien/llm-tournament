@@ -67,7 +67,7 @@
                 <td>${i}</td>
                 <td class="model-actions">
                     <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                    <a class="delete-button" href="/delete_model?model=${model}}" onclick="return confirm('Are you sure you want to delete the model \\'${model}\\'?');">Delete</a>
+                    <a class="delete-button" href="/delete_model?model=${model}}" onclick="confirmDeleteModel('${model}');">Delete</a>
                 </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
@@ -121,6 +121,12 @@
 
       function updateButtonColor(button, pass) {
         button.style.backgroundColor = pass ? 'green' : 'red';
+      }
+
+      function confirmDeleteModel(model) {
+        if (confirm('Are you sure you want to delete the model \'' + model + '\'?')) {
+            window.location.href = '/delete_model?model=' + model;
+        }
       }
 
       window.onload = connectWebSocket;
@@ -177,7 +183,7 @@
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
               <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-              <a class="delete-button" href="/delete_model?model={{$model}}" onclick="return confirm('Are you sure you want to delete the model \'{{$model}}\'?');">Delete</a>
+              <a class="delete-button" href="/delete_model?model={{$model}}" onclick="confirmDeleteModel('{{$model}}');">Delete</a>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}

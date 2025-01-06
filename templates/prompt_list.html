@@ -21,7 +21,7 @@
         <div class="prompt-actions">
             <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
             <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-            <a class="delete-button" href="/delete_prompt?index={{$index}}" onclick="return confirm('Are you sure you want to delete this prompt?');">Delete</a>
+            <a class="delete-button" href="/delete_prompt?index={{$index}}" onclick="confirmDeletePrompt({{$index}})">Delete</a>
         </div>
       </li>
       {{end}}
@@ -55,7 +55,7 @@
         }
 
         const promptList = document.getElementById('prompt-list');
-        let draggedItem = null;
+        let draggedItem = nil;
         let socket;
 
         function connectWebSocket() {
@@ -99,7 +99,7 @@
                     <div class="prompt-actions">
                         <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                         <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
-                        <a class="delete-button" href="/delete_prompt?index=${index}}" onclick="return confirm('Are you sure you want to delete this prompt?');">Delete</a>
+                        <a class="delete-button" href="/delete_prompt?index=${index}}" onclick="confirmDeletePrompt(${index})">Delete</a>
                     </div>
                 `;
                 promptList.appendChild(li);
@@ -145,6 +145,12 @@
             const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ type: 'update_prompts_order', order: order }));
+            }
+        }
+
+        function confirmDeletePrompt(index) {
+            if (confirm('Are you sure you want to delete this prompt?')) {
+                window.location.href = '/delete_prompt?index=' + index;
             }
         }
 
