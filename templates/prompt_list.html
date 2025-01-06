@@ -34,10 +34,10 @@
         <h2>Manage Prompts</h2>
         <div style="display: flex; align-items: center">
             <form action="/reset_prompts" method="post" style="margin-right: 10px;">
-                <input type="submit" value="Reset Prompts" />
+                <input type="submit" value="Reset Prompts" onclick="return confirm('Are you sure you want to reset all prompts? This action cannot be undone.');" />
             </form>
             <form action="/export_prompts" method="post" style="margin-right: 10px;">
-                <input type="submit" value="Export Prompts" />
+                <input type="submit" value="Export Prompts" onclick="return confirm('Are you sure you want to export all prompts?');" />
             </form>
             <form action="/import_prompts" method="post" enctype="multipart/form-data" style="display: flex; align-items: center;">
                 <input type="file" name="prompts_file" style="margin-right: 10px;"/>
