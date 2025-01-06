@@ -17,6 +17,8 @@ This application is designed to facilitate the evaluation of Large Language Mode
 - **Real-time Updates**: Uses WebSockets for instant updates on the results page.
 - **Dynamic UI**: The user interface is designed to be responsive and intuitive.
 - **Prompt Management**: Allows users to add, edit, delete, and reorder prompts.
+  - **Multiline Input**: Supports multiline input for prompts.
+  - **Markdown Rendering**: Supports Markdown rendering for prompts.
 - **Model Evaluation**: Provides a simple way to track pass/fail results for each model against each prompt.
 - **Result Tracking**: Displays total scores and pass percentages for each model.
 - **Data Persistence**: Uses JSON files to store prompts and results.
