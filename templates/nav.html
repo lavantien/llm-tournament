@@ -1,6 +1,10 @@
 {{define "nav"}}
 <nav>
-    <a href="/results">Go to Results</a>
-    <a href="/prompts">Go to Prompt List</a>
+    <form action="/results" method="get" style="display: inline; margin-right: 10px;">
+        <input type="submit" value="Go to Results" style="padding: 10px 15px; border: none; border-radius: 5px; background-color: #bb86fc; color: #1a1a1a; cursor: pointer; transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+    </form>
+    <form action="/prompts" method="get" style="display: inline;">
+        <input type="submit" value="Go to Prompt List" style="padding: 10px 15px; border: none; border-radius: 5px; background-color: #bb86fc; color: #1a1a1a; cursor: pointer; transition: background-color 0.3s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+    </form>
 </nav>
 {{end}}
