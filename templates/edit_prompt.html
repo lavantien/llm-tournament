@@ -10,9 +10,8 @@
         <input type="hidden" name="index" value="{{.Index}}">
         <input type="text" name="prompt" value="{{.Prompt}}">
         <input type="submit" value="Save">
+        <input type="submit" form="cancel-form" value="Cancel">
     </form>
-    <form action="/prompts" method="get" style="text-align: center;">
-        <input type="submit" value="Cancel">
-    </form>
+    <form id="cancel-form" action="/prompts" method="get"></form>
 </body>
 </html>
