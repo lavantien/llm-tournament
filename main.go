@@ -59,6 +59,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		deletePromptHandler(w, r)
 	case "/reset_results":
 		resetResultsHandler(w, r)
+	case "/refresh_results":
+		refreshResultsHandler(w, r)
 	case "/export_results":
 		exportResultsHandler(w, r)
 	case "/import_results":
@@ -899,6 +901,37 @@ func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Results reset successfully")
+		broadcastResults()
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+	}
+}
+
+// Handle refresh results
+func refreshResultsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling refresh results")
+	if r.Method == "GET" {
+		t, err := template.ParseFiles("templates/refresh_results.html")
+		if err != nil {
+			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = t.Execute(w, nil)
+		if err != nil {
+			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == "POST" {
+		results := readResults()
+		for model := range results {
+			results[model] = Result{Passes: make([]bool, len(readPrompts()))}
+		}
+		err := writeResults(results)
+		if err != nil {
+			log.Printf("Error writing results: %v", err)
+			http.Error(w, "Error writing results", http.StatusInternalServerError)
+			return
+		}
+		log.Println("Results refreshed successfully")
 		broadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
