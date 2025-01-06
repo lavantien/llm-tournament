@@ -9,13 +9,13 @@ body {
   h1 {
     color: #bb86fc;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     transition: color 0.3s ease;
   }
 
   h2 {
     color: #bb86fc;
-    margin-top: 30px;
+    margin-top: 10px;
     border-bottom: 1px solid #333;
     padding-bottom: 5px;
     transition: color 0.3s ease;
@@ -171,7 +171,7 @@ body {
   }
 
   form {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   select {
@@ -244,12 +244,12 @@ body {
 
     h1 {
       font-size: 1.5em;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     h2 {
       font-size: 1.2em;
-      margin-top: 20px;
+      margin-top: 10px;
     }
 
     li {
