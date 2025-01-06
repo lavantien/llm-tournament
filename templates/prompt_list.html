@@ -21,7 +21,7 @@
         <div class="prompt-actions">
             <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
             <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-            <a class="delete-button" href="/delete_prompt?index={{$index}}">Delete</a>
+            <a class="delete-button" href="/delete_prompt?index={{$index}}" onclick="return confirm('Are you sure you want to delete this prompt?');">Delete</a>
         </div>
       </li>
       {{end}}
@@ -99,7 +99,7 @@
                     <div class="prompt-actions">
                         <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                         <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
-                        <a class="delete-button" href="/delete_prompt?index=${index}">Delete</a>
+                        <a class="delete-button" href="/delete_prompt?index=${index}}" onclick="return confirm('Are you sure you want to delete this prompt?');">Delete</a>
                     </div>
                 `;
                 promptList.appendChild(li);
