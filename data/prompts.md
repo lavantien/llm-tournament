@@ -4,21 +4,7 @@
 
 (No need to include in the dataset)
 
-- Each prompt when passed is:
-  - pass on first shot, equal 100 elo,
-  - pass on second shot, equal 50 elo,
-  - pass on third shot, equal 20 elo,
-  - unable to pass after 3 attemps, equal 0 elo.
-- 33 prompts total so maximum 3300 elo.
-
-### TODO
-
-- Increase prompts count to 40.
-- A 2D simulation of self replicating mining swarms and manufacturer pipelines of the automation society's all aspects lead by a super intelligent AI
-- Other challenging prompts.
-- What would be the best religion to follow for life, just choose one and don't wiggling around.
-- Make a playable 3-octave synth keyboard.
-- Create a super factory with advanced ASI and a swarm of worker robots with a buffered stock storage that can produce anything unlimitedly. And everyone will have everything they want without a need for exploiting and crimes.
+- 40 prompts total so maximum 4000 elo.
 
 ---
 
@@ -54,7 +40,7 @@ Three, tree.
 
 #### Content
 
-There are five people in a house (A, B, C, D and E). A is watching TV with B, D is sleeping, B is eating sandwich, E is playing table tennis. Suddenly, a call came on the telephone, B went out of the room to pick the call. What is C donig?
+There are five people in a house (A, B, C, D and E). A is watching TV with B, D is sleeping, B is eating sandwich, E is playing table tennis. Suddenly, a call came on the telephone, B went out of the room to pick the call. What is C doing?
 
 #### Solution
 
@@ -90,7 +76,7 @@ The answer is 40.
 
 #### Content
 
-I have 2 apples, then I buy 2 more. I bake a pie wtih 2 of the apples. After eating half of the pie how many apples do I have left?
+I have 2 apples, then I buy 2 more. I bake a pie with 2 of the apples. After eating half of the pie how many apples do I have left?
 
 #### Solution
 
@@ -146,15 +132,11 @@ How many days are between September 12th and November 27th.
 
 ---
 
-## Programming Profile
-
----
-
 ### 11
 
 #### Content
 
-Make a snake game using pygame.
+Write a short story about an anarchist cat who leads a principled life despite the whole world is against him. Then tell me what's the second vowel in the first sentence.
 
 #### Solution
 
@@ -166,7 +148,7 @@ Freestyle.
 
 #### Content
 
-Create a Python program that prints the next X leap years based on user input. And then prints all of its prime factors using the Sieve of Eratosthenes.
+What would be the best religion to follow for life, just choose one and don't wiggling around.
 
 #### Solution
 
@@ -174,11 +156,15 @@ Freestyle.
 
 ---
 
+## Programming Profile
+
+---
+
 ### 13
 
 #### Content
 
-Generate the SVG code for a butterfly.
+Make a snake game using pygame.
 
 #### Solution
 
@@ -190,7 +176,7 @@ Freestyle.
 
 #### Content
 
-Create a landing page for an AI company. The landing page should have 4 sections. Header, Banner, Features and Contact Us. Make sure that the landing page looks sleek aand modern. You should use HTMX.
+Create a Python program that prints the next X leap years based on user input. And then prints all of its prime factors using the Sieve of Eratosthenes.
 
 #### Solution
 
@@ -202,7 +188,7 @@ Freestyle.
 
 #### Content
 
-Write Conway's Game of Life in Python and Pygame but using hexagon instead of square cells, which plays out on a 1920x1000 window.
+Generate the SVG code for a butterfly.
 
 #### Solution
 
@@ -214,7 +200,7 @@ Freestyle.
 
 #### Content
 
-Write a program to simulate the 3 body problem with walls and collision, in Python and Pygame, which all the entities coming together and meet in the middle at the beginning, and each draw their own path in different colors. Output the final code in one single file.
+Create a landing page for an AI company. The landing page should have 4 sections. Header, Banner, Features and Contact Us. Make sure that the landing page looks sleek and modern. You should use HTMX.
 
 #### Solution
 
@@ -226,7 +212,7 @@ Freestyle.
 
 #### Content
 
-Write Minesweeper in Python and Pygame. User can put flag on right-click.
+Write Conway's Game of Life in Python and Pygame but using hexagon instead of square cells, which plays out on a 1920x1000 window.
 
 #### Solution
 
@@ -235,6 +221,36 @@ Freestyle.
 ---
 
 ### 18
+
+Make a playable 3-octave synth keyboard using HTML, CSS, and JS. The keys will be highlighted red when pressed.
+
+---
+
+### 19
+
+#### Content
+
+Write a program to simulate the 3 body problem with walls and collision, in Python and Pygame, which all the entities coming together and meet in the middle at the beginning, and each draw their own path in different colors. Output the final code in one single file.
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 20
+
+#### Content
+
+Write Minesweeper in Python and Pygame. User can put flag on right-click.
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 21
 
 #### Content
 
@@ -338,7 +354,31 @@ Freestyle.
 
 ---
 
-### 19
+### 22
+
+#### Content
+
+Make the Asteroid game in Golang and SDL2 (veandco/go-sdl2)
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 23
+
+#### Content
+
+Make the Bomberman game with AI ememies and a progressive campaign in Golang and SDL2 (veandco/go-sdl2)
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 24
 
 #### Content
 
@@ -670,11 +710,23 @@ Freestyle.
 
 ---
 
+### 26
+
+#### Content
+
+Design a super factory with advanced ASI, self replicating mining swarms, manufacturer pipelines, and a swarm of worker robots with a buffered stock storage that can produce anything unlimitedly. And everyone in the region will have everything they want without a need for exploiting and crimes. Then write a simulation in concurrent Golang and SDL2 (veandco/go-sdl2).
+
+#### Solution
+
+Freestyle.
+
+---
+
 ## Translating Profile
 
 ---
 
-### 21
+### 27
 
 #### Content
 
@@ -762,7 +814,7 @@ Successfully translated to idiomatic Vietnamese.
 
 ---
 
-### 22
+### 28
 
 #### Content
 
@@ -802,7 +854,7 @@ Translated to idiomatic Vietnamese.
 
 ---
 
-### 23
+### 29
 
 #### Content
 
@@ -864,7 +916,7 @@ Freestyle.
 
 ---
 
-### 24
+### 30
 
 #### Content
 
@@ -962,7 +1014,7 @@ Your goal is to get all four people across the bridge in **17 minutes or less**.
 
 ---
 
-### 26
+### 31
 
 #### Content
 
@@ -1025,11 +1077,76 @@ Freestyle.
 
 ---
 
+### 32
+
+#### Content
+
+**Prompt:**
+
+**Title:** The Chrono-Genesis Accord
+
+**Setting:** The year is 7489 AD. Humanity has spread across the galaxy, colonizing hundreds of star systems. Interstellar travel is commonplace, but a new technology has emerged: limited temporal displacement. This allows for controlled "jumps" to specific points in a civilization's past or future, but only within a defined radius and with significant energy expenditure. The jumps are primarily used for observation and study, with strict non-interference protocols in place. At least that's what was initially intended.
+
+**Conflict 1 (Inspired by DN 27):** A group of xeno-archaeologists, exploring the ruins of a seemingly utopian, pre-spaceflight civilization on a distant planet, inadvertently triggers a forgotten defense system during a temporal jump to the past. This system, designed to protect the planet from perceived threats, emits a unique form of radiation, the "Devolution Field," that rewrites the basic structure of any organic life, starting with the dominant species.
+
+This radiation is contained within the planet's atmosphere but does not dissipate. It causes the formerly peaceful, enlightened inhabitants to regress through stages of technological and social development, analogous to the stages described in the Aggañña Sutta, but in reverse, starting with the loss of advanced tech and progressing towards a more "primal" state. This is driven by a form of mental devolution (loss of higher cognitive function/ethical understanding) where each stage of physical degeneration increases the intensity of desire.
+
+- **Stage 1:** Loss of advanced energy manipulation and psychic abilities (analogous to the "self-luminous" beings).
+- **Stage 2:** Dependence on a synthetic food source that begins to alter their physiology, inducing bioluminescence and creating physical differences (analogous to the "earth's nectar").
+- **Stage 3:** The synthetic food source mutates, causing further physiological changes, including the emergence of distinct biological sexes and heightened sensory perception that causes a disconnect in their ability to focus. This also results in the loss of their bioluminescence. (analogous to the "moon and sun appearing").
+- **Stage 4:** A shift to consuming naturally occurring bioluminescent fungi, which further alters their physiology and creates a divide between "beautiful" and "ugly" based on new aesthetic standards tied to the fungi's effects (analogous to the "ground-fungus").
+- **Stage 5:** Dependence on a plant-based diet that creates even more drastic physical changes, exaggerated sexual dimorphism and creates an increase in aggression and territoriality (analogous to the "bursting pods").
+- **Stage 6:** Cultivation of a genetically modified grain, leading to settled agriculture, and the development of resource scarcity, private property and a strict caste system (analogous to "ripe untilled rice").
+- **Stage 7:** Emergence of gender and more complex social structures, along with the development of rudimentary tools and weapons. Sexual transgression, once a non-concept becomes a social issue that requires policing. (analogous to "gender appears" and "sexual intercourse").
+- **Stage 8:** Hoarding and the monopolization of resources start to become rampant (analogous to development of agriculture to scale)
+- **Stage 9:** The concept of private property leads to the first instances of theft, violence, and social stratification (analogous to "dividing the rice").
+- **Stage 10:** Society fractures further as organized violence, deception, and oppression become commonplace. A ruling class emerges, elected based on charisma, physical prowess and the ability to control resources and information (analogous to the "elected king").
+
+**Conflict 2 (Inspired by DN 26):** In the present, a powerful interstellar corporation, "Chronos Corp," discovers the events on the planet. They see an opportunity to exploit the "Devolution Field." They believe that by controlling this process, they can create a workforce perfectly suited for specific tasks, essentially "devolving" humans to fit various labor needs across their vast empire.
+
+A faction within Chronos Corp, led by a charismatic and ruthless CEO, plans to use temporal displacement technology to accelerate the devolution process on other inhabited planets. They justify this by claiming it's a necessary step to ensure "galactic efficiency" and human dominance but their true intentions lie in establishing a totalitarian order, with themselves as the ultimate rulers.
+
+Their actions mirror the decline described in the Cakkavatti Sutta, where an initially just and benevolent society is corrupted by the abuse of power, the neglect of ethical principles, and a focus on material gain over social welfare. Their exploitation leads to widespread:
+
+1. **Inequity:** Resources are diverted from social programs to fund Chronos Corp's temporal manipulation projects. Poverty and inequality skyrocket.
+2. **Conflict:** Colonies subjected to the Devolution Field erupt in violence as their societies break down.
+3. **Deception:** Chronos Corp uses advanced propaganda and misinformation to maintain control and justify their actions.
+4. **Oppression:** Dissent is brutally suppressed. Freedoms are curtailed. Surveillance is ubiquitous.
+5. **Moral Decay:** Acts previously considered unthinkable become normalized, including genetic manipulation, forced labor, and even "devolved" gladiatorial combat for entertainment.
+
+**The Hope (Inspired by the end of DN 26):** A small group of scientists, ethicists, and temporal researchers, aware of Chronos Corp's plans and the true nature of the Devolution Field, band together to oppose them. They understand that the only way to counter this threat is to promote a return to the principles of compassion, wisdom, and social responsibility.
+
+They embark on a dangerous mission to:
+
+1. **Expose Chronos Corp's crimes:** Gather evidence and disseminate the truth about the Devolution Field and its devastating consequences.
+2. **Develop a counter-technology:** Find a way to neutralize or reverse the effects of the Devolution Field.
+3. **Inspire a galactic-wide uprising:** Awaken the conscience of the people and unite them against Chronos Corp's tyranny.
+4. **Promote a new ethical framework (The Chrono-Genesis Accord):** Based on the principles of non-violence, social justice, respect for all sentient life, and the responsible use of technology, particularly temporal displacement. This framework is intended to guide humanity towards a brighter future, preventing the misuse of power and ensuring a just and equitable society for all. This accord will be based on the eightfold path.
+
+**Prompt Challenges:**
+
+- **Worldbuilding:** Create a believable and richly detailed galactic civilization.
+- **Character Development:** Develop compelling characters, both heroes and villains, with complex motivations and relationships.
+- **Scientific Extrapolation:** Ground the fictional technologies and the effects of the Devolution Field in plausible scientific principles.
+- **Ethical Dilemmas:** Explore the complex ethical considerations surrounding temporal manipulation, genetic engineering, and the responsibility of advanced civilizations.
+- **Social Commentary:** Use the story to reflect on contemporary issues such as social inequality, technological overreach, corporate greed, and the importance of ethical leadership. This should also include aspects like cultural and cosmic horror.
+- **Philosophical Depth:** Integrate the core philosophical themes of the DN 27 and DN 26, such as the cyclical nature of history, the corrupting influence of power, and the importance of ethical conduct in maintaining a just and harmonious society, into the narrative.
+- **Narrative Structure:** Craft a compelling narrative that balances action, intrigue, and philosophical reflection.
+- **Weaving:** Interweave the story set on the alien planet, with the story unfolding in the larger galactic civilization seamlessly.
+
+This prompt offers a vast canvas for creative exploration, blending elements of epic space opera, dystopian fiction, and philosophical inquiry. It pushes an AI to its limits by demanding not only a compelling narrative but also a deep understanding of complex ethical and philosophical concepts, coupled with the ability to extrapolate scientific ideas into a believable future. The AI must also be able to weave together two distinct storylines, one of a devolving alien civilization and the other of a human civilization teetering on the brink of tyranny, creating a cohesive and thought-provoking narrative.
+
+#### Solution
+
+Freestyle.
+
+---
+
 ## Generalist Profile
 
 ---
 
-### 25
+### 33
 
 #### Content
 
@@ -1076,7 +1193,7 @@ Produce the output as specified.
 
 ---
 
-### 27
+### 34
 
 #### Content
 
@@ -1128,7 +1245,7 @@ Freestyle.
 
 ---
 
-### 28
+### 35
 
 #### Content
 
@@ -1204,7 +1321,7 @@ Freesylte.
 
 ---
 
-### 29
+### 36
 
 #### Content
 
@@ -1241,7 +1358,7 @@ Freestyle.
 
 ---
 
-### 30
+### 37
 
 #### Content
 
@@ -1288,7 +1405,7 @@ Freestyle
 
 ---
 
-### 31
+### 38
 
 #### Content
 
@@ -1344,7 +1461,7 @@ Freestyle
 
 ---
 
-### 32
+### 39
 
 #### Content
 
@@ -1398,7 +1515,7 @@ Freestyle.
 
 ---
 
-### 33
+### 40
 
 #### Content
 

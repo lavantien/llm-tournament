@@ -101,8 +101,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var message struct {
-			Type  string      `json:"type"`
-			Order []int       `json:"order"`
+			Type  string `json:"type"`
+			Order []int  `json:"order"`
 		}
 		if err := json.Unmarshal(msg, &message); err != nil {
 			log.Printf("Error unmarshalling message: %v", err)
@@ -122,25 +122,6 @@ func broadcastResults() {
 	prompts := readPrompts()
 	results := readResults()
 
-	modelScores := make(map[string]int)
-	for model, result := range results {
-		score := 0
-		for _, pass := range result.Passes {
-			if pass {
-				score++
-			}
-		}
-		modelScores[model] = score
-	}
-
-	models := make([]string, 0, len(results))
-	for model := range results {
-		models = append(models, model)
-	}
-	sort.Slice(models, func(i, j int) bool {
-		return modelScores[models[i]] > modelScores[models[j]]
-	})
-
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
 	for model, result := range results {
@@ -151,8 +132,16 @@ func broadcastResults() {
 			}
 		}
 		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
-		modelTotalScores[model] = score
+		modelTotalScores[model] = score * 100
 	}
+
+	models := make([]string, 0, len(results))
+	for model := range results {
+		models = append(models, model)
+	}
+	sort.Slice(models, func(i, j int) bool {
+		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
+	})
 
 	payload := struct {
 		Results         map[string][]bool
