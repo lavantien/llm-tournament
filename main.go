@@ -65,6 +65,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		importPromptsHandler(w, r)
 	case "/update_prompts_order":
 		updatePromptsOrderHandler(w, r)
+	case "/reset_prompts":
+		resetPromptsHandler(w, r)
 	default:
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
@@ -829,4 +831,18 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// Handle reset prompts
+func resetPromptsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling reset prompts")
+	err := writePrompts([]Prompt{})
+	if err != nil {
+		log.Printf("Error writing prompts: %v", err)
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
+	log.Println("Prompts reset successfully")
+	broadcastResults()
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
