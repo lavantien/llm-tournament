@@ -138,26 +138,6 @@
 
       window.onload = connectWebSocket;
     </script>
-    <style>
-      .filter-container {
-        float: left;
-        min-width: 290px;
-      }
-
-      .title-container {
-        display: inline-block;
-        text-align: center;
-        width: calc(100% - 290px);
-        /* Adjust width to accommodate the filter container */
-        padding-right: 290px;
-      }
-
-      .title-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
   </head>
 
   <body>
@@ -173,11 +153,11 @@
           type="text"
           name="model"
           placeholder="Enter new model name"
-          style="margin-right: 10px"
+          style="margin-right: 5px"
         />
         <input type="submit" value="Add" />
       </form>
-      <span id="connection-status" style="margin-left: 10px"></span>
+      <span id="connection-status" style="margin-left: 5px"></span>
     </div>
     <div class="title-row">
       <div class="filter-container">
@@ -249,10 +229,10 @@
     <div class="sticky-footer">
       <h2>Manage Results</h2>
       <div style="display: flex; align-items: center">
-        <form action="/reset_results" method="get" style="margin-right: 10px">
+        <form action="/reset_results" method="get" style="margin-right: 5px">
           <input type="submit" value="Reset Results" />
         </form>
-        <form action="/export_results" method="post" style="margin-right: 10px">
+        <form action="/export_results" method="post" style="margin-right: 5px">
           <input type="submit" value="Export Results" />
         </form>
         <form
@@ -261,7 +241,7 @@
           enctype="multipart/form-data"
           style="display: flex; align-items: center"
         >
-          <input type="file" name="results_file" style="margin-right: 10px" />
+          <input type="file" name="results_file" style="margin-right: 5px" />
           <input type="submit" value="Import Results" />
         </form>
       </div>

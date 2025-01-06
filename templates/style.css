@@ -9,13 +9,13 @@ body {
   h1 {
     color: #bb86fc;
     text-align: center;
-    margin-bottom: 10px;
+    margin: 5px;
     transition: color 0.3s ease;
   }
 
   h2 {
     color: #bb86fc;
-    margin-top: 10px;
+    margin: 5px;
     border-bottom: 1px solid #333;
     padding-bottom: 5px;
     transition: color 0.3s ease;
@@ -36,7 +36,7 @@ body {
     padding: 0;
 
     li {
-      margin-bottom: 10px;
+      margin: 5px;
       padding: 10px;
       background-color: #2a2a2a;
       border-radius: 5px;
@@ -159,7 +159,7 @@ body {
     width: 100%;
     background-color: #333;
     border-radius: 5px;
-    margin-top: 5px;
+    margin: 5px;
     height: 10px;
 
     .progress-bar {
@@ -171,7 +171,7 @@ body {
   }
 
   form {
-    margin-bottom: 10px;
+    margin: 5px;
   }
 
   select {
@@ -192,7 +192,7 @@ body {
 
     h2,
     form {
-      margin-top: 0;
+      margin: 5px;
       border-bottom: none;
       padding-bottom: 0;
       transition: color 0.3s ease;
@@ -219,7 +219,7 @@ body {
     transition: background-color 0.3s ease;
 
     form {
-      margin-bottom: 0;
+      margin: 5px;
     }
   }
 
@@ -244,12 +244,12 @@ body {
 
     h1 {
       font-size: 1.5em;
-      margin-bottom: 10px;
+      margin: 5px;
     }
 
     h2 {
       font-size: 1.2em;
-      margin-top: 10px;
+      margin: 5px;
     }
 
     li {
@@ -297,5 +297,24 @@ body {
       gap: 10px;
       padding: 8px 0;
     }
+  }
+
+  .filter-container {
+    float: left;
+    min-width: 290px;
+  }
+
+  .title-container {
+    display: inline-block;
+    text-align: center;
+    width: calc(100% - 290px);
+    /* Adjust width to accommodate the filter container */
+    padding-right: 290px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
