@@ -11,6 +11,8 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday/v2"
 )
 
 var upgrader = websocket.Upgrader{
@@ -708,6 +710,11 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
+		},
+		"markdown": func(text string) template.HTML {
+			unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+			html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+			return template.HTML(html)
 		},
 	}
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")

@@ -41,15 +41,11 @@
 - Updated the `resultsHandler` in `main.go` to calculate the pass percentage for each model and pass it to the template.
 - Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
 - Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
-- Added a new test case `TestPromptsCRUD` to `test_main.go` to verify that the prompts are correctly added, edited, and deleted.
-- Created `state.go` to manage the application state.
-- Modified `main.go` to use the new `state.go` file.
-- Moved handler functions outside the `router` function in `main.go`.
-- Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
-- Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
 - Created `templates/import_error.html` to handle import errors with a back button.
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if there is an issue with the import.
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if no file is provided.
 - Modified the `resultsHandler` to distinguish between the "Reset Results" and "Refresh Results" actions to prevent refreshing results when resetting.
 - Updated the `results.html` template to ensure the form actions are correctly set for the "Reset Results" and "Refresh Results" buttons.
 - Added a confirmation page for the refresh results button.
+- Defined the `markdown` function in `main.go` to render Markdown content.
+- Passed the `markdown` function to the template in the `promptListHandler` function.
