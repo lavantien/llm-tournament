@@ -1,1 +1,1 @@
-{"model1":{"passes":[false,false,false,false]},"model2":{"passes":[false,false,false,false]},"model3":{"passes":[false,false,false,false]},"model4":{"passes":[false,false,false,false]}}
+{"model1":{"passes":[false,true,false,false]},"model2":{"passes":[false,false,false,false]},"model3":{"passes":[false,false,true,false]},"model4":{"passes":[false,true,false,false]}}
