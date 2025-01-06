@@ -1,320 +1,320 @@
 body {
-  font-family: "Roboto", sans-serif;
-  background-color: #121212;
-  color: #e0e0e0;
-  margin: 0;
-  padding: 20px;
-  transition: background-color 0.3s ease;
-
-  h1 {
-    color: #bb86fc;
-    text-align: center;
-    margin: 5px;
-    transition: color 0.3s ease;
-  }
-
-  h2 {
-    color: #bb86fc;
-    margin: 5px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 5px;
-    transition: color 0.3s ease;
-  }
-
-  a {
-    color: #03dac6;
-    text-decoration: none;
-    transition: color 0.3s ease;
-
-    &:hover {
-      color: #bb86fc;
-    }
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-
-    li {
-      margin: 5px;
-      padding: 10px;
-      background-color: #2a2a2a;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-      &:hover {
-        background-color: #3a3a3a;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-    }
-  }
-
-  .prompt-actions {
-    display: flex;
-    gap: 5px;
-
-    button.copy-button,
-    a.edit-button,
-    a.delete-button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 4px;
-      background-color: #bb86fc;
-      color: #1a1a1a;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background-color 0.3s ease;
-      font-size: 0.9em;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-      &:hover {
-        background-color: #03dac6;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-    }
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #2a2a2a;
-    border-radius: 5px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-    th,
-    td {
-      border: 1px solid #333;
-      padding: 12px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #333;
-      color: #e0e0e0;
-    }
-  }
-
-  input[type="text"],
-  input[type="file"],
-  select {
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #333;
-    border-radius: 5px;
-    background-color: #333;
+    font-family: "Roboto", sans-serif;
+    background-color: #121212;
     color: #e0e0e0;
-    width: calc(100% - 22px);
-    transition:
-      border-color 0.3s ease,
-      background-color 0.3s ease;
-
-    &:focus {
-      border-color: #bb86fc;
-      background-color: #444;
-    }
-  }
-
-  input[type="submit"] {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    background-color: #bb86fc;
-    color: #1a1a1a;
-    cursor: pointer;
+    margin: 0;
+    padding: 20px;
     transition: background-color 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-    &:hover {
-      background-color: #03dac6;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-  }
-
-  .loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #03dac6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .progress-bar-container {
-    width: 100%;
-    background-color: #333;
-    border-radius: 5px;
-    margin: 5px;
-    height: 10px;
-
-    .progress-bar {
-      background-color: #4caf50;
-      height: 10px;
-      border-radius: 5px;
-      transition: width 0.3s ease;
-    }
-  }
-
-  form {
-    margin: 5px;
-  }
-
-  select {
-    width: auto;
-  }
-
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    background-color: #1a1a1a;
-    padding: 10px 20px;
-    z-index: 100;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-    transition: background-color 0.3s ease;
-
-    h2,
-    form {
-      margin: 5px;
-      border-bottom: none;
-      padding-bottom: 0;
-      transition: color 0.3s ease;
-    }
-  }
-
-  .sticky-footer {
-    position: sticky;
-    bottom: 0;
-    background-color: #1a1a1a;
-    padding: 10px 20px;
-    z-index: 100;
-    border-top: 1px solid #333;
-    transition: background-color 0.3s ease;
-  }
-
-  nav {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 10px 0;
-    background-color: #1a1a1a;
-    border-bottom: 1px solid #333;
-    transition: background-color 0.3s ease;
-
-    form {
-      margin: 5px;
-    }
-  }
-
-  .result-button {
-    width: 20px;
-    height: 20px;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition:
-      background-color 0.3s ease,
-      opacity 0.3s ease;
-
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    padding: 10px;
 
     h1 {
-      font-size: 1.5em;
-      margin: 5px;
+        color: #bb86fc;
+        text-align: center;
+        margin: 5px;
+        transition: color 0.3s ease;
     }
 
     h2 {
-      font-size: 1.2em;
-      margin: 5px;
+        color: #bb86fc;
+        margin: 5px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        transition: color 0.3s ease;
     }
 
-    li {
-      padding: 8px;
-      font-size: 0.9em;
+    a {
+        color: #03dac6;
+        text-decoration: none;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: #bb86fc;
+        }
     }
 
-    .prompt-actions button.copy-button,
-    .prompt-actions a.edit-button,
-    .prompt-actions a.delete-button {
-      padding: 6px 10px;
-      font-size: 0.8em;
+    ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+            margin: 5px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+            &:hover {
+                background-color: #3a3a3a;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+    }
+
+    .prompt-actions {
+        display: flex;
+        gap: 5px;
+
+        button.copy-button,
+        a.edit-button,
+        a.delete-button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #bb86fc;
+            color: #1a1a1a;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            font-size: 0.9em;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+            &:hover {
+                background-color: #03dac6;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
     }
 
     table {
-      overflow-x: auto;
-      display: block;
-    }
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #2a2a2a;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
-    th,
-    td {
-      padding: 8px;
-      font-size: 0.8em;
-      white-space: nowrap;
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #333;
+            color: #e0e0e0;
+        }
     }
 
     input[type="text"],
     input[type="file"],
     select {
-      padding: 8px;
-      font-size: 0.9em;
+        padding: 10px;
+        margin: 5px 0;
+        border: 1px solid #333;
+        border-radius: 5px;
+        background-color: #333;
+        color: #e0e0e0;
+        width: calc(100% - 22px);
+        transition:
+            border-color 0.3s ease,
+            background-color 0.3s ease;
+
+        &:focus {
+            border-color: #bb86fc;
+            background-color: #444;
+        }
     }
 
     input[type="submit"] {
-      padding: 8px 12px;
-      font-size: 0.9em;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #bb86fc;
+        color: #1a1a1a;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+            background-color: #03dac6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
     }
 
-    .sticky-header,
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #03dac6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        background-color: #333;
+        border-radius: 5px;
+        margin: 5px;
+        height: 10px;
+
+        .progress-bar {
+            background-color: #4caf50;
+            height: 10px;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+    }
+
+    form {
+        margin: 5px;
+    }
+
+    select {
+        width: auto;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background-color: #1a1a1a;
+        padding: 10px 20px;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+        transition: background-color 0.3s ease;
+
+        h2,
+        form {
+            margin: 5px;
+            border-bottom: none;
+            padding-bottom: 0;
+            transition: color 0.3s ease;
+        }
+    }
+
     .sticky-footer {
-      padding: 8px 10px;
+        position: sticky;
+        bottom: 0;
+        background-color: #1a1a1a;
+        padding: 10px 20px;
+        z-index: 100;
+        border-top: 1px solid #333;
+        transition: background-color 0.3s ease;
     }
 
     nav {
-      gap: 10px;
-      padding: 8px 0;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 10px 0;
+        background-color: #1a1a1a;
+        border-bottom: 1px solid #333;
+        transition: background-color 0.3s ease;
+
+        form {
+            margin: 5px;
+        }
     }
-  }
 
-  .filter-container {
-    float: left;
-    min-width: 290px;
-  }
+    .result-button {
+        width: 20px;
+        height: 20px;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition:
+            background-color 0.3s ease,
+            opacity 0.3s ease;
 
-  .title-container {
-    display: inline-block;
-    text-align: center;
-    width: calc(100% - 290px);
-    /* Adjust width to accommodate the filter container */
-    padding-right: 290px;
-  }
+        &:hover {
+            opacity: 0.8;
+        }
+    }
 
-  .title-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        padding: 10px;
+
+        h1 {
+            font-size: 1.5em;
+            margin: 5px;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin: 5px;
+        }
+
+        li {
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        .prompt-actions button.copy-button,
+        .prompt-actions a.edit-button,
+        .prompt-actions a.delete-button {
+            padding: 6px 10px;
+            font-size: 0.8em;
+        }
+
+        table {
+            overflow-x: auto;
+            display: block;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        input[type="submit"] {
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .sticky-header,
+        .sticky-footer {
+            padding: 8px 10px;
+        }
+
+        nav {
+            gap: 10px;
+            padding: 8px 0;
+        }
+    }
+
+    .filter-container {
+        float: left;
+        min-width: 300px;
+    }
+
+    .title-container {
+        display: inline-block;
+        text-align: center;
+        width: calc(100% - 300px);
+        /* Adjust width to accommodate the filter container */
+        padding-right: 300px;
+    }
+
+    .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
