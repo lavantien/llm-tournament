@@ -9,9 +9,8 @@
     <p style="text-align: center;">Are you sure you want to refresh all results? This action cannot be undone.</p>
     <form action="/refresh_results" method="post" style="text-align: center;">
         <input type="submit" value="Refresh Results">
+        <input type="submit" form="cancel-form" value="Cancel">
     </form>
-    <form action="/results" method="get" style="text-align: center;">
-        <input type="submit" value="Cancel">
-    </form>
+    <form id="cancel-form" action="/results" method="get" style="text-align: center;"></form>
 </body>
 </html>

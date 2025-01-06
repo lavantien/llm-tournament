@@ -10,9 +10,8 @@
     <form action="/delete_model" method="post" style="text-align: center;">
         <input type="hidden" name="model" value="{{.Model}}">
         <input type="submit" value="Delete">
+        <input type="submit" form="cancel-form" value="Cancel">
     </form>
-    <form action="/results" method="get" style="text-align: center;">
-        <input type="submit" value="Cancel">
-    </form>
+    <form id="cancel-form" action="/results" method="get" style="text-align: center;"></form>
 </body>
 </html>
