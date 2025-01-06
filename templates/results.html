@@ -67,7 +67,7 @@
                 <td>${i}</td>
                 <td class="model-actions">
                     <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                    <a class="delete-button" href="/delete_model?model=${model}}" onclick="confirmDeleteModel('${model}');">Delete</a>
+                    <button class="delete-button" onclick="confirmDeleteModel('${model}');">Delete</button>
                 </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
@@ -125,7 +125,17 @@
 
       function confirmDeleteModel(model) {
         if (confirm('Are you sure you want to delete the model \'' + model + '\'?')) {
-            window.location.href = '/delete_model?model=' + model;
+            fetch(`/delete_model?model=${model}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Model deleted successfully');
+                        // Optionally update the UI here
+                        window.location.href = '/results';
+                    } else {
+                        console.error('Failed to delete model');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
         }
       }
 
@@ -183,7 +193,7 @@
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
               <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-              <a class="delete-button" href="/delete_model?model={{$model}}" onclick="confirmDeleteModel('{{$model}}');">Delete</a>
+              <button class="delete-button" onclick="confirmDeleteModel('{{$model}}');">Delete</button>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
