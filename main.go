@@ -761,10 +761,10 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Sorted models: %v", models)
 
 	modelFilter := r.FormValue("model_filter")
-	filteredResults := make(map[string][]bool)
+	filteredResults := make(map[string]Result)
 	if modelFilter != "" {
 		if filteredModel, ok := results[modelFilter]; ok {
-			filteredResults[modelFilter] = filteredModel.Passes
+			filteredResults[modelFilter] = filteredModel
 		}
 	} else {
 		filteredResults = results
