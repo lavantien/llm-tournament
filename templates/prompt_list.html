@@ -3,6 +3,7 @@
   <head>
     <title>Prompt List</title>
     <link rel="stylesheet" href="/templates/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
     {{template "nav"}}
@@ -12,7 +13,7 @@
         </div>
         <div style="display: flex; align-items: center; justify-content: center; flex-grow: 1;">
             <form action="/add_prompt" method="post" style="display: flex; align-items: center; margin-right: 5px;">
-                <input type="text" name="prompt" placeholder="Enter new prompt" style="margin-right: 5px;"/>
+                <textarea name="prompt" placeholder="Enter new prompt" style="margin-right: 5px;"></textarea>
                 <input type="submit" value="Add" />
             </form>
         </div>
@@ -27,7 +28,7 @@
     <ul id="prompt-list">
       {{range $index, $prompt := .}}
       <li draggable="true" data-index="{{$index}}">
-        {{inc $index}}. {{$prompt}}
+        {{inc $index}}. <div class="markdown-content">{{$prompt | markdown}}</div>
         <div class="prompt-actions">
             <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
             <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
@@ -101,7 +102,7 @@
                 li.draggable = true;
                 li.setAttribute('data-index', index);
                 li.innerHTML = `
-                    ${index + 1}. ${prompt}
+                    ${index + 1}. <div class="markdown-content">${marked.parse(prompt)}</div>
                     <div class="prompt-actions">
                         <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                         <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>

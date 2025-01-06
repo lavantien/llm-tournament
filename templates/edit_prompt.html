@@ -3,15 +3,29 @@
 <head>
     <title>Edit Prompt</title>
     <link rel="stylesheet" href="/templates/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <h1>Edit Prompt</h1>
     <form action="/edit_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
-        <input type="text" name="prompt" value="{{.Prompt}}">
+        <textarea name="prompt" rows="10" cols="50">{{.Prompt}}</textarea>
         <input type="submit" value="Save">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
-    <form id="cancel-form" action="/prompts" method="get"></form>
+    <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
+    <h2>Preview</h2>
+    <div id="preview" class="markdown-content">
+        {{.Prompt | markdown}}
+    </div>
+    <script>
+        const textarea = document.querySelector('textarea[name="prompt"]');
+        const preview = document.getElementById('preview');
+
+        textarea.addEventListener('input', function() {
+            const markdownText = textarea.value;
+            preview.innerHTML = marked.parse(markdownText);
+        });
+    </script>
 </body>
 </html>

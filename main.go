@@ -583,7 +583,7 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 				Prompt string
 			}{
 				Index:  index,
-				Prompt: prompts[index].Text,
+				Prompt:  prompts[index].Text,
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
@@ -657,7 +657,7 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 				Prompt string
 			}{
 				Index:  index,
-				Prompt: prompts[index].Text,
+				Prompt:  prompts[index].Text,
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
