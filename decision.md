@@ -49,3 +49,4 @@
 - Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
 - Created `templates/import_error.html` to handle import errors with a back button.
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if there is an issue with the import.
+- Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if no file is provided.

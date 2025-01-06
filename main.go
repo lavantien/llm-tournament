@@ -408,7 +408,7 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		file, _, err := r.FormFile("prompts_file")
 		if err != nil {
 			log.Printf("Error uploading file: %v", err)
-			http.Error(w, "Error uploading file", http.StatusBadRequest)
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
 			return
 		}
 		defer file.Close()
@@ -463,7 +463,7 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 		file, _, err := r.FormFile("results_file")
 		if err != nil {
 			log.Printf("Error uploading file: %v", err)
-			http.Error(w, "Error uploading file", http.StatusBadRequest)
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
 			return
 		}
 		defer file.Close()
