@@ -435,7 +435,7 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		lines := strings.Split(string(data), "\n")
 		if len(lines) <= 1 {
 			log.Println("Invalid CSV format: No data found")
-			http.Error(w, "Invalid CSV format: No data found", http.StatusBadRequest)
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
 			return
 		}
 
@@ -453,6 +453,85 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		t, _ := template.ParseFiles("templates/import_prompts.html")
 		t.Execute(w, nil)
+	}
+}
+
+// Handle import results
+func importResultsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling import results")
+	if r.Method == "POST" {
+		file, _, err := r.FormFile("results_file")
+		if err != nil {
+			log.Printf("Error uploading file: %v", err)
+			http.Error(w, "Error uploading file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// Read the file content
+		data := make([]byte, 0)
+		buf := make([]byte, 1024)
+		for {
+			n, err := file.Read(buf)
+			if n > 0 {
+				data = append(data, buf[:n]...)
+			}
+			if err != nil {
+				break
+			}
+		}
+
+		// Parse CSV data
+		lines := strings.Split(string(data), "\n")
+		if len(lines) <= 1 {
+			log.Println("Invalid CSV format: No data found")
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
+			return
+		}
+
+		results := make(map[string]Result)
+		prompts := readPrompts()
+		for i, line := range lines {
+			if i == 0 || line == "" {
+				continue
+			}
+			parts := strings.Split(line, ",")
+			if len(parts) < 2 {
+				continue
+			}
+			model := parts[0]
+			var passes []bool
+			for _, passStr := range parts[1:] {
+				pass, _ := strconv.ParseBool(passStr)
+				passes = append(passes, pass)
+			}
+			if len(passes) < len(prompts) {
+				passes = append(passes, make([]bool, len(prompts)-len(passes))...)
+			}
+			results[model] = Result{Passes: passes}
+		}
+		err = writeResults(results)
+		if err != nil {
+			log.Printf("Error writing results: %v", err)
+			http.Error(w, "Error writing results", http.StatusInternalServerError)
+			return
+		}
+		log.Println("Results imported successfully")
+		broadcastResults()
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+	} else {
+		t, err := template.ParseFiles("templates/import_results.html")
+		if err != nil {
+			log.Printf("Error parsing template: %v", err)
+			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+			return
+		}
+		err = t.Execute(w, nil)
+		if err != nil {
+			log.Printf("Error executing template: %v", err)
+			http.Error(w, "Error executing template", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -844,85 +923,6 @@ func exportResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println("Results exported successfully")
-}
-
-// Handle import results
-func importResultsHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling import results")
-	if r.Method == "POST" {
-		file, _, err := r.FormFile("results_file")
-		if err != nil {
-			log.Printf("Error uploading file: %v", err)
-			http.Error(w, "Error uploading file", http.StatusBadRequest)
-			return
-		}
-		defer file.Close()
-
-		// Read the file content
-		data := make([]byte, 0)
-		buf := make([]byte, 1024)
-		for {
-			n, err := file.Read(buf)
-			if n > 0 {
-				data = append(data, buf[:n]...)
-			}
-			if err != nil {
-				break
-			}
-		}
-
-		// Parse CSV data
-		lines := strings.Split(string(data), "\n")
-		if len(lines) <= 1 {
-			log.Println("Invalid CSV format: No data found")
-			http.Error(w, "Invalid CSV format: No data found", http.StatusBadRequest)
-			return
-		}
-
-		results := make(map[string]Result)
-		prompts := readPrompts()
-		for i, line := range lines {
-			if i == 0 || line == "" {
-				continue
-			}
-			parts := strings.Split(line, ",")
-			if len(parts) < 2 {
-				continue
-			}
-			model := parts[0]
-			var passes []bool
-			for _, passStr := range parts[1:] {
-				pass, _ := strconv.ParseBool(passStr)
-				passes = append(passes, pass)
-			}
-			if len(passes) < len(prompts) {
-				passes = append(passes, make([]bool, len(prompts)-len(passes))...)
-			}
-			results[model] = Result{Passes: passes}
-		}
-		err = writeResults(results)
-		if err != nil {
-			log.Printf("Error writing results: %v", err)
-			http.Error(w, "Error writing results", http.StatusInternalServerError)
-			return
-		}
-		log.Println("Results imported successfully")
-		broadcastResults()
-		http.Redirect(w, r, "/results", http.StatusSeeOther)
-	} else {
-		t, err := template.ParseFiles("templates/import_results.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
-			return
-		}
-	}
 }
 
 // Handle reset prompts

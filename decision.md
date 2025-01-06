@@ -47,3 +47,5 @@
 - Moved handler functions outside the `router` function in `main.go`.
 - Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
 - Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
+- Created `templates/import_error.html` to handle import errors with a back button.
+- Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if there is an issue with the import.
