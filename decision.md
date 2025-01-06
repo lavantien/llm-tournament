@@ -50,3 +50,5 @@
 - Defined the `markdown` function in `main.go` to render Markdown content.
 - Passed the `markdown` function to the template in the `promptListHandler` function.
 - Updated `editPromptHandler` to correctly pass `Prompt` and `Index` variables to the template.
+- Defined the `markdown` function in `main.go` to render Markdown content.
+- Passed the `markdown` function to the template in the `editPromptHandler` function.

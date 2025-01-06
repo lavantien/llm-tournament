@@ -574,7 +574,14 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-			t, err := template.ParseFiles("templates/edit_prompt.html")
+			funcMap := template.FuncMap{
+				"markdown": func(text string) template.HTML {
+					unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+					html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+					return template.HTML(html)
+				},
+			}
+			t, err := template.New("edit_prompt.html").Funcs(funcMap).ParseFiles("templates/edit_prompt.html")
 			if err != nil {
 				log.Printf("Error parsing template: %v", err)
 				http.Error(w, "Error parsing template", http.StatusInternalServerError)
