@@ -8,6 +8,7 @@
 /add       main.go
 /add       makefile
 /add       state.go
+/add       templates\delete_model.html
 /add       templates\delete_prompt.html
 /add       templates\edit_model.html
 /add       templates\edit_prompt.html
@@ -15,6 +16,8 @@
 /add       templates\import_results.html
 /add       templates\nav.html
 /add       templates\prompt_list.html
+/add       templates\reset_prompts.html
+/add       templates\reset_results.html
 /add       templates\results.html
 /add       templates\style.css
 /add       test_main.go
