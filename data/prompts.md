@@ -358,7 +358,51 @@ Freestyle.
 
 #### Content
 
-Make the Asteroid game in Golang and SDL2 (veandco/go-sdl2)
+**Ant Colony Simulation**
+
+Simulate an ant colony searching for food using an **Ant Colony Optimization (ACO)** algorithm. Using Golang and SDL2 (veandco/go-sdl2). The simulation should include:
+
+1. A grid-based environment with obstacles, a nest (starting point), and food sources.
+2. Ants that move randomly but are influenced by pheromone trails left by other ants.
+3. Pheromone evaporation over time to ensure dynamic pathfinding.
+4. Visualization of the ants' movement, pheromone trails, and the discovery of the shortest path to the food source.
+
+**Input:**
+
+- Grid size: `100x100`
+- Nest location: `(0, 0)`
+- Food source location: `(99, 99)`
+- Obstacles: `20% of cells, randomly generated`
+- Number of ants: `100`
+- Pheromone evaporation rate: `0.1`
+
+**Output:**
+
+- Visualization of the grid showing:
+  - Ants moving from the nest to the food source.
+  - Pheromone trails being laid and evaporating.
+  - The shortest path discovered by the ants.
+- Console output:
+  - Number of steps taken to find the food source.
+  - Final path coordinates (e.g., `[(0, 0), (1, 1), (2, 1), ..., (99, 99)]`).
+
+**Passing Criteria:**
+
+1. Ants successfully find the food source and return to the nest.
+2. Pheromone trails are updated dynamically based on ant movement and evaporation.
+3. The simulation converges to the shortest path over time.
+4. Visualization is clear and updates in real-time.
+5. The algorithm handles obstacles and avoids infinite loops.
+
+**Explanation:**
+
+- The simulation uses a grid to represent the environment, with obstacles, a nest, and a food source.
+- Ants move randomly but are influenced by pheromone trails.
+- Pheromones evaporate over time to prevent stale paths.
+- The visualization shows the ants' movement and the evolving pheromone trails.
+
+**Expected Outcome:**
+Over time, the ants discover the shortest path to the food source, and the pheromone trails converge to highlight this path. The visualization should clearly show this process.
 
 #### Solution
 
