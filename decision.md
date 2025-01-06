@@ -50,3 +50,5 @@
 - Created `templates/import_error.html` to handle import errors with a back button.
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if there is an issue with the import.
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if no file is provided.
+- Modified the `resultsHandler` to distinguish between the "Reset Results" and "Refresh Results" actions to prevent refreshing results when resetting.
+- Updated the `results.html` template to ensure the form actions are correctly set for the "Reset Results" and "Refresh Results" buttons.
