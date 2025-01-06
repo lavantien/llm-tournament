@@ -71,6 +71,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		updatePromptsOrderHandler(w, r)
 	case "/reset_prompts":
 		resetPromptsHandler(w, r)
+	case "/import_error":
+		importErrorHandler(w, r)
 	default:
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
@@ -961,5 +963,20 @@ func resetPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Prompts reset successfully")
 		broadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	}
+}
+
+// Handle import error
+func importErrorHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling import error")
+	t, err := template.ParseFiles("templates/import_error.html")
+	if err != nil {
+		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = t.Execute(w, nil)
+	if err != nil {
+		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
