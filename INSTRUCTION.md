@@ -10,3 +10,4 @@ For effectively handle this project, you should:
 3. Use the preliminary design doc as the initial context
 4. Have clear test cases ready for each component
 5. Review and test each generated component, make sure the project is runable after each step, before moving to the next
+6. Only proceed with one single file at a time, per response. Then inform the user of what should we do next or which file should we proceed next.
