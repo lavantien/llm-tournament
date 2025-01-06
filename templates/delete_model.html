@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Model</title>
+    <link rel="stylesheet" href="/templates/style.css">
+</head>
+<body>
+    <h1>Delete Model</h1>
+    <p>Are you sure you want to delete the model "{{.Model}}"?</p>
+    <form action="/delete_model" method="post">
+        <input type="hidden" name="model" value="{{.Model}}">
+        <input type="submit" value="Delete">
+    </form>
+</body>
+</html>

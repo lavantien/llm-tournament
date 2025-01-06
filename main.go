@@ -344,18 +344,36 @@ func editModelHandler(w http.ResponseWriter, r *http.Request) {
 // Handle delete model
 func deleteModelHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete model")
-	modelName := r.URL.Query().Get("model")
-	if modelName == "" {
-		http.Error(w, "Model name is required", http.StatusBadRequest)
-		return
+	if r.Method == "GET" {
+		modelName := r.URL.Query().Get("model")
+		if modelName == "" {
+			http.Error(w, "Model name is required", http.StatusBadRequest)
+			return
+		}
+		tmpl, err := template.ParseFiles("templates/delete_model.html")
+		if err != nil {
+			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = tmpl.Execute(w, map[string]string{"Model": modelName})
+		if err != nil {
+			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == "POST" {
+		modelName := r.FormValue("model")
+		if modelName == "" {
+			http.Error(w, "Model name is required", http.StatusBadRequest)
+			return
+		}
+
+		results := readResults()
+		delete(results, modelName)
+		writeResults(results)
+
+		broadcastResults()
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
-
-	results := readResults()
-	delete(results, modelName)
-	writeResults(results)
-
-	broadcastResults()
-	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
 // Handle export prompts
@@ -768,16 +786,29 @@ func updateResultHandler(w http.ResponseWriter, r *http.Request) {
 // Handle reset results
 func resetResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset results")
-	emptyResults := make(map[string]Result)
-	err := writeResults(emptyResults)
-	if err != nil {
-		log.Printf("Error writing results: %v", err)
-		http.Error(w, "Error writing results", http.StatusInternalServerError)
-		return
+	if r.Method == "GET" {
+		t, err := template.ParseFiles("templates/reset_results.html")
+		if err != nil {
+			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = t.Execute(w, nil)
+		if err != nil {
+			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == "POST" {
+		emptyResults := make(map[string]Result)
+		err := writeResults(emptyResults)
+		if err != nil {
+			log.Printf("Error writing results: %v", err)
+			http.Error(w, "Error writing results", http.StatusInternalServerError)
+			return
+		}
+		log.Println("Results reset successfully")
+		broadcastResults()
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
-	log.Println("Results reset successfully")
-	broadcastResults()
-	http.Redirect(w, r, "/results", http.StatusSeeOther)
 }
 
 // Handle export results
@@ -897,13 +928,26 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 // Handle reset prompts
 func resetPromptsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset prompts")
-	err := writePrompts([]Prompt{})
-	if err != nil {
-		log.Printf("Error writing prompts: %v", err)
-		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
-		return
+	if r.Method == "GET" {
+		t, err := template.ParseFiles("templates/reset_prompts.html")
+		if err != nil {
+			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = t.Execute(w, nil)
+		if err != nil {
+			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else if r.Method == "POST" {
+		err := writePrompts([]Prompt{})
+		if err != nil {
+			log.Printf("Error writing prompts: %v", err)
+			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+			return
+		}
+		log.Println("Prompts reset successfully")
+		broadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
-	log.Println("Prompts reset successfully")
-	broadcastResults()
-	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }

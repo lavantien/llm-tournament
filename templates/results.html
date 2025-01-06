@@ -67,7 +67,7 @@
                 <td>${i}</td>
                 <td class="model-actions">
                     <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                    <button class="delete-button" onclick="confirmDeleteModel('${model}');">Delete</button>
+                    <a class="delete-button" href="/delete_model?model=${model}">Delete</a>
                 </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
@@ -123,22 +123,6 @@
         button.style.backgroundColor = pass ? 'green' : 'red';
       }
 
-      function confirmDeleteModel(model) {
-        if (confirm('Are you sure you want to delete the model \'' + model + '\'?')) {
-            fetch(`/delete_model?model=${model}`, { method: 'POST' })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Model deleted successfully');
-                        // Optionally update the UI here
-                        window.location.href = '/results';
-                    } else {
-                        console.error('Failed to delete model');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-      }
-
       window.onload = connectWebSocket;
     </script>
   </head>
@@ -180,20 +164,20 @@
           <th>Actions</th>
           <th>Model</th>
           {{range $index := .PromptIndices}}
-          <th>{{$index}}</th>
+          <th>Prompt {{$index}}</th>
           {{end}}
           <th>Total</th>
         </tr>
       </thead>
       <tbody>
         {{$i := 0}}
-        {{range $model := .Models}}
+        {{range $model, $results := .Results}}
         {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
               <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-              <button class="delete-button" onclick="confirmDeleteModel('{{$model}}');">Delete</button>
+              <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
@@ -222,11 +206,11 @@
     <div class="sticky-footer">
       <h2>Manage Results</h2>
       <div style="display: flex; align-items: center">
-        <form action="/reset_results" method="post" style="margin-right: 10px">
-          <input type="submit" value="Reset Results" onclick="return confirm('Are you sure you want to reset all results? This action cannot be undone.');" />
+        <form action="/reset_results" method="get" style="margin-right: 10px">
+          <input type="submit" value="Reset Results" />
         </form>
         <form action="/export_results" method="post" style="margin-right: 10px">
-          <input type="submit" value="Export Results" onclick="return confirm('Are you sure you want to export the results?');" />
+          <input type="submit" value="Export Results" />
         </form>
         <form
           action="/import_results"
@@ -235,7 +219,7 @@
           style="display: flex; align-items: center"
         >
           <input type="file" name="results_file" style="margin-right: 10px" />
-          <input type="submit" value="Import Results" onclick="return confirm('Are you sure you want to import results? This will overwrite any existing results.');" />
+          <input type="submit" value="Import Results" />
         </form>
       </div>
     </div>
