@@ -67,7 +67,7 @@
                 <td>${i}</td>
                 <td class="model-actions">
                     <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                    <a class="delete-button" href="/delete_model?model=${model}}">Delete</a>
+                    <a class="delete-button" href="/delete_model?model=${model}}" onclick="return confirm('Are you sure you want to delete the model \\'${model}\\'?');">Delete</a>
                 </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
@@ -177,7 +177,7 @@
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
               <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-              <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
+              <a class="delete-button" href="/delete_model?model={{$model}}" onclick="return confirm('Are you sure you want to delete the model \'{{$model}}\'?');">Delete</a>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
