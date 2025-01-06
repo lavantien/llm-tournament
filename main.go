@@ -413,6 +413,12 @@ func importPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
+		if file == nil {
+			log.Println("No file provided")
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
+			return
+		}
+
 		// Read the file content
 		data := make([]byte, 0)
 		buf := make([]byte, 1024)
@@ -467,6 +473,12 @@ func importResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer file.Close()
+
+		if file == nil {
+			log.Println("No file provided")
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
+			return
+		}
 
 		// Read the file content
 		data := make([]byte, 0)
