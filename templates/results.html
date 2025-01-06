@@ -65,6 +65,10 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${i}</td>
+                <td class="model-actions">
+                    <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
+                    <a class="delete-button" href="/delete_model?model=${model}">Delete</a>
+                </td>
                 <td>${model}</td>
                 ${results[model].map((pass, index) => `
                     <td>
@@ -157,6 +161,7 @@
       <thead>
         <tr>
           <th>#</th>
+          <th>Actions</th>
           <th>Model</th>
           {{range $index := .PromptIndices}}
           <th>{{$index}}</th>
@@ -170,6 +175,10 @@
         {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$i = inc $i}}{{$i}}</td>
+          <td class="model-actions">
+              <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
+              <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
+          </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
           <td>
