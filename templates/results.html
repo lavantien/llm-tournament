@@ -137,6 +137,11 @@
         text-align: center;
         width: calc(100% - 220px); /* Adjust width to accommodate the filter container */
       }
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     </style>
   </head>
 
@@ -159,7 +164,7 @@
       </form>
       <span id="connection-status" style="margin-left: 10px;"></span>
     </div>
-    <div style="text-align: center;">
+    <div class="title-row">
       <div class="filter-container">
         <form action="/results" method="get">
           <label for="model_filter">Filter by Model:</label>
