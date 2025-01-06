@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Model</title>
+    <link rel="stylesheet" href="/templates/style.css">
+</head>
+<body>
+    <h1>Edit Model</h1>
+    <form action="/edit_model?model={{.Model}}" method="post">
+        <label for="new_model_name">New Model Name:</label>
+        <input type="text" id="new_model_name" name="new_model_name" value="{{.Model}}">
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>
