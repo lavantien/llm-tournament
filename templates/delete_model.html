@@ -6,12 +6,12 @@
 </head>
 <body>
     <h1>Delete Model</h1>
-    <p>Are you sure you want to delete the model "{{.Model}}"?</p>
-    <form action="/delete_model" method="post">
+    <p style="text-align: center;">Are you sure you want to delete the model "{{.Model}}"?</p>
+    <form action="/delete_model" method="post" style="text-align: center;">
         <input type="hidden" name="model" value="{{.Model}}">
         <input type="submit" value="Delete">
     </form>
-    <form action="/results" method="get">
+    <form action="/results" method="get" style="text-align: center;">
         <input type="submit" value="Cancel">
     </form>
 </body>

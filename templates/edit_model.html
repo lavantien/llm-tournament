@@ -6,12 +6,12 @@
 </head>
 <body>
     <h1>Edit Model</h1>
-    <form action="/edit_model?model={{.Model}}" method="post">
+    <form action="/edit_model?model={{.Model}}" method="post" style="text-align: center;">
         <label for="new_model_name">New Model Name:</label>
         <input type="text" id="new_model_name" name="new_model_name" value="{{.Model}}">
         <input type="submit" value="Save">
     </form>
-    <form action="/results" method="get">
+    <form action="/results" method="get" style="text-align: center;">
         <input type="submit" value="Cancel">
     </form>
 </body>
