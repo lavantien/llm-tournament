@@ -52,3 +52,4 @@
 - Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if no file is provided.
 - Modified the `resultsHandler` to distinguish between the "Reset Results" and "Refresh Results" actions to prevent refreshing results when resetting.
 - Updated the `results.html` template to ensure the form actions are correctly set for the "Reset Results" and "Refresh Results" buttons.
+- Added a confirmation page for the refresh results button.

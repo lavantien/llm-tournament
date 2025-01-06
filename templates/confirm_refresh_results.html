@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Refresh Results</title>
+    <link rel="stylesheet" href="/templates/style.css">
+</head>
+<body>
+    <h1>Confirm Refresh Results</h1>
+    <p>Are you sure you want to refresh all results? This action cannot be undone.</p>
+    <form action="/refresh_results" method="post">
+        <input type="submit" value="Refresh Results">
+    </form>
+    <form action="/results" method="get">
+        <input type="submit" value="Cancel">
+    </form>
+</body>
+</html>
