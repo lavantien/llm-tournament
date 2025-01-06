@@ -8,6 +8,7 @@
 /add       main.go
 /add       makefile
 /add       state.go
+/add       templates/confirm_refresh_results.html
 /add       templates/delete_model.html
 /add       templates/delete_prompt.html
 /add       templates/edit_model.html
