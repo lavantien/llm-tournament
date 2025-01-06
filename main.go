@@ -760,6 +760,16 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	log.Printf("Sorted models: %v", models)
 
+	modelFilter := r.FormValue("model_filter")
+	filteredResults := make(map[string][]bool)
+	if modelFilter != "" {
+		if filteredModel, ok := results[modelFilter]; ok {
+			filteredResults[modelFilter] = filteredModel.Passes
+		}
+	} else {
+		filteredResults = results
+	}
+
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			// slog.Info(strconv.Itoa(i))
@@ -782,7 +792,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 		promptTexts[i] = prompt.Text
 	}
 	resultsForTemplate := make(map[string][]bool)
-	for model, result := range results {
+	for model, result := range filteredResults {
 		resultsForTemplate[model] = result.Passes
 	}
 	modelPassPercentages := make(map[string]float64)
@@ -791,7 +801,7 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 	for i := range prompts {
 		promptIndices[i] = i + 1
 	}
-	for model, result := range results {
+	for model, result := range filteredResults {
 		score := 0
 		for _, pass := range result.Passes {
 			if pass {
@@ -801,8 +811,6 @@ func resultsHandler(w http.ResponseWriter, r *http.Request) {
 		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
 		modelTotalScores[model] = score
 	}
-
-	modelFilter := r.FormValue("model_filter")
 
 	err = t.Execute(w, struct {
 		Prompts         []string
