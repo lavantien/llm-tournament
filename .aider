@@ -12,6 +12,7 @@
 /add       templates\delete_prompt.html
 /add       templates\edit_model.html
 /add       templates\edit_prompt.html
+/add       templates\import_error.html
 /add       templates\import_prompts.html
 /add       templates\import_results.html
 /add       templates\nav.html
