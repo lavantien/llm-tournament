@@ -41,7 +41,7 @@
             </form>
             <form action="/import_prompts" method="post" enctype="multipart/form-data" style="display: flex; align-items: center;">
                 <input type="file" name="prompts_file" style="margin-right: 10px;"/>
-                <input type="submit" value="Import Prompts" />
+                <input type="submit" value="Import Prompts" onclick="return confirm('Are you sure you want to import prompts? This will overwrite any existing prompts.');" />
             </form>
         </div>
     </div>
