@@ -127,6 +127,17 @@
 
       window.onload = connectWebSocket;
     </script>
+    <style>
+      .filter-container {
+        float: left;
+        margin-right: 20px;
+      }
+      .title-container {
+        display: inline-block;
+        text-align: center;
+        width: calc(100% - 220px); /* Adjust width to accommodate the filter container */
+      }
+    </style>
   </head>
 
   <body>
@@ -148,17 +159,23 @@
       </form>
       <span id="connection-status" style="margin-left: 10px;"></span>
     </div>
-    <h1>Results</h1>
-    <form action="/results" method="get">
-      <label for="model_filter">Filter by Model:</label>
-      <select name="model_filter" id="model_filter">
-        <option value="">All Models</option>
-        {{range $model := .Models}}
-        <option value="{{$model}}">{{$model}}</option>
-        {{end}}
-      </select>
-      <input type="submit" value="Filter" />
-    </form>
+    <div style="text-align: center;">
+      <div class="filter-container">
+        <form action="/results" method="get">
+          <label for="model_filter">Filter by Model:</label>
+          <select name="model_filter" id="model_filter">
+            <option value="">All Models</option>
+            {{range $model := .Models}}
+            <option value="{{$model}}">{{$model}}</option>
+            {{end}}
+          </select>
+          <input type="submit" value="Filter" />
+        </form>
+      </div>
+      <div class="title-container">
+        <h1>Results</h1>
+      </div>
+    </div>
     <table>
       <thead>
         <tr>
