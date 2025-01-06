@@ -154,6 +154,12 @@
             }
         }
 
+        function confirmResetPrompts() {
+            if (confirm('Are you sure you want to reset all prompts? This action cannot be undone.')) {
+                window.location.href = '/reset_prompts';
+            }
+        }
+
         window.onload = () => {
             connectWebSocket();
             updateOrder();
