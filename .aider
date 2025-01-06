@@ -1,11 +1,6 @@
 /drop
 /add       README.md
-/add       assets\ui-prompt-manager.png
-/add       assets\ui-result-page.png
-/add       data\models.md
-/add       data\profiles.md
 /add       data\prompts.json
-/add       data\prompts.md
 /add       data\results.json
 /add       decision.md
 /add       go.mod

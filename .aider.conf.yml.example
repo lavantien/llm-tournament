@@ -14,9 +14,9 @@ api-key:
   - openrouter=
   - xai=
 architect: false
-# model: mistral/mistral-large-latest
+model: mistral/mistral-large-latest
 # model: gemini/gemini-exp-1206
-model: gemini/gemini-2.0-flash-exp
+# model: gemini/gemini-2.0-flash-exp
 # model: deepseek/deepseek-chat
 # model: openrouter/google/gemini-exp-1206:free
 # model: openrouter/google/gemini-2.0-flash-exp:free
