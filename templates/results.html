@@ -11,42 +11,49 @@
       function connectWebSocket() {
         socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-        socket.onopen = function(e) {
+        socket.onopen = function (e) {
           console.log("[open] Connection established");
           connectionRetries = 0; // Reset retries on successful connection
-          document.getElementById('connection-status').textContent = 'Connected';
-          document.getElementById('connection-status').style.color = 'green';
+          document.getElementById("connection-status").textContent =
+            "Connected";
+          document.getElementById("connection-status").style.color = "green";
         };
 
-        socket.onmessage = function(event) {
+        socket.onmessage = function (event) {
           console.log(`[message] Data received from server: ${event.data}`);
           const payload = JSON.parse(event.data);
           updateResults(payload);
         };
 
-        socket.onclose = function(event) {
+        socket.onclose = function (event) {
           if (event.wasClean) {
-            console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            console.log(
+              `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
+            );
           } else {
-            console.log('[close] Connection died');
+            console.log("[close] Connection died");
           }
-          document.getElementById('connection-status').textContent = 'Disconnected';
-          document.getElementById('connection-status').style.color = 'red';
+          document.getElementById("connection-status").textContent =
+            "Disconnected";
+          document.getElementById("connection-status").style.color = "red";
           if (connectionRetries < maxRetries) {
-              connectionRetries++;
-              console.log(`Attempting to reconnect (${connectionRetries}/${maxRetries})...`);
-              setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
+            connectionRetries++;
+            console.log(
+              `Attempting to reconnect (${connectionRetries}/${maxRetries})...`,
+            );
+            setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
           } else {
-              document.getElementById('connection-status').textContent = 'Connection failed';
-              document.getElementById('connection-status').style.color = 'red';
-              console.log('Max retries reached. Connection failed.');
+            document.getElementById("connection-status").textContent =
+              "Connection failed";
+            document.getElementById("connection-status").style.color = "red";
+            console.log("Max retries reached. Connection failed.");
           }
         };
 
-        socket.onerror = function(error) {
+        socket.onerror = function (error) {
           console.log(`[error] ${error.message}`);
-          document.getElementById('connection-status').textContent = 'Error';
-          document.getElementById('connection-status').style.color = 'red';
+          document.getElementById("connection-status").textContent = "Error";
+          document.getElementById("connection-status").style.color = "red";
         };
       }
 
@@ -56,14 +63,14 @@
         const passPercentages = payload.PassPercentages;
         const totalScores = payload.TotalScores;
 
-        const tbody = document.querySelector('table tbody');
-        tbody.innerHTML = ''; // Clear existing rows
+        const tbody = document.querySelector("table tbody");
+        tbody.innerHTML = ""; // Clear existing rows
 
         let i = 0;
-        models.forEach(model => {
-            i++;
-            const row = document.createElement('tr');
-            row.innerHTML = `
+        models.forEach((model) => {
+          i++;
+          const row = document.createElement("tr");
+          row.innerHTML = `
                 <td>${i}</td>
                 <td class="model-actions">
                     <div class="prompt-actions">
@@ -72,15 +79,19 @@
                     </div>
                 </td>
                 <td>${model}</td>
-                ${results[model].map((pass, index) => `
+                ${results[model]
+                  .map(
+                    (pass, index) => `
                     <td>
                         <button
                             class="result-button"
-                            style="background-color: ${pass ? 'green' : 'red'}"
+                            style="background-color: ${pass ? "green" : "red"}"
                             onclick="updateResult('${model}', ${index}, ${!pass}, this)"
                         ></button>
                     </td>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
                 <td>
                     ${totalScores[model]}
                     <div class="progress-bar-container">
@@ -88,7 +99,7 @@
                     </div>
                 </td>
             `;
-            tbody.appendChild(row);
+          tbody.appendChild(row);
         });
       }
 
@@ -122,7 +133,7 @@
       }
 
       function updateButtonColor(button, pass) {
-        button.style.backgroundColor = pass ? 'green' : 'red';
+        button.style.backgroundColor = pass ? "green" : "red";
       }
 
       window.onload = connectWebSocket;
@@ -130,13 +141,17 @@
     <style>
       .filter-container {
         float: left;
-        margin-right: 20px;
+        min-width: 290px;
       }
+
       .title-container {
         display: inline-block;
         text-align: center;
-        width: calc(100% - 220px); /* Adjust width to accommodate the filter container */
+        width: calc(100% - 290px);
+        /* Adjust width to accommodate the filter container */
+        padding-right: 290px;
       }
+
       .title-row {
         display: flex;
         align-items: center;
@@ -162,7 +177,7 @@
         />
         <input type="submit" value="Add" />
       </form>
-      <span id="connection-status" style="margin-left: 10px;"></span>
+      <span id="connection-status" style="margin-left: 10px"></span>
     </div>
     <div class="title-row">
       <div class="filter-container">
@@ -194,16 +209,19 @@
         </tr>
       </thead>
       <tbody>
-        {{$i := 0}}
-        {{range $model, $results := .Results}}
-        {{if or (eq $.ModelFilter "") (eq $.ModelFilter $model)}}
+        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
+        $.ModelFilter "") (eq $.ModelFilter $model)}}
         <tr>
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
-              <div class="prompt-actions">
-                  <a class="edit-button" href="/edit_model?model={{$model}}">Edit</a>
-                  <a class="delete-button" href="/delete_model?model={{$model}}">Delete</a>
-              </div>
+            <div class="prompt-actions">
+              <a class="edit-button" href="/edit_model?model={{$model}}"
+                >Edit</a
+              >
+              <a class="delete-button" href="/delete_model?model={{$model}}"
+                >Delete</a
+              >
+            </div>
           </td>
           <td>{{$model}}</td>
           {{range $index, $pass := index $.Results $model}}
@@ -225,8 +243,7 @@
             </div>
           </td>
         </tr>
-        {{end}}
-        {{end}}
+        {{end}} {{end}}
       </tbody>
     </table>
     <div class="sticky-footer">
