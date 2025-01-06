@@ -7,7 +7,9 @@
 <body>
     <h1>Import Error</h1>
     <p>There was an error importing the file. Please check the file format and try again.</p>
-    <input type="button" value="Go Back" onclick="goBack()">
+    <form action="/prompts" method="get" style="display: inline;">
+        <input type="submit" value="Go Back">
+    </form>
 
     <script>
         function goBack() {
