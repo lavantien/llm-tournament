@@ -59,7 +59,7 @@
     </div>
     <ul id="prompt-list">
       {{range $index, $prompt := .Prompts}}
-      {{if or (eq $.OrderFilter "") (eq (string $.OrderFilter) (string (inc $index)))}}
+      {{if or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
         <div class="markdown-content">{{$prompt | markdown}}</div>
