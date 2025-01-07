@@ -65,7 +65,6 @@
 
         const tbody = document.querySelector("table tbody");
         tbody.innerHTML = ""; // Clear existing rows
-
         let i = 0;
         models.forEach((model) => {
           i++;
@@ -183,7 +182,7 @@
           <th>Actions</th>
           <th>Model</th>
           {{range $index := .PromptIndices}}
-          <th>Prompt {{$index}}</th>
+          <th>{{$index}}</th>
           {{end}}
           <th>Total</th>
         </tr>
@@ -204,7 +203,7 @@
             </div>
           </td>
           <td>{{$model}}</td>
-          {{range $index, $pass := index $.Results $model}}
+          {{range $index, $pass := $results}}
           <td>
             <button
               class="result-button"
