@@ -58,7 +58,7 @@
       </div>
     </div>
     <ul id="prompt-list">
-      {{range $index, $prompt := .}}
+      {{range $index, $prompt := .Prompts}}
       {{if or (eq $.OrderFilter "") (eq $.OrderFilter (inc $index))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
@@ -153,13 +153,13 @@
           li.draggable = true;
           li.setAttribute("data-index", index);
           li.innerHTML = `
-                    <h3>${index + 1}.&nbsp;&nbsp;&nbsp;</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
-                    <div class="prompt-actions">
-                        <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
-                        <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
-                        <a class="delete-button" href="/delete_prompt?index=${index}">Delete</a>
-                    </div>
-                `;
+                <h3>${index + 1}.&nbsp;&nbsp;&nbsp;</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
+                <div class="prompt-actions">
+                    <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
+                    <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
+                    <a class="delete-button" href="/delete_prompt?index=${index}">Delete</a>
+                </div>
+            `;
           promptList.appendChild(li);
         });
         updateOrder();
