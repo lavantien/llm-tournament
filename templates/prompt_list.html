@@ -1,164 +1,203 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Prompt List</title>
-    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="stylesheet" href="/templates/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
+
   <body>
     {{template "nav"}}
     <div class="sticky-header">
-        <div style="flex-grow: 1; text-align: left;">
-            <h2>Add Prompt</h2>
-        </div>
-        <div style="display: flex; align-items: center; justify-content: center; flex-grow: 1;">
-            <form action="/add_prompt" method="post" style="display: flex; align-items: center; margin-right: 5px;">
-                <textarea name="prompt" placeholder="Enter new prompt" style="margin-right: 5px;"></textarea>
-                <input type="submit" value="Add" />
-            </form>
-        </div>
-        <div style="flex-grow: 1; text-align: right;">
-            <form action="/update_prompts_order" method="post">
-                <input type="hidden" name="order" id="prompts-order-input" value="">
-                <input type="submit" value="Confirm Order" />
-            </form>
-        </div>
+      <div style="flex-grow: 1; text-align: left">
+        <h2>Add Prompt</h2>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-grow: 1;
+        "
+      >
+        <form
+          action="/add_prompt"
+          method="post"
+          style="display: flex; align-items: center; margin-right: 5px"
+        >
+          <textarea
+            name="prompt"
+            placeholder="Enter new prompt"
+            style="margin-right: 5px"
+          ></textarea>
+          <input type="submit" value="Add" />
+        </form>
+      </div>
+      <div style="flex-grow: 1; text-align: right">
+        <form action="/update_prompts_order" method="post">
+          <input type="hidden" name="order" id="prompts-order-input" value="" />
+          <input type="submit" value="Confirm Order" />
+        </form>
+      </div>
     </div>
     <h1>Prompt List</h1>
     <ul id="prompt-list">
       {{range $index, $prompt := .}}
       <li draggable="true" data-index="{{$index}}">
-        <h3>{{inc $index}}.&nbsp;</h3> <div class="markdown-content">{{$prompt | markdown}}</div>
+        <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
+        <div class="markdown-content">{{$prompt | markdown}}</div>
+        &nbsp;&nbsp;
         <div class="prompt-actions">
-            <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
-            <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-            <a class="delete-button" href="/delete_prompt?index={{$index}}">Delete</a>
+          <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">
+            Copy
+          </button>
+          <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
+          <a class="delete-button" href="/delete_prompt?index={{$index}}"
+            >Delete</a
+          >
         </div>
       </li>
       {{end}}
     </ul>
     <div class="sticky-footer">
-        <h2>Manage Prompts</h2>
-        <div style="display: flex; align-items: center">
-            <form action="/reset_prompts" method="get" style="margin-right: 5px;">
-                <input type="submit" value="Reset Prompts" />
-            </form>
-            <form action="/export_prompts" method="post" style="margin-right: 5px;">
-                <input type="submit" value="Export Prompts" />
-            </form>
-            <form action="/import_prompts" method="post" enctype="multipart/form-data" style="display: flex; align-items: center;">
-                <input type="file" name="prompts_file" style="margin-right: 5px;"/>
-                <input type="submit" value="Import Prompts" />
-            </form>
-        </div>
+      <h2>Manage Prompts</h2>
+      <div style="display: flex; align-items: center">
+        <form action="/reset_prompts" method="get" style="margin-right: 5px">
+          <input type="submit" value="Reset Prompts" />
+        </form>
+        <form action="/export_prompts" method="post" style="margin-right: 5px">
+          <input type="submit" value="Export Prompts" />
+        </form>
+        <form
+          action="/import_prompts"
+          method="post"
+          enctype="multipart/form-data"
+          style="display: flex; align-items: center"
+        >
+          <input type="file" name="prompts_file" style="margin-right: 5px" />
+          <input type="submit" value="Import Prompts" />
+        </form>
+      </div>
     </div>
     <script>
-        function copyPrompt(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                console.log('Async: Copying to clipboard was successful!');
-            }, function(err) {
-                console.error('Async: Could not copy text: ', err);
-            });
-        }
+      function copyPrompt(text) {
+        navigator.clipboard.writeText(text).then(
+          function () {
+            console.log("Async: Copying to clipboard was successful!");
+          },
+          function (err) {
+            console.error("Async: Could not copy text: ", err);
+          },
+        );
+      }
 
-        const promptList = document.getElementById('prompt-list');
-        let draggedItem = null;
-        let socket;
+      const promptList = document.getElementById("prompt-list");
+      let draggedItem = null;
+      let socket;
 
-        function connectWebSocket() {
-            socket = new WebSocket("ws://" + window.location.host + "/ws");
+      function connectWebSocket() {
+        socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-            socket.onopen = function(e) {
-                console.log("[open] Connection established");
-            };
+        socket.onopen = function (e) {
+          console.log("[open] Connection established");
+        };
 
-            socket.onmessage = function(event) {
-                console.log(`[message] Data received from server: ${event.data}`);
-                const payload = JSON.parse(event.data);
-                if (payload.Prompts) {
-                    updatePrompts(payload.Prompts);
-                }
-            };
+        socket.onmessage = function (event) {
+          console.log(`[message] Data received from server: ${event.data}`);
+          const payload = JSON.parse(event.data);
+          if (payload.Prompts) {
+            updatePrompts(payload.Prompts);
+          }
+        };
 
-            socket.onclose = function(event) {
-                if (event.wasClean) {
-                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-                } else {
-                    console.log('[close] Connection died');
-                }
-                setTimeout(connectWebSocket, 1000);
-            };
+        socket.onclose = function (event) {
+          if (event.wasClean) {
+            console.log(
+              `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
+            );
+          } else {
+            console.log("[close] Connection died");
+          }
+          setTimeout(connectWebSocket, 1000);
+        };
 
-            socket.onerror = function(error) {
-                console.log(`[error] ${error.message}`);
-            };
-        }
+        socket.onerror = function (error) {
+          console.log(`[error] ${error.message}`);
+        };
+      }
 
-        function updatePrompts(prompts) {
-            const promptList = document.getElementById('prompt-list');
-            promptList.innerHTML = '';
-            prompts.forEach((prompt, index) => {
-                const li = document.createElement('li');
-                li.draggable = true;
-                li.setAttribute('data-index', index);
-                li.innerHTML = `
-                    <h3>${index + 1}.&nbsp;</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
+      function updatePrompts(prompts) {
+        const promptList = document.getElementById("prompt-list");
+        promptList.innerHTML = "";
+        prompts.forEach((prompt, index) => {
+          const li = document.createElement("li");
+          li.draggable = true;
+          li.setAttribute("data-index", index);
+          li.innerHTML = `
+                    <h3>${index + 1}.&nbsp;&nbsp;&nbsp;</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
                     <div class="prompt-actions">
                         <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                         <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
                         <a class="delete-button" href="/delete_prompt?index=${index}">Delete</a>
                     </div>
                 `;
-                promptList.appendChild(li);
-            });
-            updateOrder();
-        }
-
-        promptList.addEventListener('dragstart', (e) => {
-            draggedItem = e.target;
-            e.dataTransfer.setData('text/plain', ''); // Required for Firefox
+          promptList.appendChild(li);
         });
+        updateOrder();
+      }
 
-        promptList.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
+      promptList.addEventListener("dragstart", (e) => {
+        draggedItem = e.target;
+        e.dataTransfer.setData("text/plain", ""); // Required for Firefox
+      });
 
-        promptList.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (e.target.tagName === 'LI' && e.target !== draggedItem) {
-                const dropTarget = e.target;
-                const parent = dropTarget.parentNode;
-                const draggedIndex = parseInt(draggedItem.getAttribute('data-index'));
-                const dropIndex = parseInt(dropTarget.getAttribute('data-index'));
+      promptList.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
 
-                if (draggedIndex < dropIndex) {
-                    parent.insertBefore(draggedItem, dropTarget.nextSibling);
-                } else {
-                    parent.insertBefore(draggedItem, dropTarget);
-                }
-                updateOrder();
-                sendOrderUpdate();
-            }
-        });
+      promptList.addEventListener("drop", (e) => {
+        e.preventDefault();
+        if (e.target.tagName === "LI" && e.target !== draggedItem) {
+          const dropTarget = e.target;
+          const parent = dropTarget.parentNode;
+          const draggedIndex = parseInt(draggedItem.getAttribute("data-index"));
+          const dropIndex = parseInt(dropTarget.getAttribute("data-index"));
 
-        function updateOrder() {
-            const items = promptList.querySelectorAll('li');
-            const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
-            document.getElementById('prompts-order-input').value = JSON.stringify(order);
+          if (draggedIndex < dropIndex) {
+            parent.insertBefore(draggedItem, dropTarget.nextSibling);
+          } else {
+            parent.insertBefore(draggedItem, dropTarget);
+          }
+          updateOrder();
+          sendOrderUpdate();
         }
+      });
 
-        function sendOrderUpdate() {
-            const items = promptList.querySelectorAll('li');
-            const order = Array.from(items).map(item => parseInt(item.getAttribute('data-index')));
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: 'update_prompts_order', order: order }));
-            }
+      function updateOrder() {
+        const items = promptList.querySelectorAll("li");
+        const order = Array.from(items).map((item) =>
+          parseInt(item.getAttribute("data-index")),
+        );
+        document.getElementById("prompts-order-input").value =
+          JSON.stringify(order);
+      }
+
+      function sendOrderUpdate() {
+        const items = promptList.querySelectorAll("li");
+        const order = Array.from(items).map((item) =>
+          parseInt(item.getAttribute("data-index")),
+        );
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(
+            JSON.stringify({ type: "update_prompts_order", order: order }),
+          );
         }
+      }
 
-        window.onload = () => {
-            connectWebSocket();
-            updateOrder();
-        };
+      window.onload = () => {
+        connectWebSocket();
+        updateOrder();
+      };
     </script>
   </body>
 </html>
