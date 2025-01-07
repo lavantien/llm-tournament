@@ -64,7 +64,7 @@ func TestPromptsCRUD(t *testing.T) {
 	// Test Update (Edit)
 	index := 0
 	editedPrompt := "Edited prompt"
-	resp, err = http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {string(rune(index))}, "prompt": {editedPrompt}})
+	resp, err = http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {strconv.Itoa(index)}, "prompt": {editedPrompt}})
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestPromptsCRUD(t *testing.T) {
 	}
 
 	// Test Delete
-	resp, err = http.PostForm(ts.URL+"/delete_prompt", url.Values{"index": {string(rune(index))}})
+	resp, err = http.PostForm(ts.URL+"/delete_prompt", url.Values{"index": {strconv.Itoa(index)}})
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestDeletePromptHandler(t *testing.T) {
 	index := 0
 
 	// Send a GET request to delete the prompt
-	req, err := http.NewRequest("GET", ts.URL+"/delete_prompt?index="+string(rune(index)), nil)
+	req, err := http.NewRequest("GET", ts.URL+"/delete_prompt?index="+strconv.Itoa(index), nil)
 	if err != nil {
 		t.Fatalf("Failed to create GET request: %v", err)
 	}
@@ -150,7 +150,7 @@ func TestEditPromptHandler(t *testing.T) {
 
 	// Send a POST request to edit the prompt
 	editedPrompt := "Edited prompt"
-	resp, err := http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {string(rune(index))}, "prompt": {editedPrompt}})
+	resp, err := http.PostForm(ts.URL+"/edit_prompt", url.Values{"index": {strconv.Itoa(index)}, "prompt": {editedPrompt}})
 	if err != nil {
 		t.Fatalf("Failed to send POST request: %v", err)
 	}
@@ -189,7 +189,7 @@ func TestUpdateResultHandler(t *testing.T) {
 	// Send a POST request to update the result
 	resp, err := http.PostForm(ts.URL+"/update_result", url.Values{
 		"model":       {model},
-		"promptIndex": {string(rune(promptIndex))},
+		"promptIndex": {strconv.Itoa(promptIndex)},
 		"pass":        {strconv.FormatBool(pass)},
 	})
 	if err != nil {
@@ -429,7 +429,6 @@ func TestResultsHandlerSorting(t *testing.T) {
 	// Check if the models are sorted correctly
 	expectedOrder := []string{"Model B", "Model A", "Model C"}
 	actualOrder := getModelsOrderFromHTML(resp)
-
 	if len(actualOrder) != len(expectedOrder) {
 		t.Fatalf("Expected %d models, got %d", len(expectedOrder), len(actualOrder))
 	}
@@ -515,4 +514,59 @@ func TestImportErrorHandling(t *testing.T) {
 	if location.Path != "/import_error" {
 		t.Errorf("Expected to be redirected to /import_error, got %s", location.Path)
 	}
+}
+
+func TestPromptListHandler(t *testing.T) {
+	// Set up a test server
+	ts := httptest.NewServer(http.HandlerFunc(router))
+	defer ts.Close()
+
+	// Create test prompts
+	initialPrompts := []Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}, {Text: "Prompt 3"}}
+	writePrompts(initialPrompts)
+
+	// Test without filter
+	resp, err := http.Get(ts.URL + "/prompts")
+	if err != nil {
+		t.Fatalf("Failed to send GET request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	// Check if all prompts are displayed
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Failed to read response body: %v", err)
+	}
+	if !strings.Contains(string(body), "Prompt 1") || !strings.Contains(string(body), "Prompt 2") || !strings.Contains(string(body), "Prompt 3") {
+		t.Errorf("Expected all prompts to be displayed")
+	}
+
+	// Test with filter
+	resp, err = http.Get(ts.URL + "/prompts?order_filter=2")
+	if err != nil {
+		t.Fatalf("Failed to send GET request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	// Check if only the filtered prompt is displayed
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Failed to read response body: %v", err)
+	}
+	if !strings.Contains(string(body), "Prompt 2") || strings.Contains(string(body), "Prompt 1") || strings.Contains(string(body), "Prompt 3") {
+		t.Errorf("Expected only 'Prompt 2' to be displayed")
+	}
+
+	// Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }

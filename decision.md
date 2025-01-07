@@ -13,17 +13,8 @@
 - Added a form to `results.html` to add new models.
 - Created `addModelHandler` in `main.go` to handle adding new models.
 - Added a test case for `addModelHandler` in `test_main.go`.
-- Modified `updateResultHandler` to correctly update the `results.json` file.
-- Added tests for `editPromptHandler` to ensure it's working as expected.
-- Implemented the POST request handling in `editPromptHandler` to update prompts.
-- Implemented the POST request handling in `deletePromptHandler` to delete prompts.
-- Implemented the POST request handling in `editPromptHandler` to update prompts.
+- Modified `updateResultHandler` to handle new models and update existing results.
 - Added a test case for `deletePromptHandler` in `test_main.go`.
-- Implemented the POST request handling in `deletePromptHandler` to delete prompts.
-- Implemented the functionality to persist the changes made in `updateResultHandler` to the `results.json` file.
-- Added a test case for `addPromptHandler` in `test_main.go`.
-- Enhanced `deletePromptHandler` to handle the POST request and update the prompt in the `prompts.json` file.
-- Modified `updateResultHandler` to handle new prompts and update existing results.
 - Implemented `resetResultsHandler` to reset the results for all models.
 - Added a button to `results.html` to trigger the `resetResultsHandler`.
 - Implemented `exportResultsHandler` to export the results to a CSV file.
@@ -51,4 +42,35 @@
 - Passed the `markdown` function to the template in the `promptListHandler` function.
 - Updated `editPromptHandler` to correctly pass `Prompt` and `Index` variables to the template.
 - Defined the `markdown` function in `main.go` to render Markdown content.
-- Passed the `markdown` function to the template in the `editPromptHandler` function.
+- Passed the `markdown` function to the template in the `promptListHandler` function.
+- Added a test case to `test_main.go` to ensure the models are sorted correctly by score.
+- Removed duplicate test function `TestDeletePromptHandler` from `test_main.go`.
+- Added a form to `results.html` to add new models.
+- Created `addModelHandler` in `main.go` to handle adding new models.
+- Added a test case for `addModelHandler` in `test_main.go`.
+- Modified `updateResultHandler` to handle new models and update existing results.
+- Added a test case for `deletePromptHandler` in `test_main.go`.
+- Implemented `resetResultsHandler` to reset the results for all models.
+- Added a button to `results.html` to trigger the `resetResultsHandler`.
+- Implemented `exportResultsHandler` to export the results to a CSV file.
+- Added a button to `results.html` to trigger the `exportResultsHandler`.
+- Implemented `importResultsHandler` to import the results from a CSV file.
+- Added a button to `results.html` to trigger the `importResultsHandler`.
+- Added visual indicators for pass/fail in `results.html`.
+- Improved the styling of the results table in `results.html`.
+- Added a loading indicator when updating results in `results.html`.
+- Added import and export buttons to `templates/prompt_list.html`.
+- Created handlers `exportPromptsHandler` and `importPromptsHandler` in `main.go`.
+- Created a new template `templates/import_prompts.html` for the import functionality.
+- Added tests for the new handlers in `test_main.go`.
+- Added a progress bar to the results page in `templates/results.html`.
+- Updated the `resultsHandler` in `main.go` to calculate the pass percentage for each model and pass it to the template.
+- Modified `templates/results.html` to include a dropdown menu to select a model for filtering.
+- Updated the `resultsHandler` in `main.go` to handle the filtering logic and pass the filtered results to the template.
+- Created `templates/import_error.html` to handle import errors with a back button.
+- Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if there is an issue with the import.
+- Updated `importPromptsHandler` and `importResultsHandler` in `main.go` to redirect to the import error page if no file is provided.
+- Modified the `resultsHandler` to distinguish between the "Reset Results" and "Refresh Results" actions to prevent refreshing results when resetting.
+- Updated the `results.html` template to ensure the form actions are correctly set for the "Reset Results" and "Refresh Results" buttons.
+- Added a confirmation page for the refresh results button.
+- Added similar filter (as in the results page's filter by model) to the prompts list page that filter out only the ordering (numbering) of the prompts (1, 2, 3, ...).
