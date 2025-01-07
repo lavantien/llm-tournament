@@ -2,29 +2,32 @@
 
 A simple and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Sleek UI/UX with zero bloat.
 
-## Purpose
+## Overview
 
-This application is designed to facilitate the evaluation of Large Language Models (LLMs) by allowing users to:
+This application simplifies the evaluation of Large Language Models (LLMs) with a user-friendly interface and real-time capabilities. It allows for comprehensive prompt management, model evaluation, and result tracking, all within a responsive and intuitive design.
 
-- Create and manage a list of prompts.
-- Evaluate LLMs against these prompts.
-- Track the performance of each LLM.
-- Export and import prompts and results.
-- Reorder prompts using drag and drop.
+### Key Features
 
-## Features
-
-- **Real-time Updates**: Uses WebSockets for instant updates on the results page.
-- **Dynamic UI**: The user interface is designed to be responsive and intuitive.
-- **Prompt Management**: Allows users to add, edit, delete, and reorder prompts.
-  - **Multiline Input**: Supports multiline input for prompts.
-  - **Markdown Rendering**: Supports Markdown rendering for prompts.
-- **Model Evaluation**: Provides a simple way to track pass/fail results for each model against each prompt.
-- **Result Tracking**: Displays total scores and pass percentages for each model.
-- **Data Persistence**: Uses JSON files to store prompts and results.
-- **Import/Export**: Supports importing and exporting prompts and results as CSV files.
-- **Filtering**: Allows filtering of results by model.
-- **Drag and Drop**: Enables reordering of prompts using drag and drop functionality.
+-   **Real-time Updates**: Leverages WebSockets to provide instant updates on the results page, ensuring users have the latest data at their fingertips.
+-   **Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
+-   **Prompt Management**:
+    -   **Add, Edit, Delete**: Full control over prompt creation and management.
+    -   **Multiline Input**: Supports multiline input for detailed and complex prompts.
+    -   **Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
+    -   **Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
+-   **Model Evaluation**:
+    -   **Pass/Fail Tracking**: Efficiently tracks pass/fail results for each model against each prompt.
+    -   **Total Scores and Pass Percentages**: Displays comprehensive performance metrics for each model.
+-   **Data Persistence**: Utilizes JSON files for robust storage of prompts and results.
+-   **Import/Export**:
+    -   **Prompts and Results**: Supports importing and exporting of prompts and results in CSV format for easy data management.
+-   **Filtering**:
+    -   **Model Filtering**: Allows filtering of results by model to streamline analysis.
+-   **Model Management**:
+    -   **Add, Edit, Delete**: Full control over model creation and management.
+-   **Result Management**:
+    -   **Reset Results**: Allows users to reset all results.
+    -   **Refresh Results**: Allows users to refresh all results.
 
 ## Stack
 
