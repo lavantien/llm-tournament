@@ -59,7 +59,7 @@
     </div>
     <ul id="prompt-list">
       {{range $index, $prompt := .Prompts}}
-      {{if or (eq $.OrderFilter "") (eq $.OrderFilter (inc $index))}}
+      {{if or (eq $.OrderFilter "") (eq (string $.OrderFilter) (string (inc $index)))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
         <div class="markdown-content">{{$prompt | markdown}}</div>
@@ -69,9 +69,9 @@
             Copy
           </button>
           <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-          <a class="delete-button" href="/delete_prompt?index={{$index}}"
-            >Delete</a
-          >
+          <a class="delete-button" href="/delete_prompt?index={{$index}}">
+            Delete
+          </a>
         </div>
       </li>
       {{end}}
