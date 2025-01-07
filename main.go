@@ -722,15 +722,26 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		filteredPrompts = append(filteredPrompts, prompts[order-1])
-	} else {
-		filteredPrompts = prompts
 	}
-	promptTexts := make([]string, len(filteredPrompts))
-	promptIndices := make([]int, len(filteredPrompts))
-	for i, prompt := range filteredPrompts {
+
+	orderFilterInt := 0
+	if orderFilter != "" {
+		var err error
+		orderFilterInt, err = strconv.Atoi(orderFilter)
+		if err != nil {
+			log.Printf("Invalid order filter: %v", err)
+			http.Error(w, "Invalid order filter", http.StatusBadRequest)
+			return
+		}
+	}
+
+	promptTexts := make([]string, len(prompts))
+	promptIndices := make([]int, len(prompts))
+	for i, prompt := range prompts {
 		promptTexts[i] = prompt.Text
 		promptIndices[i] = i + 1
 	}
+
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
@@ -744,6 +755,7 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 			return strconv.Itoa(i)
 		},
 	}
+
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
@@ -755,14 +767,15 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing template", http.StatusInternalServerError)
 		return
 	}
+
 	err = t.Execute(w, struct {
-		Prompts      []string
+		Prompts       []string
 		PromptIndices []int
-		OrderFilter  string
+		OrderFilter   int
 	}{
-		Prompts:      promptTexts,
+		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
-		OrderFilter:  orderFilter,
+		OrderFilter:   orderFilterInt,
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
