@@ -28,7 +28,7 @@
     <ul id="prompt-list">
       {{range $index, $prompt := .}}
       <li draggable="true" data-index="{{$index}}">
-        {{inc $index}}. <div class="markdown-content">{{$prompt | markdown}}</div>
+        <h3>{{inc $index}}.</h3> <div class="markdown-content">{{$prompt | markdown}}</div>
         <div class="prompt-actions">
             <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">Copy</button>
             <a class="edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
@@ -102,7 +102,7 @@
                 li.draggable = true;
                 li.setAttribute('data-index', index);
                 li.innerHTML = `
-                    ${index + 1}. <div class="markdown-content">${marked.parse(prompt)}</div>
+                    <h3>${index + 1}.</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
                     <div class="prompt-actions">
                         <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                         <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
