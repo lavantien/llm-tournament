@@ -346,7 +346,11 @@ func editModelHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tmpl.Execute(w, map[string]string{"Model": modelName})
+	err = tmpl.Execute(w, map[string]string{"Model": modelName})
+	if err != nil {
+		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle delete model
@@ -735,6 +739,9 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 			unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
 			html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
 			return template.HTML(html)
+		},
+		"string": func(i int) string {
+			return strconv.Itoa(i)
 		},
 	}
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
