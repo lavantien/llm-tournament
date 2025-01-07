@@ -301,15 +301,15 @@ body {
 
     .filter-container {
         float: left;
-        min-width: 300px;
+        min-width: 512px;
     }
 
     .title-container {
         display: inline-block;
         text-align: center;
-        width: calc(100% - 300px);
+        width: calc(100% - 512px);
         /* Adjust width to accommodate the filter container */
-        padding-right: 300px;
+        padding-right: 512px;
     }
 
     .title-row {
