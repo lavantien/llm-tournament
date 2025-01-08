@@ -1,1 +1,2 @@
 - Updated `promptListHandler` in `main.go` to convert `OrderFilter` to an integer before comparison to fix type mismatch error.
+- Removed unused `filteredPrompts` variable and related code from `promptListHandler` in `main.go`.

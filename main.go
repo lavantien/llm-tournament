@@ -714,16 +714,6 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling prompt list page")
 	prompts := readPrompts()
 	orderFilter := r.FormValue("order_filter")
-	var filteredPrompts []Prompt
-	if orderFilter != "" {
-		order, err := strconv.Atoi(orderFilter)
-		if err != nil || order < 1 || order > len(prompts) {
-			log.Printf("Invalid order filter: %v", err)
-			http.Error(w, "Invalid order filter", http.StatusBadRequest)
-			return
-		}
-		filteredPrompts = append(filteredPrompts, prompts[order-1])
-	}
 
 	orderFilterInt := 0
 	if orderFilter != "" {
