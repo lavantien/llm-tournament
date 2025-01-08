@@ -299,6 +299,16 @@ body {
         }
     }
 
+    .nav-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #bb86fc;
+    }
+
+    .nav-logo img {
+        height: 50px;
+    }
+
     .filter-container {
         float: left;
         min-width: 512px;
