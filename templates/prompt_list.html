@@ -63,7 +63,7 @@
       {{if or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
-        <div class="markdown-content">{{$prompt | markdown}}</div>
+        <div class="markdown-content">{{$prompt}}</div>
         &nbsp;&nbsp;
         <div class="prompt-actions">
           <button class="copy-button" onclick="copyPrompt('{{$prompt}}')">
@@ -154,7 +154,7 @@
           li.draggable = true;
           li.setAttribute("data-index", index);
           li.innerHTML = `
-                <h3>${index + 1}.&nbsp;&nbsp;&nbsp;</h3> <div class="markdown-content">${marked.parse(prompt)}</div>
+                <h3>${index + 1}.&nbsp;&nbsp;&nbsp;</h3> <div class="markdown-content">${prompt}</div>
                 <div class="prompt-actions">
                     <button class="copy-button" onclick="copyPrompt('${prompt}')">Copy</button>
                     <a class="edit-button" href="/edit_prompt?index=${index}">Edit</a>
