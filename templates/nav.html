@@ -1,13 +1,10 @@
 {{define "nav"}} <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
-  <div class="nav-title">
-    <h1>LLM Tournament</h1>
-  </div>
-  <div class="nav-links">
-    <form action="/results" method="get" style="display: inline-block; margin-bottom: 0; margin-right: 10px;">
-      <input
-        type="submit"
-        value="Results"
-        style="
+    <div class="nav-title">
+        <h1>LLM Tournament</h1>
+    </div>
+    <div class="nav-links">
+        <form action="/results" method="get" style="display: inline-block; margin-bottom: 0; margin-right: 10px;">
+            <input type="submit" value="Results" style="
           padding: 10px 15px;
           border: none;
           border-radius: 5px;
@@ -16,13 +13,10 @@
           cursor: pointer;
           transition: background-color 0.3s ease;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        "
-      />
-    </form>
-    <form action="/prompts" method="get" style="display: inline-block; margin-bottom: 0;">
-      <input type="submit"
-        value="Prompt"
-        style="
+        " />
+        </form>
+        <form action="/prompts" method="get" style="display: inline-block; margin-bottom: 0;">
+            <input type="submit" value="Prompt" style="
           padding: 10px 15px;
           border: none;
           border-radius: 5px;
@@ -31,12 +25,11 @@
           cursor: pointer;
           transition: background-color 0.3s ease;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        "
-      />
-    </form>
-  </div>
-  <div class="nav-logo">
-    <img src="/assets/logo.webp" alt="Logo" style="height: 50px" />
-  </div>
+        " />
+        </form>
+    </div>
+    <div class="nav-logo">
+        <img src="../assets/logo.webp" alt="Logo" style="height: 50px" />
+    </div>
 </nav>
 {{end}}
