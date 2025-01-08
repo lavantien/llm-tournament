@@ -4,7 +4,7 @@
 
 (No need to include in the dataset)
 
-- 38 prompts total so maximum 3800 elo.
+- 40 prompts total so maximum 4000 elo.
 
 ---
 
@@ -1905,6 +1905,210 @@ Freestyle.
 
 #### Content
 
+**Resume Optimization Request**
+
+##### Task Description
+
+Create a single-page ATS-optimized senior backend engineer resume in LaTeX format named `resume.tex`, that maximizes job application success by aligning the candidate's experience with the target role's requirements and tech stack.
+
+##### Input Components
+
+###### 1. Target Job Requirements
+
+- Position: Senior Backend Engineer
+- Requirements:
+
+  Bachelor’s or master’s degree in computer science, Engineering, or a related field.
+  Minimum of 5 years of professional backend development experience, with a demonstrated trajectory of increasing responsibility.
+  Strong background in Golang and expert-level experience with SQL and database design (Postgres, SAP Hana).
+  Proven leadership skills with the ability to manage, mentor, and grow a team of software engineers.
+  Robust understanding of system design principles and a track record of delivering scalable, high-quality software.
+  Effective communication skills, capable of liaising between technical teams and non-technical stakeholders.
+  Experience with Kubernetes, Docker, and the implementation of CI/CD pipelines is essential.
+
+- Tech Stack:
+
+  Programming Language: Golang
+  Databases: PostgreSQL
+  Cache and Storage: Redis
+  Search Engine: Elasticsearch
+  Containerization: Docker, Kubernetes
+  Continuous Integration/Continuous Deployment: Familiarity with CI/CD tools and pipelines
+  Version Control: Git
+  Monitoring Tools: Knowledge of system monitoring tools (e.g., Datadog, Prometheus, Grafana)
+  Cloud Services: Experience with cloud service providers (e.g., AWS, GCP, Azure)
+  API Design: RESTful API, GraphQL, GRPC
+  Microservices Architecture: Experience with microservices design and deployment
+  React and Node JS experience will be an added advantage.
+
+###### 2. Candidate's Current Profile
+
+Cariyaputta
+Citizenship: Kinsman of the Sun
+
+(WhatsApp) +1000000000 | temp@gmail.com | linkedin.com/in/lavantien | github.com/lavantien
+
+Introduction
+I’m a software engineer with SDLC knowledge and industry experience on building, maintaining, and securing robust distributed
+systems and third-party integration using Go, JavaScript, Rust, Java, REST APIs, GRPC, GraphQL, and WebSockets. I’m also
+familiar with implementing CI/CD pipelines and observability using Cloud Native and AWS tools.
+
+Technical Skills
+Main Techs: Go, JavaScript, Rust, Java, PostgreSQL, MongoDB, GRPC, GraphQL, Kafka, Docker, K8s, Ansible, Jenkins, Tf, AWS.
+Working Style: Bottom-Up, KISS, YAGNI, TDD, Unit Tests, Git Review-Rebase, CI/CD Pipeline, Observability, Linux, Neovim.
+
+Experience
+
+Freelance Technical Consultant | Dotfiles, LLM Tournament, Local LLM Playground, Concurrent Scrapper FTSearch, Wallet-Tracker, Translation/RAG/Agentic/Swarm pipelines, FlowerShop, etc. 11/202x – Present
+
+- Fine tune local LLMs; Build RAG/agentic/swarm pipelines; Build custom tools and APIs to benchmark and integrate with AIs.
+- Write custom APIs with caching, rate-limit, authentication, authorization, migration, test suite, coverage, and profiling.
+- And MVPs, in Go, JS, Rust, Node, React, Vite, Nest, Next, Tailwind, GraphQL, GRPC, Mongo, Postgres, Docker, and AWS.
+- Write Lua, Python, and Bash scripts for Linux zero-trust pipelines; Optimize Makefiles, Dotfiles, and Neovim configs.
+- Implement i18n internationalization and a11y accessibility; Write wikis and documentations; Do translation works.
+- Compile OSINT documents and design OpSec pipelines for clients; Linux Security and Personal Anonymity consulting.
+
+Remote Backend Engineer, T | Dropezy Quick Commerce, Sayang Livestreaming 01/202x – 09/202x
+
+- Closely collaborate with frontend and devops teams for smooth production releases; write unit tests for 90% coverage.
+- Write Order, Task, Customer GRPC Protobuf services and integrate REST APIs with third-party callbacks in Go.
+- Write data importers and integration tests in Go and JavaScript to migrate data from CSVs to Firebase and MongoDB.
+- Create new and optimize existing MongoDB aggregations; Improved the indexing and searching performance upto 50%.
+- Create GraphQL APIs; Implement and fix GraphQL resolvers and data loaders; Address GraphQL’s threat vectors.
+- Implement frontend features in React and Flutter; Resolve scheduling issues in Go services and AWS.
+- Mentor junior colleagues; Define MongoDB coding standards; Work with cross-functional teams in Figma and GCP.
+- Do code review; Pair-programming with Team Lead to refactor the code base from Java and Postgres to Go and Mongo.
+
+Remote Backend Engineer, Z | Ackio Edge Computing Mesh 08/202x – 11/202x
+
+- Research, document, setup infrastructure, and implement a distributed edge computing system in Go and EdgeX.
+- Migrate a Java monolith to microservices using Go, Python, AWS, and Cloud Native Computing Foundation.
+
+ODC Backend Engineer, Y | Electronic Toll Collection Colorado E470 07/202x – 11/202x
+
+- Pair-programming a Go FTP server, with RabbitMQ and MinIO to pre-process data for ML services.
+- Implement and optimize Trip Building and Toll Calculation Avro services in Java 11 Spring Boot and Kafka.
+- Write extensive unit tests and integration tests matching ISO security compliance and client’s requirements.
+
+Onsite Fullstack Engineer, X | White-label Exchange Platform 10/201x – 03/202x
+
+- Migrate from legacy JavaEE and Spring MVC to Java Spring Boot, from AngularJS to Angular TypeScript.
+- Document and implement end-to-end APIs from database design to frontend in Spring Boot, Go, and Angular.
+- Design game mechanics and implement web games in pure Angular with fraud detection logics.
+- Write Back Office responsive mobile-first frontend in Angular, design and implement its API and DB in Spring Boot.
+
+Remote Robotics Engineer, SBTC | SumoBot, LineBot, MazeBot, Wireless Tracking, Micromouse 08/2016 – 10/2018
+
+- Design and implement robots’ structures and firmwares in Assembly, C, Proteus, LibreCAD, and FreeCAD.
+- Optimize algorithms for accuracy and energy efficiency; Design, implement, and fine tune PID control systems.
+- Design, build, and machining PCBs, mechanical, and hydraulic systems; Do code and design review for team members.
+- Setup and operate physical or AWS IoT servers and edges; Coach software engineering for team members and students.
+
+Education
+University of Information Technology
+Embedded Systems, Computer Engineering VNU-HCM, Vietnam
+
+Activities
+UIT Sumo Robot Winter
+1st Place (undefeated) Team 6789
+Regional ACM-ICPC Winter
+Participant Team Liquid
+
+Hobbies
+Recreational Programming, Chess, Science, Philosophy, Anthropology, Linguistics, and Offline Gaming
+
+###### 3. Candidate's Preferred Stack
+
+technical consulting (swe, rag/agentic/swarm pipelines, mentoring). rates: $100/h.
+schedule a meeting: https://cal.com/cariyaputta
+
+- tech stack: c, clay ; go, htmx ; rust, lua ; python, pydantic, smolagents, aider ; javascript, typescript ; http rest, websockets, grpc, jwt ; sqlite, postgresql, sqlc, migrate, redis, nats ; env, docker, compose.
+- architecture: rag, agentic, swarm, modular monolith, server side rendering, solid, dependency injection, ddd, rbac, microservices, monorepo, event driven, cqrs, saga pattern.
+- features: 90% unit test coverage, e2e tests, acid, caching, cache invalidation, rate limiting, retries.
+
+##### Output Requirements
+
+Generate a resume that:
+
+1. Is fully ATS-compliant
+2. Emphasizes experience matching the target role's requirements
+3. Maintains standard resume formatting
+4. Prioritizes relevant technical skills
+5. Highlights leadership and system design experience
+6. Quantifies achievements where possible
+7. Uses industry-standard terminology
+8. Removes irrelevant or outdated information
+
+##### Format Guidelines
+
+- Use clear section headings
+- Implement bullet points for experience descriptions
+- Include measurable achievements
+- Maintain professional contact information
+- Ensure chronological order for experience
+- Keep formatting consistent throughout
+
+- ensure single-page output:
+
+###### 1. Space Optimization:
+
+- Reduced margins to 0.5 inches
+- Decreased font size to 10pt
+- Minimized section spacing
+- Compressed list spacing
+- Removed vertical padding
+
+###### 2. Content Adjustments:
+
+- Condensed section headings
+- Combined education and achievements
+- Optimized bullet point content
+- Removed unnecessary line breaks
+
+###### 3. Layout Improvements:
+
+- Used small font for most sections
+- Optimized header spacing
+- Compressed technical skills presentation
+- Minimized whitespace while maintaining readability
+
+##### Special Instructions
+
+- Focus on Golang and backend development experience
+- Emphasize scalable system design examples
+- Highlight team leadership instances
+- Include relevant certifications if any
+- Remove personal interests unless directly relevant
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 34
+
+#### Content
+
+Based on the content of `resume.tex`, generate a detailed and coherent passage for each bullet point under "Professional Experience" and "Notable Projects." Each passage should:
+
+1. **Describe the context**: Provide background details, such as the company's domain, the project's purpose, or the problem being solved.
+2. **Highlight your role**: Specify your responsibilities and contributions in clear, concise terms.
+3. **Explain the impact**: Include measurable results, achievements, or outcomes related to your work.
+4. **Address potential follow-up questions**: Anticipate interviewer questions by including challenges faced, technical decisions made, and lessons learned.
+
+The goal is to craft a thorough explanation that you can confidently use during interviews to discuss each experience or project in depth. Save them to the file `counter.md`.
+
+#### Solution
+
+Freestyle.
+
+---
+
+### 35
+
+#### Content
+
 Design a constructed language with the following specifications:
 
 1. Grammar System:
@@ -1948,7 +2152,7 @@ Produce the output as specified.
 
 ---
 
-### 34
+### 36
 
 #### Content
 
@@ -2000,7 +2204,7 @@ Freestyle.
 
 ---
 
-### 35
+### 37
 
 #### Content
 
@@ -2076,7 +2280,7 @@ Freesylte.
 
 ---
 
-### 36
+### 38
 
 #### Content
 
@@ -2132,7 +2336,7 @@ Freestyle
 
 ---
 
-### 37
+### 39
 
 #### Content
 
@@ -2186,7 +2390,7 @@ Freestyle.
 
 ---
 
-### 38
+### 40
 
 #### Content
 
