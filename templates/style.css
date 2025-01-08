@@ -299,6 +299,13 @@ body {
         }
     }
 
+    .nav-title,
+    .nav-links,
+    .nav-logo {
+        flex: 1;
+        text-align: center;
+    }
+
     .nav-title {
         font-size: 1.5em;
         font-weight: bold;
