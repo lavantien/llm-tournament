@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/", router)
 	http.HandleFunc("/ws", handleWebSocket)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	log.Println("Server is listening on :8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
