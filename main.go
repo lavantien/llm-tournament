@@ -779,7 +779,7 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompt list page rendered successfully")
