@@ -27,6 +27,10 @@
             const markdownText = textarea.value;
             preview.innerHTML = marked.parse(markdownText);
         });
+
+        // Initial render
+        const initialMarkdownText = textarea.value;
+        preview.innerHTML = marked.parse(initialMarkdownText);
     </script>
 </body>
 </html>
