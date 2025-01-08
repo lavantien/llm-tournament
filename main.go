@@ -596,7 +596,7 @@ func editPromptHandler(w http.ResponseWriter, r *http.Request) {
 				Prompt string
 			}{
 				Index:  index,
-				Prompt:  prompts[index].Text,
+				Prompt: prompts[index].Text,
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
@@ -670,7 +670,7 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 				Prompt string
 			}{
 				Index:  index,
-				Prompt:  prompts[index].Text,
+				Prompt: prompts[index].Text,
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
@@ -778,7 +778,7 @@ func promptListHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+		// http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompt list page rendered successfully")
