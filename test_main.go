@@ -40,6 +40,67 @@ func TestAddPromptHandler(t *testing.T) {
 	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
 }
 
+func TestMovePromptHandler(t *testing.T) {
+	// Set up a test server
+	ts := httptest.NewServer(http.HandlerFunc(router))
+	defer ts.Close()
+
+	// Create test prompts
+	initialPrompts := []Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}, {Text: "Prompt 3"}}
+	writePrompts(initialPrompts)
+
+	// Get the index of the prompt to move
+	index := 0
+	newIndex := 2
+
+	// Send a POST request to move the prompt
+	resp, err := http.PostForm(ts.URL+"/move_prompt", url.Values{"index": {strconv.Itoa(index)}, "new_index": {strconv.Itoa(newIndex)}})
+	if err != nil {
+		t.Fatalf("Failed to send POST request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+	}
+
+	// Check if the prompt was moved in the file
+	prompts := readPrompts()
+	if len(prompts) != 3 {
+		t.Errorf("Expected 3 prompts, got %d", len(prompts))
+	}
+	if prompts[newIndex].Text != "Prompt 1" {
+		t.Errorf("Expected prompt at index %d to be 'Prompt 1', got '%s'", newIndex, prompts[newIndex].Text)
+	}
+
+    // Move the prompt to the beginning
+    index = 1
+    newIndex = 0
+    resp, err = http.PostForm(ts.URL+"/move_prompt", url.Values{"index": {strconv.Itoa(index)}, "new_index": {strconv.Itoa(newIndex)}})
+    if err != nil {
+        t.Fatalf("Failed to send POST request: %v", err)
+    }
+    defer resp.Body.Close()
+
+    // Check the response status code
+    if resp.StatusCode != http.StatusSeeOther {
+        t.Errorf("Expected status %d, got %d", http.StatusSeeOther, resp.StatusCode)
+    }
+
+    // Check if the prompt was moved in the file
+    prompts = readPrompts()
+    if len(prompts) != 3 {
+        t.Errorf("Expected 3 prompts, got %d", len(prompts))
+    }
+    if prompts[newIndex].Text != "Prompt 2" {
+        t.Errorf("Expected prompt at index %d to be 'Prompt 2', got '%s'", newIndex, prompts[newIndex].Text)
+    }
+
+	// Clean up the test file
+	os.WriteFile("data/prompts.json", []byte("[]"), 0644)
+}
+
 func TestPromptsCRUD(t *testing.T) {
 	// Set up a test server
 	ts := httptest.NewServer(http.HandlerFunc(router))

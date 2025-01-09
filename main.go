@@ -36,7 +36,93 @@ func main() {
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatalf("Error starting server: %v", err)
-	}
+}
+
+// Handle move prompt
+func movePromptHandler(w http.ResponseWriter, r *http.Request) {
+    log.Println("Handling move prompt")
+    if r.Method == "GET" {
+        err := r.ParseForm()
+        if err != nil {
+            log.Printf("Error parsing form: %v", err)
+            http.Error(w, "Error parsing form", http.StatusBadRequest)
+            return
+        }
+        indexStr := r.Form.Get("index")
+        index, err := strconv.Atoi(indexStr)
+        if err != nil {
+            log.Printf("Invalid index: %v", err)
+            http.Error(w, "Invalid index", http.StatusBadRequest)
+            return
+        }
+        prompts := readPrompts()
+        if index >= 0 && index < len(prompts) {
+            funcMap := template.FuncMap{
+                "inc": func(i int) int {
+                    return i + 1
+                },
+            }
+            t, err := template.New("move_prompt.html").Funcs(funcMap).ParseFiles("templates/move_prompt.html")
+            if err != nil {
+                log.Printf("Error parsing template: %v", err)
+                http.Error(w, "Error parsing template", http.StatusInternalServerError)
+                return
+            }
+            err = t.Execute(w, struct {
+                Index  int
+                Prompt string
+                Prompts []Prompt
+            }{
+                Index:  index,
+                Prompt: prompts[index].Text,
+                Prompts: prompts,
+            })
+            if err != nil {
+                log.Printf("Error executing template: %v", err)
+                http.Error(w, "Error executing template", http.StatusInternalServerError)
+                return
+            }
+        }
+    } else if r.Method == "POST" {
+        err := r.ParseForm()
+        if err != nil {
+            log.Printf("Error parsing form: %v", err)
+            http.Error(w, "Error parsing form", http.StatusBadRequest)
+            return
+        }
+        indexStr := r.Form.Get("index")
+        index, err := strconv.Atoi(indexStr)
+        if err != nil {
+            log.Printf("Invalid index: %v", err)
+            http.Error(w, "Invalid index", http.StatusBadRequest)
+            return
+        }
+        newIndexStr := r.Form.Get("new_index")
+        newIndex, err := strconv.Atoi(newIndexStr)
+        if err != nil {
+            log.Printf("Invalid new index: %v", err)
+            http.Error(w, "Invalid new index", http.StatusBadRequest)
+            return
+        }
+        prompts := readPrompts()
+        if index >= 0 && index < len(prompts) && newIndex >= 0 && newIndex <= len(prompts) {
+            prompt := prompts[index]
+            prompts = append(prompts[:index], prompts[index+1:]...)
+            if newIndex > index {
+                newIndex--
+            }
+            prompts = append(prompts[:newIndex], append([]Prompt{prompt}, prompts[newIndex:]...)...)
+        }
+        err = writePrompts(prompts)
+        if err != nil {
+            log.Printf("Error writing prompts: %v", err)
+            http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+            return
+        }
+        log.Println("Prompt moved successfully")
+        broadcastResults()
+        http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+    }
 }
 
 func router(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +146,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 		editPromptHandler(w, r)
 	case "/delete_prompt":
 		deletePromptHandler(w, r)
+    case "/move_prompt":
+        movePromptHandler(w, r)
 	case "/reset_results":
 		resetResultsHandler(w, r)
 	case "/confirm_refresh_results":

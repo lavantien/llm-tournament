@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Move Prompt</title>
+    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+</head>
+<body>
+    <h1>Move Prompt</h1>
+    <p style="text-align: center;">Select the new position for the prompt "{{.Prompt}}":</p>
+    <form action="/move_prompt" method="post" style="text-align: center;">
+        <input type="hidden" name="index" value="{{.Index}}">
+        <select name="new_index">
+            {{range $i, $p := .Prompts}}
+                <option value="{{$i}}">{{inc $i}}</option>
+            {{end}}
+        </select>
+        <input type="submit" value="Confirm">
+        <input type="submit" form="cancel-form" value="Cancel">
+    </form>
+    <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
+</body>
+</html>
