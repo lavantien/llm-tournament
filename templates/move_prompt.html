@@ -3,11 +3,15 @@
 <head>
     <title>Move Prompt</title>
     <link rel="stylesheet" href="/templates/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
     <h1>Move Prompt</h1>
-    <p style="text-align: center;">Select the new position for the prompt "{{.Prompt}}":</p>
+    <p style="text-align: center;">Select the new position for the prompt:</p>
+    <div id="preview" class="markdown-content" style="text-align: center;">
+        {{.Prompt | markdown}}
+    </div>
     <form action="/move_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
         <select name="new_index">
@@ -19,5 +23,10 @@
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
     <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
+    <script>
+        const preview = document.getElementById('preview');
+        const initialMarkdownText = `{{.Prompt}}`;
+        preview.innerHTML = marked.parse(initialMarkdownText);
+    </script>
 </body>
 </html>

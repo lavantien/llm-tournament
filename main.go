@@ -58,11 +58,16 @@ func movePromptHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-			funcMap := template.FuncMap{
-				"inc": func(i int) int {
-					return i + 1
-				},
-			}
+            funcMap := template.FuncMap{
+                "inc": func(i int) int {
+                    return i + 1
+                },
+                "markdown": func(text string) template.HTML {
+                    unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+                    html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+                    return template.HTML(html)
+                },
+            }
 			t, err := template.New("move_prompt.html").Funcs(funcMap).ParseFiles("templates/move_prompt.html")
 			if err != nil {
 				log.Printf("Error parsing template: %v", err)
