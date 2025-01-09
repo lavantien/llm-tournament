@@ -13,7 +13,7 @@ api-key:
   - cohere=
   - openrouter=
   - xai=
-architect: false
+architect: true
 # model: mistral/mistral-large-latest
 model: gemini/gemini-exp-1206
 # model: gemini/gemini-2.0-flash-exp
@@ -29,8 +29,9 @@ model: gemini/gemini-exp-1206
 # model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
 edit-format: diff
 # editor-model: gemini/gemini-2.0-flash-exp
-# editor-edit-format: editor-diff
-weak-model: mistral/mistral-small-latest
+editor-model: mistral/mistral-large-latest
+editor-edit-format: editor-whole
+weak-model: mistral/pixtral-small-latest
 # weak-model: codestral/codestral-latest
 read:
   - RULES.md

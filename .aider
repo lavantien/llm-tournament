@@ -1,10 +1,7 @@
 /drop
 /add       README.md
-/add       data/prompts.json
-/add       data/results.json
 /add       decision.md
 /add       go.mod
-/add       go.sum
 /add       main.go
 /add       makefile
 /add       state.go
