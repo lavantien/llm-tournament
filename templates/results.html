@@ -74,8 +74,8 @@
                 <td>${i}</td>
                 <td class="model-actions">
                     <div class="prompt-actions">
-                        <a class="edit-button" href="/edit_model?model=${model}">Edit</a>
-                        <a class="delete-button" href="/delete_model?model=${model}">Delete</a>
+                        <a class="action-button edit-button" href="/edit_model?model=${model}">Edit</a>
+                        <a class="action-button delete-button" href="/delete_model?model=${model}">Delete</a>
                     </div>
                 </td>
                 <td>${model}</td>
@@ -195,10 +195,10 @@
           <td>{{$i = inc $i}}{{$i}}</td>
           <td class="model-actions">
             <div class="prompt-actions">
-              <a class="edit-button" href="/edit_model?model={{$model}}"
+              <a class="action-button edit-button" href="/edit_model?model={{$model}}"
                 >Edit</a
               >
-              <a class="delete-button" href="/delete_model?model={{$model}}"
+              <a class="action-button delete-button" href="/delete_model?model={{$model}}"
                 >Delete</a
               >
             </div>

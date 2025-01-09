@@ -31,6 +31,24 @@ body {
         }
     }
 
+    .action-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        background-color: #bb86fc;
+        color: #1a1a1a;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        font-size: 0.9em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+        &:hover {
+            background-color: #03dac6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+    }
+
     ul {
         list-style: none;
         padding: 0;
