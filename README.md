@@ -62,10 +62,39 @@ Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own AP
 
 Anyone can just submit a PR and we'll discuss there.
 
-## Future Enhancements
+## TODO/Roadmap
 
-- Refacxtor the codebase to be modular
-- Prompt input with solution.
+### Refactor
+
+- Refacxtor the codebase to be modular.
+
+### Search Prompt
+
+- Add a search prompt functionality, it will be located in the right most of the filter by order's row.
+
+### Prompt's Solution
+
+- Prompt input with solution; and solution will be rendered along side with the prompt in prompt list (3/4 prompt region, 1/4 solution region).
+
+### Result-Prompt Integration
+
+- Add an button on the left most of the add model row, the button's name has two states: Simple Mode and Detailed Mode, when click will switch between these 2 mode, in simple mode everything stay the same, but in detailed mode the logic is as below.
+- In detailed mode, when click on a cell in result table, instead of pass/fail logic, open a detail_prompt page that show the prompt and solution rendered in markdown and a pass/fail toggle and an accept button and a back b utton.
+
+### 3rd Page - Profiles
+
 - Profiles page similar to Prompts to store system prompts.
 - Link prompts with profiles, prompt input and edit have drop down selection for profile.
-- Display profile of each prompt after the numbering, e.g. 1. (Reasoning) prompt content
+- Display profile of each prompt after the numbering, e.g. 1. (Reasoning) prompt content.
+
+### Prompt Suites
+
+- In place of the page title in the middle (Prompt List), replace it with a group of 3 buttons and a dropdown selection.
+- The 2 buttons are: New, Edit, and Delete; the dropdown selection is to choose the current prompt suite to display.
+- When click either of the 2 buttons, the appropriate page will be redirected to a similarly action page like others: the new_prompt_suite and edit_prompt_suite pages will have an input field and accept and cancel buttons, the delete_prompt_suite page will have the accept and cancel buttons.
+- The starting prompts in `prompts.json` will be the `default` suite.
+- Each suite will be stored in a different json: `prompts-<suite-name>.json`
+
+### Model Suites
+
+- The same with prompt suite, but for models and result table rendering.

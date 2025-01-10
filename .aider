@@ -13,6 +13,7 @@
 /add       templates/import_error.html
 /add       templates/import_prompts.html
 /add       templates/import_results.html
+/add       templates/move_prompt.html
 /add       templates/nav.html
 /add       templates/prompt_list.html
 /add       templates/reset_prompts.html
