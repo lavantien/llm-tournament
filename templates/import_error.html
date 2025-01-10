@@ -17,5 +17,18 @@
             window.history.back();
         }
     </script>
+    <div class="scroll-buttons">
+        <button class="scroll-button" onclick="scrollToTop()">↑</button>
+        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
