@@ -8,13 +8,13 @@
 </head>
 <body>
     <h1>Delete Prompt</h1>
-    <p style="text-align: center;">Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
     <form action="/delete_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
         <input type="submit" value="Delete">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
     <form id="cancel-form" action="/prompts" method="get"></form>
+    <p style="text-align: center;">Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
     <h2>Preview</h2>
     <div id="preview" class="markdown-content">
         {{.Prompt | markdown}}

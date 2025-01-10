@@ -8,10 +8,6 @@
 </head>
 <body>
     <h1>Move Prompt</h1>
-    <p style="text-align: center;">Select the new position for the prompt:</p>
-    <div id="preview" class="markdown-content" style="text-align: left;">
-        {{.Prompt | markdown}}
-    </div>
     <form action="/move_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
         <select name="new_index">
@@ -23,6 +19,10 @@
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
     <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
+    <p style="text-align: center;">Select the new position for the prompt:</p>
+    <div id="preview" class="markdown-content" style="text-align: left;">
+        {{.Prompt | markdown}}
+    </div>
     <script>
         const preview = document.getElementById('preview');
         const initialMarkdownText = `{{.Prompt}}`;
