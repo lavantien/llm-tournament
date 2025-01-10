@@ -1626,7 +1626,7 @@ Freestyle.
 
 #### Content
 
-**The Celestial Convergence Labyrinth**
+**The Celestial Convergence Labyrinth (Revised)**
 
 You are a Chrononaut, stranded within a shifting, extradimensional labyrinth powered by celestial energies. Escape requires precise timing and manipulation of these energies.
 
@@ -1642,7 +1642,7 @@ You are a Chrononaut, stranded within a shifting, extradimensional labyrinth pow
     - 2 → 4 (4 Temporal Units)
     - 2 → 5 (6 Temporal Units)
     - 3 → 4 (7 Temporal Units)
-    - 3 → 6 (5 Temporal Units)
+    - 3 → 6 (3 Temporal Units)
     - 4 → 7 (8 Temporal Units)
     - 5 → 7 (6 Temporal Units)
     - 6 → 5 (4 Temporal Units)
@@ -1654,40 +1654,40 @@ You are a Chrononaut, stranded within a shifting, extradimensional labyrinth pow
   - **Lunar:** Decreases the cost of passages ending at even-numbered nodes by 1 Temporal Unit.
   - **Solar:** Doubles the cost of passages involving Node 4.
 
-- **Temporal Units:** Your primary resource, representing your ability to navigate temporal distortions. You start with **15 Temporal Units**.
+- **Temporal Units:** Your primary resource, representing your ability to navigate temporal distortions. You start with **25 Temporal Units**.
 
 - **Resonance Energy:** A secondary resource, crucial for manipulating the labyrinth's energy flows. You start with **0 Resonance Energy**.
 
-- **Celestial Glyphs:** Each node contains one Celestial Glyph. Interacting with a glyph has various effects, consuming Resonance Energy. You must **attune** to a glyph to understand its effect (consuming 2 Resonance Energy). Once attuned, using the glyph's power costs a further amount.
+- **Celestial Glyphs:** Each node contains one Celestial Glyph. Interacting with a glyph has various effects. You must **attune** to a glyph to understand its effect (consuming Resonance Energy). Once attuned, using the glyph's power costs a further amount of Resonance Energy.
 
   - **Node 1 (Glyph of Stability):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 4 Resonance Energy): Gain 5 Temporal Units. (Usable once per alignment cycle).
+    - Activate (Cost: 4 Resonance Energy): Gain 5 Temporal Units. (Usable twice per alignment cycle).
   - **Node 2 (Glyph of Haste):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 3 Resonance Energy): Reduce the cost of your next passage by 2 Temporal Units.
+    - Activate (Cost: 3 Resonance Energy): Reduce the cost of your next passage by 2 Temporal Units. (Usable once per turn)
   - **Node 3 (Glyph of Foresight):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 5 Resonance Energy): Reveal the next upcoming Celestial Alignment.
-  - **Node 4 (Glyph of Flux):**
+    - Activate (Cost: 5 Resonance Energy): Reveal the next upcoming Celestial Alignment. (Usable once per turn)
+  - **Node 4 (Glyph of Transference):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 6 Resonance Energy): Immediately shift the Celestial Alignment to the next state in the cycle.
+    - Activate (Cost: 3 Resonance Energy): Allows a one-time transfer of all accumulated Resonance Energy to Temporal Units or vice versa.
   - **Node 5 (Glyph of Echoes):**
-    - Attune: 2 Resonance Energy
-    - Activate (Cost: 4 Resonance Energy): Allows traversal of one previously used passage _in the same direction_ at its original base cost (ignoring current alignment). Usable only once per alignment cycle.
+    - Attune: 1 Resonance Energy
+    - Activate (Cost: 0 Resonance Energy): Allows traversal of one previously used passage _in the same direction_ at its original base cost (ignoring current alignment).
   - **Node 6 (Glyph of Siphoning):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 0 Resonance Energy): Gain 2 Resonance Energy (Usable once per alignment cycle).
+    - Activate (Cost: 0 Resonance Energy): Gain 3 Resonance Energy (Usable once per alignment cycle).
   - **Node 7 (Glyph of Departure):**
     - Attune: 2 Resonance Energy
-    - Activate (Cost: 8 Resonance Energy): Initiates the escape sequence.
+    - Activate (Cost: 6 Resonance Energy): Initiates the escape sequence.
 
 - **Resource Management:**
 
   - Running out of Temporal Units results in being lost in the temporal currents (failure).
   - You cannot gain more Resonance Energy than your current Temporal Units.
 
-- **Time Constraint:** The labyrinth's instability means you have a limited number of **12 actions** (moving between nodes or activating a glyph). Exceeding this limit results in a catastrophic temporal collapse (failure).
+- **Time Constraint:** The labyrinth's instability means you have a limited number of **24 actions** (moving between nodes or activating a glyph). Exceeding this limit results in a catastrophic temporal collapse (failure).
 
 **Task:**
 
@@ -1695,73 +1695,15 @@ You are a Chrononaut, stranded within a shifting, extradimensional labyrinth pow
 2. **Justify:** Explain the reasoning behind each action, considering the current Celestial Alignment, resource levels, and the effects of the glyphs. Highlight strategic decisions and trade-offs.
 3. **Calculations:** Provide a precise breakdown of your Temporal Units, Resonance Energy, and the current Celestial Alignment at each step. Include the cost of movement and glyph activations.
 4. **Escape or Fail:** Determine if you successfully escape within the action limit and without running out of Temporal Units.
-5. **Optimization (If Successful):** If successful, analyze if there's a more efficient route or sequence of actions to minimize the number of actions taken.
 
 **Important Notes:**
 
-- This puzzle requires careful planning, understanding the cyclical nature of the Celestial Alignment, and strategic use of the glyphs.
+- This revised puzzle is designed to be solvable with a **unique solution**.
 - The dynamic passage costs and limited actions demand foresight and efficient resource management.
 - Attuning to glyphs is crucial but consumes a valuable resource. Prioritize which glyphs to attune to.
-- Consider the timing of glyph activations in relation to the Celestial Alignment changes.
-- There might be multiple viable solutions, but finding the most efficient one will be highly challenging.
-
-This labyrinth demands a much deeper level of analysis and strategic thinking than the Obsidian Labyrinth. Good luck, Chrononaut!
+- Consider the timing of glyph activations about the Celestial Alignment changes. There could be turns where you get no benefit from activating a glyph.
 
 #### Solution
-
-(by gemini-exp-1206)
-
-Okay, Chrononaut, here is a plan to escape the Celestial Convergence Labyrinth. This puzzle is significantly more complex, and this solution focuses on getting out safely, with potential for optimization later.
-
-**Plan:**
-
-**Initial State:**
-
-- **Temporal Units:** 15
-- **Resonance Energy:** 0
-- **Celestial Alignment:** Auroral
-- **Actions Used:** 0
-
-| Action | Node | Alignment | Temporal Units | Resonance | Justification                                                                                                                                                                                                                                                                                                                                          |
-| :----- | :--- | :-------- | :------------- | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1      | 1    | Auroral   | 15             | 0         | Start at Node 1.                                                                                                                                                                                                                                                                                                                                       |
-| 2      | 1    | Auroral   | 15             | 2         | Activate Glyph of Siphoning. Gain 2 RE.                                                                                                                                                                                                                                                                                                                |
-| 3      | 1    | Auroral   | 15             | 0         | Attune to Glyph of Stability.                                                                                                                                                                                                                                                                                                                          |
-| 4      | 1    | Auroral   | 20             | 0         | Activate Glyph of Stability. Gain 5 TU.                                                                                                                                                                                                                                                                                                                |
-| 5      | 2    | Auroral   | 16             | 0         | Move to Node 2 (Cost: 3 + 1(Auroral on odd node) = 4).                                                                                                                                                                                                                                                                                                 |
-| 6      | 2    | Lunar     | 15             | 0         | Attune Glyph of Haste. No RE change because Lunar reduced attuning cost.                                                                                                                                                                                                                                                                               |
-| 7      | 4    | Lunar     | 14             | 0         | Move to Node 4. Cost: 3 Lunar reduces even ends by 1. Cost is doubled because of Solar is coming: 3\*2 = 6. 6 - 1 from Glyph of Haste -1 from Lunar, total of 4. Using Glyph of Haste here to reduce the Solar cost of coming from an even Node. I will not attune to the Flux glyph to keep my action count down.                                     |
-| 8      | 7    | Solar     | 0              | 0         | Move to Node 7. Node 4 cost is doubled: 8\*2 = 16.                                                                                                                                                                                                                                                                                                     |
-| 9      | 7    | Auroral   | 0              | 0         | Activate Glyph of Siphoning. It has recharged. Gain 2 RE.                                                                                                                                                                                                                                                                                              |
-| 10     | 7    | Auroral   | 0              | -2        | Attune to Glyph of Departure. (The escape sequence).                                                                                                                                                                                                                                                                                                   |
-| 11     | 7    | Auroral   | 0              | -10       | Activate Glyph of Departure by invoking the escape sequence. Requires being attuned and 8 resonance points. In this example, we have exhausted our temporal units and used at least 10 of our moves. Without the temporal energy, the resonance energy is effectively equal to zero, and attempting to use more than that fails. Resulting in failure. |
-
-**Escape or Fail:**
-
-**Fail**. The plan only works if the Glyph of Departure can be activated when Temporal Units are 0. Because Temporal Units are depleted, the available Resonance Energy is also considered 0, regardless of the 10 points earned by using the Glyph of Siphoning.
-
-**Optimization (After Failure):**
-If the assumption that Resonance Energy being 0 with no Temporal Units and that one cannot use more than allowed is incorrect, here is an optimized solution:
-
-| Action | Node | Alignment | Temporal Units | Resonance | Justification                                                                                                                                                                                                                                                                                                      |
-| :----- | :--- | :-------- | :------------- | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1      | 1    | Auroral   | 15             | 0         | Start at Node 1.                                                                                                                                                                                                                                                                                                   |
-| 2      | 1    | Auroral   | 15             | 2         | Activate Glyph of Siphoning. Gain 2 RE.                                                                                                                                                                                                                                                                            |
-| 3      | 1    | Auroral   | 15             | 0         | Attune to Glyph of Stability.                                                                                                                                                                                                                                                                                      |
-| 4      | 1    | Auroral   | 20             | 0         | Activate Glyph of Stability. Gain 5 TU.                                                                                                                                                                                                                                                                            |
-| 5      | 2    | Auroral   | 16             | 0         | Move to Node 2 (Cost: 3 + 1(Auroral on odd node) = 4).                                                                                                                                                                                                                                                             |
-| 6      | 2    | Lunar     | 15             | 0         | Attune Glyph of Haste. No RE change because Lunar reduced attuning cost.                                                                                                                                                                                                                                           |
-| 7      | 4    | Lunar     | 14             | 0         | Move to Node 4. Cost: 3 Lunar reduces even ends by 1. Cost is doubled because of Solar is coming: 3\*2 = 6. 6 - 1 from Glyph of Haste -1 from Lunar, total of 4. Using Glyph of Haste here to reduce the Solar cost of coming from an even Node. I will not attune to the Flux glyph to keep my action count down. |
-| 8      | 7    | Solar     | 0              | 0         | Move to Node 7. Node 4 cost is doubled: 8\*2 = 16.                                                                                                                                                                                                                                                                 |
-| 9      | 7    | Auroral   | 0              | 2         | Activate Glyph of Siphoning. It has recharged. Gain 2 RE.                                                                                                                                                                                                                                                          |
-| 10     | 7    | Auroral   | 0              | 0         | Attune to Glyph of Departure. (The escape sequence).                                                                                                                                                                                                                                                               |
-| 11     | 7    | Auroral   | 0              | -8        | Activate Glyph of Departure by invoking the escape sequence. Requires being attuned and 8 resonance points.                                                                                                                                                                                                        |
-
-Assuming the player can use up to the available Resonance Energy when Temporal Units are 0, then this sequence ensures a successful escape. The most important optimization comes from only attuning to the necessary glyphs, freeing up additional actions.
-
-**Reflection:**
-
-This was a challenging puzzle! It required anticipating the effects of future Celestial Alignments and balancing the need for Temporal Units and Resonance Energy. By skipping the Glyph of Flux and not using 4 of our 12 actions, we were able to reach the Nexus of Departure and escape the labyrinth.
 
 ---
 
