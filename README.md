@@ -66,7 +66,9 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### Refactor
 
-- Refacxtor the codebase to be modular.
+- Refactor the prompt suite to be more roburst and streamlined, with programming focus.
+- Handbook composition prompt.
+- Refactor the codebase to be modular.
 
 ### Search Prompt
 
