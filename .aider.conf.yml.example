@@ -1,6 +1,6 @@
 # openai-api-base: http://localhost:8000/v1
-openai-api-base: https://glhf.chat/api/openai/v1
-# openai-api-base: https://api.hyperbolic.xyz/v1
+# openai-api-base: https://glhf.chat/api/openai/v1
+openai-api-base: https://api.hyperbolic.xyz/v1
 api-key:
   - openai=
   # - openai=
@@ -30,14 +30,13 @@ model: gemini/gemini-exp-1206
 edit-format: diff
 # editor-model: gemini/gemini-2.0-flash-exp
 editor-model: mistral/mistral-large-latest
-editor-edit-format: editor-whole
+editor-edit-format: editor-diff
 weak-model: mistral/pixtral-small-latest
+# weak-model: mistral/mistral-small-latest
 # weak-model: codestral/codestral-latest
 read:
-  - RULES.md
-  - PROMPT.md
-  - INSTRUCTION.md
-  - preliminary_design.md
+  - SYSTEM_PROMPT.md
+  - PRELIMINARY_DESIGN.md
 yes-always: true
 map-tokens: 2048
 timeout: 300
