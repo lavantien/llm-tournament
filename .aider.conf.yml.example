@@ -1,4 +1,4 @@
-# openai-api-base: http://localhost:8000/v1
+# openai-api-base: http://localhost:5001/v1
 # openai-api-base: https://glhf.chat/api/openai/v1
 openai-api-base: https://api.hyperbolic.xyz/v1
 api-key:
