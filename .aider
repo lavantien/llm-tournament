@@ -22,7 +22,5 @@
 /add       templates/style.css
 /add       test_main.go
 /add       test_output.txt
-/read-only INSTRUCTION.md
-/read-only PROMPT.md
-/read-only RULES.md
-/read-only preliminary_design.md
+/read-only PRELIMINARY_DESIGN.md
+/read-only SYSTEM_PROMPT.md
