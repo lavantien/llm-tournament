@@ -1,6 +1,5 @@
 /drop
 /add       README.md
-/add       decision.md
 /add       go.mod
 /add       main.go
 /add       makefile
