@@ -1,314 +1,243 @@
-**Step-by-Step Explanation:**
+# LLM Tournament Design Document
 
-1. **Set Up the Project Structure:**
+## **Overview**
 
-   - Create a new directory for the project.
-   - Inside the directory, create the following files and folders:
-     - `main.go`
-     - `templates/`
-       - `prompt_list.html`
-       - `results.html`
-     - `data/`
-       - `prompts.txt`
-       - `results.csv`
+The **LLM Tournament** is a real-time web application designed to manage prompts, evaluate Large Language Models (LLMs), and track results in a user-friendly and responsive interface. The application leverages WebSockets for real-time updates, JSON for data persistence, and a lightweight tech stack (Go, HTML, CSS, JS) for performance and simplicity.
 
-2. **Initialize the Web Server:**
+---
 
-   - In `main.go`, import the necessary packages:
-     ```go
-     import (
-         "html/template"
-         "net/http"
-         "os"
-         "strconv"
-         "strings"
-     )
-     ```
-   - Define a `Router` function to handle HTTP requests.
-   - Start the server on a local port, e.g., `http.ListenAndServe(":8080", nil)`.
+## **Key Features**
 
-3. **Create HTML Templates:**
+1. **Real-Time Updates**: WebSocket integration ensures instant updates on the results page.
+2. **Prompt Management**:
+   - Add, edit, delete, and reorder prompts.
+   - Multiline input and Markdown rendering for rich text formatting.
+3. **Model Evaluation**:
+   - Pass/fail tracking for each model against each prompt.
+   - Total scores and pass percentages for performance metrics.
+4. **Data Persistence**: JSON files store prompts, results, and configurations.
+5. **Import/Export**: CSV support for prompts and results.
+6. **Filtering**: Filter results by model for streamlined analysis.
+7. **Model Management**: Add, edit, and delete models.
+8. **Result Management**: Reset and refresh results.
+9. **UI/UX**: Sleek, responsive, and intuitive design with zero bloat.
 
-   - In `prompt_list.html`, design a page to display and manage prompts.
-   - Include forms to add, edit, and delete prompts.
-   - Use Go template actions to loop through and display prompts.
+---
 
-   - In `results.html`, design a spreadsheet-like table:
-     - Rows represent different LLM models.
-     - Columns represent pass/fail checkboxes for each prompt.
-     - Include a final column for the total score.
-     - Use JavaScript for real-time updates on checkbox changes.
+## **Architecture**
 
-4. **Manage Prompts:**
+The application follows a **modular architecture** with clear separation of concerns. The backend is written in Go, while the frontend uses HTML, CSS, and JavaScript. WebSockets enable real-time communication between the client and server.
 
-   - Create a function to read prompts from `prompts.txt`:
-     ```go
-     func readPrompts() []string {
-         // Read lines from prompts.txt
-     }
-     ```
-   - Create functions to add, edit, and delete prompts:
-     ```go
-     func addPrompt(prompt string) {
-         // Append prompt to prompts.txt
-     }
-     func editPrompt(index int, newPrompt string) {
-         // Update the prompt at the given index
-     }
-     func deletePrompt(index int) {
-         // Remove the prompt at the given index
-     }
-     ```
+### **Tech Stack**
 
-5. **Manage Results:**
+- **Backend**: Go (HTTP server, WebSocket server, JSON handling).
+- **Frontend**: HTML, CSS, JavaScript (dynamic UI, Markdown rendering, drag-and-drop functionality).
+- **Data Storage**: JSON files (`prompts.json`, `results.json`, etc.).
+- **Real-Time Communication**: WebSockets.
+- **Development Tools**: Aider (with Mistral Large or Gemini 2.0 Flash API).
 
-   - Create a function to read results from `results.csv`:
-     ```go
-     func readResults() map[string][]bool {
-         // Read CSV and return a map of model names to []bool for pass/fail
-     }
-     ```
-   - Create functions to update results:
-     ```go
-     func updateResult(model string, promptIndex int, pass bool) {
-         // Update the result for the model and prompt
-     }
-     ```
-   - Calculate the total score for each model by summing the passes.
+---
 
-6. **Implement Real-Time Updates:**
+## **Components**
 
-   - Use JavaScript to handle checkbox changes on the client side.
-   - Send AJAX requests to the server when a checkbox is changed.
-   - Update the results file and recalculate scores on the server.
-   - Return the updated scores and render them on the page.
+The application is divided into the following logical components:
 
-7. **Auto-Sort Rows by Total Score:**
+### **1. Backend**
 
-   - After calculating the total scores, sort the models in descending order.
-   - Re-render the table with the sorted models.
+- **Server**: Handles HTTP requests, WebSocket connections, and JSON file operations.
+- **API Endpoints**:
+  - `/prompts`: CRUD operations for prompts.
+  - `/models`: CRUD operations for models.
+  - `/results`: CRUD operations for results.
+  - `/ws`: WebSocket endpoint for real-time updates.
+- **JSON File Management**:
+  - `prompts.json`: Stores prompts and their metadata.
+  - `results.json`: Stores evaluation results.
+  - `models.json`: Stores model configurations.
 
-8. **Ensure No External Dependencies:**
+### **2. Frontend**
 
-   - Use only Go's standard libraries.
-   - Avoid third-party packages for routing, templates, etc.
+- **Pages**:
+  - **Prompt Manager**: Add, edit, delete, and reorder prompts.
+  - **Results Page**: Display pass/fail results, total scores, and pass percentages.
+  - **Profiles Page**: Manage system prompts and link them to prompts.
+  - **Prompt Suites**: Manage and switch between different prompt suites.
+  - **Model Suites**: Manage and switch between different model suites.
+- **UI Components**:
+  - **Prompt List**: Displays prompts with Markdown rendering and drag-and-drop reordering.
+  - **Result Table**: Displays evaluation results with filtering options.
+  - **Detail Prompt Page**: Shows prompt details, solution, and pass/fail toggles (in detailed mode).
+- **Dynamic Features**:
+  - Real-time updates via WebSockets.
+  - Multiline input and Markdown rendering for prompts.
+  - Filtering and sorting options for results.
 
-9. **Test the Application:**
-   - Run the server and access it through a web browser.
-   - Test adding, editing, and deleting prompts.
-   - Test marking pass/fail on the results page.
-   - Verify that the total scores update correctly and rows are sorted.
+### **3. Data Flow**
 
-**Code Implementation:**
+1. **User Interaction**:
+   - User interacts with the UI (e.g., adds a prompt, evaluates a model).
+2. **API Requests**:
+   - Frontend sends HTTP requests to the backend for CRUD operations.
+3. **WebSocket Updates**:
+   - Backend broadcasts updates to all connected clients via WebSocket.
+4. **Data Persistence**:
+   - Backend reads/writes data to JSON files.
+5. **Frontend Rendering**:
+   - Frontend updates the UI dynamically based on API responses and WebSocket messages.
 
-_`main.go`_
+---
 
-```go
-package main
+## **Workflows**
 
-import (
-    "html/template"
-    "net/http"
-    "os"
-    "strconv"
-    "strings"
-)
+### **1. Prompt Management**
 
-func main() {
-    http.HandleFunc("/", router)
-    http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-    http.ListenAndServe(":8080", nil)
-}
+- **Add Prompt**:
 
-func router(w http.ResponseWriter, r *http.Request) {
-    if r.URL.Path == "/prompts" {
-        promptListHandler(w, r)
-    } else if r.URL.Path == "/results" {
-        resultsHandler(w, r)
-    } else if r.URL.Path == "/update_result" {
-        updateResultHandler(w, r)
-    } else {
-        http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-    }
-}
+  1. User clicks "Add Prompt" button.
+  2. Frontend displays a modal with multiline input and Markdown preview.
+  3. User submits the prompt.
+  4. Frontend sends a POST request to `/prompts`.
+  5. Backend saves the prompt to `prompts.json`.
+  6. Backend broadcasts the update via WebSocket.
+  7. Frontend updates the prompt list.
 
-// Read prompts from prompts.txt
-func readPrompts() []string {
-    data, _ := os.ReadFile("data/prompts.txt")
-    prompts := strings.Split(string(data), "\n")
-    return prompts
-}
+- **Edit/Delete Prompt**:
 
-// Read results from results.csv
-func readResults() map[string][]bool {
-    data, _ := os.ReadFile("data/results.csv")
-    lines := strings.Split(string(data), "\n")
-    results := make(map[string][]bool)
-    prompts := readPrompts()
-    for _, line := range lines {
-        if line == "" {
-            continue
-        }
-        parts := strings.Split(line, ",")
-        if len(parts) != len(prompts)+1 {
-            continue
-        }
-        model := parts[0]
-        var passes []bool
-        for _, passStr := range parts[1:] {
-            passes = append(passes, passStr == "true")
-        }
-        results[model] = passes
-    }
-    return results
-}
+  - Similar workflow with PUT/DELETE requests to `/prompts`.
 
-// Handle prompt list page
-func promptListHandler(w http.ResponseWriter, r *http.Request) {
-    prompts := readPrompts()
-    t, _ := template.ParseFiles("templates/prompt_list.html")
-    t.Execute(w, prompts)
-}
+- **Reorder Prompts**:
+  1. User drags and drops a prompt.
+  2. Frontend sends a PUT request to `/prompts/reorder`.
+  3. Backend updates the order in `prompts.json`.
+  4. Backend broadcasts the update via WebSocket.
+  5. Frontend updates the prompt list.
 
-// Handle results page
-func resultsHandler(w http.ResponseWriter, r *http.Request) {
-    prompts := readPrompts()
-    results := readResults()
-    // Sort models by total score
-    models := make([]string, 0)
-    for model := range results {
-        models = append(models, model)
-    }
-    // Calculate total scores and sort
-    t, _ := template.ParseFiles("templates/results.html")
-    t.Execute(w, struct {
-        Prompts  []string
-        Results  map[string][]bool
-        Models   []string
-    }{
-        Prompts:  prompts,
-        Results:  results,
-        Models:   models,
-    })
-}
+### **2. Model Evaluation**
 
-// Handle AJAX requests to update results
-func updateResultHandler(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm()
-    model := r.Form.Get("model")
-    promptIndexStr := r.Form.Get("promptIndex")
-    passStr := r.Form.Get("pass")
-    promptIndex, _ := strconv.Atoi(promptIndexStr)
-    pass, _ := strconv.ParseBool(passStr)
-    // Update the result in results.csv
-    // Recalculate total scores and sort
-    // Send back the updated scores
-    w.Write([]byte("OK"))
-}
-```
+- **Evaluate Model**:
+  1. User clicks a cell in the result table.
+  2. Frontend toggles pass/fail status.
+  3. Frontend sends a PUT request to `/results`.
+  4. Backend updates `results.json`.
+  5. Backend broadcasts the update via WebSocket.
+  6. Frontend updates the result table.
 
-_`templates/prompt_list.html`_
+### **3. Import/Export**
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Prompt List</title>
-  </head>
-  <body>
-    <h1>Prompt List</h1>
-    <ul>
-      {{range $index, $prompt := .}}
-      <li>
-        {{$prompt}}
-        <a href="/edit_prompt?index={{$index}}">Edit</a>
-        <a href="/delete_prompt?index={{$index}}">Delete</a>
-      </li>
-      {{end}}
-    </ul>
-    <h2>Add Prompt</h2>
-    <form action="/add_prompt" method="post">
-      <input type="text" name="prompt" placeholder="Enter new prompt" />
-      <input type="submit" value="Add" />
-    </form>
-    <a href="/results">Go to Results</a>
-  </body>
-</html>
-```
+- **Import Prompts**:
 
-_`templates/results.html`_
+  1. User uploads a CSV file.
+  2. Frontend sends a POST request to `/prompts/import`.
+  3. Backend parses the CSV and updates `prompts.json`.
+  4. Backend broadcasts the update via WebSocket.
+  5. Frontend updates the prompt list.
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Results</title>
-    <script>
-      function updateResult(model, promptIndex, pass) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/update_result", true);
-        xhr.setRequestHeader(
-          "Content-type",
-          "application/x-www-form-urlencoded",
-        );
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4 && xhr.status == 200) {
-            // Handle response if needed
-          }
-        };
-        var params =
-          "model=" +
-          encodeURIComponent(model) +
-          "&promptIndex=" +
-          promptIndex +
-          "&pass=" +
-          pass;
-        xhr.send(params);
-      }
-    </script>
-  </head>
-  <body>
-    <h1>Results</h1>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Model</th>
-          {{range $index, $prompt := .Prompts}}
-          <th>Prompt {{$index + 1}}</th>
-          {{end}}
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{range $model, $results := .Results}}
-        <tr>
-          <td>{{$model}}</td>
-          {{range $index, $pass := $results}}
-          <td>
-            <input
-              type="checkbox"
-              {{if
-              $pass}}checked{{end}}
-              onchange="updateResult('{{$model}}', {{$index}}, this.checked)"
-            />
-          </td>
-          {{end}}
-          <td>{{len (filter $results true)}}</td>
-        </tr>
-        {{end}}
-      </tbody>
-    </table>
-    <a href="/prompts">Go to Prompt List</a>
-  </body>
-</html>
-```
+- **Export Results**:
+  1. User clicks "Export Results" button.
+  2. Frontend sends a GET request to `/results/export`.
+  3. Backend generates a CSV file and sends it to the frontend.
+  4. Frontend triggers a download.
 
-**Notes:**
+---
 
-- The code above is a simplified version to illustrate the structure.
-- Error handling is minimal for brevity.
-- The `updateResultHandler` needs to implement the logic to update `results.csv`.
-- The sorting of models by total score is not fully implemented.
-- The `filter` function in the template is hypothetical; you would need to implement it or calculate the total score in the template.
-- Ensure that all files and directories have the correct permissions.
-- This is a starting point; further development is needed for a complete application.
+## **TODO/Roadmap Integration**
+
+### **1. Refactor**
+
+- **Prompt Suite Refactor**:
+  - Refactor the prompt suite to be more robust and streamlined, with a focus on modularity.
+  - Add a **handbook composition prompt** for better documentation.
+- **Codebase Modularity**:
+  - Split the codebase into smaller, reusable modules (e.g., `prompts.go`, `models.go`, `results.go`).
+
+### **2. Search Prompt**
+
+- **Functionality**:
+  - Add a search bar in the prompt manager to filter prompts by keyword.
+  - Located in the rightmost column of the filter row.
+- **Implementation**:
+  - Add a new API endpoint `/prompts/search` for searching prompts.
+  - Update the frontend to include a search input and handle filtering.
+
+### **3. Prompt's Solution**
+
+- **Functionality**:
+  - Add a solution field to each prompt.
+  - Render the solution alongside the prompt in a 3:1 ratio (prompt region: solution region).
+- **Implementation**:
+  - Modify `prompts.json` to include a `solution` field.
+  - Update the prompt manager UI to include a solution input and rendering area.
+
+### **4. Result-Prompt Integration**
+
+- **Detailed Mode**:
+  - Add a button to toggle between **Simple Mode** and **Detailed Mode**.
+  - In **Detailed Mode**, clicking a cell in the result table opens a **Detail Prompt Page**.
+  - The **Detail Prompt Page** displays the prompt, solution, and a pass/fail toggle.
+- **Implementation**:
+  - Add a new endpoint `/results/detail` for fetching detailed results.
+  - Create a new frontend page `detail-prompt.html` for the detailed view.
+
+### **5. Profiles Page**
+
+- **Functionality**:
+  - Add a **Profiles Page** to manage system prompts.
+  - Link prompts to profiles via a dropdown selection in the prompt manager.
+  - Display the profile name next to each prompt (e.g., `1. (Reasoning) Prompt Content`).
+- **Implementation**:
+  - Add a new JSON file `profiles.json` to store profiles.
+  - Create a new frontend page `profiles.html` for profile management.
+
+### **6. Prompt Suites**
+
+- **Functionality**:
+  - Replace the page title with a group of buttons (New, Edit, Delete) and a dropdown for selecting prompt suites.
+  - Each suite is stored in a separate JSON file (e.g., `prompts-default.json`, `prompts-suite1.json`).
+- **Implementation**:
+  - Add new endpoints `/prompts/suites` for managing suites.
+  - Update the frontend to include suite management UI.
+
+### **7. Model Suites**
+
+- **Functionality**:
+  - Similar to prompt suites, but for models.
+  - Allow switching between model suites to render different result tables.
+- **Implementation**:
+  - Add new endpoints `/models/suites` for managing suites.
+  - Update the frontend to include model suite management UI.
+
+---
+
+## **Modular File Structure**
+
+The codebase is organized into the following files:
+
+### **Backend**
+
+1. `main.go`: Entry point for the application.
+2. `server.go`: Handles HTTP and WebSocket servers.
+3. `prompts.go`: Manages prompt-related operations.
+4. `models.go`: Manages model-related operations.
+5. `results.go`: Manages result-related operations.
+6. `websocket.go`: Handles WebSocket connections and broadcasts.
+7. `profiles.go`: Manages profile-related operations (future).
+8. `suites.go`: Manages prompt and model suites (future).
+
+### **Frontend**
+
+1. `index.html`: Main page with navigation links.
+2. `prompt-manager.html`: Prompt management page.
+3. `results.html`: Results page.
+4. `profiles.html`: Profiles page (future).
+5. `detail-prompt.html`: Detail prompt page (future).
+6. `styles.css`: Global styles.
+7. `script.js`: JavaScript for dynamic UI and API interactions.
+
+### **Data**
+
+1. `prompts.json`: Stores prompts.
+2. `results.json`: Stores results.
+3. `models.json`: Stores models.
+4. `profiles.json`: Stores profiles (future).
+5. `prompts-<suite-name>.json`: Stores prompt suites (future).
+6. `models-<suite-name>.json`: Stores model suites (future).

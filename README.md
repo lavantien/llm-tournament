@@ -11,7 +11,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 - **Real-time Updates**: Leverages WebSockets to provide instant updates on the results page, ensuring users have the latest data at their fingertips.
 - **Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
 - **Prompt Management**:
-  - **Add, Edit, Delete**: Full control over prompt creation and management.
+  - **Add, Edit, Delete, Move**: Full control over prompt creation and management.
   - **Multiline Input**: Supports multiline input for detailed and complex prompts.
   - **Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
   - **Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
