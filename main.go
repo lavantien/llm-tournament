@@ -10,26 +10,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gorilla/websocket"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
+	"llm-tournament/socket"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
-var clients = make(map[*websocket.Conn]bool)
-var clientsMutex sync.Mutex
 
 func main() {
 	log.Println("Starting the server...")
 	http.HandleFunc("/", router)
-	http.HandleFunc("/ws", handleWebSocket)
+	http.HandleFunc("/ws", socket.HandleWebSocket)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	log.Println("Server is listening on :8080")
@@ -227,9 +216,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func broadcastResults() {
-	prompts := readPrompts()
-	results := readResults()
 
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
@@ -278,21 +264,6 @@ func broadcastResults() {
 	}
 }
 
-func resultsToBoolMap(results map[string]Result) map[string][]bool {
-	resultsForTemplate := make(map[string][]bool)
-	for model, result := range results {
-		resultsForTemplate[model] = result.Passes
-	}
-	return resultsForTemplate
-}
-
-func promptsToStringArray(prompts []Prompt) []string {
-	promptsTexts := make([]string, len(prompts))
-	for i, prompt := range prompts {
-		promptsTexts[i] = prompt.Text
-	}
-	return promptsTexts
-}
 
 // Handle update prompts order
 func updatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
