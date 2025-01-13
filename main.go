@@ -8,115 +8,21 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
-	"llm-tournament/socket"
 )
 
 func main() {
 	log.Println("Starting the server...")
 	http.HandleFunc("/", router)
-	http.HandleFunc("/ws", socket.HandleWebSocket)
+	http.HandleFunc("/ws", handleWebSocket)
 	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	log.Println("Server is listening on :8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatalf("Error starting server: %v", err)
-	}
-}
-
-// Handle move prompt
-func movePromptHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling move prompt")
-	if r.Method == "GET" {
-		err := r.ParseForm()
-		if err != nil {
-			log.Printf("Error parsing form: %v", err)
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-		indexStr := r.Form.Get("index")
-		index, err := strconv.Atoi(indexStr)
-		if err != nil {
-			log.Printf("Invalid index: %v", err)
-			http.Error(w, "Invalid index", http.StatusBadRequest)
-			return
-		}
-		prompts := readPrompts()
-		if index >= 0 && index < len(prompts) {
-            funcMap := template.FuncMap{
-                "inc": func(i int) int {
-                    return i + 1
-                },
-                "markdown": func(text string) template.HTML {
-                    unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                    html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                    return template.HTML(html)
-                },
-            }
-			t, err := template.New("move_prompt.html").Funcs(funcMap).ParseFiles("templates/move_prompt.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
-				Index   int
-				Prompt  string
-				Prompts []Prompt
-			}{
-				Index:   index,
-				Prompt:  prompts[index].Text,
-				Prompts: prompts,
-			})
-			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
-				return
-			}
-		}
-	} else if r.Method == "POST" {
-		err := r.ParseForm()
-		if err != nil {
-			log.Printf("Error parsing form: %v", err)
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-		indexStr := r.Form.Get("index")
-		index, err := strconv.Atoi(indexStr)
-		if err != nil {
-			log.Printf("Invalid index: %v", err)
-			http.Error(w, "Invalid index", http.StatusBadRequest)
-			return
-		}
-		newIndexStr := r.Form.Get("new_index")
-		newIndex, err := strconv.Atoi(newIndexStr)
-		if err != nil {
-			log.Printf("Invalid new index: %v", err)
-			http.Error(w, "Invalid new index", http.StatusBadRequest)
-			return
-		}
-		prompts := readPrompts()
-		if index >= 0 && index < len(prompts) && newIndex >= 0 && newIndex <= len(prompts) {
-			prompt := prompts[index]
-			prompts = append(prompts[:index], prompts[index+1:]...)
-			if newIndex > index {
-				newIndex--
-			}
-			prompts = append(prompts[:newIndex], append([]Prompt{prompt}, prompts[newIndex:]...)...)
-		}
-		err = writePrompts(prompts)
-		if err != nil {
-			log.Printf("Error writing prompts: %v", err)
-			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
-			return
-		}
-		log.Println("Prompt moved successfully")
-		broadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
@@ -168,101 +74,6 @@ func router(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
-
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling websocket connection")
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Printf("Error upgrading connection: %v", err)
-		return
-	}
-
-	clientsMutex.Lock()
-	clients[conn] = true
-	clientsMutex.Unlock()
-
-	defer func() {
-		clientsMutex.Lock()
-		delete(clients, conn)
-		clientsMutex.Unlock()
-		log.Println("Closing websocket connection")
-		conn.Close()
-	}()
-
-	for {
-		_, msg, err := conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("Websocket error: %v", err)
-			}
-			break
-		}
-
-		var message struct {
-			Type  string `json:"type"`
-			Order []int  `json:"order"`
-		}
-		if err := json.Unmarshal(msg, &message); err != nil {
-			log.Printf("Error unmarshalling message: %v", err)
-			continue
-		}
-
-		switch message.Type {
-		case "update_prompts_order":
-			updatePromptsOrder(message.Order)
-		default:
-			log.Printf("Unknown message type: %s", message.Type)
-		}
-	}
-
-
-	modelPassPercentages := make(map[string]float64)
-	modelTotalScores := make(map[string]int)
-	for model, result := range results {
-		score := 0
-		for _, pass := range result.Passes {
-			if pass {
-				score++
-			}
-		}
-		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
-		modelTotalScores[model] = score * 100
-	}
-
-	models := make([]string, 0, len(results))
-	for model := range results {
-		models = append(models, model)
-	}
-	sort.Slice(models, func(i, j int) bool {
-		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
-	})
-
-	payload := struct {
-		Results         map[string][]bool
-		Models          []string
-		PassPercentages map[string]float64
-		TotalScores     map[string]int
-		Prompts         []string
-	}{
-		Results:         resultsToBoolMap(results),
-		Models:          models,
-		PassPercentages: modelPassPercentages,
-		TotalScores:     modelTotalScores,
-		Prompts:         promptsToStringArray(prompts),
-	}
-
-	clientsMutex.Lock()
-	defer clientsMutex.Unlock()
-	for client := range clients {
-		err := client.WriteJSON(payload)
-		if err != nil {
-			log.Printf("Error broadcasting message: %v", err)
-			client.Close()
-			delete(clients, client)
-		}
-	}
-}
-
 
 // Handle update prompts order
 func updatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
@@ -724,13 +535,13 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		prompts := readPrompts()
 		if index >= 0 && index < len(prompts) {
-            funcMap := template.FuncMap{
-                "markdown": func(text string) template.HTML {
-                    unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                    html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                    return template.HTML(html)
-                },
-            }
+			funcMap := template.FuncMap{
+				"markdown": func(text string) template.HTML {
+					unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+					html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+					return template.HTML(html)
+				},
+			}
 			t, err := template.New("delete_prompt.html").Funcs(funcMap).ParseFiles("templates/delete_prompt.html")
 			if err != nil {
 				log.Printf("Error parsing template: %v", err)
@@ -775,6 +586,98 @@ func deletePromptHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Prompt deleted successfully")
+		broadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	}
+}
+
+// Handle move prompt
+func movePromptHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling move prompt")
+	if r.Method == "GET" {
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("Error parsing form: %v", err)
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		indexStr := r.Form.Get("index")
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			log.Printf("Invalid index: %v", err)
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
+		prompts := readPrompts()
+		if index >= 0 && index < len(prompts) {
+			funcMap := template.FuncMap{
+				"inc": func(i int) int {
+					return i + 1
+				},
+				"markdown": func(text string) template.HTML {
+					unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+					html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+					return template.HTML(html)
+				},
+			}
+			t, err := template.New("move_prompt.html").Funcs(funcMap).ParseFiles("templates/move_prompt.html")
+			if err != nil {
+				log.Printf("Error parsing template: %v", err)
+				http.Error(w, "Error parsing template", http.StatusInternalServerError)
+				return
+			}
+			err = t.Execute(w, struct {
+				Index   int
+				Prompt  string
+				Prompts []Prompt
+			}{
+				Index:   index,
+				Prompt:  prompts[index].Text,
+				Prompts: prompts,
+			})
+			if err != nil {
+				log.Printf("Error executing template: %v", err)
+				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				return
+			}
+		}
+	} else if r.Method == "POST" {
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("Error parsing form: %v", err)
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+		indexStr := r.Form.Get("index")
+		index, err := strconv.Atoi(indexStr)
+		if err != nil {
+			log.Printf("Invalid index: %v", err)
+			http.Error(w, "Invalid index", http.StatusBadRequest)
+			return
+		}
+		newIndexStr := r.Form.Get("new_index")
+		newIndex, err := strconv.Atoi(newIndexStr)
+		if err != nil {
+			log.Printf("Invalid new index: %v", err)
+			http.Error(w, "Invalid new index", http.StatusBadRequest)
+			return
+		}
+		prompts := readPrompts()
+		if index >= 0 && index < len(prompts) && newIndex >= 0 && newIndex <= len(prompts) {
+			prompt := prompts[index]
+			prompts = append(prompts[:index], prompts[index+1:]...)
+			if newIndex > index {
+				newIndex--
+			}
+			prompts = append(prompts[:newIndex], append([]Prompt{prompt}, prompts[newIndex:]...)...)
+		}
+		err = writePrompts(prompts)
+		if err != nil {
+			log.Printf("Error writing prompts: %v", err)
+			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+			return
+		}
+		log.Println("Prompt moved successfully")
 		broadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
