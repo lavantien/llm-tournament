@@ -15,6 +15,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
   - **Multiline Input**: Supports multiline input for detailed and complex prompts.
   - **Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
   - **Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
+  - **Search Prompts**: Full text search prompt content.
 - **Model Evaluation**:
   - **Pass/Fail Tracking**: Efficiently tracks pass/fail results for each model against each prompt.
   - **Total Scores and Pass Percentages**: Displays comprehensive performance metrics for each model.
@@ -72,13 +73,9 @@ Anyone can just submit a PR and we'll discuss there.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
-### Search Prompt
-
-- Add a search prompt functionality, it will be located in the right most of the filter by order's row.
-
 ### Prompt's Solution
 
-- Prompt input with solution; and solution will be rendered along side with the prompt in prompt list (3/4 prompt region, 1/4 solution region).
+- Prompt input with solution; and solution will be rendered along side with the prompt in prompt list (order number align left most, prompt content at the middle, solution in italic and align right most - occupies max 20% of area).
 
 ### Result-Prompt Integration
 
