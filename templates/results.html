@@ -1,76 +1,77 @@
 <!doctype html>
 <html>
-  <head>
+
+<head>
     <title>Results</title>
     <link rel="stylesheet" href="/templates/style.css" />
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script>
-      let socket;
-      let connectionRetries = 0;
-      const maxRetries = 3;
+        let socket;
+        let connectionRetries = 0;
+        const maxRetries = 3;
 
-      function connectWebSocket() {
-        socket = new WebSocket("ws://" + window.location.host + "/ws");
+        function connectWebSocket() {
+            socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-        socket.onopen = function (e) {
-          console.log("[open] Connection established");
-          connectionRetries = 0; // Reset retries on successful connection
-          document.getElementById("connection-status").textContent =
-            "Connected";
-          document.getElementById("connection-status").style.color = "green";
-        };
+            socket.onopen = function (e) {
+                console.log("[open] Connection established");
+                connectionRetries = 0; // Reset retries on successful connection
+                document.getElementById("connection-status").textContent =
+                    "Connected";
+                document.getElementById("connection-status").style.color = "green";
+            };
 
-        socket.onmessage = function (event) {
-          console.log(`[message] Data received from server: ${event.data}`);
-          const payload = JSON.parse(event.data);
-          updateResults(payload);
-        };
+            socket.onmessage = function (event) {
+                console.log(`[message] Data received from server: ${event.data}`);
+                const payload = JSON.parse(event.data);
+                updateResults(payload);
+            };
 
-        socket.onclose = function (event) {
-          if (event.wasClean) {
-            console.log(
-              `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
-            );
-          } else {
-            console.log("[close] Connection died");
-          }
-          document.getElementById("connection-status").textContent =
-            "Disconnected";
-          document.getElementById("connection-status").style.color = "red";
-          if (connectionRetries < maxRetries) {
-            connectionRetries++;
-            console.log(
-              `Attempting to reconnect (${connectionRetries}/${maxRetries})...`,
-            );
-            setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
-          } else {
-            document.getElementById("connection-status").textContent =
-              "Connection failed";
-            document.getElementById("connection-status").style.color = "red";
-            console.log("Max retries reached. Connection failed.");
-          }
-        };
+            socket.onclose = function (event) {
+                if (event.wasClean) {
+                    console.log(
+                        `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
+                    );
+                } else {
+                    console.log("[close] Connection died");
+                }
+                document.getElementById("connection-status").textContent =
+                    "Disconnected";
+                document.getElementById("connection-status").style.color = "red";
+                if (connectionRetries < maxRetries) {
+                    connectionRetries++;
+                    console.log(
+                        `Attempting to reconnect (${connectionRetries}/${maxRetries})...`,
+                    );
+                    setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
+                } else {
+                    document.getElementById("connection-status").textContent =
+                        "Connection failed";
+                    document.getElementById("connection-status").style.color = "red";
+                    console.log("Max retries reached. Connection failed.");
+                }
+            };
 
-        socket.onerror = function (error) {
-          console.log(`[error] ${error.message}`);
-          document.getElementById("connection-status").textContent = "Error";
-          document.getElementById("connection-status").style.color = "red";
-        };
-      }
+            socket.onerror = function (error) {
+                console.log(`[error] ${error.message}`);
+                document.getElementById("connection-status").textContent = "Error";
+                document.getElementById("connection-status").style.color = "red";
+            };
+        }
 
-      function updateResults(payload) {
-        const results = payload.Results;
-        const models = payload.Models;
-        const passPercentages = payload.PassPercentages;
-        const totalScores = payload.TotalScores;
+        function updateResults(payload) {
+            const results = payload.Results;
+            const models = payload.Models;
+            const passPercentages = payload.PassPercentages;
+            const totalScores = payload.TotalScores;
 
-        const tbody = document.querySelector("table tbody");
-        tbody.innerHTML = ""; // Clear existing rows
-        let i = 0;
-        models.forEach((model) => {
-          i++;
-          const row = document.createElement("tr");
-          row.innerHTML = `
+            const tbody = document.querySelector("table tbody");
+            tbody.innerHTML = ""; // Clear existing rows
+            let i = 0;
+            models.forEach((model) => {
+                i++;
+                const row = document.createElement("tr");
+                row.innerHTML = `
                 <td>${i}</td>
                 <td class="model-actions">
                     <div class="prompt-actions">
@@ -80,8 +81,8 @@
                 </td>
                 <td>${model}</td>
                 ${results[model]
-                  .map(
-                    (pass, index) => `
+                        .map(
+                            (pass, index) => `
                     <td>
                         <button
                             class="result-button"
@@ -90,8 +91,8 @@
                         ></button>
                     </td>
                 `,
-                  )
-                  .join("")}
+                        )
+                        .join("")}
                 <td>
                     ${totalScores[model]}
                     <div class="progress-bar-container">
@@ -99,160 +100,134 @@
                     </div>
                 </td>
             `;
-          tbody.appendChild(row);
-        });
-      }
+                tbody.appendChild(row);
+            });
+        }
 
-      function updateResult(model, promptIndex, pass, button) {
-        var loadingIndicator = document.createElement("span");
-        loadingIndicator.className = "loading";
-        button.parentNode.appendChild(loadingIndicator);
-        button.style.display = "none";
+        function updateResult(model, promptIndex, pass, button) {
+            var loadingIndicator = document.createElement("span");
+            loadingIndicator.className = "loading";
+            button.parentNode.appendChild(loadingIndicator);
+            button.style.display = "none";
 
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/update_result", true);
-        xhr.setRequestHeader(
-          "Content-type",
-          "application/x-www-form-urlencoded",
-        );
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4 && xhr.status == 200) {
-            button.style.display = "";
-            loadingIndicator.remove();
-            updateButtonColor(button, pass);
-          }
-        };
-        var params =
-          "model=" +
-          encodeURIComponent(model) +
-          "&promptIndex=" +
-          promptIndex +
-          "&pass=" +
-          pass;
-        xhr.send(params);
-      }
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/update_result", true);
+            xhr.setRequestHeader(
+                "Content-type",
+                "application/x-www-form-urlencoded",
+            );
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    button.style.display = "";
+                    loadingIndicator.remove();
+                    updateButtonColor(button, pass);
+                }
+            };
+            var params =
+                "model=" +
+                encodeURIComponent(model) +
+                "&promptIndex=" +
+                promptIndex +
+                "&pass=" +
+                pass;
+            xhr.send(params);
+        }
 
-      function updateButtonColor(button, pass) {
-        button.style.backgroundColor = pass ? "green" : "red";
-      }
+        function updateButtonColor(button, pass) {
+            button.style.backgroundColor = pass ? "green" : "red";
+        }
 
-      window.onload = connectWebSocket;
+        window.onload = connectWebSocket;
     </script>
-  </head>
+</head>
 
-  <body>
+<body>
     {{template "nav"}}
     <div class="sticky-header">
-      <h2>Add Model</h2>
-      <form
-        action="/add_model"
-        method="post"
-        style="display: flex; align-items: center"
-      >
-        <input
-          type="text"
-          name="model"
-          placeholder="Enter new model name"
-          style="margin-right: 5px"
-        />
-        <input type="submit" value="Add" />
-      </form>
-      <span id="connection-status" style="margin-left: 5px"></span>
+        <h2>Add Model</h2>
+        <form action="/add_model" method="post" style="display: flex; align-items: center">
+            <input type="text" name="model" placeholder="Enter new model name" style="margin-right: 5px" />
+            <input type="submit" value="Add" />
+        </form>
+        <span id="connection-status" style="margin-left: 5px"></span>
     </div>
     <div class="title-row">
-      <div class="filter-container">
-        <form action="/results" method="get">
-          <label for="model_filter">Filter by Model:</label>
-          <select name="model_filter" id="model_filter">
-            <option value="">All Models</option>
-            {{range $model := .Models}}
-            <option value="{{$model}}">{{$model}}</option>
-            {{end}}
-          </select>
-          <input type="submit" value="Filter" />
-        </form>
-      </div>
-      <div class="title-container">
-        <h1>Results</h1>
-      </div>
+        <div class="filter-container">
+            <form action="/results" method="get">
+                <label for="model_filter">Filter by Model:</label>
+                <select name="model_filter" id="model_filter">
+                    <option value="">All Models</option>
+                    {{range $model := .Models}}
+                    <option value="{{$model}}">{{$model}}</option>
+                    {{end}}
+                </select>
+                <input type="submit" value="Filter" />
+            </form>
+        </div>
+        <div class="title-container">
+            <h1>Results</h1>
+        </div>
+        <div class="search-container">&nbsp;</div>
     </div>
     <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Actions</th>
-          <th>Model</th>
-          {{range $index := .PromptIndices}}
-          <th>{{$index}}</th>
-          {{end}}
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
-        $.ModelFilter "") (eq $.ModelFilter $model)}}
-        <tr>
-          <td>{{$i = inc $i}}{{$i}}</td>
-          <td class="model-actions">
-            <div class="prompt-actions">
-              <a class="action-button edit-button" href="/edit_model?model={{$model}}"
-                >Edit</a
-              >
-              <a class="action-button delete-button" href="/delete_model?model={{$model}}"
-                >Delete</a
-              >
-            </div>
-          </td>
-          <td>{{$model}}</td>
-          {{range $index, $pass := $results}}
-          <td>
-            <button
-              class="result-button"
-              style="background-color: {{if $pass}}green{{else}}red{{end}};"
-              onclick="updateResult('{{$model}}', {{$index}}, {{not $pass}}, this)"
-            ></button>
-          </td>
-          {{end}}
-          <td>
-            {{index $.TotalScores $model}}
-            <div class="progress-bar-container">
-              <div
-                class="progress-bar"
-                style="width: {{index $.PassPercentages $model}}%;"
-              ></div>
-            </div>
-          </td>
-        </tr>
-        {{end}} {{end}}
-      </tbody>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Actions</th>
+                <th>Model</th>
+                {{range $index := .PromptIndices}}
+                <th>{{$index}}</th>
+                {{end}}
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
+            $.ModelFilter "") (eq $.ModelFilter $model)}}
+            <tr>
+                <td>{{$i = inc $i}}{{$i}}</td>
+                <td class="model-actions">
+                    <div class="prompt-actions">
+                        <a class="action-button edit-button" href="/edit_model?model={{$model}}">Edit</a>
+                        <a class="action-button delete-button" href="/delete_model?model={{$model}}">Delete</a>
+                    </div>
+                </td>
+                <td>{{$model}}</td>
+                {{range $index, $pass := $results}}
+                <td>
+                    <button class="result-button" style="background-color: {{if $pass}}green{{else}}red{{end}};"
+                        onclick="updateResult('{{$model}}', {{$index}}, {{not $pass}}, this)"></button>
+                </td>
+                {{end}}
+                <td>
+                    {{index $.TotalScores $model}}
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{index $.PassPercentages $model}}%;"></div>
+                    </div>
+                </td>
+            </tr>
+            {{end}} {{end}}
+        </tbody>
     </table>
     <div class="sticky-footer">
-      <div style="display: flex; align-items: center">
-        <h2>Manage Results</h2>
-        &nbsp;&nbsp;&nbsp;
-        <form action="/reset_results" method="get" style="margin-right: 5px">
-          <input type="submit" value="Reset Results" />
-        </form>
-        <form
-          action="/confirm_refresh_results"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="submit" value="Refresh Results" />
-        </form>
-        <form action="/export_results" method="post" style="margin-right: 5px">
-          <input type="submit" value="Export Results" />
-        </form>
-        <form
-          action="/import_results"
-          method="post"
-          enctype="multipart/form-data"
-          style="display: flex; align-items: center"
-        >
-          <input type="file" name="results_file" style="margin-right: 5px" />
-          <input type="submit" value="Import Results" />
-        </form>
-      </div>
+        <div style="display: flex; align-items: center">
+            <h2>Manage Results</h2>
+            &nbsp;&nbsp;&nbsp;
+            <form action="/reset_results" method="get" style="margin-right: 5px">
+                <input type="submit" value="Reset Results" />
+            </form>
+            <form action="/confirm_refresh_results" method="get" style="margin-right: 5px">
+                <input type="submit" value="Refresh Results" />
+            </form>
+            <form action="/export_results" method="post" style="margin-right: 5px">
+                <input type="submit" value="Export Results" />
+            </form>
+            <form action="/import_results" method="post" enctype="multipart/form-data"
+                style="display: flex; align-items: center">
+                <input type="file" name="results_file" style="margin-right: 5px" />
+                <input type="submit" value="Import Results" />
+            </form>
+        </div>
     </div>
     <div class="scroll-buttons">
         <button class="scroll-button" onclick="scrollToTop()">↑</button>
@@ -260,12 +235,16 @@
     </div>
     <script>
         function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({top: 0, behavior: "smooth"});
         }
 
         function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth",
+            });
         }
     </script>
-  </body>
+</body>
+
 </html>

@@ -339,12 +339,15 @@ body {
         min-width: 512px;
     }
 
+    .search-container {
+        float: left;
+        min-width: 512px;
+    }
+
     .title-container {
         display: inline-block;
         text-align: center;
-        width: calc(100% - 512px);
-        /* Adjust width to accommodate the filter container */
-        padding-right: 512px;
+        width: calc(100% - 1024px);
     }
 
     .title-row {

@@ -4,7 +4,7 @@
     <title>Prompt List</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
 
   <body>
@@ -54,36 +54,57 @@
           <input type="submit" value="Filter" />
         </form>
       </div>
+      <div class="title-container">
+        <h1>Prompt List</h1>
+      </div>
       <div class="search-container">
         <form action="/prompts" method="get">
           <label for="search_query">Search:</label>
-          <input type="text" name="search_query" id="search_query" value="{{.SearchQuery}}" />
+          <input
+            type="text"
+            name="search_query"
+            id="search_query"
+            value="{{.SearchQuery}}"
+          />
           <input type="submit" value="Search" />
         </form>
       </div>
     </div>
     <ul id="prompt-list">
-      {{range $index, $prompt := .Prompts}}
-      {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt) (tolower $.SearchQuery)))}}
+      {{range $index, $prompt := .Prompts}} {{if and (or (eq $.OrderFilter 0)
+      (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains
+      (tolower $prompt) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
         <div class="markdown-content">{{$prompt}}</div>
         &nbsp;&nbsp;
         <div class="prompt-actions">
-          <button class="action-button copy-button" onclick="copyPrompt('{{$prompt}}')">
+          <button
+            class="action-button copy-button"
+            onclick="copyPrompt('{{$prompt}}')"
+          >
             Copy
           </button>
-          <a class="action-button edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-          <a class="action-button delete-button" href="/delete_prompt?index={{$index}}">
+          <a
+            class="action-button edit-button"
+            href="/edit_prompt?index={{$index}}"
+            >Edit</a
+          >
+          <a
+            class="action-button delete-button"
+            href="/delete_prompt?index={{$index}}"
+          >
             Delete
           </a>
-          <a class="action-button move-button" href="/move_prompt?index={{$index}}">
+          <a
+            class="action-button move-button"
+            href="/move_prompt?index={{$index}}"
+          >
             Move
           </a>
         </div>
       </li>
-      {{end}}
-      {{end}}
+      {{end}} {{end}}
     </ul>
     <div class="sticky-footer">
       <div style="display: flex; align-items: center">
@@ -240,17 +261,20 @@
       };
     </script>
     <div class="scroll-buttons">
-        <button class="scroll-button" onclick="scrollToTop()">↑</button>
-        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+      <button class="scroll-button" onclick="scrollToTop()">↑</button>
+      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
     </div>
     <script>
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     </script>
   </body>
 </html>
