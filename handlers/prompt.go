@@ -19,6 +19,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling prompt list page")
 	prompts := middleware.ReadPrompts()
 	orderFilter := r.FormValue("order_filter")
+	searchQuery := r.FormValue("search_query")
 
 	orderFilterInt := 0
 	if orderFilter != "" {
@@ -50,6 +51,8 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		"string": func(i int) string {
 			return strconv.Itoa(i)
 		},
+		"tolower": strings.ToLower,
+		"contains": strings.Contains,
 	}
 
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
@@ -67,10 +70,12 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		Prompts       []string
 		PromptIndices []int
 		OrderFilter   int
+		SearchQuery   string
 	}{
 		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
 		OrderFilter:   orderFilterInt,
+		SearchQuery:   searchQuery,
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)

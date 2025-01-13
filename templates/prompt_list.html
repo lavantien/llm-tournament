@@ -54,13 +54,17 @@
           <input type="submit" value="Filter" />
         </form>
       </div>
-      <div class="title-container">
-        <h1>Prompt List</h1>
+      <div class="search-container">
+        <form action="/prompts" method="get">
+          <label for="search_query">Search:</label>
+          <input type="text" name="search_query" id="search_query" value="{{.SearchQuery}}" />
+          <input type="submit" value="Search" />
+        </form>
       </div>
     </div>
     <ul id="prompt-list">
       {{range $index, $prompt := .Prompts}}
-      {{if or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))}}
+      {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index)))) (or (eq $.SearchQuery "") (contains (tolower $prompt) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
         <div class="markdown-content">{{$prompt}}</div>
@@ -112,6 +116,19 @@
             console.error("Async: Could not copy text: ", err);
           },
         );
+      }
+
+      function updateOrder() {
+        const items = promptList.querySelectorAll("li");
+        const order = Array.from(items).map((item) =>
+          parseInt(item.getAttribute("data-index")),
+        );
+        document.getElementById("prompts-order-input").value =
+          JSON.stringify(order);
+        const searchQuery = document.getElementById("search_query").value;
+        const url = new URL(window.location.href);
+        url.searchParams.set("search_query", searchQuery);
+        window.history.replaceState({}, "", url.toString());
       }
 
       const promptList = document.getElementById("prompt-list");
