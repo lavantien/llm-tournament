@@ -10,14 +10,18 @@
     <h1>Edit Prompt</h1>
     <form action="/edit_prompt" method="post" style="text-align: center;">
         <input type="hidden" name="index" value="{{.Index}}">
-        <textarea name="prompt" rows="10" cols="50">{{.Prompt}}</textarea>
+        <label for="prompt">Prompt:</label><br>
+        <textarea name="prompt" rows="10" cols="50" id="prompt">{{.Prompt.Text}}</textarea><br>
+        <label for="solution">Solution:</label><br>
+        <textarea name="solution" rows="5" cols="50" id="solution">{{.Prompt.Solution}}</textarea><br>
         <input type="submit" value="Save">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
     <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
     <h2>Preview</h2>
     <div id="preview" class="markdown-content">
-        {{.Prompt | markdown}}
+        {{.Prompt.Text | markdown}}
+        <div style="font-style: italic; text-align: right;">{{.Prompt.Solution | markdown}}</div>
     </div>
     <script>
         const textarea = document.querySelector('textarea[name="prompt"]');

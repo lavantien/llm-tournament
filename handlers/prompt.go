@@ -32,10 +32,10 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	promptTexts := make([]string, len(prompts))
+	promptTexts := make([]middleware.Prompt, len(prompts))
 	promptIndices := make([]int, len(prompts))
 	for i, prompt := range prompts {
-		promptTexts[i] = prompt.Text
+		promptTexts[i] = prompt
 		promptIndices[i] = i + 1
 	}
 
@@ -67,7 +67,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = t.Execute(w, struct {
-		Prompts       []string
+		Prompts       []middleware.Prompt
 		PromptIndices []int
 		OrderFilter   int
 		SearchQuery   string
@@ -126,8 +126,10 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
 		return
 	}
+    solutionText := r.Form.Get("solution")
+
 	prompts := middleware.ReadPrompts()
-	prompts = append(prompts, middleware.Prompt{Text: promptText})
+	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText})
 	err = middleware.WritePrompts(prompts)
 	if err != nil {
 		log.Printf("Error writing prompts: %v", err)
@@ -344,10 +346,10 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			err = t.Execute(w, struct {
 				Index  int
-				Prompt string
+				Prompt middleware.Prompt
 			}{
 				Index:  index,
-				Prompt: prompts[index].Text,
+				Prompt: prompts[index],
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
@@ -370,6 +372,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		editedPrompt := r.Form.Get("prompt")
+        editedSolution := r.Form.Get("solution")
 		if editedPrompt == "" {
 			log.Println("Prompt text cannot be empty")
 			http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
@@ -378,6 +381,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 		prompts := middleware.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts[index].Text = editedPrompt
+            prompts[index].Solution = editedSolution
 		}
 		err = middleware.WritePrompts(prompts)
 		if err != nil {

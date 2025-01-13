@@ -9,7 +9,8 @@ import (
 )
 
 type Prompt struct {
-	Text string `json:"text"`
+	Text     string `json:"text"`
+	Solution string `json:"solution"`
 }
 
 type Result struct {

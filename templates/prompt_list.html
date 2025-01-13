@@ -75,33 +75,35 @@
       (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains
       (tolower $prompt) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
-        <h3>{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
-        <div class="markdown-content">{{$prompt}}</div>
-        &nbsp;&nbsp;
-        <div class="prompt-actions">
-          <button
-            class="action-button copy-button"
-            onclick="copyPrompt('{{$prompt}}')"
-          >
-            Copy
-          </button>
-          <a
-            class="action-button edit-button"
-            href="/edit_prompt?index={{$index}}"
-            >Edit</a
-          >
-          <a
-            class="action-button delete-button"
-            href="/delete_prompt?index={{$index}}"
-          >
-            Delete
-          </a>
-          <a
-            class="action-button move-button"
-            href="/move_prompt?index={{$index}}"
-          >
-            Move
-          </a>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h3 style="flex: 0 0 auto; margin-right: 10px;">{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
+          <div class="markdown-content" style="flex: 1; margin-right: 10px;">{{$prompt.Text}}</div>
+          <div style="flex: 0 0 20%; font-style: italic; text-align: right; margin-left: auto;" class="markdown-content">{{$prompt.Solution}}</div>
+          <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px;">
+            <button
+              class="action-button copy-button"
+              onclick="copyPrompt('{{$prompt.Text}}')"
+            >
+              Copy
+            </button>
+            <a
+              class="action-button edit-button"
+              href="/edit_prompt?index={{$index}}"
+              >Edit</a
+            >
+            <a
+              class="action-button delete-button"
+              href="/delete_prompt?index={{$index}}"
+            >
+              Delete
+            </a>
+            <a
+              class="action-button move-button"
+              href="/move_prompt?index={{$index}}"
+            >
+              Move
+            </a>
+          </div>
         </div>
       </li>
       {{end}} {{end}}
