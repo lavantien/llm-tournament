@@ -12,6 +12,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 - **Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
 - **Prompt Management**:
   - **Add, Edit, Delete, Move**: Full control over prompt creation and management.
+  - **Prompt Solution**: Freely manage prompt's content and solution.
   - **Multiline Input**: Supports multiline input for detailed and complex prompts.
   - **Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
   - **Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
@@ -73,14 +74,17 @@ Anyone can just submit a PR and we'll discuss there.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
-### Prompt's Solution
+### Prompt Suites
 
-- Prompt input with solution; and solution will be rendered along side with the prompt in prompt list (order number align left most, prompt content at the middle, solution in italic and align right most - occupies max 20% of area).
+- In place of the page `title-container` in the middle (Prompt List), replace it with a group of 3 buttons and a dropdown selection.
+- The 2 buttons are: New, Edit, and Delete; the dropdown selection is to choose the current prompt suite to display.
+- When click either of the 2 buttons, the appropriate page will be redirected to a similarly action page like others: the new_prompt_suite and edit_prompt_suite pages will have an input field and accept and cancel buttons, the delete_prompt_suite page will have the accept and cancel buttons.
+- The starting prompts in `data/prompts.json` will be the `default` suite.
+- Each suite will be stored in a different json: `data/prompts-<suite-name>.json`
 
-### Result-Prompt Integration
+### Model Suites
 
-- Add an button on the left most of the add model row, the button's name has two states: Simple Mode and Detailed Mode, when click will switch between these 2 mode, in simple mode everything stay the same, but in detailed mode the logic is as below.
-- In detailed mode, when click on a cell in result table, instead of pass/fail logic, open a detail_prompt page that show the prompt and solution rendered in markdown and a pass/fail toggle and an accept button and a back b utton.
+- The same with prompt suite, but for models and result table rendering.
 
 ### 3rd Page - Profiles
 
@@ -88,14 +92,7 @@ Anyone can just submit a PR and we'll discuss there.
 - Link prompts with profiles, prompt input and edit have drop down selection for profile.
 - Display profile of each prompt after the numbering, e.g. 1. (Reasoning) prompt content.
 
-### Prompt Suites
+### Result-Prompt Integration
 
-- In place of the page title in the middle (Prompt List), replace it with a group of 3 buttons and a dropdown selection.
-- The 2 buttons are: New, Edit, and Delete; the dropdown selection is to choose the current prompt suite to display.
-- When click either of the 2 buttons, the appropriate page will be redirected to a similarly action page like others: the new_prompt_suite and edit_prompt_suite pages will have an input field and accept and cancel buttons, the delete_prompt_suite page will have the accept and cancel buttons.
-- The starting prompts in `prompts.json` will be the `default` suite.
-- Each suite will be stored in a different json: `prompts-<suite-name>.json`
-
-### Model Suites
-
-- The same with prompt suite, but for models and result table rendering.
+- Add an button on the left most of the add model row, the button's name has two states: Simple Mode and Detailed Mode, when click will switch between these 2 mode, in simple mode everything stay the same, but in detailed mode the logic is as below.
+- In detailed mode, when click on a cell in result table, instead of pass/fail logic, open a detail_prompt page that show the prompt and solution rendered in markdown and a pass/fail toggle and an accept button and a back b utton.
