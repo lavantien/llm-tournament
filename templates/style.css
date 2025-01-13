@@ -339,8 +339,11 @@ body {
         min-width: 512px;
     }
 
-    .search-container {
-        float: left;
+   .search-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
         min-width: 512px;
     }
 
