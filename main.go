@@ -214,7 +214,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Unknown message type: %s", message.Type)
 		}
 	}
-}
 
 
 	modelPassPercentages := make(map[string]float64)
