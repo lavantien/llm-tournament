@@ -66,6 +66,7 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### Refactor
 
+- Change UI demo pictures after finished profiles page.
 - Refactor the prompt suite to be more roburst and streamlined, with programming focus.
 - Handbook composition prompt.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
