@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ var upgrader = websocket.Upgrader{
 var clients = make(map[*websocket.Conn]bool)
 var clientsMutex sync.Mutex
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling websocket connection")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -61,16 +61,16 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 		switch message.Type {
 		case "update_prompts_order":
-			updatePromptsOrder(message.Order)
+			UpdatePromptsOrder(message.Order)
 		default:
 			log.Printf("Unknown message type: %s", message.Type)
 		}
 	}
 }
 
-func broadcastResults() {
-	prompts := readPrompts()
-	results := readResults()
+func BroadcastResults() {
+	prompts := ReadPrompts()
+	results := ReadResults()
 
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
