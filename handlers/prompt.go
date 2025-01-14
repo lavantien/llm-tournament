@@ -70,22 +70,23 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
     currentSuite := middleware.GetCurrentSuiteName()
-    var prompts []middleware.Prompt
-    if currentSuite == "" {
-        prompts, err = middleware.ReadPromptSuite("default")
-        if err != nil {
-            log.Printf("Error reading prompt suite: %v", err)
-            http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-            return
-        }
-    } else {
-        prompts, err = middleware.ReadPromptSuite(currentSuite)
-        if err != nil {
-            log.Printf("Error reading prompt suite: %v", err)
-            http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-            return
-        }
-    }
+	var prompts []middleware.Prompt
+	if currentSuite == "" {
+		currentSuite = "default"
+		prompts, err = middleware.ReadPromptSuite("default")
+		if err != nil {
+			log.Printf("Error reading prompt suite: %v", err)
+			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		prompts, err = middleware.ReadPromptSuite(currentSuite)
+		if err != nil {
+			log.Printf("Error reading prompt suite: %v", err)
+			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+			return
+		}
+	}
     promptTexts := make([]middleware.Prompt, len(prompts))
     promptIndices := make([]int, len(prompts))
     for i, prompt := range prompts {
@@ -99,21 +100,15 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		OrderFilter   int
 		SearchQuery   string
 		Suites        []string
-        CurrentSuite  string
+		CurrentSuite  string
 	}{
 		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
 		OrderFilter:   orderFilterInt,
 		SearchQuery:   searchQuery,
 		Suites:        suites,
-        CurrentSuite:  currentSuite,
+		CurrentSuite:  currentSuite,
 	})
-    if err != nil {
-        log.Printf("Error executing template: %v", err)
-        return
-    }
-    log.Println("Prompt list page rendered successfully")
-    return
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
 		return
