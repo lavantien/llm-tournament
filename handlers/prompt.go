@@ -395,6 +395,64 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handle bulk delete prompts
+func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling bulk delete prompts")
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var request struct {
+		Indices []int `json:"indices"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		log.Printf("Error decoding request: %v", err)
+		http.Error(w, "Error decoding request", http.StatusBadRequest)
+		return
+	}
+
+	if len(request.Indices) == 0 {
+		log.Println("No indices provided for deletion")
+		http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
+		return
+	}
+
+	prompts := middleware.ReadPrompts()
+	if len(prompts) == 0 {
+		log.Println("No prompts to delete")
+		http.Error(w, "No prompts to delete", http.StatusBadRequest)
+		return
+	}
+
+	var filteredPrompts []middleware.Prompt
+	for i, prompt := range prompts {
+		found := false
+		for _, index := range request.Indices {
+			if i == index {
+				found = true
+				break
+			}
+		}
+		if !found {
+			filteredPrompts = append(filteredPrompts, prompt)
+		}
+	}
+
+	err = middleware.WritePrompts(filteredPrompts)
+	if err != nil {
+		log.Printf("Error writing prompts: %v", err)
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Prompts deleted successfully")
+	middleware.BroadcastResults()
+	w.WriteHeader(http.StatusOK)
+}
+
 // Handle delete prompt
 func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt")
