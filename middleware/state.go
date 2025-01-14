@@ -72,6 +72,51 @@ func WriteResults(results map[string]Result) error {
 	return nil
 }
 
+// Read prompt suite from data/prompts-<suiteName>.json
+func ReadPromptSuite(suiteName string) ([]Prompt, error) {
+	filename := "data/prompts-" + suiteName + ".json"
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var prompts []Prompt
+	err = json.Unmarshal(data, &prompts)
+	if err != nil {
+		return nil, err
+	}
+	return prompts, nil
+}
+
+// Write prompt suite to data/prompts-<suiteName>.json
+func WritePromptSuite(suiteName string, prompts []Prompt) error {
+	filename := "data/prompts-" + suiteName + ".json"
+	data, err := json.Marshal(prompts)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// List all prompt suites
+func ListPromptSuites() ([]string, error) {
+	var suites []string
+	files, err := os.ReadDir("data")
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "prompts-") && strings.HasSuffix(file.Name(), ".json") {
+			suiteName := strings.TrimSuffix(strings.TrimPrefix(file.Name(), "prompts-"), ".json")
+			suites = append(suites, suiteName)
+		}
+	}
+	return suites, nil
+}
+
 // Handle import error
 func ImportErrorHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling import error")
