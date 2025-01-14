@@ -151,69 +151,73 @@
       </div>
     </div>
     <ul id="prompt-list">
-      {{range $index, $prompt := .Prompts}}
-      {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
-      <li draggable="true" data-index="{{$index}}">
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-          "
-        >
-          <input
-            type="checkbox"
-            class="prompt-checkbox"
-            data-index="{{$index}}"
-            style="margin-right: 10px"
-          />
-          <h3 style="flex: 0 0 auto; margin-right: 10px">
-            {{inc $index}}.&nbsp;&nbsp;&nbsp;
-          </h3>
-          <div class="markdown-content" style="flex: 1; margin-right: 10px">
-            {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
-          </div>
+      {{if .Prompts}}
+        {{range $index, $prompt := .Prompts}}
+        {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
+        <li draggable="true" data-index="{{$index}}">
           <div
             style="
-              flex: 0 0 20%;
-              font-style: italic;
-              text-align: right;
-              margin-left: auto;
-              color: green;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 100%;
             "
-            class="markdown-content"
           >
-            {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
+            <input
+              type="checkbox"
+              class="prompt-checkbox"
+              data-index="{{$index}}"
+              style="margin-right: 10px"
+            />
+            <h3 style="flex: 0 0 auto; margin-right: 10px">
+              {{inc $index}}.&nbsp;&nbsp;&nbsp;
+            </h3>
+            <div class="markdown-content" style="flex: 1; margin-right: 10px">
+              {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
+            </div>
+            <div
+              style="
+                flex: 0 0 20%;
+                font-style: italic;
+                text-align: right;
+                margin-left: auto;
+                color: green;
+              "
+              class="markdown-content"
+            >
+              {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
+            </div>
+            <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
+              <button
+                class="action-button copy-button"
+                onclick="copyPrompt('{{$prompt.Text}}')"
+              >
+                Copy
+              </button>
+              <a
+                class="action-button edit-button"
+                href="/edit_prompt?index={{$index}}"
+                >Edit</a
+              >
+              <a
+                class="action-button delete-button"
+                href="/delete_prompt?index={{$index}}"
+              >
+                Delete
+              </a>
+              <a
+                class="action-button move-button"
+                href="/move_prompt?index={{$index}}"
+              >
+                Move
+              </a>
+            </div>
           </div>
-          <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
-            <button
-              class="action-button copy-button"
-              onclick="copyPrompt('{{$prompt.Text}}')"
-            >
-              Copy
-            </button>
-            <a
-              class="action-button edit-button"
-              href="/edit_prompt?index={{$index}}"
-              >Edit</a
-            >
-            <a
-              class="action-button delete-button"
-              href="/delete_prompt?index={{$index}}"
-            >
-              Delete
-            </a>
-            <a
-              class="action-button move-button"
-              href="/move_prompt?index={{$index}}"
-            >
-              Move
-            </a>
-          </div>
-        </div>
-      </li>
-      {{end}}
+        </li>
+        {{end}}
+        {{end}}
+      {{else}}
+        <p style="text-align: center;">No prompts available.</p>
       {{end}}
     </ul>
     <div class="sticky-footer">
