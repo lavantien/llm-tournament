@@ -165,6 +165,11 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "New suite name cannot be empty", http.StatusBadRequest)
 			return
 		}
+        if suiteName == newSuiteName {
+            log.Println("New suite name is the same as the old suite name")
+            http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+            return
+        }
 		prompts, err := middleware.ReadPromptSuite(suiteName)
 		if err != nil {
 			log.Printf("Error reading prompt suite: %v", err)
