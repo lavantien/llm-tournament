@@ -46,6 +46,10 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		"tolower":  strings.ToLower,
 		"contains": strings.Contains,
 	}
+    funcMap["json"] = func(v interface{}) (string, error) {
+        b, err := json.Marshal(v)
+        return string(b), err
+    }
 
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
