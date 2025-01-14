@@ -6,6 +6,7 @@
 /add       main.go
 /add       middleware/socket.go
 /add       middleware/state.go
+/add       templates/bulk_delete_prompts.html
 /add       templates/confirm_refresh_results.html
 /add       templates/delete_model.html
 /add       templates/delete_prompt.html
