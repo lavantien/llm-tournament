@@ -31,9 +31,16 @@ func WritePrompts(prompts []Prompt) error {
     return WritePromptSuite(suiteName, prompts)
 }
 
-// Read results from results.json
+// Read results from data/results-<suiteName>.json
 func ReadResults() map[string]Result {
-	data, _ := os.ReadFile("data/results.json")
+    suiteName := GetCurrentSuiteName()
+    var filename string
+    if suiteName == "default" {
+        filename = "data/results-default.json"
+    } else {
+        filename = "data/results-" + suiteName + ".json"
+    }
+	data, _ := os.ReadFile(filename)
 	var results map[string]Result
 	json.Unmarshal(data, &results)
 
@@ -52,18 +59,33 @@ func ReadResults() map[string]Result {
 	return results
 }
 
-// Write results to results.json
+// Write results to data/results-<suiteName>.json
 func WriteResults(results map[string]Result) error {
+    suiteName := GetCurrentSuiteName()
+    var filename string
+    if suiteName == "default" {
+        filename = "data/results-default.json"
+    } else {
+        filename = "data/results-" + suiteName + ".json"
+    }
 	data, err := json.Marshal(results)
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile("data/results.json", data, 0644)
-	if err != nil {
-		return err
+	err = os.WriteFile(filename, data, 0644)
+
+	prompts := ReadPrompts()
+	if results == nil {
+		return make(map[string]Result)
 	}
-	return nil
-}
+	for model, result := range results {
+		if len(result.Passes) < len(prompts) {
+			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
+			results[model] = result
+		} else if len(result.Passes) > len(prompts) {
+			results[model] = Result{Passes: result.Passes[:len(prompts)]}
+		}
+	}
 
 // Read prompt suite from data/prompts-<suiteName>.json
 func ReadPromptSuite(suiteName string) ([]Prompt, error) {
@@ -120,9 +142,14 @@ func ListPromptSuites() ([]string, error) {
 	return suites, nil
 }
 
-// Delete prompt suite from data/prompts-<suiteName>.json
-func DeletePromptSuite(suiteName string) error {
-	filename := "data/prompts-" + suiteName + ".json"
+// Delete results suite from data/results-<suiteName>.json
+func DeleteResultsSuite(suiteName string) error {
+    var filename string
+    if suiteName == "default" {
+        filename = "data/results-default.json"
+    } else {
+        filename = "data/results-" + suiteName + ".json"
+    }
 	err := os.Remove(filename)
 	if err != nil {
 		return err
