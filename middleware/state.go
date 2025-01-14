@@ -75,7 +75,12 @@ func WriteResults(results map[string]Result) error {
 
 // Read prompt suite from data/prompts-<suiteName>.json
 func ReadPromptSuite(suiteName string) ([]Prompt, error) {
-	filename := "data/prompts-" + suiteName + ".json"
+    var filename string
+    if suiteName == "default" {
+        filename = "data/prompts.json"
+    } else {
+        filename = "data/prompts-" + suiteName + ".json"
+    }
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
