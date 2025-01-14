@@ -309,6 +309,7 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+        suiteName := middleware.GetCurrentSuiteName()
 		results := make(map[string]middleware.Result)
 		prompts := middleware.ReadPrompts()
 		for i, line := range lines {
