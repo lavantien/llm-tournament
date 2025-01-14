@@ -118,6 +118,16 @@ func ListPromptSuites() ([]string, error) {
 	return suites, nil
 }
 
+// Delete prompt suite from data/prompts-<suiteName>.json
+func DeletePromptSuite(suiteName string) error {
+	filename := "data/prompts-" + suiteName + ".json"
+	err := os.Remove(filename)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Handle import error
 func ImportErrorHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling import error")
