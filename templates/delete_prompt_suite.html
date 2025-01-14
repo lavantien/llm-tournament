@@ -8,7 +8,7 @@
 <body>
     <h1>Delete Prompt Suite</h1>
     <form action="/prompts/suites/delete" method="post" style="text-align: center;">
-        <input type="hidden" name="suite_name" value="TODO">
+        <input type="hidden" name="suite_name" value="{{.SuiteName}}">
         <input type="submit" value="Delete">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
