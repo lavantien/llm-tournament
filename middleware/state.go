@@ -112,6 +112,16 @@ func ListPromptSuites() ([]string, error) {
 	return suites, nil
 }
 
+// Get current suite name
+func GetCurrentSuiteName() string {
+	data, err := os.ReadFile("data/current_suite.txt")
+	if err != nil {
+		return ""
+	}
+	suiteName := string(data)
+	return strings.TrimSpace(suiteName)
+}
+
 func UpdatePromptsOrder(order []int) {
 	prompts := ReadPrompts()
 	if len(order) != len(prompts) {
