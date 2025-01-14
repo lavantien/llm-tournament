@@ -44,7 +44,7 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		err = middleware.DeletePromptSuite(suiteName)
+		err := middleware.DeletePromptSuite(suiteName)
 		if err != nil {
 			log.Printf("Error deleting prompt suite: %v", err)
 			http.Error(w, "Error deleting prompt suite", http.StatusInternalServerError)
