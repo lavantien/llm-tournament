@@ -67,6 +67,13 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+    err = os.WriteFile("data/current_suite.txt", []byte(suiteName), 0644)
+    if err != nil {
+        log.Printf("Error writing current suite: %v", err)
+        http.Error(w, "Error writing current suite", http.StatusInternalServerError)
+        return
+    }
+
 	prompts, err := middleware.ReadPromptSuite(suiteName)
 	if err != nil {
 		log.Printf("Error reading prompt suite: %v", err)

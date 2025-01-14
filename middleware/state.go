@@ -36,6 +36,13 @@ func WritePrompts(prompts []Prompt) error {
 	if err != nil {
 		return err
 	}
+    // Set current suite name to empty string when writing to default prompts.json
+    if suiteName := GetCurrentSuiteName(); suiteName != "" {
+        err = os.WriteFile("data/current_suite.txt", []byte(""), 0644)
+        if err != nil {
+            return err
+        }
+    }
 	return nil
 }
 
