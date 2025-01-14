@@ -12,13 +12,9 @@
     <form action="/edit_prompt" method="post" style="text-align: center">
       <input type="hidden" name="index" value="{{.Index}}" />
       <label for="prompt">Prompt:</label><br />
-      <textarea name="prompt" rows="10" cols="50" id="prompt">
-            {{.Prompt.Text}}</textarea
-      ><br />
+      <textarea name="prompt" rows="10" cols="50" id="prompt">{{.Prompt.Text}}</textarea><br />
       <label for="solution">Solution:</label><br />
-      <textarea name="solution" rows="5" cols="50" id="solution">
-            {{.Prompt.Solution}}</textarea
-      ><br />
+      <textarea name="solution" rows="5" cols="50" id="solution">{{.Prompt.Solution}}</textarea><br />
       <input type="submit" value="Save" />
       <input type="submit" form="cancel-form" value="Cancel" />
     </form>
@@ -32,8 +28,6 @@
     <div id="prompt-preview" class="markdown-content">
       {{.Prompt.Text | markdown}}
     </div>
-    <br />
-    {{"---" | markdown}}
     <br />
     <div
       id="solution-preview"
