@@ -106,6 +106,7 @@ func BroadcastResults() {
 		PassPercentages: modelPassPercentages,
 		TotalScores:     modelTotalScores,
 		Prompts:         promptsToStringArray(prompts),
+        SuiteName:       suiteName,
 	}
 
 	clientsMutex.Lock()
