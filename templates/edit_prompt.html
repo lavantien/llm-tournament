@@ -29,14 +29,16 @@
       style="text-align: center"
     ></form>
     <h2>Preview</h2>
-    <div id="preview" class="markdown-content">
+    <div id="prompt-preview" class="markdown-content">
       {{.Prompt.Text | markdown}}
-      <br />
-      {{"---" | markdown}}
-      <br />
-      <div style="font-style: italic; text-align: left; color: green">
-        {{.Prompt.Solution | markdown}}
-      </div>
+    </div>
+    <br />
+    <div
+      id="solution-preview"
+      class="markdown-content"
+      style="font-style: italic; text-align: left; color: green"
+    >
+      {{.Prompt.Solution | markdown}}
     </div>
     <script>
       // Initial render
@@ -44,19 +46,25 @@
       const solutionTextarea = document.querySelector(
         'textarea[name="solution"]',
       );
-      const preview = document.getElementById("preview");
+      const promptPreview = document.getElementById("prompt-preview");
+      const solutionPreview = document.getElementById("solution-preview");
 
-      function updatePreview() {
-        const markdownText =
-          promptTextarea.value + "\n---\n" + solutionTextarea.value;
-        preview.innerHTML = marked.parse(markdownText);
+      function updatePromptPreview() {
+        const markdownText = promptTextarea.value;
+        promptPreview.innerHTML = marked.parse(markdownText);
       }
 
-      promptTextarea.addEventListener("input", updatePreview);
-      solutionTextarea.addEventListener("input", updatePreview);
+      function updateSolutionPreview() {
+        const markdownText = solutionTextarea.value;
+        solutionPreview.innerHTML = marked.parse(markdownText);
+      }
+
+      promptTextarea.addEventListener("input", updatePromptPreview);
+      solutionTextarea.addEventListener("input", updateSolutionPreview);
 
       // Initial render
-      updatePreview();
+      updatePromptPreview();
+      updateSolutionPreview();
     </script>
     <div class="scroll-buttons">
       <button class="scroll-button" onclick="scrollToTop()">↑</button>
