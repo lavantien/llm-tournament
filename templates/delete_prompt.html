@@ -16,13 +16,13 @@
     <form id="cancel-form" action="/prompts" method="get"></form>
     <p style="text-align: center;">Are you sure you want to delete the prompt "{{.Prompt}}"?</p>
     <h2>Preview</h2>
-    <div id="preview" class="markdown-content">
-        {{.Prompt | markdown}}
-    </div>
+    <div id="preview" class="markdown-content" style="text-align: left;"></div>
     <script>
         const preview = document.getElementById('preview');
-        const initialMarkdownText = `{{.Prompt}}`;
-        preview.innerHTML = marked.parse(initialMarkdownText);
+        const promptText = `{{.Prompt}}`;
+        const solutionText = `{{.Solution}}`;
+        const fullText = promptText + '\n---\n' + solutionText;
+        preview.innerHTML = marked.parse(fullText);
     </script>
     <div class="scroll-buttons">
         <button class="scroll-button" onclick="scrollToTop()">↑</button>

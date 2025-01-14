@@ -33,8 +33,20 @@
         });
 
         // Initial render
-        const initialMarkdownText = textarea.value;
-        preview.innerHTML = marked.parse(initialMarkdownText);
+        const promptTextarea = document.querySelector('textarea[name="prompt"]');
+        const solutionTextarea = document.querySelector('textarea[name="solution"]');
+        const preview = document.getElementById('preview');
+
+        function updatePreview() {
+            const markdownText = promptTextarea.value + "\n---\n" + solutionTextarea.value;
+            preview.innerHTML = marked.parse(markdownText);
+        }
+
+        promptTextarea.addEventListener('input', updatePreview);
+        solutionTextarea.addEventListener('input', updatePreview);
+
+        // Initial render
+        updatePreview();
     </script>
     <div class="scroll-buttons">
         <button class="scroll-button" onclick="scrollToTop()">↑</button>
