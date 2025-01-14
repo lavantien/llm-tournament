@@ -58,6 +58,14 @@ func router(w http.ResponseWriter, r *http.Request) {
         } else if r.Method == "POST" {
             handlers.BulkDeletePromptsHandler(w, r)
         }
+	case "/prompts/suites/new":
+		handlers.NewPromptSuiteHandler(w, r)
+	case "/prompts/suites/edit":
+		handlers.EditPromptSuiteHandler(w, r)
+	case "/prompts/suites/delete":
+		handlers.DeletePromptSuiteHandler(w, r)
+	case "/prompts/suites/select":
+		handlers.SelectPromptSuiteHandler(w, r)
 	case "/results":
 		handlers.ResultsHandler(w, r)
 	case "/update_result":
