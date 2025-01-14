@@ -63,8 +63,23 @@
           <input type="submit" value="Filter" />
         </form>
       </div>
-      <div class="title-container">
-        <h1>Prompt List</h1>
+      <div class="title-container" style="display: flex; align-items: center; justify-content: center;">
+        <form action="/prompts/suites/new" method="get" style="margin-right: 5px;">
+          <input type="submit" value="New" class="action-button" />
+        </form>
+        <form action="/prompts/suites/edit" method="get" style="margin-right: 5px;">
+          <input type="submit" value="Edit" class="action-button" />
+        </form>
+        <form action="/prompts/suites/delete" method="get" style="margin-right: 5px;">
+          <input type="submit" value="Delete" class="action-button" />
+        </form>
+        <form action="/prompts/suites/select" method="post" style="margin-left: 5px;">
+          <select name="suite_name">
+            <option value="default">Default</option>
+            <!-- TODO: Add prompt suites here -->
+          </select>
+          <input type="submit" value="Select" class="action-button" />
+        </form>
       </div>
       <div class="search-container">
         <form action="/prompts" method="get">
