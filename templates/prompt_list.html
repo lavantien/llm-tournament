@@ -75,9 +75,9 @@
         </form>
         <form action="/prompts/suites/select" method="post" style="margin-left: 5px;">
           <select name="suite_name">
-            <option value="default">Default</option>
+            <option value="default" {{if not .CurrentSuite}}selected{{end}}>Default</option>
             {{range $suite := .Suites}}
-            <option value="{{$suite}}">{{$suite}}</option>
+            <option value="{{$suite}}" {{if eq $suite $.CurrentSuite}}selected{{end}}>{{$suite}}</option>
             {{end}}
           </select>
           <input type="submit" value="Select" class="action-button" />
