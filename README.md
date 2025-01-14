@@ -74,6 +74,12 @@ Anyone can just submit a PR and we'll discuss there.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
+### Result not re-sort after switch page
+
+### Also render solution in preview after a triple dash
+
+### Bulk Delete Prompts
+
 ### Prompt Suites
 
 - In place of the page `title-container` in the middle (Prompt List), replace it with a group of 3 buttons and a dropdown selection.
