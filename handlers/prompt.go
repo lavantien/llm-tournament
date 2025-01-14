@@ -429,10 +429,10 @@ func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			err = t.Execute(w, struct {
 				Index  int
-				Prompt string
+				Prompt middleware.Prompt
 			}{
 				Index:  index,
-				Prompt: prompts[index].Text,
+				Prompt: prompts[index],
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)
