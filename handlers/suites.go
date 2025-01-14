@@ -13,13 +13,13 @@ import (
 func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt suite page")
 	if r.Method == "GET" {
+		suiteName := r.URL.Query().Get("suite_name")
 		t, err := template.ParseFiles("templates/delete_prompt_suite.html", "templates/nav.html")
 		if err != nil {
 			log.Printf("Error parsing template: %v", err)
 			http.Error(w, "Error parsing template", http.StatusInternalServerError)
 			return
 		}
-		suiteName := r.URL.Query().Get("suite_name")
 		err = t.Execute(w, map[string]string{"SuiteName": suiteName})
 		if err != nil {
 			log.Printf("Error executing template: %v", err)
@@ -28,21 +28,15 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Delete prompt suite page rendered successfully")
 	} else if r.Method == "POST" {
-		err := r.ParseForm()
-		if err != nil {
-			log.Printf("Error parsing form: %v", err)
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-		suiteName := r.Form.Get("suite_name")
+		suiteName := r.FormValue("suite_name")
 		if suiteName == "" {
-			log.Println("Suite name cannot be empty")
-			http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
+			http.Error(w, "Suite name is required", http.StatusBadRequest)
 			return
 		}
+
 		currentSuite := middleware.GetCurrentSuiteName()
 		if suiteName == currentSuite {
-			err = os.WriteFile("data/current_suite.txt", []byte("default"), 0644)
+			err := os.WriteFile("data/current_suite.txt", []byte("default"), 0644)
 			if err != nil {
 				log.Printf("Error updating current suite: %v", err)
 				http.Error(w, "Error updating current suite", http.StatusInternalServerError)
