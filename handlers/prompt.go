@@ -79,35 +79,14 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		OrderFilter   int
 		SearchQuery   string
 		Suites        []string
+        CurrentSuite  string
 	}{
 		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
 		OrderFilter:   orderFilterInt,
 		SearchQuery:   searchQuery,
 		Suites:        suites,
-	})
-	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		return
-	}
-	currentSuite := ""
-	if len(prompts) > 0 {
-		currentSuite = middleware.GetCurrentSuiteName()
-	}
-	err = t.Execute(w, struct {
-		Prompts       []middleware.Prompt
-		PromptIndices []int
-		OrderFilter   int
-		SearchQuery   string
-		Suites        []string
-		CurrentSuite  string
-	}{
-		Prompts:       promptTexts,
-		PromptIndices: promptIndices,
-		OrderFilter:   orderFilterInt,
-		SearchQuery:   searchQuery,
-		Suites:        suites,
-		CurrentSuite:  currentSuite,
+        CurrentSuite:  currentSuite,
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)

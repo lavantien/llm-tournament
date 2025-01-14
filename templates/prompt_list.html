@@ -128,10 +128,7 @@
             {{range $suite := .Suites}}
             <option
               value="{{$suite}}"
-              {{if
-              eq
-              $suite
-              $.CurrentSuite}}selected{{end}}
+              {{if eq $suite $.CurrentSuite}}selected{{end}}
             >
               {{$suite}}
             </option>
