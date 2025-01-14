@@ -122,13 +122,15 @@
           style="margin-left: 5px"
         >
           <select name="suite_name">
-            <option value="default" {{if eq .CurrentSuite "default"}} selected {{end}}>
-              Default
-            </option>
             {{range $suite := .Suites}}
             <option
               value="{{$suite}}"
-              {{if eq $suite $.CurrentSuite}} selected {{end}}
+              {{if
+              eq
+              $suite
+              $.CurrentSuite}}
+              selected
+              {{end}}
             >
               {{$suite}}
             </option>
@@ -151,73 +153,71 @@
       </div>
     </div>
     <ul id="prompt-list">
-      {{if .Prompts}}
-        {{range $index, $prompt := .Prompts}}
-        {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
-        <li draggable="true" data-index="{{$index}}">
+      {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
+      $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery
+      "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
+      <li draggable="true" data-index="{{$index}}">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+          "
+        >
+          <input
+            type="checkbox"
+            class="prompt-checkbox"
+            data-index="{{$index}}"
+            style="margin-right: 10px"
+          />
+          <h3 style="flex: 0 0 auto; margin-right: 10px">
+            {{inc $index}}.&nbsp;&nbsp;&nbsp;
+          </h3>
+          <div class="markdown-content" style="flex: 1; margin-right: 10px">
+            {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
+          </div>
           <div
             style="
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              width: 100%;
+              flex: 0 0 20%;
+              font-style: italic;
+              text-align: right;
+              margin-left: auto;
+              color: green;
             "
+            class="markdown-content"
           >
-            <input
-              type="checkbox"
-              class="prompt-checkbox"
-              data-index="{{$index}}"
-              style="margin-right: 10px"
-            />
-            <h3 style="flex: 0 0 auto; margin-right: 10px">
-              {{inc $index}}.&nbsp;&nbsp;&nbsp;
-            </h3>
-            <div class="markdown-content" style="flex: 1; margin-right: 10px">
-              {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
-            </div>
-            <div
-              style="
-                flex: 0 0 20%;
-                font-style: italic;
-                text-align: right;
-                margin-left: auto;
-                color: green;
-              "
-              class="markdown-content"
-            >
-              {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
-            </div>
-            <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
-              <button
-                class="action-button copy-button"
-                onclick="copyPrompt('{{$prompt.Text}}')"
-              >
-                Copy
-              </button>
-              <a
-                class="action-button edit-button"
-                href="/edit_prompt?index={{$index}}"
-                >Edit</a
-              >
-              <a
-                class="action-button delete-button"
-                href="/delete_prompt?index={{$index}}"
-              >
-                Delete
-              </a>
-              <a
-                class="action-button move-button"
-                href="/move_prompt?index={{$index}}"
-              >
-                Move
-              </a>
-            </div>
+            {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
           </div>
-        </li>
-        {{end}}
-        {{end}}
-      {{else}}
-        <p style="text-align: center;">No prompts available.</p>
+          <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
+            <button
+              class="action-button copy-button"
+              onclick="copyPrompt('{{$prompt.Text}}')"
+            >
+              Copy
+            </button>
+            <a
+              class="action-button edit-button"
+              href="/edit_prompt?index={{$index}}"
+              >Edit</a
+            >
+            <a
+              class="action-button delete-button"
+              href="/delete_prompt?index={{$index}}"
+            >
+              Delete
+            </a>
+            <a
+              class="action-button move-button"
+              href="/move_prompt?index={{$index}}"
+            >
+              Move
+            </a>
+          </div>
+        </div>
+      </li>
+      {{end}} {{end}} {{else}}
+      <p style="text-align: center">No prompts available.</p>
       {{end}}
     </ul>
     <div class="sticky-footer">
@@ -376,17 +376,20 @@
       }
 
       function scrollToBottom() {
-        const footerHeight = document.querySelector('.sticky-footer').offsetHeight;
-        const scrollHeight = document.body.scrollHeight - window.innerHeight - footerHeight;
-            window.scrollTo({
-                top: scrollHeight,
-                behavior: 'smooth'
-            });
+        const footerHeight =
+          document.querySelector(".sticky-footer").offsetHeight;
+        const scrollHeight =
+          document.body.scrollHeight - window.innerHeight - footerHeight;
+        window.scrollTo({
+          top: scrollHeight,
+          behavior: "smooth",
+        });
       }
     </script>
     <ul id="prompt-list">
-      {{range $index, $prompt := .Prompts}}
-      {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
+      {{range $index, $prompt := .Prompts}} {{if and (or (eq $.OrderFilter 0)
+      (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains
+      (tolower $prompt.Text) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <div
           style="
@@ -447,10 +450,9 @@
           </div>
         </div>
       </li>
-      {{end}}
-      {{end}}
+      {{end}} {{end}}
     </ul>
-    <div style="display:none">
+    <div style="display: none">
       <span id="prompts-data">{{.Prompts | json}}</span>
     </div>
   </body>
