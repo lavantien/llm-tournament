@@ -108,6 +108,12 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		Suites:        suites,
         CurrentSuite:  currentSuite,
 	})
+    if err != nil {
+        log.Printf("Error executing template: %v", err)
+        return
+    }
+    log.Println("Prompt list page rendered successfully")
+    return
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
 		return
