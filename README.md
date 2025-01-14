@@ -42,6 +42,8 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 
 ![result-page](./assets/ui-result-page.png)
 
+![prompt-edit-page](./assets/ui-prompt-edit.png)
+
 ## Run
 
 ```bash
@@ -73,8 +75,6 @@ Anyone can just submit a PR and we'll discuss there.
 - Handbook composition prompt.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
-
-### Bulk Delete Prompts
 
 ### Prompt Suites
 
