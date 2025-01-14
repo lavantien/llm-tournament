@@ -100,13 +100,14 @@ func BroadcastResults() {
 		PassPercentages map[string]float64
 		TotalScores     map[string]int
 		Prompts         []string
+		SuiteName       string
 	}{
 		Results:         resultsToBoolMap(results),
 		Models:          models,
 		PassPercentages: modelPassPercentages,
 		TotalScores:     modelTotalScores,
 		Prompts:         promptsToStringArray(prompts),
-        SuiteName:       suiteName,
+		SuiteName:       suiteName,
 	}
 
 	clientsMutex.Lock()
