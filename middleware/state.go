@@ -114,32 +114,9 @@ func ListPromptSuites() ([]string, error) {
 	return suites, nil
 }
 
-// Write results to data/results-<suiteName>.json
-func WriteResults(results map[string]Result) error {
-    suiteName := GetCurrentSuiteName()
-    var filename string
-    if suiteName == "default" {
-        filename = "data/results-default.json"
-    } else {
-        filename = "data/results-" + suiteName + ".json"
-    }
-	data, err := json.Marshal(results)
-	if err != nil {
-		return err
+		}
 	}
-	err = os.WriteFile(filename, data, 0644)
-
-	prompts := ReadPrompts()
-	if results == nil {
-		return make(map[string]Result)
-	}
-	for model, result := range results {
-		if len(result.Passes) < len(prompts) {
-			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
-			results[model] = result
-		} else if len(result.Passes) > len(prompts) {
-			results[model] = Result{Passes: result.Passes[:len(prompts)]}
-	return results
+	return nil
 }
 
 func UpdatePromptsOrder(order []int) {
