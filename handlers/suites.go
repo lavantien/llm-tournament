@@ -40,12 +40,23 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
 			return
 		}
+		currentSuite := middleware.GetCurrentSuiteName()
+		if suiteName == currentSuite {
+			err = os.WriteFile("data/current_suite.txt", []byte("default"), 0644)
+			if err != nil {
+				log.Printf("Error updating current suite: %v", err)
+				http.Error(w, "Error updating current suite", http.StatusInternalServerError)
+				return
+			}
+		}
+
 		err = middleware.DeletePromptSuite(suiteName)
 		if err != nil {
 			log.Printf("Error deleting prompt suite: %v", err)
 			http.Error(w, "Error deleting prompt suite", http.StatusInternalServerError)
 			return
 		}
+
 		log.Printf("Prompt suite '%s' deleted successfully", suiteName)
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
@@ -77,7 +88,7 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
 	middleware.BroadcastResults()
-    http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
 // Handle new prompt suite
@@ -164,6 +175,17 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 			return
 		}
+
+		currentSuite := middleware.GetCurrentSuiteName()
+		if suiteName == currentSuite {
+			err = os.WriteFile("data/current_suite.txt", []byte(newSuiteName), 0644)
+			if err != nil {
+				log.Printf("Error updating current suite: %v", err)
+				http.Error(w, "Error updating current suite", http.StatusInternalServerError)
+				return
+			}
+		}
+
 		prompts, err := middleware.ReadPromptSuite(suiteName)
 		if err != nil {
 			log.Printf("Error reading prompt suite: %v", err)
