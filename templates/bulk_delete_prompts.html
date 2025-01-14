@@ -9,8 +9,13 @@
 
   <body>
     <h1>Bulk Delete Prompts</h1>
-    <form id="bulk-delete-form" action="/bulk_delete_prompts" method="post" style="text-align: center">
-        <input type="hidden" name="indices" value="{{.Indices}}" />
+    <form
+      id="bulk-delete-form"
+      action="/bulk_delete_prompts"
+      method="post"
+      style="text-align: center"
+    >
+      <input type="hidden" name="indices" value="{{.Indices}}" />
       <input type="submit" value="Delete" />
       <input type="submit" form="cancel-form" value="Cancel" />
     </form>
@@ -20,48 +25,34 @@
     </p>
     <h2>Preview</h2>
     <div id="preview" class="markdown-content">
-        {{range $index, $prompt := .Prompts}}
-            <div class="markdown-content">{{$prompt.Text | markdown}}</div>
-            <br />
-            <hr>
-            <br />
-            <div style="font-style: italic; text-align: left; color: green" class="markdown-content">
-                {{$prompt.Solution | markdown}}
-            </div>
-            <br />
-        {{end}}
+      {{range $index, $prompt := .Prompts}} {{$prompt.Text | markdown}}
+      <div style="font-style: italic; text-align: left; color: green">
+        {{$prompt.Solution | markdown}}
+      </div>
+      {{"---" | markdown}} {{end}}
+      <br />
     </div>
     <script>
-      const preview = document.getElementById("preview");
-
-      // Initial render
-      const previewDiv = document.getElementById("preview");
-
-      function updatePreview() {
-        const markdownText = previewDiv.innerHTML;
-        preview.innerHTML = marked.parse(markdownText);
-      }
-
-      // Initial render
-      updatePreview();
-    </script>
-    <script>
-        document.getElementById('bulk-delete-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const indices = JSON.parse(document.querySelector('input[name="indices"]').value);
-            fetch('/bulk_delete_prompts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ indices: indices }),
-            }).then(response => {
-                if (response.ok) {
-                    window.location.href = '/prompts';
-                } else {
-                    console.error('Error deleting prompts');
-                }
-            });
+      document
+        .getElementById("bulk-delete-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          const indices = JSON.parse(
+            document.querySelector('input[name="indices"]').value,
+          );
+          fetch("/bulk_delete_prompts", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ indices: indices }),
+          }).then((response) => {
+            if (response.ok) {
+              window.location.href = "/prompts";
+            } else {
+              console.error("Error deleting prompts");
+            }
+          });
         });
     </script>
     <div class="scroll-buttons">
