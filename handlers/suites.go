@@ -39,6 +39,13 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error executing template", http.StatusInternalServerError)
 		return
 	}
+	suiteName := r.URL.Query().Get("suite_name")
+	err = t.Execute(w, map[string]string{"SuiteName": suiteName})
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		return
+	}
 	log.Println("Edit prompt suite page rendered successfully")
 }
 
@@ -192,8 +199,31 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
 			return
 		}
-		// TODO: Implement edit prompt suite logic
-		log.Printf("Prompt suite '%s' edited successfully", suiteName)
+		newSuiteName := r.Form.Get("new_suite_name")
+		if newSuiteName == "" {
+			log.Println("New suite name cannot be empty")
+			http.Error(w, "New suite name cannot be empty", http.StatusBadRequest)
+			return
+		}
+		prompts, err := middleware.ReadPromptSuite(suiteName)
+		if err != nil {
+			log.Printf("Error reading prompt suite: %v", err)
+			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+			return
+		}
+		err = middleware.DeletePromptSuite(suiteName)
+		if err != nil {
+			log.Printf("Error deleting prompt suite: %v", err)
+			http.Error(w, "Error deleting prompt suite", http.StatusInternalServerError)
+			return
+		}
+		err = middleware.WritePromptSuite(newSuiteName, prompts)
+		if err != nil {
+			log.Printf("Error creating prompt suite: %v", err)
+			http.Error(w, "Error creating prompt suite", http.StatusInternalServerError)
+			return
+		}
+		log.Printf("Prompt suite '%s' edited successfully to '%s'", suiteName, newSuiteName)
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}

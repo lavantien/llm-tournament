@@ -8,8 +8,10 @@
 <body>
     <h1>Edit Prompt Suite</h1>
     <form action="/prompts/suites/edit" method="post" style="text-align: center;">
-        <label for="suite_name">Suite Name:</label>
-        <input type="text" id="suite_name" name="suite_name" value="TODO" required>
+        <label for="suite_name">Current Suite Name:</label>
+        <input type="text" id="suite_name" name="suite_name" value="{{.SuiteName}}" required readonly>
+        <label for="new_suite_name">New Suite Name:</label>
+        <input type="text" id="new_suite_name" name="new_suite_name" required>
         <input type="submit" value="Save">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
