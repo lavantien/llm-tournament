@@ -474,27 +474,18 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseForm()
+	var request struct {
+		Indices []int `json:"indices"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		log.Printf("Error parsing form: %v", err)
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		log.Printf("Error decoding request: %v", err)
+		http.Error(w, "Error decoding request", http.StatusBadRequest)
 		return
 	}
 
-	indicesStr := r.Form.Get("indices")
-	if indicesStr == "" {
-		log.Println("No indices provided for deletion")
-		http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
-		return
-	}
-
-	var indices []int
-	err = json.Unmarshal([]byte(indicesStr), &indices)
-	if err != nil {
-		log.Printf("Error unmarshalling indices: %v", err)
-		http.Error(w, "Error unmarshalling indices", http.StatusBadRequest)
-		return
-	}
+	indices := request.Indices
 
 	prompts := middleware.ReadPrompts()
 	if len(prompts) == 0 {
