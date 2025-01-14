@@ -56,6 +56,10 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return i + 1
 		},
 	}
+    funcMap["json"] = func(v interface{}) (string, error) {
+        b, err := json.Marshal(v)
+        return string(b), err
+    }
 	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
