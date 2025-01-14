@@ -20,30 +20,21 @@ type Result struct {
 
 // Read prompts from prompts.json
 func ReadPrompts() []Prompt {
-	data, _ := os.ReadFile("data/prompts.json")
-	var prompts []Prompt
-	json.Unmarshal(data, &prompts)
+    suiteName := GetCurrentSuiteName()
+    if suiteName == "" {
+        suiteName = "default"
+    }
+    prompts, _ := ReadPromptSuite(suiteName)
 	return prompts
 }
 
 // Write prompts to prompts.json
 func WritePrompts(prompts []Prompt) error {
-	data, err := json.Marshal(prompts)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile("data/prompts.json", data, 0644)
-	if err != nil {
-		return err
-	}
-    // Set current suite name to empty string when writing to default prompts.json
-    if suiteName := GetCurrentSuiteName(); suiteName != "" {
-        err = os.WriteFile("data/current_suite.txt", []byte(""), 0644)
-        if err != nil {
-            return err
-        }
+    suiteName := GetCurrentSuiteName()
+    if suiteName == "" {
+        suiteName = "default"
     }
-	return nil
+    return WritePromptSuite(suiteName, prompts)
 }
 
 // Read results from results.json
@@ -84,7 +75,7 @@ func WriteResults(results map[string]Result) error {
 func ReadPromptSuite(suiteName string) ([]Prompt, error) {
     var filename string
     if suiteName == "default" {
-        filename = "data/prompts.json"
+        filename = "data/prompts-default.json"
     } else {
         filename = "data/prompts-" + suiteName + ".json"
     }
@@ -102,7 +93,12 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 
 // Write prompt suite to data/prompts-<suiteName>.json
 func WritePromptSuite(suiteName string, prompts []Prompt) error {
-	filename := "data/prompts-" + suiteName + ".json"
+    var filename string
+    if suiteName == "default" {
+        filename = "data/prompts-default.json"
+    } else {
+        filename = "data/prompts-" + suiteName + ".json"
+    }
 	data, err := json.Marshal(prompts)
 	if err != nil {
 		return err
