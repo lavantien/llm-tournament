@@ -63,6 +63,34 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 // Handle select prompt suite
 func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling select prompt suite")
-	// TODO: Implement select prompt suite logic
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+	suiteName := r.Form.Get("suite_name")
+	if suiteName == "" {
+		log.Println("Suite name cannot be empty")
+		http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	prompts, err := middleware.ReadPromptSuite(suiteName)
+	if err != nil {
+		log.Printf("Error reading prompt suite: %v", err)
+		http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+		return
+	}
+
+	err = middleware.WritePrompts(prompts)
+	if err != nil {
+		log.Printf("Error writing prompts: %v", err)
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Prompt suite '%s' selected successfully", suiteName)
+	middleware.BroadcastResults()
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
