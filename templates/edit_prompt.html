@@ -39,14 +39,6 @@
       </div>
     </div>
     <script>
-      const textarea = document.querySelector('textarea[name="prompt"]');
-      const preview = document.getElementById("preview");
-
-      textarea.addEventListener("input", function () {
-        const markdownText = textarea.value;
-        preview.innerHTML = marked.parse(markdownText);
-      });
-
       // Initial render
       const promptTextarea = document.querySelector('textarea[name="prompt"]');
       const solutionTextarea = document.querySelector(
