@@ -474,17 +474,6 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request struct {
-		Indices []int `json:"indices"`
-	}
-
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		log.Printf("Error decoding request: %v", err)
-		http.Error(w, "Error decoding request", http.StatusBadRequest)
-		return
-	}
-
 	indices := request.Indices
 
 	prompts := middleware.ReadPrompts()
