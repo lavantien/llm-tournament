@@ -73,6 +73,8 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+    currentSuite := middleware.GetCurrentSuiteName()
+
 	err = t.Execute(w, struct {
 		Prompts       []middleware.Prompt
 		PromptIndices []int
