@@ -259,9 +259,7 @@
         socket.onmessage = function (event) {
           console.log(`[message] Data received from server: ${event.data}`);
           const payload = JSON.parse(event.data);
-          if (payload.Prompts) {
-            updatePrompts(payload.Prompts);
-          }
+          updatePrompts(payload.Prompts);
         };
 
         socket.onclose = function (event) {
@@ -294,10 +292,15 @@
           .then((html) => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
-            const payload = {
-              Prompts: JSON.parse(doc.getElementById("prompts-data").textContent),
-            };
-            updatePrompts(payload.Prompts);
+            const promptsData = doc.getElementById("prompts-data").textContent;
+            if (promptsData) {
+              try {
+                const prompts = JSON.parse(promptsData);
+                updatePrompts(prompts);
+              } catch (error) {
+                console.error("Error parsing prompts ", error);
+              }
+            }
           })
           .catch((error) => console.error("Error fetching initial ", error));
       }
