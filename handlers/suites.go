@@ -82,12 +82,14 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = middleware.WritePrompts(prompts)
-	if err != nil {
-		log.Printf("Error writing prompts: %v", err)
-		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
-		return
-	}
+    if len(prompts) > 0 {
+        err = middleware.WritePrompts(prompts)
+        if err != nil {
+            log.Printf("Error writing prompts: %v", err)
+            http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+            return
+        }
+    }
 
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
 	middleware.BroadcastResults()

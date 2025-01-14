@@ -71,22 +71,23 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 
     currentSuite := middleware.GetCurrentSuiteName()
 	var prompts []middleware.Prompt
-	if currentSuite == "" {
-		currentSuite = "default"
-		prompts, err = middleware.ReadPromptSuite("default")
-		if err != nil {
-			log.Printf("Error reading prompt suite: %v", err)
-			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		prompts, err = middleware.ReadPromptSuite(currentSuite)
-		if err != nil {
-			log.Printf("Error reading prompt suite: %v", err)
-			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-			return
-		}
-	}
+    if currentSuite == "" {
+        currentSuite = "default"
+    }
+    prompts, err = middleware.ReadPromptSuite(currentSuite)
+    if err != nil {
+        log.Printf("Error reading prompt suite: %v", err)
+        http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+        return
+    }
+    if len(prompts) == 0 && currentSuite != "default" {
+        prompts, err = middleware.ReadPromptSuite("default")
+        if err != nil {
+            log.Printf("Error reading default prompt suite: %v", err)
+            http.Error(w, "Error reading default prompt suite", http.StatusInternalServerError)
+            return
+        }
+    }
     promptTexts := make([]middleware.Prompt, len(prompts))
     promptIndices := make([]int, len(prompts))
     for i, prompt := range prompts {
