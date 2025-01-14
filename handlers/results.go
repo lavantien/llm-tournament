@@ -137,6 +137,7 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+    suiteName := middleware.GetCurrentSuiteName()
 	results := middleware.ReadResults()
 	if results == nil {
 		results = make(map[string]middleware.Result)
@@ -188,6 +189,7 @@ func ResetResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "POST" {
+        suiteName := middleware.GetCurrentSuiteName()
 		emptyResults := make(map[string]middleware.Result)
 		err := middleware.WriteResults(emptyResults)
 		if err != nil {
@@ -216,6 +218,7 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "POST" {
+        suiteName := middleware.GetCurrentSuiteName()
 		results := middleware.ReadResults()
 		for model := range results {
 			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
@@ -266,6 +269,7 @@ func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 // Handle export results
 func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export results")
+    suiteName := middleware.GetCurrentSuiteName()
 	results := middleware.ReadResults()
 	prompts := middleware.ReadPrompts()
 
