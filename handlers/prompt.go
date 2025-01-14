@@ -66,23 +66,13 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.Execute(w, struct {
-		Prompts       []middleware.Prompt
-		PromptIndices []int
-		OrderFilter   int
-		SearchQuery   string
-	}{
-		Prompts:       promptTexts,
-		PromptIndices: promptIndices,
-		OrderFilter:   orderFilterInt,
-		SearchQuery:   searchQuery,
-	}
 	suites, err := middleware.ListPromptSuites()
 	if err != nil {
 		log.Printf("Error listing prompt suites: %v", err)
 		http.Error(w, "Error listing prompt suites", http.StatusInternalServerError)
 		return
 	}
+
 	err = t.Execute(w, struct {
 		Prompts       []middleware.Prompt
 		PromptIndices []int
@@ -98,7 +88,6 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
-		// http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompt list page rendered successfully")
