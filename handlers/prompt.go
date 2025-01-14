@@ -69,7 +69,10 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    currentSuite := middleware.GetCurrentSuiteName()
+    currentSuite := r.URL.Query().Get("suite_name")
+    if currentSuite == "" {
+        currentSuite = middleware.GetCurrentSuiteName()
+    }
 	var prompts []middleware.Prompt
     if currentSuite == "" {
         currentSuite = "default"

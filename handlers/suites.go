@@ -93,7 +93,7 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
 	middleware.BroadcastResults()
-	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+    http.Redirect(w, r, "/prompts?suite_name="+suiteName, http.StatusSeeOther)
 }
 
 // Handle new prompt suite
