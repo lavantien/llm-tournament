@@ -376,10 +376,12 @@
       }
 
       function scrollToBottom() {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
+        const footerHeight = document.querySelector('.sticky-footer').offsetHeight;
+        const scrollHeight = document.body.scrollHeight - window.innerHeight - footerHeight;
+            window.scrollTo({
+                top: scrollHeight,
+                behavior: 'smooth'
+            });
       }
     </script>
     <ul id="prompt-list">
