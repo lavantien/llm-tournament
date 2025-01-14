@@ -94,7 +94,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
-		modelTotalScores[model] = score
+		modelTotalScores[model] = score * 100
 	}
 
 	err = t.Execute(w, struct {
