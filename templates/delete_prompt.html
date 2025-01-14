@@ -29,11 +29,32 @@
       </div>
     </div>
     <script>
+      const textarea = document.querySelector('textarea[name="prompt"]');
       const preview = document.getElementById("preview");
-      const promptText = `{{.Prompt.Text}}`;
-      const solutionText = `{{.Prompt.Solution}}`;
-      const fullText = promptText + "\\n---\\n" + solutionText;
-      preview.innerHTML = marked.parse(fullText);
+
+      textarea.addEventListener("input", function () {
+        const markdownText = textarea.value;
+        preview.innerHTML = marked.parse(markdownText);
+      });
+
+      // Initial render
+      const promptTextarea = document.querySelector('textarea[name="prompt"]');
+      const solutionTextarea = document.querySelector(
+        'textarea[name="solution"]',
+      );
+      const preview = document.getElementById("preview");
+
+      function updatePreview() {
+        const markdownText =
+          promptTextarea.value + "\n---\n" + solutionTextarea.value;
+        preview.innerHTML = marked.parse(markdownText);
+      }
+
+      promptTextarea.addEventListener("input", updatePreview);
+      solutionTextarea.addEventListener("input", updatePreview);
+
+      // Initial render
+      updatePreview();
     </script>
     <div class="scroll-buttons">
       <button class="scroll-button" onclick="scrollToTop()">↑</button>
