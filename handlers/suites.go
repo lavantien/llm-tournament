@@ -138,7 +138,8 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing template", http.StatusInternalServerError)
 			return
 		}
-		err = t.Execute(w, nil)
+		suiteName := r.URL.Query().Get("suite_name")
+		err = t.Execute(w, map[string]string{"SuiteName": suiteName})
 		if err != nil {
 			log.Printf("Error executing template: %v", err)
 			http.Error(w, "Error executing template", http.StatusInternalServerError)
