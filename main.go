@@ -54,8 +54,6 @@ func router(w http.ResponseWriter, r *http.Request) {
 		handlers.ResetPromptsHandler(w, r)
     case "/bulk_delete_prompts":
         handlers.BulkDeletePromptsPageHandler(w, r)
-    case "/bulk_delete_prompts":
-        handlers.BulkDeletePromptsHandler(w, r)
 	case "/results":
 		handlers.ResultsHandler(w, r)
 	case "/update_result":
