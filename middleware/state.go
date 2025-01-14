@@ -21,9 +21,6 @@ type Result struct {
 // Read prompts from prompts.json
 func ReadPrompts() []Prompt {
     suiteName := GetCurrentSuiteName()
-    if suiteName == "" {
-        suiteName = "default"
-    }
     prompts, _ := ReadPromptSuite(suiteName)
 	return prompts
 }
@@ -31,9 +28,6 @@ func ReadPrompts() []Prompt {
 // Write prompts to prompts.json
 func WritePrompts(prompts []Prompt) error {
     suiteName := GetCurrentSuiteName()
-    if suiteName == "" {
-        suiteName = "default"
-    }
     return WritePromptSuite(suiteName, prompts)
 }
 
