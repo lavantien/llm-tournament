@@ -51,7 +51,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		"string": func(i int) string {
 			return strconv.Itoa(i)
 		},
-		"tolower": strings.ToLower,
+		"tolower":  strings.ToLower,
 		"contains": strings.Contains,
 	}
 
@@ -126,7 +126,7 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
 		return
 	}
-    solutionText := r.Form.Get("solution")
+	solutionText := r.Form.Get("solution")
 
 	prompts := middleware.ReadPrompts()
 	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText})
@@ -372,7 +372,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		editedPrompt := r.Form.Get("prompt")
-        editedSolution := r.Form.Get("solution")
+		editedSolution := r.Form.Get("solution")
 		if editedPrompt == "" {
 			log.Println("Prompt text cannot be empty")
 			http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
@@ -381,7 +381,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 		prompts := middleware.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts[index].Text = editedPrompt
-            prompts[index].Solution = editedSolution
+			prompts[index].Solution = editedSolution
 		}
 		err = middleware.WritePrompts(prompts)
 		if err != nil {
@@ -397,62 +397,62 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handle bulk delete prompts page
 func BulkDeletePromptsPageHandler(w http.ResponseWriter, r *http.Request) {
-    log.Println("Handling bulk delete prompts page")
-    if r.Method != "GET" {
-        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        return
-    }
+	log.Println("Handling bulk delete prompts page")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-    indicesStr := r.URL.Query().Get("indices")
-    if indicesStr == "" {
-        log.Println("No indices provided for deletion")
-        http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
-        return
-    }
+	indicesStr := r.URL.Query().Get("indices")
+	if indicesStr == "" {
+		log.Println("No indices provided for deletion")
+		http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
+		return
+	}
 
-    var indices []int
-    err := json.Unmarshal([]byte(indicesStr), &indices)
-    if err != nil {
-        log.Printf("Error unmarshalling indices: %v", err)
-        http.Error(w, "Error unmarshalling indices", http.StatusBadRequest)
-        return
-    }
+	var indices []int
+	err := json.Unmarshal([]byte(indicesStr), &indices)
+	if err != nil {
+		log.Printf("Error unmarshalling indices: %v", err)
+		http.Error(w, "Error unmarshalling indices", http.StatusBadRequest)
+		return
+	}
 
-    prompts := middleware.ReadPrompts()
-    var selectedPrompts []middleware.Prompt
-    for _, index := range indices {
-        if index >= 0 && index < len(prompts) {
-            selectedPrompts = append(selectedPrompts, prompts[index])
-        }
-    }
+	prompts := middleware.ReadPrompts()
+	var selectedPrompts []middleware.Prompt
+	for _, index := range indices {
+		if index >= 0 && index < len(prompts) {
+			selectedPrompts = append(selectedPrompts, prompts[index])
+		}
+	}
 
-    funcMap := template.FuncMap{
-        "markdown": func(text string) template.HTML {
-            unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-            html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-            return template.HTML(html)
-        },
-    }
+	funcMap := template.FuncMap{
+		"markdown": func(text string) template.HTML {
+			unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
+			html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+			return template.HTML(html)
+		},
+	}
 
-    t, err := template.New("bulk_delete_prompts.html").Funcs(funcMap).ParseFiles("templates/bulk_delete_prompts.html")
-    if err != nil {
-        log.Printf("Error parsing template: %v", err)
-        http.Error(w, "Error parsing template", http.StatusInternalServerError)
-        return
-    }
+	t, err := template.New("bulk_delete_prompts.html").Funcs(funcMap).ParseFiles("templates/bulk_delete_prompts.html")
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, "Error parsing template", http.StatusInternalServerError)
+		return
+	}
 
-    err = t.Execute(w, struct {
-        Indices string
-        Prompts []middleware.Prompt
-    }{
-        Indices: indicesStr,
-        Prompts: selectedPrompts,
-    })
-    if err != nil {
-        log.Printf("Error executing template: %v", err)
-        http.Error(w, "Error executing template", http.StatusInternalServerError)
-        return
-    }
+	err = t.Execute(w, struct {
+		Indices string
+		Prompts []middleware.Prompt
+	}{
+		Indices: indicesStr,
+		Prompts: selectedPrompts,
+	})
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Handle bulk delete prompts
@@ -474,27 +474,27 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    err := r.ParseForm()
-    if err != nil {
-        log.Printf("Error parsing form: %v", err)
-        http.Error(w, "Error parsing form", http.StatusBadRequest)
-        return
-    }
+	err = r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
 
-    indicesStr := r.Form.Get("indices")
-    if indicesStr == "" {
-        log.Println("No indices provided for deletion")
-        http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
-        return
-    }
+	indicesStr := r.Form.Get("indices")
+	if indicesStr == "" {
+		log.Println("No indices provided for deletion")
+		http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
+		return
+	}
 
-    var indices []int
-    err = json.Unmarshal([]byte(indicesStr), &indices)
-    if err != nil {
-        log.Printf("Error unmarshalling indices: %v", err)
-        http.Error(w, "Error unmarshalling indices", http.StatusBadRequest)
-        return
-    }
+	var indices []int
+	err = json.Unmarshal([]byte(indicesStr), &indices)
+	if err != nil {
+		log.Printf("Error unmarshalling indices: %v", err)
+		http.Error(w, "Error unmarshalling indices", http.StatusBadRequest)
+		return
+	}
 
 	prompts := middleware.ReadPrompts()
 	if len(prompts) == 0 {
@@ -503,25 +503,25 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    if len(indices) == 0 {
-        log.Println("No indices provided for deletion")
-        http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
-        return
-    }
+	if len(indices) == 0 {
+		log.Println("No indices provided for deletion")
+		http.Error(w, "No indices provided for deletion", http.StatusBadRequest)
+		return
+	}
 
-    var filteredPrompts []middleware.Prompt
-    for i, prompt := range prompts {
-        found := false
-        for _, index := range indices {
-            if i == index {
-                found = true
-                break
-            }
-        }
-        if !found {
-            filteredPrompts = append(filteredPrompts, prompt)
-        }
-    }
+	var filteredPrompts []middleware.Prompt
+	for i, prompt := range prompts {
+		found := false
+		for _, index := range indices {
+			if i == index {
+				found = true
+				break
+			}
+		}
+		if !found {
+			filteredPrompts = append(filteredPrompts, prompt)
+		}
+	}
 
 	err = middleware.WritePrompts(filteredPrompts)
 	if err != nil {
