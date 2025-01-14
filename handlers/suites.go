@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
 	"llm-tournament/middleware"
 )
@@ -67,12 +68,12 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    err = os.WriteFile("data/current_suite.txt", []byte(suiteName), 0644)
-    if err != nil {
-        log.Printf("Error writing current suite: %v", err)
-        http.Error(w, "Error writing current suite", http.StatusInternalServerError)
-        return
-    }
+	err = os.WriteFile("data/current_suite.txt", []byte(suiteName), 0644)
+	if err != nil {
+		log.Printf("Error writing current suite: %v", err)
+		http.Error(w, "Error writing current suite", http.StatusInternalServerError)
+		return
+	}
 
 	prompts, err := middleware.ReadPromptSuite(suiteName)
 	if err != nil {
@@ -172,11 +173,11 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "New suite name cannot be empty", http.StatusBadRequest)
 			return
 		}
-        if suiteName == newSuiteName {
-            log.Println("New suite name is the same as the old suite name")
-            http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-            return
-        }
+		if suiteName == newSuiteName {
+			log.Println("New suite name is the same as the old suite name")
+			http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+			return
+		}
 		prompts, err := middleware.ReadPromptSuite(suiteName)
 		if err != nil {
 			log.Printf("Error reading prompt suite: %v", err)
