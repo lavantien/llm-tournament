@@ -2,9 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 )
@@ -20,26 +18,26 @@ type Result struct {
 
 // Read prompts from prompts.json
 func ReadPrompts() []Prompt {
-    suiteName := GetCurrentSuiteName()
-    prompts, _ := ReadPromptSuite(suiteName)
+	suiteName := GetCurrentSuiteName()
+	prompts, _ := ReadPromptSuite(suiteName)
 	return prompts
 }
 
 // Write prompts to prompts.json
 func WritePrompts(prompts []Prompt) error {
-    suiteName := GetCurrentSuiteName()
-    return WritePromptSuite(suiteName, prompts)
+	suiteName := GetCurrentSuiteName()
+	return WritePromptSuite(suiteName, prompts)
 }
 
 // Read results from data/results-<suiteName>.json
 func ReadResults() map[string]Result {
-    suiteName := GetCurrentSuiteName()
-    var filename string
-    if suiteName == "default" {
-        filename = "data/results-default.json"
-    } else {
-        filename = "data/results-" + suiteName + ".json"
-    }
+	suiteName := GetCurrentSuiteName()
+	var filename string
+	if suiteName == "default" {
+		filename = "data/results-default.json"
+	} else {
+		filename = "data/results-" + suiteName + ".json"
+	}
 	data, _ := os.ReadFile(filename)
 	var results map[string]Result
 	json.Unmarshal(data, &results)
@@ -61,12 +59,12 @@ func ReadResults() map[string]Result {
 
 // Read prompt suite from data/prompts-<suiteName>.json
 func ReadPromptSuite(suiteName string) ([]Prompt, error) {
-    var filename string
-    if suiteName == "default" {
-        filename = "data/prompts-default.json"
-    } else {
-        filename = "data/prompts-" + suiteName + ".json"
-    }
+	var filename string
+	if suiteName == "default" {
+		filename = "data/prompts-default.json"
+	} else {
+		filename = "data/prompts-" + suiteName + ".json"
+	}
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -81,12 +79,12 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 
 // Write prompt suite to data/prompts-<suiteName>.json
 func WritePromptSuite(suiteName string, prompts []Prompt) error {
-    var filename string
-    if suiteName == "default" {
-        filename = "data/prompts-default.json"
-    } else {
-        filename = "data/prompts-" + suiteName + ".json"
-    }
+	var filename string
+	if suiteName == "default" {
+		filename = "data/prompts-default.json"
+	} else {
+		filename = "data/prompts-" + suiteName + ".json"
+	}
 	data, err := json.Marshal(prompts)
 	if err != nil {
 		return err
@@ -112,11 +110,6 @@ func ListPromptSuites() ([]string, error) {
 		}
 	}
 	return suites, nil
-}
-
-		}
-	}
-	return nil
 }
 
 func UpdatePromptsOrder(order []int) {

@@ -1,9 +1,5 @@
 /drop
 /add       README.md
-/add       data/current_suite.txt
-/add       data/prompts-default.json
-/add       data/prompts-quick.json
-/add       data/prompts.json
 /add       handlers/model.go
 /add       handlers/prompt.go
 /add       handlers/results.go
