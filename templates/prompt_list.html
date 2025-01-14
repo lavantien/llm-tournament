@@ -114,7 +114,7 @@
             {{inc $index}}.&nbsp;&nbsp;&nbsp;
           </h3>
           <div class="markdown-content" style="flex: 1; margin-right: 10px">
-            {{$prompt.Text}}&nbsp;&nbsp;&nbsp;
+            {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
           </div>
           <div
             style="
@@ -126,7 +126,7 @@
             "
             class="markdown-content"
           >
-            {{$prompt.Solution}}&nbsp;&nbsp;&nbsp;
+            {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
           </div>
           <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
             <button
