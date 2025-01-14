@@ -135,34 +135,52 @@ func DeletePromptSuite(suiteName string) error {
 
 // Get current suite name
 func GetCurrentSuiteName() string {
-    prompts := ReadPrompts()
-    if len(prompts) == 0 {
-        return ""
-    }
-    files, err := os.ReadDir("data")
-    if err != nil {
-        return ""
-    }
-    for _, file := range files {
-        if !file.IsDir() && strings.HasPrefix(file.Name(), "prompts-") && strings.HasSuffix(file.Name(), ".json") {
-            data, _ := os.ReadFile("data/" + file.Name())
-            var suitePrompts []Prompt
-            json.Unmarshal(data, &suitePrompts)
-            if len(suitePrompts) == len(prompts) {
-                match := true
-                for i, prompt := range prompts {
-                    if prompt != suitePrompts[i] {
-                        match = false
-                        break
-                    }
-                }
-                if match {
-                    return strings.TrimSuffix(strings.TrimPrefix(file.Name(), "prompts-"), ".json")
-                }
-            }
-        }
-    }
-    return ""
+	prompts := ReadPrompts()
+	if len(prompts) == 0 {
+		return ""
+	}
+
+	defaultPromptsData, _ := os.ReadFile("data/prompts.json")
+	var defaultPrompts []Prompt
+	json.Unmarshal(defaultPromptsData, &defaultPrompts)
+
+	if len(defaultPrompts) == len(prompts) {
+		match := true
+		for i, prompt := range prompts {
+			if prompt != defaultPrompts[i] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return ""
+		}
+	}
+
+	files, err := os.ReadDir("data")
+	if err != nil {
+		return ""
+	}
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "prompts-") && strings.HasSuffix(file.Name(), ".json") {
+			data, _ := os.ReadFile("data/" + file.Name())
+			var suitePrompts []Prompt
+			json.Unmarshal(data, &suitePrompts)
+			if len(suitePrompts) == len(prompts) {
+				match := true
+				for i, prompt := range prompts {
+					if prompt != suitePrompts[i] {
+						match = false
+						break
+					}
+				}
+				if match {
+					return strings.TrimSuffix(strings.TrimPrefix(file.Name(), "prompts-"), ".json")
+				}
+			}
+		}
+	}
+	return ""
 }
 
 // Handle import error
