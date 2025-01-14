@@ -10,6 +10,7 @@
   <body>
     <h1>Bulk Delete Prompts</h1>
     <form id="bulk-delete-form" action="/bulk_delete_prompts" method="post" style="text-align: center">
+        <input type="hidden" name="indices" value="{{.Indices}}" />
       <input type="submit" value="Delete" />
       <input type="submit" form="cancel-form" value="Cancel" />
     </form>
