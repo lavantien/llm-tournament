@@ -151,9 +151,8 @@
       </div>
     </div>
     <ul id="prompt-list">
-      {{range $index, $prompt := .Prompts}} {{if and (or (eq $.OrderFilter 0)
-      (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains
-      (tolower $prompt) (tolower $.SearchQuery)))}}
+      {{range $index, $prompt := .Prompts}}
+      {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <div
           style="
@@ -214,7 +213,8 @@
           </div>
         </div>
       </li>
-      {{end}} {{end}}
+      {{end}}
+      {{end}}
     </ul>
     <div class="sticky-footer">
       <div style="display: flex; align-items: center">
