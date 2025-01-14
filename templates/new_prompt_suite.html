@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Prompt Suite</title>
+    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+</head>
+<body>
+    <h1>New Prompt Suite</h1>
+    <form action="/prompts/suites/new" method="post" style="text-align: center;">
+        <label for="suite_name">Suite Name:</label>
+        <input type="text" id="suite_name" name="suite_name" required>
+        <input type="submit" value="Create">
+        <input type="submit" form="cancel-form" value="Cancel">
+    </form>
+    <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
+    <div class="scroll-buttons">
+        <button class="scroll-button" onclick="scrollToTop()">↑</button>
+        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
