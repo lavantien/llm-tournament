@@ -10,11 +10,22 @@
   <body>
     {{template "nav"}}
     <div class="sticky-header">
-      <div style="flex-grow: 1; text-align: left; display: flex; align-items: center;">
+      <div
+        style="
+          flex-grow: 1;
+          text-align: left;
+          display: flex;
+          align-items: center;
+        "
+      >
         <h2>Add Prompt</h2>
-        <input type="checkbox" id="select-all-prompts" style="margin-left: 10px;">
+        <input
+          type="checkbox"
+          id="select-all-prompts"
+          style="margin-left: 10px"
+        />
         <label for="select-all-prompts">Select All</label>
-        <span id="selected-count" style="margin-left: 10px;">(0)</span>
+        <span id="selected-count" style="margin-left: 10px">(0)</span>
       </div>
       <div
         style="
@@ -42,12 +53,29 @@
           <input type="submit" value="Add" />
         </form>
       </div>
-      <div style="flex-grow: 1; text-align: right; display: flex; align-items: center; justify-content: flex-end;">
-        <form action="/update_prompts_order" method="post" style="margin-right: 5px;">
+      <div
+        style="
+          flex-grow: 1;
+          text-align: right;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+        "
+      >
+        <form
+          action="/update_prompts_order"
+          method="post"
+          style="margin-right: 5px"
+        >
           <input type="hidden" name="order" id="prompts-order-input" value="" />
           <input type="submit" value="Confirm Order" />
         </form>
-        <a id="bulk-delete-button" class="action-button" style="margin-right: 5px;">Bulk Delete</a>
+        <a
+          id="bulk-delete-button"
+          class="action-button"
+          style="margin-right: 5px"
+          >Bulk Delete</a
+        >
       </div>
     </div>
     <div class="title-row">
@@ -63,36 +91,53 @@
           <input type="submit" value="Filter" />
         </form>
       </div>
-      <div class="title-container" style="display: flex; align-items: center; justify-content: center;">
-        <form action="/prompts/suites/new" method="get" style="margin-right: 5px;">
+      <div
+        class="title-container"
+        style="display: flex; align-items: center; justify-content: center"
+      >
+        <form
+          action="/prompts/suites/new"
+          method="get"
+          style="margin-right: 5px"
+        >
           <input type="submit" value="New" class="action-button" />
         </form>
-        <form action="/prompts/suites/edit" method="get" style="margin-right: 5px;">
+        <form
+          action="/prompts/suites/edit"
+          method="get"
+          style="margin-right: 5px"
+        >
           <input type="submit" value="Edit" class="action-button" />
         </form>
-        <form action="/prompts/suites/delete" method="get" style="margin-right: 5px;">
+        <form
+          action="/prompts/suites/delete"
+          method="get"
+          style="margin-right: 5px"
+        >
           <input type="submit" value="Delete" class="action-button" />
         </form>
-        <form action="/prompts/suites/select" method="post" style="margin-left: 5px;">
+        <form
+          action="/prompts/suites/select"
+          method="post"
+          style="margin-left: 5px"
+        >
           <select name="suite_name">
-            <option value="default" {{if not .CurrentSuite}}selected{{end}}>Default</option>
+            <option value="default" {{if not .CurrentSuite}}selected{{end}}>
+              Default
+            </option>
             {{range $suite := .Suites}}
-            <option value="{{$suite}}" {{if eq $suite $.CurrentSuite}}selected{{end}}>{{$suite}}</option>
+            <option
+              value="{{$suite}}"
+              {{if
+              eq
+              $suite
+              $.CurrentSuite}}selected{{end}}
+            >
+              {{$suite}}
+            </option>
             {{end}}
           </select>
           <input type="submit" value="Select" class="action-button" />
-        </form>
-      </div>
-      <div class="search-container">
-        <form action="/prompts" method="get">
-          <label for="search_query">Search:</label>&nbsp;
-          <input
-            type="text"
-            name="search_query"
-            id="search_query"
-            value="{{.SearchQuery}}"
-          />&nbsp;
-          <input type="submit" value="Search" />
         </form>
       </div>
       <div class="search-container">
@@ -121,7 +166,12 @@
             width: 100%;
           "
         >
-          <input type="checkbox" class="prompt-checkbox" data-index="{{$index}}" style="margin-right: 10px;">
+          <input
+            type="checkbox"
+            class="prompt-checkbox"
+            data-index="{{$index}}"
+            style="margin-right: 10px"
+          />
           <h3 style="flex: 0 0 auto; margin-right: 10px">
             {{inc $index}}.&nbsp;&nbsp;&nbsp;
           </h3>
@@ -324,69 +374,69 @@
         setupBulkDelete();
       };
       function updateBulkDeleteButton() {
-        const selectAllCheckbox = document.getElementById('select-all-prompts');
-        const promptCheckboxes = document.querySelectorAll('.prompt-checkbox');
-        const bulkDeleteButton = document.getElementById('bulk-delete-button');
+        const selectAllCheckbox = document.getElementById("select-all-prompts");
+        const promptCheckboxes = document.querySelectorAll(".prompt-checkbox");
+        const bulkDeleteButton = document.getElementById("bulk-delete-button");
         const selectedIndices = Array.from(promptCheckboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
+          .filter((checkbox) => checkbox.checked)
+          .map((checkbox) => parseInt(checkbox.getAttribute("data-index")));
         if (selectedIndices.length > 0) {
-            bulkDeleteButton.href = `/bulk_delete_prompts?indices=${JSON.stringify(selectedIndices)}`;
+          bulkDeleteButton.href = `/bulk_delete_prompts?indices=${JSON.stringify(selectedIndices)}`;
         } else {
-            bulkDeleteButton.removeAttribute('href');
+          bulkDeleteButton.removeAttribute("href");
         }
       }
 
       function setupBulkDelete() {
-        const selectAllCheckbox = document.getElementById('select-all-prompts');
-        const promptCheckboxes = document.querySelectorAll('.prompt-checkbox');
-        const bulkDeleteButton = document.getElementById('bulk-delete-button');
-        const selectedCountSpan = document.getElementById('selected-count');
+        const selectAllCheckbox = document.getElementById("select-all-prompts");
+        const promptCheckboxes = document.querySelectorAll(".prompt-checkbox");
+        const bulkDeleteButton = document.getElementById("bulk-delete-button");
+        const selectedCountSpan = document.getElementById("selected-count");
         let selectedCount = 0;
 
         function updateSelectedCount() {
-            selectedCountSpan.textContent = `(${selectedCount})`;
+          selectedCountSpan.textContent = `(${selectedCount})`;
         }
 
-        selectAllCheckbox.addEventListener('change', function() {
-            promptCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            selectedCount = this.checked ? promptCheckboxes.length : 0;
-            updateSelectedCount();
-            updateBulkDeleteButton();
+        selectAllCheckbox.addEventListener("change", function () {
+          promptCheckboxes.forEach((checkbox) => {
+            checkbox.checked = this.checked;
+          });
+          selectedCount = this.checked ? promptCheckboxes.length : 0;
+          updateSelectedCount();
+          updateBulkDeleteButton();
         });
 
-        promptCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    selectedCount++;
-                } else {
-                    selectedCount--;
-                }
-                updateSelectedCount();
-                updateBulkDeleteButton();
-            });
+        promptCheckboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            if (this.checked) {
+              selectedCount++;
+            } else {
+              selectedCount--;
+            }
+            updateSelectedCount();
+            updateBulkDeleteButton();
+          });
         });
 
         updateBulkDeleteButton();
 
         function bulkDeletePrompts(indices) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/bulk_delete_prompts", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log("Prompts deleted successfully");
-                    window.location.reload();
-                } else {
-                    console.error("Error deleting prompts:", xhr.statusText);
-                }
-            };
-            xhr.onerror = function () {
-                console.error("Error deleting prompts");
-            };
-            xhr.send(JSON.stringify({ indices: indices }));
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/bulk_delete_prompts", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              console.log("Prompts deleted successfully");
+              window.location.reload();
+            } else {
+              console.error("Error deleting prompts:", xhr.statusText);
+            }
+          };
+          xhr.onerror = function () {
+            console.error("Error deleting prompts");
+          };
+          xhr.send(JSON.stringify({ indices: indices }));
         }
       }
     </script>

@@ -81,8 +81,7 @@ Anyone can just submit a PR and we'll discuss there.
 - In place of the page `title-container` in the middle (Prompt List), replace it with a group of 3 buttons and a dropdown selection.
 - The 2 buttons are: New, Edit, and Delete; the dropdown selection is to choose the current prompt suite to display.
 - When click either of the 2 buttons, the appropriate page will be redirected to a similarly action page like others: the new_prompt_suite and edit_prompt_suite pages will have an input field and accept and cancel buttons, the delete_prompt_suite page will have the accept and cancel buttons.
-- The starting prompts in `data/prompts.json` will be the `default` suite.
-- Each suite will be stored in a different json: `data/prompts-<suite-name>.json`
+- Each suite will be stored in a different json at this location `data/prompts-<suite-name>.json`
 
 ### Model Suites
 

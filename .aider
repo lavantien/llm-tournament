@@ -3,6 +3,7 @@
 /add       handlers/model.go
 /add       handlers/prompt.go
 /add       handlers/results.go
+/add       handlers/suites.go
 /add       main.go
 /add       middleware/socket.go
 /add       middleware/state.go
@@ -10,13 +11,16 @@
 /add       templates/confirm_refresh_results.html
 /add       templates/delete_model.html
 /add       templates/delete_prompt.html
+/add       templates/delete_prompt_suite.html
 /add       templates/edit_model.html
 /add       templates/edit_prompt.html
+/add       templates/edit_prompt_suite.html
 /add       templates/import_error.html
 /add       templates/import_prompts.html
 /add       templates/import_results.html
 /add       templates/move_prompt.html
 /add       templates/nav.html
+/add       templates/new_prompt_suite.html
 /add       templates/prompt_list.html
 /add       templates/reset_prompts.html
 /add       templates/reset_results.html
