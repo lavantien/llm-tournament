@@ -116,11 +116,7 @@
         >
           <input type="submit" value="Delete" class="action-button" />
         </form>
-        <form
-          action="/prompts/suites/select"
-          method="post"
-          style="margin-left: 5px"
-        >
+        <form action="/prompts/suites/select" method="post" style="margin-left: 5px">
           <select name="suite_name">
             {{range $suite := .Suites}}
             <option
