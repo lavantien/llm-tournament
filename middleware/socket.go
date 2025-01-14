@@ -69,6 +69,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func BroadcastResults() {
+    suiteName := GetCurrentSuiteName()
 	prompts := ReadPrompts()
 	results := ReadResults()
 
