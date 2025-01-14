@@ -10,8 +10,11 @@
   <body>
     {{template "nav"}}
     <div class="sticky-header">
-      <div style="flex-grow: 1; text-align: left">
+      <div style="flex-grow: 1; text-align: left; display: flex; align-items: center;">
         <h2>Add Prompt</h2>
+        <input type="checkbox" id="select-all-prompts" style="margin-left: 10px;">
+        <label for="select-all-prompts">Select All</label>
+        <span id="selected-count" style="margin-left: 10px;">(0)</span>
       </div>
       <div
         style="
@@ -39,11 +42,12 @@
           <input type="submit" value="Add" />
         </form>
       </div>
-      <div style="flex-grow: 1; text-align: right">
-        <form action="/update_prompts_order" method="post">
+      <div style="flex-grow: 1; text-align: right; display: flex; align-items: center; justify-content: flex-end;">
+        <form action="/update_prompts_order" method="post" style="margin-right: 5px;">
           <input type="hidden" name="order" id="prompts-order-input" value="" />
           <input type="submit" value="Confirm Order" />
         </form>
+        <button id="bulk-delete-button" class="action-button" style="margin-right: 5px;">Bulk Delete</button>
       </div>
     </div>
     <div class="title-row">
@@ -88,6 +92,7 @@
             width: 100%;
           "
         >
+          <input type="checkbox" class="prompt-checkbox" data-index="{{$index}}" style="margin-right: 10px;">
           <h3 style="flex: 0 0 auto; margin-right: 10px">
             {{inc $index}}.&nbsp;&nbsp;&nbsp;
           </h3>
