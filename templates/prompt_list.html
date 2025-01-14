@@ -122,7 +122,7 @@
           style="margin-left: 5px"
         >
           <select name="suite_name">
-            <option value="default" {{if not .CurrentSuite}}selected{{end}}>
+            <option value="default" {{if eq .CurrentSuite "default"}}selected{{end}}>
               Default
             </option>
             {{range $suite := .Suites}}

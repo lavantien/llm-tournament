@@ -75,16 +75,9 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile("data/current_suite.txt", []byte(suiteName), 0644)
-	if err != nil {
-		log.Printf("Error writing current suite: %v", err)
-		http.Error(w, "Error writing current suite", http.StatusInternalServerError)
-		return
-	}
-
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
 	middleware.BroadcastResults()
-    http.Redirect(w, r, "/prompts?suite_name="+suiteName, http.StatusSeeOther)
+    http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
 // Handle new prompt suite
