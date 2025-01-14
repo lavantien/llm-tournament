@@ -21,11 +21,11 @@
     <h2>Preview</h2>
     <div id="preview" class="markdown-content">
         {{range $index, $prompt := .Prompts}}
-            {{$prompt.Text | markdown}}
+            <div class="markdown-content">{{$prompt.Text | markdown}}</div>
             <br />
-            {{"---" | markdown}}
+            <hr>
             <br />
-            <div style="font-style: italic; text-align: left; color: green">
+            <div style="font-style: italic; text-align: left; color: green" class="markdown-content">
                 {{$prompt.Solution | markdown}}
             </div>
             <br />
