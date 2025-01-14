@@ -102,12 +102,9 @@
         >
           <input type="submit" value="New" class="action-button" />
         </form>
-        <form
-          action="/prompts/suites/edit?suite_name={{.CurrentSuite}}"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="submit" value="Edit" class="action-button" />
+        <form action="/prompts/suites/edit" method="get" style="margin-right: 5px">
+            <input type="hidden" name="suite_name" value="{{.CurrentSuite}}">
+            <input type="submit" value="Edit" class="action-button" />
         </form>
         <form action="/prompts/suites/delete" method="get" style="margin-right: 5px">
             <input type="hidden" name="suite_name" value="{{.CurrentSuite}}">
