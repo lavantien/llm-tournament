@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Bulk Delete Prompts</title>
+    <link rel="stylesheet" href="/templates/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+
+  <body>
+    <h1>Bulk Delete Prompts</h1>
+    <form action="/bulk_delete_prompts" method="post" style="text-align: center">
+        <input type="hidden" name="indices" value="{{.Indices}}" />
+      <input type="submit" value="Delete" />
+      <input type="submit" form="cancel-form" value="Cancel" />
+    </form>
+    <form id="cancel-form" action="/prompts" method="get"></form>
+    <p style="text-align: center">
+      Are you sure you want to delete the following prompts?
+    </p>
+    <h2>Preview</h2>
+    <div id="preview" class="markdown-content">
+        {{range $index, $prompt := .Prompts}}
+            {{$prompt.Text | markdown}}
+            <br />
+            {{"---" | markdown}}
+            <br />
+            <div style="font-style: italic; text-align: left; color: green">
+                {{$prompt.Solution | markdown}}
+            </div>
+            <br />
+        {{end}}
+    </div>
+    <script>
+      const preview = document.getElementById("preview");
+
+      // Initial render
+      const previewDiv = document.getElementById("preview");
+
+      function updatePreview() {
+        const markdownText = previewDiv.innerHTML;
+        preview.innerHTML = marked.parse(markdownText);
+      }
+
+      // Initial render
+      updatePreview();
+    </script>
+    <div class="scroll-buttons">
+      <button class="scroll-button" onclick="scrollToTop()">↑</button>
+      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    </script>
+  </body>
+</html>

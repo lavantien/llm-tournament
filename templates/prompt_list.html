@@ -47,7 +47,7 @@
           <input type="hidden" name="order" id="prompts-order-input" value="" />
           <input type="submit" value="Confirm Order" />
         </form>
-        <button id="bulk-delete-button" class="action-button" style="margin-right: 5px;">Bulk Delete</button>
+        <a id="bulk-delete-button" class="action-button" style="margin-right: 5px;">Bulk Delete</a>
       </div>
     </div>
     <div class="title-row">
@@ -294,6 +294,19 @@
         updateOrder();
         setupBulkDelete();
       };
+      function updateBulkDeleteButton() {
+        const selectAllCheckbox = document.getElementById('select-all-prompts');
+        const promptCheckboxes = document.querySelectorAll('.prompt-checkbox');
+        const bulkDeleteButton = document.getElementById('bulk-delete-button');
+        const selectedIndices = Array.from(promptCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
+        if (selectedIndices.length > 0) {
+            bulkDeleteButton.href = `/bulk_delete_prompts?indices=${JSON.stringify(selectedIndices)}`;
+        } else {
+            bulkDeleteButton.removeAttribute('href');
+        }
+      }
 
       function setupBulkDelete() {
         const selectAllCheckbox = document.getElementById('select-all-prompts');
@@ -312,6 +325,7 @@
             });
             selectedCount = this.checked ? promptCheckboxes.length : 0;
             updateSelectedCount();
+            updateBulkDeleteButton();
         });
 
         promptCheckboxes.forEach(checkbox => {
@@ -322,22 +336,11 @@
                     selectedCount--;
                 }
                 updateSelectedCount();
+                updateBulkDeleteButton();
             });
         });
 
-        bulkDeleteButton.addEventListener('click', function() {
-            const selectedIndices = Array.from(promptCheckboxes)
-                .filter(checkbox => checkbox.checked)
-                .map(checkbox => parseInt(checkbox.getAttribute('data-index')));
-
-            if (selectedIndices.length > 0) {
-                if (confirm(`Are you sure you want to delete ${selectedIndices.length} prompts?`)) {
-                    bulkDeletePrompts(selectedIndices);
-                }
-            } else {
-                alert('No prompts selected for deletion.');
-            }
-        });
+        updateBulkDeleteButton();
 
         function bulkDeletePrompts(indices) {
             var xhr = new XMLHttpRequest();
