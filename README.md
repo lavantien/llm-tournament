@@ -35,6 +35,10 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
   - **📥 Import Results**: Allows users to import results from a CSV file.
 - **📝 Prompt Suites**:
   - **➕ Create, ✏️ Edit, ❌ Delete, 🔄 Select**: Full control over prompt suite creation, editing, deletion, and selection.
+- **📝 Profiles**:
+  - **➕ Add, ✏️ Edit, ❌ Delete**: Full control over profile creation and management.
+  - **🔄 Reset Profiles**: Allows users to reset all profiles.
+  - **🔍 Search Profiles**: Full text search profile content.
 
 ## 🛠️ Stack
 
