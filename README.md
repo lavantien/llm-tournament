@@ -64,10 +64,14 @@ Key technical highlights:
   - **🔄 Reset Profiles**: Reset all profiles.
   - **🔍 Search Profiles**: Full text search.
 
+[(Back)](#-table-of-contents)
+
 ## 🛠️ Stack
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with free/unlimited APIs: Gemini 2.0 Advanced, Gemini 2.0 Flash, Codestral 2501, Mistral Large Latest.
+
+[(Back)](#-table-of-contents)
 
 ## 🖼️ UI
 
@@ -78,6 +82,8 @@ Key technical highlights:
 ![profile-page](./assets/ui-profile-manager.png)
 
 ![prompt-edit-page](./assets/ui-prompt-edit.png)
+
+[(Back)](#-table-of-contents)
 
 ## 🏃 Run
 
@@ -93,6 +99,8 @@ or
 
 Then go to <http://localhost:8080>
 
+[(Back)](#-table-of-contents)
+
 ## 🛠️ Develop
 
 Require Linux environment with Python and Go installed (preferably via Brew).
@@ -103,9 +111,13 @@ make aiderupdate
 
 Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own API Key.
 
+[(Back)](#-table-of-contents)
+
 ## 🤝 Contribute
 
 Anyone can just submit a PR and we'll discuss there.
+
+[(Back)](#-table-of-contents)
 
 ## 📝 TODO/Roadmap
 
@@ -115,6 +127,8 @@ Anyone can just submit a PR and we'll discuss there.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
+[(Back)](#-table-of-contents)
+
 ## 🏆 Badges
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -123,16 +137,24 @@ Anyone can just submit a PR and we'll discuss there.
 [![GitHub stars](https://img.shields.io/github/stars/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/network)
 
+[(Back)](#-table-of-contents)
+
 ## 👥 Contributors
 
 <a href="https://github.com/lavantien/llm-tournament/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=lavantien/llm-tournament" />
 </a>
 
+[(Back)](#-table-of-contents)
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+[(Back)](#-table-of-contents)
+
 ## 📞 Contact
 
 For any questions or suggestions or collaboration/job inquiries, feel free to reach out to us at [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com).
+
+[(Back)](#-table-of-contents)
