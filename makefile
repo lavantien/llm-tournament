@@ -5,6 +5,8 @@ clean:
 	rm ./release/*
 build:
 	go build -o ./release/llm-tournament-v1.0 .
+buildwindows:
+	go build -o ./release/llm-tournament-v1.0.exe .
 aiderinstalllinux:
 	curl -LsSf https://aider.chat/install.sh | sh
 aiderinstallwindows:
