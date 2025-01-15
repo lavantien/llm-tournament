@@ -10,7 +10,7 @@ LLM Tournament addresses the critical challenge of evaluating and comparing lang
 
 Key technical highlights:
 
-- Lightweight and blazingly-fast due to pure Go Template without any bloat
+- Lightweight and blazingly-fast due to pure Go Template without any bloat, single binary
 - Real-time evaluation engine powered by WebSocket
 - Horizontally scalable architecture with stateless components
 - Efficient data persistence layer with JSON-based storage
@@ -83,6 +83,12 @@ Key technical highlights:
 
 ```bash
 make run
+```
+
+or
+
+```bash
+./release/llm-tournament-v1.0
 ```
 
 Then go to <http://localhost:8080>

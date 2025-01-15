@@ -1,7 +1,10 @@
-.PHONY: updateaider test run clean all
+.PHONY: updateaider test run clean all build
 all:
 	test
 clean:
+	rm ./release/*
+build:
+	go build -o ./release/llm-tournament-v1.0 .
 aiderinstalllinux:
 	curl -LsSf https://aider.chat/install.sh | sh
 aiderinstallwindows:
