@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday/v2"
+
 	"llm-tournament/middleware"
 )
 
@@ -20,7 +23,7 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 		"inc": func(i int) int {
 			return i + 1
 		},
-		"tolower": strings.ToLower,
+		"tolower":  strings.ToLower,
 		"contains": strings.Contains,
 	}
 	funcMap["json"] = func(v interface{}) (string, error) {
