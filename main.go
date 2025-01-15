@@ -69,7 +69,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		handlers.SelectPromptSuiteHandler(w, r)
 	case "/results":
 		pageName = "Results"
-		handlers.ResultsHandler(w, r, pageName)
+		handlers.ResultsHandler(w, r)
 	case "/update_result":
 		handlers.UpdateResultHandler(w, r)
 	case "/reset_results":
@@ -81,8 +81,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case "/export_results":
 		handlers.ExportResultsHandler(w, r)
 	case "/profiles":
-		pageName = "Profiles"
-		handlers.ProfilesHandler(w, r, pageName)
+		handlers.ProfilesHandler(w, r)
 	case "/add_profile":
 		handlers.AddProfileHandler(w, r)
 	case "/edit_profile":
