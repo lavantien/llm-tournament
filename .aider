@@ -5,6 +5,7 @@
 /add       handlers/results.go
 /add       handlers/suites.go
 /add       main.go
+/add       middleware/import_error.go
 /add       middleware/socket.go
 /add       middleware/state.go
 /add       templates/bulk_delete_prompts.html

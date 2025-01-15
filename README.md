@@ -39,7 +39,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 ## Stack
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
-- **Assistant**: Aider with Mistral Large Latest or Gemini 2.0 Flash Exp free API.
+- **Assistant**: Aider with Codestral 2501, Mistral Large Latest, Gemini Exp 1206, or Gemini 2.0 Flash Exp free APIs.
 
 ## UI
 
