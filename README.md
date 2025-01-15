@@ -1,6 +1,23 @@
 # 🏆 LLM Tournament
 
-A simple and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Sleek UI/UX with zero bloat.
+![Banner](assets/banner.png)
+
+A sleek and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Experience zero bloat with a dynamic UI/UX designed for ease of use.
+
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Stack](#-stack)
+- [UI](#-ui)
+- [Run](#-run)
+- [Develop](#-develop)
+- [Contribute](#-contribute)
+- [TODO/Roadmap](#-todoroadmap)
+- [Badges](#-badges)
+- [Contributors](#-contributors)
+- [License](#-license)
+- [Contact](#-contact)
 
 ## 📊 Overview
 
@@ -84,3 +101,24 @@ Anyone can just submit a PR and we'll discuss there.
 - Handbook composition prompt.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
+
+## 🏆 Badges
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub issues](https://img.shields.io/github/issues/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/issues)
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/network)
+
+## 👥 Contributors
+
+<a href="https://github.com/yourusername/llm-tournament/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=yourusername/llm-tournament" />
+</a>
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Contact
+
+For any questions or suggestions, feel free to reach out to us at [your-email@example.com](mailto:your-email@example.com).
