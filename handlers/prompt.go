@@ -50,7 +50,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		b, err := json.Marshal(v)
 		return string(b), err
 	}
-
+	pageName := "Prompts"
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
@@ -97,6 +97,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 
 	profiles := middleware.ReadProfiles()
 	err = t.Execute(w, struct {
+		PageName      string
 		Prompts       []middleware.Prompt
 		PromptIndices []int
 		Profiles      []middleware.Profile
@@ -105,6 +106,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		Suites        []string
 		CurrentSuite  string
 	}{
+		PageName:      pageName,
 		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
 		Profiles:      profiles,

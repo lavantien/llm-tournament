@@ -31,6 +31,7 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 		return string(b), err
 	}
 
+	pageName := "Profiles"
 	t, err := template.New("profiles.html").Funcs(funcMap).ParseFiles("templates/profiles.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
@@ -45,9 +46,11 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 
 	profiles := middleware.ReadProfiles()
 	err = t.Execute(w, struct {
+		PageName    string
 		Profiles    []middleware.Profile
 		SearchQuery string
 	}{
+		PageName:    pageName,
 		Profiles:    profiles,
 		SearchQuery: searchQuery,
 	})

@@ -61,6 +61,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		b, err := json.Marshal(v)
 		return string(b), err
 	}
+	pageName := "Results"
 	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
@@ -98,6 +99,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = t.Execute(w, struct {
+		PageName        string
 		Prompts         []string
 		Results         map[string][]bool
 		Models          []string
@@ -106,6 +108,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores     map[string]int
 		PromptIndices   []int
 	}{
+		PageName:        pageName,
 		Prompts:         promptTexts,
 		Results:         resultsForTemplate,
 		Models:          models,
