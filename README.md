@@ -20,37 +20,37 @@ The **LLM Tournament** is a powerful, real-time web application designed to stre
 
 ## 🔑 Key Features
 
-- **🔄 Real-time Updates**: Leverages WebSockets to provide instant updates on the results page, ensuring users have the latest data at their fingertips.
-- **🖥️ Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
+- **🔄 Real-time Updates**: WebSockets for instant updates on the results page.
+- **🖥️ Dynamic UI**: Responsive and intuitive interface.
 - **📝 Prompt Management**:
-  - **➕ Add, ✏️ Edit, ❌ Delete, 🔄 Move**: Full control over prompt creation and management.
-  - **🔍 Prompt Solution**: Freely manage prompt's content and solution.
-  - **📄 Multiline Input**: Supports multiline input for detailed and complex prompts.
-  - **📝 Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
-  - **🔄 Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
-  - **🔍 Search Prompts**: Full text search prompt content.
-  - **🗑️ Bulk Delete Prompts**: Allows users to delete multiple prompts at once.
+  - **➕ Add, ✏️ Edit, ❌ Delete, 🔄 Move**: Manage prompts.
+  - **🔍 Prompt Solution**: Manage prompt content and solution.
+  - **📄 Multiline Input**: Detailed and complex prompts.
+  - **📝 Markdown Rendering**: Rich text formatting.
+  - **🔄 Reorder Prompts**: Drag and drop reordering.
+  - **🔍 Search Prompts**: Full text search.
+  - **🗑️ Bulk Delete Prompts**: Delete multiple prompts.
 - **📊 Model Evaluation**:
-  - **✅ Pass/Fail Tracking**: Efficiently tracks pass/fail results for each model against each prompt.
-  - **🏆 Total Scores and Pass Percentages**: Displays comprehensive performance metrics for each model.
-- **💾 Data Persistence**: Utilizes JSON files for robust storage of prompts and results.
+  - **✅ Pass/Fail Tracking**: Track pass/fail results.
+  - **🏆 Total Scores and Pass Percentages**: Performance metrics.
+- **💾 Data Persistence**: JSON files for storage.
 - **📥 Import/Export**:
-  - **📝 Prompts and 📊 Results**: Supports importing and exporting of prompts and results in CSV format for easy data management.
+  - **📝 Prompts and 📊 Results**: CSV format for data management.
 - **🔍 Filtering**:
-  - **🏆 Model Filtering**: Allows filtering of results by model to streamline analysis.
+  - **🏆 Model Filtering**: Filter results by model.
 - **🏆 Model Management**:
-  - **➕ Add, ✏️ Edit, ❌ Delete**: Full control over model creation and management.
+  - **➕ Add, ✏️ Edit, ❌ Delete**: Manage models.
 - **📊 Result Management**:
-  - **🔄 Reset Results**: Allows users to reset all results.
-  - **🔄 Refresh Results**: Allows users to refresh all results.
-  - **📥 Export Results**: Allows users to export results in CSV format.
-  - **📥 Import Results**: Allows users to import results from a CSV file.
+  - **🔄 Reset Results**: Reset all results.
+  - **🔄 Refresh Results**: Refresh all results.
+  - **📥 Export Results**: Export results in CSV format.
+  - **📥 Import Results**: Import results from a CSV file.
 - **📝 Prompt Suites**:
-  - **➕ Create, ✏️ Edit, ❌ Delete, 🔄 Select**: Full control over prompt suite creation, editing, deletion, and selection.
+  - **➕ Create, ✏️ Edit, ❌ Delete, 🔄 Select**: Manage prompt suites.
 - **📝 Profiles**:
-  - **➕ Add, ✏️ Edit, ❌ Delete**: Full control over profile creation and management.
-  - **🔄 Reset Profiles**: Allows users to reset all profiles.
-  - **🔍 Search Profiles**: Full text search profile content.
+  - **➕ Add, ✏️ Edit, ❌ Delete**: Manage profiles.
+  - **🔄 Reset Profiles**: Reset all profiles.
+  - **🔍 Search Profiles**: Full text search.
 
 ## 🛠️ Stack
 
