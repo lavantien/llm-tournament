@@ -87,43 +87,46 @@
             const models = payload.Models;
             const passPercentages = payload.PassPercentages;
             const totalScores = payload.TotalScores;
+            const modelFilter = document.getElementById("model_filter").value;
 
             const tbody = document.querySelector("table tbody");
             tbody.innerHTML = ""; // Clear existing rows
             let i = 0;
             models.forEach((model) => {
-                i++;
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                <td>${i}</td>
-                <td class="model-actions">
-                    <div class="prompt-actions">
-                        <a class="action-button edit-button" href="/edit_model?model=${model}">Edit</a>
-                        <a class="action-button delete-button" href="/delete_model?model=${model}">Delete</a>
-                    </div>
-                </td>
-                <td>${model}</td>
-                ${results[model]
-                        .map(
-                            (pass, index) => `
-                    <td>
-                        <button
-                            class="result-button"
-                            style="background-color: ${pass ? "green" : "red"}"
-                            onclick="updateResult('${model}', ${index}, ${!pass}, this)"
-                        ></button>
+                if (modelFilter === "" || model === modelFilter) {
+                    i++;
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                    <td>${i}</td>
+                    <td class="model-actions">
+                        <div class="prompt-actions">
+                            <a class="action-button edit-button" href="/edit_model?model=${model}">Edit</a>
+                            <a class="action-button delete-button" href="/delete_model?model=${model}">Delete</a>
+                        </div>
                     </td>
-                `,
-                        )
-                        .join("")}
-                <td>
-                    ${totalScores[model]}
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${passPercentages[model]}%;"></div>
-                    </div>
-                </td>
-            `;
-                tbody.appendChild(row);
+                    <td>${model}</td>
+                    ${results[model]
+                            .map(
+                                (pass, index) => `
+                        <td>
+                            <button
+                                class="result-button"
+                                style="background-color: ${pass ? "green" : "red"}"
+                                onclick="updateResult('${model}', ${index}, ${!pass}, this)"
+                            ></button>
+                        </td>
+                    `,
+                            )
+                            .join("")}
+                    <td>
+                        ${totalScores[model]}
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${passPercentages[model]}%;"></div>
+                        </div>
+                    </td>
+                `;
+                    tbody.appendChild(row);
+                }
             });
         }
 
@@ -176,12 +179,12 @@
     </div>
     <div class="title-row">
         <div class="filter-container">
-            <form action="/results" method="get">
+            <form action="/results" method="get" id="filter-form">
                 <label for="model_filter">Filter by Model:</label>
                 <select name="model_filter" id="model_filter">
                     <option value="">All Models</option>
                     {{range $model := .Models}}
-                    <option value="{{$model}}">{{$model}}</option>
+                    <option value="{{$model}}" {{if eq $.ModelFilter $model}}selected{{end}}>{{$model}}</option>
                     {{end}}
                 </select>
                 <input type="submit" value="Filter" />
