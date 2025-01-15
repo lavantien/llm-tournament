@@ -2,7 +2,19 @@
 
 ![Banner](./assets/banner.png)
 
-The **LLM Tournament** is a powerful, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. With features like real-time updates, dynamic UI, data persistence, prompt suites, and profiles, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
+A high-performance, _blazingly-fast_ evaluation platform for Large Language Models, built with enterprise-grade architecture and real-time capabilities. This platform enables systematic assessment of LLM performance through comprehensive test suites, sophisticated prompt management, and detailed analytics.
+
+## Overview
+
+LLM Tournament addresses the critical challenge of evaluating and comparing language model performance at scale. Built with a focus on reliability and real-time processing, it provides a robust framework for managing complex evaluation workflows while maintaining high performance and data integrity.
+
+Key technical highlights:
+
+- Lightweight and blazingly-fast due to pure Go Template without any bloat
+- Real-time evaluation engine powered by WebSocket
+- Horizontally scalable architecture with stateless components
+- Efficient data persistence layer with JSON-based storage
+- Responsive frontend built on modern web standards
 
 ## 📚 Table of Contents
 
