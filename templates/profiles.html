@@ -9,26 +9,53 @@
   <body>
     {{template "nav" .}}
     <div class="sticky-header">
-      <h2>Add Profile</h2>
-      <form
-        action="/add_profile"
-        method="post"
-        style="display: flex; align-items: center"
+      <div
+        style="
+          flex-grow: 1;
+          text-align: left;
+          display: flex;
+          align-items: center;
+        "
       >
-        <textarea
-          name="profile_name"
-          placeholder="Enter new profile name"
-          rows="5"
-          style="margin-right: 5px"
-        ></textarea>
-        <textarea
-          name="profile_description"
-          placeholder="Enter profile description"
-          rows="5"
-          style="margin-right: 5px"
-        ></textarea>
-        <input type="submit" value="Add" />
-      </form>
+        <h2>Add Profile</h2>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-grow: 1;
+        "
+      >
+        <form
+          action="/add_profile"
+          method="post"
+          style="display: flex; align-items: center"
+        >
+          <textarea
+            name="profile_name"
+            placeholder="Enter new profile name"
+            rows="2"
+            style="margin-right: 5px"
+          ></textarea>
+          <textarea
+            name="profile_description"
+            placeholder="Enter profile description"
+            rows="2"
+            style="margin-right: 5px"
+          ></textarea>
+          <input type="submit" value="Add" />
+        </form>
+      </div>
+      <div
+        style="
+          flex-grow: 1;
+          text-align: right;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+        "
+      ></div>
     </div>
     <div class="title-row">
       <div class="filter-container search-container">
@@ -65,7 +92,7 @@
             {{inc $index}}.&nbsp;&nbsp;&nbsp;
           </h3>
           <div style="flex: 1; margin-right: 10px">
-            {{$profile.Name}}&nbsp;&nbsp;&nbsp;
+            {{$profile.Description}}&nbsp;&nbsp;&nbsp;
           </div>
           <div
             style="
@@ -76,7 +103,7 @@
               color: green;
             "
           >
-            {{$profile.Description}}&nbsp;&nbsp;&nbsp;
+            {{$profile.Name}}&nbsp;&nbsp;&nbsp;
           </div>
           <div
             class="profile-actions"
