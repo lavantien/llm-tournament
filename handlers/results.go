@@ -190,6 +190,7 @@ func ResetResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if r.Method == "POST" {
 		emptyResults := make(map[string]middleware.Result)
+		suiteName := middleware.GetCurrentSuiteName()
 		err := middleware.WriteResults(suiteName, emptyResults)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
@@ -221,6 +222,7 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 		for model := range results {
 			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
 		}
+		suiteName := middleware.GetCurrentSuiteName()
 		err := middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)

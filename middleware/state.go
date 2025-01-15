@@ -112,6 +112,15 @@ func ListPromptSuites() ([]string, error) {
 	return suites, nil
 }
 
+func DeletePromptSuite(suiteName string) error {
+	filename := "data/prompts-" + suiteName + ".json"
+	err := os.Remove(filename)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Get current suite name
 func GetCurrentSuiteName() string {
 	data, err := os.ReadFile("data/current_suite.txt")
