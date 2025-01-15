@@ -7,7 +7,8 @@
     padding: 10px 20px;
   "
 >
-  <div class="nav-title">
+  <div class="nav-title" style="text-align: left">
+    <img src="/assets/logo.webp" alt="Logo" style="height: 50px" />
     <h1>LLM Tournament</h1>
   </div>
   <div class="nav-links">
@@ -16,37 +17,25 @@
       method="get"
       style="display: inline-block; margin-bottom: 0; margin-right: 10px"
     >
-      <input
-        type="submit"
-        value="Results"
-        class="action-button"
-      />
+      <input type="submit" value="Results" class="action-button" />
     </form>
     <form
       action="/prompts"
       method="get"
       style="display: inline-block; margin-bottom: 0; margin-right: 10px"
     >
-      <input
-        type="submit"
-        value="Prompt"
-        class="action-button"
-      />
+      <input type="submit" value="Prompt" class="action-button" />
     </form>
     <form
       action="/profiles"
       method="get"
       style="display: inline-block; margin-bottom: 0"
     >
-      <input
-        type="submit"
-        value="Profiles"
-        class="action-button"
-      />
+      <input type="submit" value="Profiles" class="action-button" />
     </form>
   </div>
-  <div class="nav-logo">
-    <img src="/assets/logo.webp" alt="Logo" style="height: 50px" />
+  <div class="nav-pagename">
+    <!--TODO: display page name here (Results, Prompts, Profiles) -->
   </div>
 </nav>
 {{end}}
