@@ -17,6 +17,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
   - **Markdown Rendering**: Renders prompts in Markdown, allowing for rich text formatting.
   - **Reorder Prompts**: Drag and drop functionality to easily reorder prompts.
   - **Search Prompts**: Full text search prompt content.
+  - **Bulk Delete Prompts**: Allows users to delete multiple prompts at once.
 - **Model Evaluation**:
   - **Pass/Fail Tracking**: Efficiently tracks pass/fail results for each model against each prompt.
   - **Total Scores and Pass Percentages**: Displays comprehensive performance metrics for each model.
@@ -30,6 +31,10 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 - **Result Management**:
   - **Reset Results**: Allows users to reset all results.
   - **Refresh Results**: Allows users to refresh all results.
+  - **Export Results**: Allows users to export results in CSV format.
+  - **Import Results**: Allows users to import results from a CSV file.
+- **Prompt Suites**:
+  - **Create, Edit, Delete, Select**: Full control over prompt suite creation, editing, deletion, and selection.
 
 ## Stack
 
