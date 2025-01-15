@@ -156,7 +156,7 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		result.Passes[promptIndex] = pass
 	}
 	results[model] = result
-	err = middleware.WriteResults(results)
+	err = middleware.WriteResults(suiteName, results)
 	if err != nil {
 		log.Printf("Error writing results: %v", err)
 		http.Error(w, "Error writing results", http.StatusInternalServerError)
@@ -189,9 +189,8 @@ func ResetResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "POST" {
-        suiteName := middleware.GetCurrentSuiteName()
 		emptyResults := make(map[string]middleware.Result)
-		err := middleware.WriteResults(emptyResults)
+		err := middleware.WriteResults(suiteName, emptyResults)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
@@ -218,12 +217,11 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == "POST" {
-        suiteName := middleware.GetCurrentSuiteName()
 		results := middleware.ReadResults()
 		for model := range results {
 			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
 		}
-		err := middleware.WriteResults(results)
+		err := middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
