@@ -49,7 +49,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 
 ![prompt-edit-page](./assets/ui-prompt-edit.png)
 
-## 🏃‍♂️ Run
+## 🏃 Run
 
 ```bash
 make run
