@@ -30,7 +30,7 @@ func AddModelHandler(w http.ResponseWriter, r *http.Request) {
 	if _, ok := results[modelName]; !ok {
 		results[modelName] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
 	}
-	err = middleware.WriteResults(results)
+	err = middleware.WriteResults(suiteName, results)
 	if err != nil {
 		log.Printf("Error writing results: %v", err)
 		http.Error(w, "Error writing results", http.StatusInternalServerError)
@@ -65,7 +65,7 @@ func EditModelHandler(w http.ResponseWriter, r *http.Request) {
 
 		results[newModelName] = results[modelName]
 		delete(results, modelName)
-		middleware.WriteResults(results)
+		middleware.WriteResults(suiteName, results)
 
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
@@ -113,7 +113,7 @@ func DeleteModelHandler(w http.ResponseWriter, r *http.Request) {
 
 		results := middleware.ReadResults()
 		delete(results, modelName)
-		middleware.WriteResults(results)
+		middleware.WriteResults(suiteName, results)
 
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
