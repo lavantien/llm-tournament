@@ -122,6 +122,36 @@ func GetCurrentSuiteName() string {
 	return strings.TrimSpace(suiteName)
 }
 
+// Write results to data/results-<suiteName>.json
+func WriteResults(suiteName string, results map[string]Result) error {
+	var filename string
+	if suiteName == "default" {
+		filename = "data/results-default.json"
+	} else {
+		filename = "data/results-" + suiteName + ".json"
+	}
+	data, err := json.Marshal(results)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	prompts := ReadPrompts()
+	for model, result := range results {
+		if len(result.Passes) < len(prompts) {
+			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
+			results[model] = result
+		} else if len(result.Passes) > len(prompts) {
+			results[model] = Result{Passes: result.Passes[:len(prompts)]}
+		}
+	}
+
+	return nil
+}
+
 func UpdatePromptsOrder(order []int) {
 	prompts := ReadPrompts()
 	if len(order) != len(prompts) {
