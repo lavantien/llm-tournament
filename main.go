@@ -68,7 +68,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 		handlers.SelectPromptSuiteHandler(w, r)
 	case "/results":
 		pageName = "Results"
-		handlers.ResultsHandler(w, r)
+		handlers.ResultsHandler(w, r, pageName)
 	case "/update_result":
 		handlers.UpdateResultHandler(w, r)
 	case "/reset_results":
