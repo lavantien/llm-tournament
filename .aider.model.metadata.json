@@ -6,7 +6,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "mistral/pixtral-large-latest": {
     "max_tokens": -1,
@@ -15,7 +15,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "mistral/mistral-small-latest": {
     "max_tokens": -1,
@@ -24,16 +24,17 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "codestral/codestral-latest": {
+    "num_ctx": 262144,
     "max_tokens": -1,
     "repetition_penalty": 1.02,
     "top_k": 0,
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "gemini/gemini-exp-1206": {
     "max_tokens": -1,
@@ -42,7 +43,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "gemini/gemini-2.0-flash-exp": {
     "max_tokens": -1,
@@ -51,7 +52,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "gemini/gemini-2.0-flash-thinking-exp-1219": {
     "max_tokens": -1,
@@ -60,7 +61,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "deepseek/deepseek-chat": {
     "max_tokens": 8192,
@@ -69,7 +70,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "openrouter/google/gemini-exp-1206:free": {
     "max_tokens": -1,
@@ -78,7 +79,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "openrouter/google/gemini-2.0-flash-exp:free": {
     "max_tokens": -1,
@@ -87,7 +88,7 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
   "openai/deepseek-ai/DeepSeek-V3": {
     "max_tokens": -1,
@@ -96,6 +97,6 @@
     "top_p": 1,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 1,
+    "temperature": 1
   },
 }

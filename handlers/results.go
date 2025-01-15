@@ -137,7 +137,7 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    suiteName := middleware.GetCurrentSuiteName()
+	suiteName := middleware.GetCurrentSuiteName()
 	results := middleware.ReadResults()
 	if results == nil {
 		results = make(map[string]middleware.Result)
@@ -254,7 +254,8 @@ func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 		for model := range results {
 			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
 		}
-		err := middleware.WriteResults(results)
+		suiteName := middleware.GetCurrentSuiteName()
+		err := middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
@@ -269,7 +270,6 @@ func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 // Handle export results
 func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export results")
-    suiteName := middleware.GetCurrentSuiteName()
 	results := middleware.ReadResults()
 	prompts := middleware.ReadPrompts()
 

@@ -46,10 +46,10 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		"tolower":  strings.ToLower,
 		"contains": strings.Contains,
 	}
-    funcMap["json"] = func(v interface{}) (string, error) {
-        b, err := json.Marshal(v)
-        return string(b), err
-    }
+	funcMap["json"] = func(v interface{}) (string, error) {
+		b, err := json.Marshal(v)
+		return string(b), err
+	}
 
 	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
@@ -81,19 +81,19 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(prompts) == 0 && currentSuite == "default" {
-        prompts, err = middleware.ReadPromptSuite("default")
-        if err != nil {
-            log.Printf("Error reading default prompt suite: %v", err)
-            http.Error(w, "Error reading default prompt suite", http.StatusInternalServerError)
-            return
-        }
-    }
-    promptTexts := make([]middleware.Prompt, len(prompts))
-    promptIndices := make([]int, len(prompts))
-    for i, prompt := range prompts {
-        promptTexts[i] = prompt
-        promptIndices[i] = i + 1
-    }
+		prompts, err = middleware.ReadPromptSuite("default")
+		if err != nil {
+			log.Printf("Error reading default prompt suite: %v", err)
+			http.Error(w, "Error reading default prompt suite", http.StatusInternalServerError)
+			return
+		}
+	}
+	promptTexts := make([]middleware.Prompt, len(prompts))
+	promptIndices := make([]int, len(prompts))
+	for i, prompt := range prompts {
+		promptTexts[i] = prompt
+		promptIndices[i] = i + 1
+	}
 
 	err = t.Execute(w, struct {
 		Prompts       []middleware.Prompt
@@ -145,49 +145,49 @@ func UpdatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handle add prompt
 func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
-    log.Println("Handling add prompt")
-    err := r.ParseForm()
-    if err != nil {
-        log.Printf("Error parsing form: %v", err)
-        http.Error(w, "Error parsing form", http.StatusBadRequest)
-        return
-    }
-    promptText := r.Form.Get("prompt")
-    if promptText == "" {
-        log.Println("Prompt text cannot be empty")
-        http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
-        return
-    }
-    solutionText := r.Form.Get("solution")
+	log.Println("Handling add prompt")
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+	promptText := r.Form.Get("prompt")
+	if promptText == "" {
+		log.Println("Prompt text cannot be empty")
+		http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
+		return
+	}
+	solutionText := r.Form.Get("solution")
 
-    currentSuite := middleware.GetCurrentSuiteName()
-    if currentSuite == "" {
-        currentSuite = "default"
-    }
+	currentSuite := middleware.GetCurrentSuiteName()
+	if currentSuite == "" {
+		currentSuite = "default"
+	}
 
-    prompts, err := middleware.ReadPromptSuite(currentSuite)
-    if err != nil {
-        log.Printf("Error reading prompt suite: %v", err)
-        http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-        return
-    }
+	prompts, err := middleware.ReadPromptSuite(currentSuite)
+	if err != nil {
+		log.Printf("Error reading prompt suite: %v", err)
+		http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
+		return
+	}
 
-    prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText})
-    err = middleware.WritePromptSuite(currentSuite, prompts)
-    if err != nil {
-        log.Printf("Error writing prompts: %v", err)
-        http.Error(w, "Error writing prompts", http.StatusInternalServerError)
-        return
-    }
-    log.Println("Prompt added successfully")
-    middleware.BroadcastResults()
-    http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText})
+	err = middleware.WritePromptSuite(currentSuite, prompts)
+	if err != nil {
+		log.Printf("Error writing prompts: %v", err)
+		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+		return
+	}
+	log.Println("Prompt added successfully")
+	middleware.BroadcastResults()
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
 // Handle export prompts
 func ExportPromptsHandler(w http.ResponseWriter, r *http.Request) {
-    log.Println("Handling export prompts")
-    prompts := middleware.ReadPrompts()
+	log.Println("Handling export prompts")
+	prompts := middleware.ReadPrompts()
 
 	// Create CSV string
 	csvString := "Prompt\n"
@@ -309,7 +309,7 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-        suiteName := middleware.GetCurrentSuiteName()
+		suiteName := middleware.GetCurrentSuiteName()
 		results := make(map[string]middleware.Result)
 		prompts := middleware.ReadPrompts()
 		for i, line := range lines {
@@ -331,7 +331,7 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			results[model] = middleware.Result{Passes: passes}
 		}
-		suiteName := middleware.GetCurrentSuiteName()
+		suiteName = middleware.GetCurrentSuiteName()
 		err = middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
