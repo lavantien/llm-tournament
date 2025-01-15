@@ -45,23 +45,23 @@
             placeholder="Enter new prompt"
             style="margin-right: 5px"
           ></textarea>
-          <textarea
-            name="solution"
-            placeholder="Enter solution"
-            style="margin-right: 5px"
-          ></textarea>
+          <textarea name="solution" placeholder="Enter solution" style="margin-right: 5px"></textarea>
+          <select name="profile" style="margin-right: 5px">
+            <option value="">None</option>
+            {{range .Profiles}}
+            <option value="{{.Name}}">{{.Name}}</option>
+            {{end}}
+          </select>
           <input type="submit" value="Add" />
         </form>
       </div>
-      <div
-        style="
+      <div style="
           flex-grow: 1;
           text-align: right;
           display: flex;
           align-items: center;
           justify-content: flex-end;
-        "
-      >
+        ">
         <form
           action="/update_prompts_order"
           method="post"
