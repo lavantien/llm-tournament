@@ -28,8 +28,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case "/import_error":
 		middleware.ImportErrorHandler(w, r)
 	case "/prompts":
-		pageName = "Prompts"
-		handlers.PromptListHandler(w, r, pageName)
+		handlers.PromptListHandler(w, r)
 	case "/add_model":
 		handlers.AddModelHandler(w, r)
 	case "/edit_model":
