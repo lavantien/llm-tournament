@@ -136,7 +136,7 @@
                 <li draggable="true" data-index="{{$index}}">
                     <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                         <input type="checkbox" class="prompt-checkbox" data-index="{{$index}}" style="margin-right: 10px" />
-                        <h3 style="flex: 0 0 auto; margin-right: 10px">{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
+                        <h3 style="flex: 0 0 auto; margin-right: 10px">{{inc $index}}.{{if $prompt.Profile}}&nbsp;({{$prompt.Profile}}){{end}}&nbsp;&nbsp;</h3>
                         <div class="markdown-content" style="flex: 1; margin-right: 10px;">{{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;</div>
                         <div style="flex: 0 0 20%; font-style: italic; text-align: right; margin-left: auto; color: green;" class="markdown-content">{{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;</div>
                         <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px;">
