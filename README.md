@@ -1,8 +1,8 @@
 # 🏆 LLM Tournament
 
-![Banner](assets/banner.png)
+![Banner](./assets/logo.webp)
 
-A sleek and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Experience zero bloat with a dynamic UI/UX designed for ease of use.
+A sleek and _blazingly-fast_ **real-time** web app to manage prompts and conduct tournaments for LLMs. Experience zero bloat with an intuitive and dynamic UI/UX designed for ease of use.
 
 ## 📚 Table of Contents
 
@@ -105,14 +105,15 @@ Anyone can just submit a PR and we'll discuss there.
 ## 🏆 Badges
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/issues)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/llm-tournament)](https://github.com/yourusername/llm-tournament/network)
+
+[![GitHub issues](https://img.shields.io/github/issues/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/issues)
+[![GitHub stars](https://img.shields.io/github/stars/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/network)
 
 ## 👥 Contributors
 
-<a href="https://github.com/yourusername/llm-tournament/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=yourusername/llm-tournament" />
+<a href="https://github.com/lavantien/llm-tournament/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=lavantien/llm-tournament" />
 </a>
 
 ## 📜 License
@@ -121,4 +122,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-For any questions or suggestions, feel free to reach out to us at [your-email@example.com](mailto:your-email@example.com).
+For any questions or suggestions or collaboration/job inquiries, feel free to reach out to us at [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com).
