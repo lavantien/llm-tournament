@@ -2,7 +2,7 @@
 
 ![Banner](./assets/banner.png)
 
-The **LLM Tournament** is a powerful, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. With features like real-time updates, dynamic UI, data persistence, prompt suites, profile integration, and result-prompt integration, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
+The **LLM Tournament** is a powerful, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. With features like real-time updates, dynamic UI, data persistence, prompt suites, and profiles, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
 
 ## 📚 Table of Contents
 
