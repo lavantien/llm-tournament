@@ -2,11 +2,10 @@
 
 ![Banner](./assets/banner.png)
 
-A powerful, real-time web application designed to manage prompts, evaluate Large Language Models (LLMs), and track results efficiently. Experience a seamless and intuitive user interface with real-time updates, ensuring a smooth and productive evaluation process.
+A powerful, real-time web application designed to manage prompts, evaluate Large Language Models (LLMs), and track results efficiently. Experience a seamless and intuitive user interface with real-time updates, ensuring a smooth and productive evaluation process. The **LLM Tournament** is a comprehensive, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. The application leverages WebSockets for instant updates, ensuring users have the latest data at their fingertips. With features like real-time updates, dynamic UI, and data persistence, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
 
 ## 📚 Table of Contents
 
-- [Overview](#-overview)
 - [Key Features](#-key-features)
 - [Stack](#-stack)
 - [UI](#-ui)
@@ -18,8 +17,6 @@ A powerful, real-time web application designed to manage prompts, evaluate Large
 - [Contributors](#-contributors)
 - [License](#-license)
 - [Contact](#-contact)
-
-A powerful, real-time web application designed to manage prompts, evaluate Large Language Models (LLMs), and track results efficiently. Experience a seamless and intuitive user interface with real-time updates, ensuring a smooth and productive evaluation process. The **LLM Tournament** is a comprehensive, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. The application leverages WebSockets for instant updates, ensuring users have the latest data at their fingertips. With features like real-time updates, dynamic UI, and data persistence, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
 
 ## 🔑 Key Features
 
