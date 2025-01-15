@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Profiles</title>
+    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+
+  <body>
+    {{template "nav"}}
+    <div class="sticky-header">
+      <h2>Add Profile</h2>
+      <form action="/add_profile" method="post" style="display: flex; align-items: center">
+        <input type="text" name="profile_name" placeholder="Enter new profile name" style="margin-right: 5px" />
+        <input type="text" name="profile_description" placeholder="Enter profile description" style="margin-right: 5px" />
+        <input type="submit" value="Add" />
+      </form>
+    </div>
+    <div class="title-row">
+      <div class="filter-container">
+        <form action="/profiles" method="get">
+          <label for="search_query">Search:</label>&nbsp;
+          <input type="text" name="search_query" id="search_query" value="{{.SearchQuery}}" />&nbsp;
+          <input type="submit" value="Search" />
+        </form>
+      </div>
+      <div class="title-container">
+        <h1>Profiles</h1>
+      </div>
+      <div class="search-container">&nbsp;</div>
+    </div>
+    <ul id="profile-list">
+      {{if .Profiles}}
+        {{range $index, $profile := .Profiles}}
+          {{if or (eq $.SearchQuery "") (contains (tolower $profile.Name) (tolower $.SearchQuery))}}
+            <li>
+              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <h3 style="flex: 0 0 auto; margin-right: 10px">{{inc $index}}.&nbsp;&nbsp;&nbsp;</h3>
+                <div style="flex: 1; margin-right: 10px;">{{$profile.Name}}&nbsp;&nbsp;&nbsp;</div>
+                <div style="flex: 0 0 20%; font-style: italic; text-align: right; margin-left: auto; color: green;">{{$profile.Description}}&nbsp;&nbsp;&nbsp;</div>
+                <div class="profile-actions" style="flex: 0 0 auto; margin-left: 10px;">
+                  <a class="action-button edit-button" href="/edit_profile?index={{$index}}">Edit</a>
+                  <a class="action-button delete-button" href="/delete_profile?index={{$index}}">Delete</a>
+                </div>
+              </div>
+            </li>
+          {{end}}
+        {{end}}
+      {{else}}
+        <p style="text-align: center">No profiles available.</p>
+      {{end}}
+    </ul>
+    <div class="sticky-footer">
+      <div style="display: flex; align-items: center">
+        <h2>Manage Profiles</h2>&nbsp;&nbsp;&nbsp;
+        <form action="/reset_profiles" method="get" style="margin-right: 5px">
+          <input type="submit" value="Reset Profiles" />
+        </form>
+      </div>
+    </div>
+    <div class="scroll-buttons">
+      <button class="scroll-button" onclick="scrollToTop()">↑</button>
+      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function scrollToBottom() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
+    </script>
+  </body>
+</html>
