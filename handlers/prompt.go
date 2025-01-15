@@ -387,6 +387,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
+			profiles := middleware.ReadProfiles()
 			t, err := template.New("edit_prompt.html").Funcs(funcMap).ParseFiles("templates/edit_prompt.html")
 			if err != nil {
 				log.Printf("Error parsing template: %v", err)
@@ -394,11 +395,13 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			err = t.Execute(w, struct {
-				Index  int
-				Prompt middleware.Prompt
+				Index    int
+				Prompt   middleware.Prompt
+				Profiles []middleware.Profile
 			}{
-				Index:  index,
-				Prompt: prompts[index],
+				Index:    index,
+				Prompt:   prompts[index],
+				Profiles: profiles,
 			})
 			if err != nil {
 				log.Printf("Error executing template: %v", err)

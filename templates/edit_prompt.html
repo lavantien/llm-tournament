@@ -16,9 +16,14 @@
 {{.Prompt.Text}}</textarea
       ><br />
       <label for="solution">Solution:</label><br />
-      <textarea name="solution" rows="5" cols="50" id="solution">
-{{.Prompt.Solution}}</textarea
-      ><br />
+      <textarea name="solution" rows="5" cols="50" id="solution">{{.Prompt.Solution}}</textarea><br />
+      <label for="profile">Profile:</label><br />
+      <select name="profile" id="profile">
+          <option value="">None</option>
+          {{range .Profiles}}
+              <option value="{{.Name}}" {{if eq .Name $.Prompt.Profile}}selected{{end}}>{{.Name}}</option>
+          {{end}}
+      </select><br />
       <input type="submit" value="Save" />
       <input type="submit" form="cancel-form" value="Cancel" />
     </form>
