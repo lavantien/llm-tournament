@@ -23,7 +23,6 @@ func main() {
 
 func router(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received: %s %s", r.Method, r.URL.Path)
-	var pageName string
 	switch r.URL.Path {
 	case "/import_error":
 		pageName = "Import Error"
