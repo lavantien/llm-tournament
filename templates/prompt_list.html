@@ -8,7 +8,7 @@
   </head>
 
   <body>
-    {{template "nav"}}
+    {{template "nav" .}}
     <div class="sticky-header">
       <div
         style="
@@ -102,80 +102,155 @@
         >
           <input type="submit" value="New" class="action-button" />
         </form>
-        <form action="/prompts/suites/edit" method="get" style="margin-right: 5px">
-            <input type="hidden" name="suite_name" value="{{.CurrentSuite}}">
-            <input type="submit" value="Edit" class="action-button" />
+        <form
+          action="/prompts/suites/edit"
+          method="get"
+          style="margin-right: 5px"
+        >
+          <input type="hidden" name="suite_name" value="{{.CurrentSuite}}" />
+          <input type="submit" value="Edit" class="action-button" />
         </form>
-        <form action="/prompts/suites/delete" method="get" style="margin-right: 5px">
-            <input type="hidden" name="suite_name" value="{{.CurrentSuite}}">
-            <input type="submit" value="Delete" class="action-button" />
+        <form
+          action="/prompts/suites/delete"
+          method="get"
+          style="margin-right: 5px"
+        >
+          <input type="hidden" name="suite_name" value="{{.CurrentSuite}}" />
+          <input type="submit" value="Delete" class="action-button" />
         </form>
-        <form action="/prompts/suites/select" method="post" style="margin-left: 5px">
-            <select name="suite_name">
-                {{range $suite := .Suites}}
-                <option value="{{$suite}}" {{if eq $suite $.CurrentSuite}}selected{{end}}>
-                    {{$suite}}
-                </option>
-                {{end}}
-            </select>
-            <input type="submit" value="Select" class="action-button" />
-        </form>
-    </div>
-    <div class="search-container">
-        <form action="/prompts" method="get">
-            <label for="search_query">Search:</label>&nbsp;
-            <input type="text" name="search_query" id="search_query" value="{{.SearchQuery}}" />&nbsp;
-            <input type="submit" value="Search" />
-        </form>
-    </div>
-</div>
-<ul id="prompt-list">
-    {{if .Prompts}}
-        {{range $index, $prompt := .Prompts}}
-            {{if and (or (eq $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
-                <li draggable="true" data-index="{{$index}}">
-                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                        <input type="checkbox" class="prompt-checkbox" data-index="{{$index}}" style="margin-right: 10px" />
-                        <h3 style="flex: 0 0 auto; margin-right: 10px">{{inc $index}}.{{if $prompt.Profile}}&nbsp;({{$prompt.Profile}}){{end}}&nbsp;&nbsp;</h3>
-                        <div class="markdown-content" style="flex: 1; margin-right: 10px;">{{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;</div>
-                        <div style="flex: 0 0 20%; font-style: italic; text-align: right; margin-left: auto; color: green;" class="markdown-content">{{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;</div>
-                        <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px;">
-                            <button class="action-button copy-button" onclick="copyPrompt('{{$prompt.Text}}')">Copy</button>
-                            <a class="action-button edit-button" href="/edit_prompt?index={{$index}}">Edit</a>
-                            <a class="action-button delete-button" href="/delete_prompt?index={{$index}}">Delete</a>
-                            <a class="action-button move-button" href="/move_prompt?index={{$index}}">Move</a>
-                        </div>
-                    </div>
-                </li>
+        <form
+          action="/prompts/suites/select"
+          method="post"
+          style="margin-left: 5px"
+        >
+          <select name="suite_name">
+            {{range $suite := .Suites}}
+            <option
+              value="{{$suite}}"
+              {{if
+              eq
+              $suite
+              $.CurrentSuite}}selected{{end}}
+            >
+              {{$suite}}
+            </option>
             {{end}}
-        {{end}}
-    {{else}}
-        <p style="text-align: center">No prompts available.</p>
-    {{end}}
-</ul>
-<div class="sticky-footer">
-    <div style="display: flex; align-items: center">
-        <h2>Manage Prompts</h2>&nbsp;&nbsp;&nbsp;
+          </select>
+          <input type="submit" value="Select" class="action-button" />
+        </form>
+      </div>
+      <div class="search-container">
+        <form action="/prompts" method="get">
+          <label for="search_query">Search:</label>&nbsp;
+          <input
+            type="text"
+            name="search_query"
+            id="search_query"
+            value="{{.SearchQuery}}"
+          />&nbsp;
+          <input type="submit" value="Search" />
+        </form>
+      </div>
+    </div>
+    <ul id="prompt-list">
+      {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
+      $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery
+      "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
+      <li draggable="true" data-index="{{$index}}">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+          "
+        >
+          <input
+            type="checkbox"
+            class="prompt-checkbox"
+            data-index="{{$index}}"
+            style="margin-right: 10px"
+          />
+          <h3 style="flex: 0 0 auto; margin-right: 10px">
+            {{inc $index}}.{{if
+            $prompt.Profile}}&nbsp;({{$prompt.Profile}}){{end}}&nbsp;&nbsp;
+          </h3>
+          <div class="markdown-content" style="flex: 1; margin-right: 10px">
+            {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
+          </div>
+          <div
+            style="
+              flex: 0 0 20%;
+              font-style: italic;
+              text-align: right;
+              margin-left: auto;
+              color: green;
+            "
+            class="markdown-content"
+          >
+            {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
+          </div>
+          <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
+            <button
+              class="action-button copy-button"
+              onclick="copyPrompt('{{$prompt.Text}}')"
+            >
+              Copy
+            </button>
+            <a
+              class="action-button edit-button"
+              href="/edit_prompt?index={{$index}}"
+              >Edit</a
+            >
+            <a
+              class="action-button delete-button"
+              href="/delete_prompt?index={{$index}}"
+              >Delete</a
+            >
+            <a
+              class="action-button move-button"
+              href="/move_prompt?index={{$index}}"
+              >Move</a
+            >
+          </div>
+        </div>
+      </li>
+      {{end}} {{end}} {{else}}
+      <p style="text-align: center">No prompts available.</p>
+      {{end}}
+    </ul>
+    <div class="sticky-footer">
+      <div style="display: flex; align-items: center">
+        <h2>Manage Prompts</h2>
+        &nbsp;&nbsp;&nbsp;
         <form action="/reset_prompts" method="get" style="margin-right: 5px">
-            <input type="submit" value="Reset Prompts" />
+          <input type="submit" value="Reset Prompts" />
         </form>
         <form action="/export_prompts" method="post" style="margin-right: 5px">
-            <input type="submit" value="Export Prompts" />
+          <input type="submit" value="Export Prompts" />
         </form>
-        <form action="/import_prompts" method="post" enctype="multipart/form-data" style="display: flex; align-items: center">
-            <input type="file" name="prompts_file" style="margin-right: 5px" />
-            <input type="submit" value="Import Prompts" />
+        <form
+          action="/import_prompts"
+          method="post"
+          enctype="multipart/form-data"
+          style="display: flex; align-items: center"
+        >
+          <input type="file" name="prompts_file" style="margin-right: 5px" />
+          <input type="submit" value="Import Prompts" />
         </form>
+      </div>
     </div>
-</div>
-<script>
-    function copyPrompt(text) {
-        navigator.clipboard.writeText(text).then(function() {
-            console.log('Async: Copying to clipboard was successful!');
-        }, function(err) {
-            console.error('Async: Could not copy text: ', err);
-        });
-    }
+    <script>
+      function copyPrompt(text) {
+        navigator.clipboard.writeText(text).then(
+          function () {
+            console.log("Async: Copying to clipboard was successful!");
+          },
+          function (err) {
+            console.error("Async: Could not copy text: ", err);
+          },
+        );
+      }
 
       function updateOrder() {
         const items = promptList.querySelectorAll("li");
