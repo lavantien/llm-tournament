@@ -10,6 +10,7 @@ import (
 type Prompt struct {
 	Text     string `json:"text"`
 	Solution string `json:"solution"`
+	Profile  string `json:"profile"`
 }
 
 type Result struct {

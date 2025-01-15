@@ -98,6 +98,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, struct {
 		Prompts       []middleware.Prompt
 		PromptIndices []int
+		Profiles      []middleware.Profile
 		OrderFilter   int
 		SearchQuery   string
 		Suites        []string
@@ -105,6 +106,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	}{
 		Prompts:       promptTexts,
 		PromptIndices: promptIndices,
+		Profiles:      profiles,
 		OrderFilter:   orderFilterInt,
 		SearchQuery:   searchQuery,
 		Suites:        suites,
@@ -159,6 +161,7 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	solutionText := r.Form.Get("solution")
+	profile := r.Form.Get("profile")
 
 	currentSuite := middleware.GetCurrentSuiteName()
 	if currentSuite == "" {
@@ -172,7 +175,7 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText})
+	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText, Profile: profile})
 	err = middleware.WritePromptSuite(currentSuite, prompts)
 	if err != nil {
 		log.Printf("Error writing prompts: %v", err)
@@ -418,6 +421,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		editedPrompt := r.Form.Get("prompt")
 		editedSolution := r.Form.Get("solution")
+		editedProfile := r.Form.Get("profile")
 		if editedPrompt == "" {
 			log.Println("Prompt text cannot be empty")
 			http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
@@ -427,6 +431,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 		if index >= 0 && index < len(prompts) {
 			prompts[index].Text = editedPrompt
 			prompts[index].Solution = editedSolution
+			prompts[index].Profile = editedProfile
 		}
 		err = middleware.WritePrompts(prompts)
 		if err != nil {

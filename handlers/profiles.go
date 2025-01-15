@@ -40,7 +40,6 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles := middleware.ReadProfiles()
 	err = t.Execute(w, struct {
 		Profiles    []middleware.Profile
 		SearchQuery string
