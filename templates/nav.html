@@ -7,9 +7,9 @@
     padding: 10px 20px;
   "
 >
-  <div class="nav-title" style="text-align: left">
-    <img src="/assets/logo.webp" alt="Logo" style="height: 50px" />
-    <h1>LLM Tournament</h1>
+  <div class="nav-title" style="text-align: left; display: flex; align-items: center;">
+    <img src="/assets/logo.webp" alt="Logo" style="height: 50px; margin-right: 10px;" />
+    <h1 style="margin: 0;">LLM Tournament</h1>
   </div>
   <div class="nav-links">
     <form
@@ -34,8 +34,8 @@
       <input type="submit" value="Profiles" class="action-button" />
     </form>
   </div>
-  <div class="nav-pagename">
-    <!--TODO: display page name here (Results, Prompts, Profiles) -->
-  </div>
+    <div class="nav-pagename">
+        <h2>{{.PageName}}</h2>
+    </div>
 </nav>
 {{end}}

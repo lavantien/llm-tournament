@@ -23,11 +23,13 @@ func main() {
 
 func router(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received: %s %s", r.Method, r.URL.Path)
+	pageName := ""
 	switch r.URL.Path {
 	case "/import_error":
 		middleware.ImportErrorHandler(w, r)
 	case "/prompts":
-		handlers.PromptListHandler(w, r)
+		pageName = "Prompts"
+		handlers.PromptListHandler(w, r, pageName)
 	case "/add_model":
 		handlers.AddModelHandler(w, r)
 	case "/edit_model":
@@ -52,12 +54,12 @@ func router(w http.ResponseWriter, r *http.Request) {
 		handlers.UpdatePromptsOrderHandler(w, r)
 	case "/reset_prompts":
 		handlers.ResetPromptsHandler(w, r)
-    case "/bulk_delete_prompts":
-        if r.Method == "GET" {
-            handlers.BulkDeletePromptsPageHandler(w, r)
-        } else if r.Method == "POST" {
-            handlers.BulkDeletePromptsHandler(w, r)
-        }
+	case "/bulk_delete_prompts":
+		if r.Method == "GET" {
+			handlers.BulkDeletePromptsPageHandler(w, r)
+		} else if r.Method == "POST" {
+			handlers.BulkDeletePromptsHandler(w, r)
+		}
 	case "/prompts/suites/new":
 		handlers.NewPromptSuiteHandler(w, r)
 	case "/prompts/suites/edit":
@@ -67,7 +69,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case "/prompts/suites/select":
 		handlers.SelectPromptSuiteHandler(w, r)
 	case "/results":
-		handlers.ResultsHandler(w, r)
+		pageName = "Results"
+		handlers.ResultsHandler(w, r, pageName)
 	case "/update_result":
 		handlers.UpdateResultHandler(w, r)
 	case "/reset_results":
@@ -79,7 +82,8 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case "/export_results":
 		handlers.ExportResultsHandler(w, r)
 	case "/profiles":
-		handlers.ProfilesHandler(w, r)
+		pageName = "Profiles"
+		handlers.ProfilesHandler(w, r, pageName)
 	case "/add_profile":
 		handlers.AddProfileHandler(w, r)
 	case "/edit_profile":
