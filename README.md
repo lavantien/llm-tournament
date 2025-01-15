@@ -2,7 +2,7 @@
 
 ![Banner](./assets/banner.png)
 
-A sleek and _blazingly-fast_ **real-time** web app to manage prompts and conduct tournaments for LLMs. Experience zero bloat with an intuitive and dynamic UI/UX designed for ease of use.
+A powerful, real-time web application designed to manage prompts, evaluate Large Language Models (LLMs), and track results efficiently. Experience a seamless and intuitive user interface with real-time updates, ensuring a smooth and productive evaluation process.
 
 ## 📚 Table of Contents
 
@@ -21,7 +21,7 @@ A sleek and _blazingly-fast_ **real-time** web app to manage prompts and conduct
 
 ## 📊 Overview
 
-This application simplifies the evaluation of Large Language Models (LLMs) with a user-friendly interface and real-time capabilities. It allows for comprehensive prompt management, model evaluation, and result tracking, all within a responsive and intuitive design.
+The **LLM Tournament** is a comprehensive, real-time web application designed to streamline the evaluation of Large Language Models (LLMs). It offers robust prompt management, efficient model evaluation, and detailed result tracking, all within a responsive and intuitive interface. The application leverages WebSockets for instant updates, ensuring users have the latest data at their fingertips. With features like real-time updates, dynamic UI, and data persistence, the **LLM Tournament** simplifies the evaluation process, making it easier for users to manage prompts, evaluate models, and track results efficiently.
 
 ## 🔑 Key Features
 
