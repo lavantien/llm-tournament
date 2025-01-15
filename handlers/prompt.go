@@ -331,7 +331,8 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			results[model] = middleware.Result{Passes: passes}
 		}
-		err = middleware.WriteResults(results)
+		suiteName := middleware.GetCurrentSuiteName()
+		err = middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
