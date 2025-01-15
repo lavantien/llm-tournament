@@ -47,6 +47,8 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 
 ![result-page](./assets/ui-result-page.png)
 
+![profile-page](./assets/ui-profile-manager.png)
+
 ![prompt-edit-page](./assets/ui-prompt-edit.png)
 
 ## 🏃 Run
@@ -73,16 +75,8 @@ Anyone can just submit a PR and we'll discuss there.
 
 ## 📝 TODO/Roadmap
 
-### 🔧 Refactor
+### 🔧 Non-Functional
 
-- Change UI demo pictures after finished profiles page.
-- Refactor the prompt suite to be more roburst and streamlined, with programming focus.
 - Handbook composition prompt.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
-
-### 📄 3rd Page - Profiles
-
-- Profiles page similar to Prompts to store system prompts; profile input and edit have a field to enter profile's name.
-- Link prompts with profiles, prompt input and edit have drop down selection for profile based on name.
-- Display profile of each prompt after the numbering, e.g. `1. (Reasoning) prompt content. ...`
