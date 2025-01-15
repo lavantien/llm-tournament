@@ -123,8 +123,6 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Non-Functional
 
-- Handbook composition prompt.
-- Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
 [(Back)](#-table-of-contents)
