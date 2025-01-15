@@ -18,17 +18,17 @@ Key technical highlights:
 
 ## 📚 Table of Contents
 
-- [Key Features](#-key-features)
-- [Stack](#%EF%B8%8F-stack)
-- [UI](#%EF%B8%8F-ui)
-- [Run](#-run)
-- [Develop](#%EF%B8%8F-develop)
-- [Contribute](#-contribute)
-- [TODO/Roadmap](#-todoroadmap)
-- [Badges](#-badges)
-- [Contributors](#-contributors)
-- [License](#-license)
-- [Contact](#-contact)
+- 🔑 [Key Features](#-key-features)
+- 🛠️ [Stack](#%EF%B8%8F-stack)
+- 🖼️ [UI](#%EF%B8%8F-ui)
+- 🏃 [Run](#-run)
+- 🛠️ [Develop](#%EF%B8%8F-develop)
+- 🤝 [Contribute](#-contribute)
+- 📝 [TODO/Roadmap](#-todoroadmap)
+- 🏆 [Badges](#-badges)
+- 👥 [Contributors](#-contributors)
+- 📜 [License](#-license)
+- 📞 [Contact](#-contact)
 
 ## 🔑 Key Features
 
