@@ -78,6 +78,16 @@ func router(w http.ResponseWriter, r *http.Request) {
 		handlers.RefreshResultsHandler(w, r)
 	case "/export_results":
 		handlers.ExportResultsHandler(w, r)
+	case "/profiles":
+		handlers.ProfilesHandler(w, r)
+	case "/add_profile":
+		handlers.AddProfileHandler(w, r)
+	case "/edit_profile":
+		handlers.EditProfileHandler(w, r)
+	case "/delete_profile":
+		handlers.DeleteProfileHandler(w, r)
+	case "/reset_profiles":
+		handlers.ResetProfilesHandler(w, r)
 	default:
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)

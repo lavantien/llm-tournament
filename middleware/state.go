@@ -16,6 +16,88 @@ type Result struct {
 	Passes []bool `json:"passes"`
 }
 
+type Profile struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// Read profiles from data/profiles-default.json
+func ReadProfiles() []Profile {
+	suiteName := GetCurrentSuiteName()
+	profiles, _ := ReadProfileSuite(suiteName)
+	return profiles
+}
+
+// Write profiles to data/profiles-default.json
+func WriteProfiles(profiles []Profile) error {
+	suiteName := GetCurrentSuiteName()
+	return WriteProfileSuite(suiteName, profiles)
+}
+
+// Read profile suite from data/profiles-<suiteName>.json
+func ReadProfileSuite(suiteName string) ([]Profile, error) {
+	var filename string
+	if suiteName == "default" {
+		filename = "data/profiles-default.json"
+	} else {
+		filename = "data/profiles-" + suiteName + ".json"
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var profiles []Profile
+	err = json.Unmarshal(data, &profiles)
+	if err != nil {
+		return nil, err
+	}
+	return profiles, nil
+}
+
+// Write profile suite to data/profiles-<suiteName>.json
+func WriteProfileSuite(suiteName string, profiles []Profile) error {
+	var filename string
+	if suiteName == "default" {
+		filename = "data/profiles-default.json"
+	} else {
+		filename = "data/profiles-" + suiteName + ".json"
+	}
+	data, err := json.Marshal(profiles)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// List all profile suites
+func ListProfileSuites() ([]string, error) {
+	var suites []string
+	files, err := os.ReadDir("data")
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		if !file.IsDir() && strings.HasPrefix(file.Name(), "profiles-") && strings.HasSuffix(file.Name(), ".json") {
+			suiteName := strings.TrimSuffix(strings.TrimPrefix(file.Name(), "profiles-"), ".json")
+			suites = append(suites, suiteName)
+		}
+	}
+	return suites, nil
+}
+
+func DeleteProfileSuite(suiteName string) error {
+	filename := "data/profiles-" + suiteName + ".json"
+	err := os.Remove(filename)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Read prompts from prompts.json
 func ReadPrompts() []Prompt {
 	suiteName := GetCurrentSuiteName()

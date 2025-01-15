@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+
+  <body>
+    <h1>Edit Profile</h1>
+    <form action="/edit_profile" method="post" style="text-align: center">
+      <input type="hidden" name="index" value="{{.Index}}" />
+      <label for="profile_name">Profile Name:</label><br />
+      <input type="text" name="profile_name" value="{{.Profile.Name}}" /><br />
+      <label for="profile_description">Profile Description:</label><br />
+      <textarea name="profile_description" rows="5" cols="50">{{.Profile.Description}}</textarea><br />
+      <input type="submit" value="Save" />
+      <input type="submit" form="cancel-form" value="Cancel" />
+    </form>
+    <form
+      id="cancel-form"
+      action="/profiles"
+      method="get"
+      style="text-align: center"
+    ></form>
+    <div class="scroll-buttons">
+      <button class="scroll-button" onclick="scrollToTop()">↑</button>
+      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    </script>
+  </body>
+</html>

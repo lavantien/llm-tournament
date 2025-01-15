@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Profiles</title>
+    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+</head>
+<body>
+    <h1>Reset Profiles</h1>
+    <form action="/reset_profiles" method="post" style="text-align: center;">
+        <input type="submit" value="Reset Profiles">
+        <input type="submit" form="cancel-form" value="Cancel">
+    </form>
+    <form id="cancel-form" action="/profiles" method="get" style="text-align: center;"></form>
+    <p style="text-align: center;">Are you sure you want to reset all profiles? This action cannot be undone.</p>
+    <div class="scroll-buttons">
+        <button class="scroll-button" onclick="scrollToTop()">↑</button>
+        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    </div>
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
