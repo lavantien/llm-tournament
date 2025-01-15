@@ -29,10 +29,11 @@ model: gemini/gemini-exp-1206
 # model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
 edit-format: diff
 # editor-model: gemini/gemini-2.0-flash-exp
-editor-model: mistral/mistral-large-latest
+# editor-model: mistral/mistral-large-latest
+editor-model: codestral/codestral-latest
 editor-edit-format: editor-diff
-weak-model: mistral/pixtral-small-latest
-# weak-model: mistral/mistral-small-latest
+weak-model: mistral/mistral-large-latest
+# weak-model: mistral/pixtral-small-latest
 # weak-model: codestral/codestral-latest
 read:
   - SYSTEM_PROMPT.md
