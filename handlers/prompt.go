@@ -95,6 +95,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		promptIndices[i] = i + 1
 	}
 
+	profiles := middleware.ReadProfiles()
 	err = t.Execute(w, struct {
 		Prompts       []middleware.Prompt
 		PromptIndices []int
