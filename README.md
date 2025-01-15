@@ -1,12 +1,12 @@
-# LLM Tournament
+# 🏆 LLM Tournament
 
 A simple and blazingly-fast real-time web app to manage prompts and conduct tournaments for LLMs. Sleek UI/UX with zero bloat.
 
-## Overview
+## 📊 Overview
 
 This application simplifies the evaluation of Large Language Models (LLMs) with a user-friendly interface and real-time capabilities. It allows for comprehensive prompt management, model evaluation, and result tracking, all within a responsive and intuitive design.
 
-## Key Features
+## 🔑 Key Features
 
 - **Real-time Updates**: Leverages WebSockets to provide instant updates on the results page, ensuring users have the latest data at their fingertips.
 - **Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
@@ -36,12 +36,12 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 - **Prompt Suites**:
   - **Create, Edit, Delete, Select**: Full control over prompt suite creation, editing, deletion, and selection.
 
-## Stack
+## 🛠️ Stack
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with Codestral 2501, Mistral Large Latest, Gemini Exp 1206, or Gemini 2.0 Flash Exp free APIs.
 
-## UI
+## 🖼️ UI
 
 ![prompt-manager-page](./assets/ui-prompt-manager.png)
 
@@ -49,7 +49,7 @@ This application simplifies the evaluation of Large Language Models (LLMs) with 
 
 ![prompt-edit-page](./assets/ui-prompt-edit.png)
 
-## Run
+## 🏃‍♂️ Run
 
 ```bash
 make run
@@ -57,7 +57,7 @@ make run
 
 Then go to <http://localhost:8080>
 
-## Develop
+## 🛠️ Develop
 
 Require Linux environment with Python and Go installed (preferably via Brew).
 
@@ -67,13 +67,13 @@ make aiderupdate
 
 Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own API Key.
 
-## Contribute
+## 🤝 Contribute
 
 Anyone can just submit a PR and we'll discuss there.
 
-## TODO/Roadmap
+## 📝 TODO/Roadmap
 
-### Refactor
+### 🔧 Refactor
 
 - Change UI demo pictures after finished profiles page.
 - Refactor the prompt suite to be more roburst and streamlined, with programming focus.
@@ -81,7 +81,7 @@ Anyone can just submit a PR and we'll discuss there.
 - Make another prompt suite to test SD 3.5 vs Flux 1 Dev.
 - Make another prompt suite for vision LLMs.
 
-### 3rd Page - Profiles
+### 📄 3rd Page - Profiles
 
 - Profiles page similar to Prompts to store system prompts; profile input and edit have a field to enter profile's name.
 - Link prompts with profiles, prompt input and edit have drop down selection for profile based on name.
