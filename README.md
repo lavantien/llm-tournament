@@ -1,6 +1,6 @@
 # 🏆 LLM Tournament
 
-![Banner](./assets/logo.webp)
+![Banner](./assets/banner.png)
 
 A sleek and _blazingly-fast_ **real-time** web app to manage prompts and conduct tournaments for LLMs. Experience zero bloat with an intuitive and dynamic UI/UX designed for ease of use.
 
