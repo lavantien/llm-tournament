@@ -6,7 +6,7 @@ A simple and blazingly-fast real-time web app to manage prompts and conduct tour
 
 This application simplifies the evaluation of Large Language Models (LLMs) with a user-friendly interface and real-time capabilities. It allows for comprehensive prompt management, model evaluation, and result tracking, all within a responsive and intuitive design.
 
-### Key Features
+## Key Features
 
 - **Real-time Updates**: Leverages WebSockets to provide instant updates on the results page, ensuring users have the latest data at their fingertips.
 - **Dynamic UI**: The user interface is crafted to be both responsive and intuitive, enhancing user experience.
@@ -62,7 +62,7 @@ Then go to <http://localhost:8080>
 Require Linux environment with Python and Go installed (preferably via Brew).
 
 ```bash
-make updateaider
+make aiderupdate
 ```
 
 Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own API Key.
@@ -83,11 +83,6 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 3rd Page - Profiles
 
-- Profiles page similar to Prompts to store system prompts.
-- Link prompts with profiles, prompt input and edit have drop down selection for profile.
-- Display profile of each prompt after the numbering, e.g. 1. (Reasoning) prompt content.
-
-### Result-Prompt Integration
-
-- Add an button on the left most of the add model row, the button's name has two states: Simple Mode and Detailed Mode, when click will switch between these 2 mode, in simple mode everything stay the same, but in detailed mode the logic is as below.
-- In detailed mode, when click on a cell in result table, instead of pass/fail logic, open a detail_prompt page that show the prompt and solution rendered in markdown and a pass/fail toggle and an accept button and a back b utton.
+- Profiles page similar to Prompts to store system prompts; profile input and edit have a field to enter profile's name.
+- Link prompts with profiles, prompt input and edit have drop down selection for profile based on name.
+- Display profile of each prompt after the numbering, e.g. `1. (Reasoning) prompt content. ...`
