@@ -1,2 +1,8 @@
 .aider*
 .env
+tools/tts/.python-version
+tools/tts/audio.wav
+tools/tts/kokoro-v0_19.onnx
+tools/tts/uv.lock
+tools/tts/voices.json
+tools/tts/hello.py
