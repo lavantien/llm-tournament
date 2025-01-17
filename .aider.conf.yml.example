@@ -13,27 +13,19 @@ api-key:
   - cohere=
   - openrouter=
   - xai=
-architect: true
-# model: mistral/mistral-large-latest
-model: gemini/gemini-exp-1206
+architect: false
+model: deepseek/deepseek-chat
+# model: gemini/gemini-exp-1206
 # model: gemini/gemini-2.0-flash-exp
-# model: deepseek/deepseek-chat
-# model: openrouter/google/gemini-exp-1206:free
-# model: openrouter/google/gemini-2.0-flash-exp:free
-# model: openai/deepseek-ai/DeepSeek-V3
-# model: openai/hf:meta-llama/Llama-3.1-405B-Instruct
-# model: openai/hf:deepseek-ai/DeepSeek-V2.5-1210
-# model: openai/hf:Qwen/Qwen2.5-Coder-32B-Instruct
-# model: openai/hf:Qwen/Qwen2.5-72B-Instruct
-# model: openai/hf:nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-# model: openai/hf:meta-llama/Llama-3.3-70B-Instruct
+# model: mistral/mistral-large-latest
+# model: codestral/codestral-latest
 edit-format: diff
-# editor-model: gemini/gemini-2.0-flash-exp
 # editor-model: mistral/mistral-large-latest
-editor-model: codestral/codestral-latest
-editor-edit-format: editor-diff
-weak-model: mistral/mistral-large-latest
-# weak-model: mistral/pixtral-small-latest
+# editor-model: gemini/gemini-2.0-flash-exp
+# editor-model: codestral/codestral-latest
+# editor-edit-format: editor-diff
+weak-model: mistral/pixtral-large-latest
+# weak-model: mistral/mistral-large-latest
 # weak-model: codestral/codestral-latest
 read:
   - SYSTEM_PROMPT.md
