@@ -111,6 +111,12 @@
             class="profile-actions"
             style="flex: 0 0 auto; margin-left: 10px"
           >
+            <button
+              class="action-button copy-button"
+              onclick="copyProfileDescription('{{$profile.Description}}')"
+            >
+              Copy
+            </button>
             <a
               class="action-button edit-button"
               href="/edit_profile?index={{$index}}"
