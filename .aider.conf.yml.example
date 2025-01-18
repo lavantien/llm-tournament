@@ -24,13 +24,15 @@ edit-format: diff
 # editor-model: gemini/gemini-2.0-flash-exp
 # editor-model: codestral/codestral-latest
 # editor-edit-format: editor-diff
-weak-model: mistral/pixtral-large-latest
-# weak-model: mistral/mistral-large-latest
+weak-model: mistral/mistral-large-latest
+# weak-model: mistral/pixtral-large-latest
 # weak-model: codestral/codestral-latest
 read:
-  - SYSTEM_PROMPT.md
+  - system_prompt_programming.xml
   - PRELIMINARY_DESIGN.md
 yes-always: true
+test-cmd: go test ./... -v -race -cover -timeout 10s
+auto-test: true
 map-tokens: 2048
 timeout: 300
 cache-prompts: true
