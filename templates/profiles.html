@@ -79,8 +79,7 @@
     </div>
     <ul id="profile-list">
       {{if .Profiles}} {{range $index, $profile := .Profiles}} {{if or (eq
-      $.SearchQuery "") (contains (tolower $profile.Name) (tolower
-      $.SearchQuery))}}
+      $.SearchQuery "") (contains (tolower $profile.Name) (tolower $.SearchQuery)) (contains (tolower $profile.Description) (tolower $.SearchQuery))}}
       <li>
         <div
           style="
