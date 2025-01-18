@@ -159,8 +159,23 @@ func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		profiles := middleware.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
+			oldProfileName := profiles[index].Name
 			profiles[index].Name = editedProfileName
 			profiles[index].Description = editedProfileDescription
+			
+			// Update prompts that reference this profile
+			prompts := middleware.ReadPrompts()
+			for i := range prompts {
+				if prompts[i].Profile == oldProfileName {
+					prompts[i].Profile = editedProfileName
+				}
+			}
+			err = middleware.WritePrompts(prompts)
+			if err != nil {
+				log.Printf("Error updating prompts: %v", err)
+				http.Error(w, "Error updating prompts", http.StatusInternalServerError)
+				return
+			}
 		}
 		err = middleware.WriteProfiles(profiles)
 		if err != nil {
