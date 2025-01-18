@@ -21,74 +21,45 @@ func main() {
 	}
 }
 
+var routes = map[string]http.HandlerFunc{
+	"/import_error":            middleware.ImportErrorHandler,
+	"/prompts":                 handlers.PromptListHandler,
+	"/add_model":               handlers.AddModelHandler,
+	"/edit_model":              handlers.EditModelHandler,
+	"/delete_model":            handlers.DeleteModelHandler,
+	"/add_prompt":              handlers.AddPromptHandler,
+	"/edit_prompt":             handlers.EditPromptHandler,
+	"/delete_prompt":           handlers.DeletePromptHandler,
+	"/move_prompt":             handlers.MovePromptHandler,
+	"/import_results":          handlers.ImportResultsHandler,
+	"/export_prompts":          handlers.ExportPromptsHandler,
+	"/import_prompts":          handlers.ImportPromptsHandler,
+	"/update_prompts_order":    handlers.UpdatePromptsOrderHandler,
+	"/reset_prompts":           handlers.ResetPromptsHandler,
+	"/bulk_delete_prompts":     handlers.BulkDeletePromptsHandler,
+	"/prompts/suites/new":      handlers.NewPromptSuiteHandler,
+	"/prompts/suites/edit":     handlers.EditPromptSuiteHandler,
+	"/prompts/suites/delete":   handlers.DeletePromptSuiteHandler,
+	"/prompts/suites/select":   handlers.SelectPromptSuiteHandler,
+	"/results":                 handlers.ResultsHandler,
+	"/update_result":           handlers.UpdateResultHandler,
+	"/reset_results":           handlers.ResetResultsHandler,
+	"/confirm_refresh_results": handlers.ConfirmRefreshResultsHandler,
+	"/refresh_results":         handlers.RefreshResultsHandler,
+	"/export_results":          handlers.ExportResultsHandler,
+	"/profiles":                handlers.ProfilesHandler,
+	"/add_profile":             handlers.AddProfileHandler,
+	"/edit_profile":            handlers.EditProfileHandler,
+	"/delete_profile":          handlers.DeleteProfileHandler,
+	"/reset_profiles":          handlers.ResetProfilesHandler,
+}
+
 func router(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received: %s %s", r.Method, r.URL.Path)
-	switch r.URL.Path {
-	case "/import_error":
-		middleware.ImportErrorHandler(w, r)
-	case "/prompts":
-		handlers.PromptListHandler(w, r)
-	case "/add_model":
-		handlers.AddModelHandler(w, r)
-	case "/edit_model":
-		handlers.EditModelHandler(w, r)
-	case "/delete_model":
-		handlers.DeleteModelHandler(w, r)
-	case "/add_prompt":
-		handlers.AddPromptHandler(w, r)
-	case "/edit_prompt":
-		handlers.EditPromptHandler(w, r)
-	case "/delete_prompt":
-		handlers.DeletePromptHandler(w, r)
-	case "/move_prompt":
-		handlers.MovePromptHandler(w, r)
-	case "/import_results":
-		handlers.ImportResultsHandler(w, r)
-	case "/export_prompts":
-		handlers.ExportPromptsHandler(w, r)
-	case "/import_prompts":
-		handlers.ImportPromptsHandler(w, r)
-	case "/update_prompts_order":
-		handlers.UpdatePromptsOrderHandler(w, r)
-	case "/reset_prompts":
-		handlers.ResetPromptsHandler(w, r)
-	case "/bulk_delete_prompts":
-		if r.Method == "GET" {
-			handlers.BulkDeletePromptsPageHandler(w, r)
-		} else if r.Method == "POST" {
-			handlers.BulkDeletePromptsHandler(w, r)
-		}
-	case "/prompts/suites/new":
-		handlers.NewPromptSuiteHandler(w, r)
-	case "/prompts/suites/edit":
-		handlers.EditPromptSuiteHandler(w, r)
-	case "/prompts/suites/delete":
-		handlers.DeletePromptSuiteHandler(w, r)
-	case "/prompts/suites/select":
-		handlers.SelectPromptSuiteHandler(w, r)
-	case "/results":
-		handlers.ResultsHandler(w, r)
-	case "/update_result":
-		handlers.UpdateResultHandler(w, r)
-	case "/reset_results":
-		handlers.ResetResultsHandler(w, r)
-	case "/confirm_refresh_results":
-		handlers.ConfirmRefreshResultsHandler(w, r)
-	case "/refresh_results":
-		handlers.RefreshResultsHandler(w, r)
-	case "/export_results":
-		handlers.ExportResultsHandler(w, r)
-	case "/profiles":
-		handlers.ProfilesHandler(w, r)
-	case "/add_profile":
-		handlers.AddProfileHandler(w, r)
-	case "/edit_profile":
-		handlers.EditProfileHandler(w, r)
-	case "/delete_profile":
-		handlers.DeleteProfileHandler(w, r)
-	case "/reset_profiles":
-		handlers.ResetProfilesHandler(w, r)
-	default:
+	
+	if handler, exists := routes[r.URL.Path]; exists {
+		handler(w, r)
+	} else {
 		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}

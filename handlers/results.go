@@ -51,18 +51,8 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		filteredResults = results
 	}
 
-	funcMap := template.FuncMap{
-		"inc": func(i int) int {
-			// slog.Info(strconv.Itoa(i))
-			return i + 1
-		},
-	}
-	funcMap["json"] = func(v interface{}) (string, error) {
-		b, err := json.Marshal(v)
-		return string(b), err
-	}
-	pageName := "Results"
-	t, err := template.New("results.html").Funcs(funcMap).ParseFiles("templates/results.html", "templates/nav.html")
+	pageName := templates.PageNameResults
+	t, err := template.New("results.html").Funcs(templates.FuncMap).ParseFiles("templates/results.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
 		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
