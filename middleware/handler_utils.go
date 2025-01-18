@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
+	"llm-tournament/templates"
 )
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
@@ -13,7 +15,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 		http.Error(w, "Error parsing template", http.StatusInternalServerError)
 		return
 	}
-	
+
 	err = t.Execute(w, data)
 	if err != nil {
 		log.Printf("Error executing template: %v", err)

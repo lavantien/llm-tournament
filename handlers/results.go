@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"strconv"
 
 	"llm-tournament/middleware"
+	"llm-tournament/templates"
 )
 
 // Handle results page

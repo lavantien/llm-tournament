@@ -2,6 +2,7 @@ package templates
 
 import (
 	"encoding/json"
+	"html/template"
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"

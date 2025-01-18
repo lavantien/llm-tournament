@@ -33,4 +33,4 @@
 /add       templates\results.html
 /add       templates\style.css
 /read-only PRELIMINARY_DESIGN.md
-/read-only SYSTEM_PROMPT.md
+/read-only system_prompt_general.xml
