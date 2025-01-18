@@ -127,6 +127,10 @@ Anyone can just submit a PR and we'll discuss there.
 
 - Make another prompt suite for vision LLMs.
 
+### Functional
+
+- When changing the profile's name in Profiles page, the prompts of the selected suite that are using that profile should also reflect the name change in the display as well as the selection box in edit prompt page.
+
 [(Back)](#-table-of-contents)
 
 ## 🏆 Badges
