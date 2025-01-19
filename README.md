@@ -32,38 +32,38 @@ Key technical highlights:
 
 ## 🔑 Key Features
 
-- **🔄 Real-time Updates**: WebSockets for instant updates on the results page.
-- **🖥️ Dynamic UI**: Responsive and intuitive interface.
-- **📝 Prompt Management**:
-  - **➕ Add, ✏️ Edit, ❌ Delete, 🔄 Move**: Manage prompts.
-  - **🔍 Prompt Solution**: Manage prompt content and solution.
-  - **📄 Multiline Input**: Detailed and complex prompts.
-  - **📝 Markdown Rendering**: Rich text formatting.
-  - **🔄 Reorder Prompts**: Drag and drop reordering.
-  - **🔍 Search Prompts**: Full text search.
-  - **🗑️ Bulk Delete Prompts**: Delete multiple prompts.
-  - **🏷️ Profile Filtering**: Filter prompts by associated profile.
-- **📊 Model Evaluation**:
-  - **✅ Pass/Fail Tracking**: Track pass/fail results.
-  - **🏆 Total Scores and Pass Percentages**: Performance metrics.
-- **💾 Data Persistence**: JSON files for storage.
-- **📥 Import/Export**:
-  - **📝 Prompts and 📊 Results**: CSV format for data management.
-- **🔍 Filtering**:
-  - **🏆 Model Filtering**: Filter results by model.
-- **🏆 Model Management**:
-  - **➕ Add, ✏️ Edit, ❌ Delete**: Manage models.
-- **📊 Result Management**:
-  - **🔄 Reset Results**: Reset all results.
-  - **🔄 Refresh Results**: Refresh all results.
-  - **📥 Export Results**: Export results in CSV format.
-  - **📥 Import Results**: Import results from a CSV file.
-- **📝 Prompt Suites**:
-  - **➕ Create, ✏️ Edit, ❌ Delete, 🔄 Select**: Manage prompt suites.
-- **📝 Profiles**:
-  - **➕ Add, ✏️ Edit, ❌ Delete**: Manage profiles.
-  - **🔄 Reset Profiles**: Reset all profiles.
-  - **🔍 Search Profiles**: Full text search.
+### 🚀 Core Functionality
+- **Real-time Evaluation Engine**: WebSocket-powered instant updates for results and metrics
+- **Modular Test Suites**: Independent prompt and model configurations for different scenarios
+- **Comprehensive Data Management**: JSON-based storage with CSV import/export capabilities
+
+### 📝 Prompt Management
+- **Full Lifecycle Control**: Create, edit, delete, and reorder prompts
+- **Rich Content Support**: Markdown formatting and multiline input
+- **Advanced Filtering**: Search by text, filter by profile and order
+- **Bulk Operations**: Delete multiple prompts at once
+- **Solution Tracking**: Attach reference solutions to each prompt
+- **Profile Association**: Tag prompts with evaluation profiles
+
+### 🏆 Model Evaluation
+- **Performance Tracking**: Pass/fail results with detailed metrics
+- **Real-time Analytics**: Scores and pass percentages updated instantly
+- **Flexible Filtering**: View results by model or profile
+- **Data Portability**: Import/export results in CSV format
+- **Evaluation Management**: Reset or refresh results as needed
+
+### ⚙️ System Management
+- **Prompt Suites**: Create and switch between different prompt sets
+- **Model Suites**: Manage different model configurations
+- **Profile System**: Define and manage evaluation profiles
+- **Data Integrity**: Automatic backups and version control
+- **Responsive UI**: Modern interface optimized for all devices
+
+### 🔄 Workflow Automation
+- **Bulk Operations**: Manage multiple items simultaneously
+- **Template System**: Reuse configurations across evaluations
+- **Data Migration**: Easy import/export of prompts and results
+- **Real-time Sync**: Instant updates across all connected clients
 
 [(Back)](#-table-of-contents)
 
