@@ -33,11 +33,13 @@ Key technical highlights:
 ## 🔑 Key Features
 
 ### 🚀 Core Functionality
+
 - **Real-time Evaluation Engine**: WebSocket-powered instant updates for results and metrics
 - **Modular Test Suites**: Independent prompt and model configurations for different scenarios
 - **Comprehensive Data Management**: JSON-based storage with CSV import/export capabilities
 
 ### 📝 Prompt Management
+
 - **Full Lifecycle Control**: Create, edit, delete, and reorder prompts
 - **Rich Content Support**: Markdown formatting and multiline input
 - **Advanced Filtering**: Search by text, filter by profile and order
@@ -46,6 +48,7 @@ Key technical highlights:
 - **Profile Association**: Tag prompts with evaluation profiles
 
 ### 🏆 Model Evaluation
+
 - **Performance Tracking**: Pass/fail results with detailed metrics
 - **Real-time Analytics**: Scores and pass percentages updated instantly
 - **Flexible Filtering**: View results by model or profile
@@ -53,6 +56,7 @@ Key technical highlights:
 - **Evaluation Management**: Reset or refresh results as needed
 
 ### ⚙️ System Management
+
 - **Prompt Suites**: Create and switch between different prompt sets
 - **Model Suites**: Manage different model configurations
 - **Profile System**: Define and manage evaluation profiles
@@ -60,6 +64,7 @@ Key technical highlights:
 - **Responsive UI**: Modern interface optimized for all devices
 
 ### 🔄 Workflow Automation
+
 - **Bulk Operations**: Manage multiple items simultaneously
 - **Template System**: Reuse configurations across evaluations
 - **Data Migration**: Easy import/export of prompts and results
