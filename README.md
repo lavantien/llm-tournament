@@ -133,9 +133,9 @@ Anyone can just submit a PR and we'll discuss there.
 
 - Make another prompt suite for vision LLMs.
 
-### Functional
+### 🔧 Functional
 
-- In Prompts page, add another filter by profile, located next to filter by order dropdown selection. And the layout should be `Filter: [<by order>] [<by profile>] (Filter)`.
+- None ATM.
 
 [(Back)](#-table-of-contents)
 
