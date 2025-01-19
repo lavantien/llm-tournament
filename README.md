@@ -129,7 +129,7 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### Functional
 
-- When changing the profile's name in Profiles page, the prompts of the selected suite that are using that profile should also reflect the name change in the display as well as the selection box in edit prompt page.
+- In Prompts page, add another filter by profile, located next to filter by order dropdown selection. And the layout should be `Filter: [<by order>] [<by profile>] (Filter)`.
 
 [(Back)](#-table-of-contents)
 
