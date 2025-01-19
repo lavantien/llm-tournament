@@ -42,6 +42,7 @@ Key technical highlights:
   - **🔄 Reorder Prompts**: Drag and drop reordering.
   - **🔍 Search Prompts**: Full text search.
   - **🗑️ Bulk Delete Prompts**: Delete multiple prompts.
+  - **🏷️ Profile Filtering**: Filter prompts by associated profile.
 - **📊 Model Evaluation**:
   - **✅ Pass/Fail Tracking**: Track pass/fail results.
   - **🏆 Total Scores and Pass Percentages**: Performance metrics.
