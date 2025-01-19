@@ -81,11 +81,17 @@
     <div class="title-row">
       <div class="filter-container">
         <form action="/prompts" method="get">
-          <label for="order_filter">Filter by Order:</label>
+          <label for="order_filter">Filter:</label>
           <select name="order_filter" id="order_filter">
-            <option value="">All</option>
+            <option value="">All Orders</option>
             {{range $index := .PromptIndices}}
             <option value="{{$index}}">{{$index}}</option>
+            {{end}}
+          </select>
+          <select name="profile_filter" id="profile_filter">
+            <option value="">All Profiles</option>
+            {{range .Profiles}}
+            <option value="{{.Name}}">{{.Name}}</option>
             {{end}}
           </select>
           <input type="submit" value="Filter" />
@@ -154,8 +160,9 @@
     </div>
     <ul id="prompt-list">
       {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
-      $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.SearchQuery
-      "") (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
+      $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.ProfileFilter
+      "") (eq $prompt.Profile $.ProfileFilter)) (or (eq $.SearchQuery "") 
+      (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <div
           style="

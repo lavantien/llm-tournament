@@ -338,6 +338,10 @@ body {
         float: left;
         min-width: 512px;
     }
+    
+    .filter-container select {
+        margin-right: 5px;
+    }
 
     .search-container {
         float: left;

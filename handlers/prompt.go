@@ -18,6 +18,7 @@ import (
 func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling prompt list page")
 	orderFilter := r.FormValue("order_filter")
+	profileFilter := r.FormValue("profile_filter")
 	searchQuery := r.FormValue("search_query")
 
 	orderFilterInt := 0
@@ -102,6 +103,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		PromptIndices []int
 		Profiles      []middleware.Profile
 		OrderFilter   int
+		ProfileFilter string
 		SearchQuery   string
 		Suites        []string
 		CurrentSuite  string
@@ -111,6 +113,7 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		PromptIndices: promptIndices,
 		Profiles:      profiles,
 		OrderFilter:   orderFilterInt,
+		ProfileFilter: profileFilter,
 		SearchQuery:   searchQuery,
 		Suites:        suites,
 		CurrentSuite:  currentSuite,
