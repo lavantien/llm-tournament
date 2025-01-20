@@ -8,6 +8,15 @@
     "top_a": 0.2,
     "temperature": 0
   },
+  "deepseek/deepseek-reasoner": {
+    "max_tokens": 8192,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 1,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0
+  },
   "codestral/codestral-latest": {
     "num_ctx": 262144,
     "max_tokens": -1,

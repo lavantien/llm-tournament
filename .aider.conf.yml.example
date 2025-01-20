@@ -13,17 +13,18 @@ api-key:
   - cohere=
   - openrouter=
   - xai=
-architect: false
-model: deepseek/deepseek-chat
+architect: true
+model: deepseek/deepseek-reasoner
 # model: gemini/gemini-exp-1206
 # model: gemini/gemini-2.0-flash-exp
 # model: mistral/mistral-large-latest
 # model: codestral/codestral-latest
 edit-format: diff
+editor-model: deepseek/deepseek-chat
 # editor-model: mistral/mistral-large-latest
 # editor-model: gemini/gemini-2.0-flash-exp
 # editor-model: codestral/codestral-latest
-# editor-edit-format: editor-diff
+editor-edit-format: editor-diff
 weak-model: mistral/mistral-large-latest
 # weak-model: mistral/pixtral-large-latest
 # weak-model: codestral/codestral-latest

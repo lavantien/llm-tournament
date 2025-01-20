@@ -135,6 +135,8 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Functional
 
+- Search model.
+- Order model.
 - Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
 - Update the features section about the tools.
 
