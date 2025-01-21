@@ -9,3 +9,4 @@ tools/tts/voices.json
 tools/tts/hello.py
 **/ebooks/*.pdf
 release/llm-tournament-v1.0-win.exe
+tools/tts/podcast.wav

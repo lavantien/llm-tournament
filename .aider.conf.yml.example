@@ -34,7 +34,7 @@ read:
 yes-always: true
 test-cmd: go test ./... -v -race -cover -timeout 10s
 auto-test: true
-map-tokens: 2048
+map-tokens: 8192
 timeout: 300
 cache-prompts: true
 cache-keepalive-pings: 300
