@@ -135,6 +135,7 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Functional
 
+- More e laborate scoring scheme with a dedicated page `Evaluate` when click on the square.
 - Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
 - Update the features section about the tools.
 
