@@ -25,9 +25,9 @@ editor-model: deepseek/deepseek-chat
 # editor-model: gemini/gemini-2.0-flash-exp
 # editor-model: codestral/codestral-latest
 editor-edit-format: editor-diff
-weak-model: mistral/mistral-large-latest
+weak-model: codestral/codestral-latest
+# weak-model: mistral/mistral-large-latest
 # weak-model: mistral/pixtral-large-latest
-# weak-model: codestral/codestral-latest
 read:
   - system_prompt_programming.xml
   - PRELIMINARY_DESIGN.md

@@ -99,10 +99,8 @@ Key technical highlights:
 make run
 ```
 
-or
-
 ```bash
-./release/llm-tournament-v1.0
+./release/llm-tournament
 ```
 
 Then go to <http://localhost:8080>
@@ -135,7 +133,9 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Functional
 
+- Search model.
 - More e laborate scoring scheme with a dedicated page `Evaluate` when click on the square.
+- Incorporate Promptmetheus's core features.
 - Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
 - Update the features section about the tools.
 
