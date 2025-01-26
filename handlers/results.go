@@ -98,7 +98,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, struct {
 		PageName        string
 		Prompts         []string
-		Results         map[string][]bool
+		Results         map[string]middleware.Result
 		Models          []string
 		PassPercentages map[string]float64
 		ModelFilter     string
