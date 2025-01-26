@@ -16,7 +16,7 @@ func main() {
 	if *migrate {
 		log.Println("Migrating results to new scoring system...")
 		results := middleware.ReadResults()
-		middleware.migrateResults(results)
+		middleware.MigrateResults(results)
 		suiteName := middleware.GetCurrentSuiteName()
 		err := middleware.WriteResults(suiteName, results)
 		if err != nil {

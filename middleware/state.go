@@ -245,7 +245,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	return nil
 }
 
-func migrateResults(results map[string]Result) {
+func MigrateResults(results map[string]Result) {
 	for model, result := range results {
 		// If we have Passes but no Scores, migrate from Passes to Scores
 		if len(result.Passes) > 0 && len(result.Scores) == 0 {
