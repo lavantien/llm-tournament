@@ -107,7 +107,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		modelTotalScores[model] = totalScore
 	}
 
-	err = t.Execute(w, struct {
+	templateData := struct {
 		PageName        string
 		Prompts         []string
 		Results         map[string]middleware.Result
@@ -127,7 +127,11 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores:     modelTotalScores,
 		PromptIndices:   promptIndices,
 		SearchQuery:     searchQuery,
-	})
+	}
+	
+	log.Printf("Template data: %+v", templateData)
+	
+	err = t.Execute(w, templateData)
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
 		http.Error(w, "Error executing template", http.StatusInternalServerError)
