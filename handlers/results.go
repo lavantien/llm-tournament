@@ -79,7 +79,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	resultsForTemplate := make(map[string]middleware.Result)
 	for model, result := range filteredResults {
-		// Ensure scores array exists and matches prompts length
+		// Ensure scores and passes arrays exist and match prompts length
 		if result.Scores == nil {
 			result.Scores = make([]int, len(prompts))
 		} else if len(result.Scores) < len(prompts) {
@@ -89,6 +89,17 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		} else if len(result.Scores) > len(prompts) {
 			result.Scores = result.Scores[:len(prompts)]
 		}
+		
+		if result.Passes == nil {
+			result.Passes = make([]bool, len(prompts))
+		} else if len(result.Passes) < len(prompts) {
+			newPasses := make([]bool, len(prompts))
+			copy(newPasses, result.Passes)
+			result.Passes = newPasses
+		} else if len(result.Passes) > len(prompts) {
+			result.Passes = result.Passes[:len(prompts)]
+		}
+		
 		resultsForTemplate[model] = result
 	}
 	modelPassPercentages := make(map[string]float64)
