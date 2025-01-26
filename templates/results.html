@@ -129,9 +129,7 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${Array.from({length: ${prompts.length}}, (_, index) => {
-                        const score = results[model]?.Scores?.[index] || 0;
-                        return `
+                    ${results[model]?.Scores?.map((score, index) => `
                         <td>
                             <button
                                 class="result-button"
@@ -139,8 +137,7 @@
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
                             ></button>
                         </td>
-                        `;
-                    }).join('')}
+                    `).join('') || ''}
                     <td>
                         ${totalScores[model] || 0}
                         <div class="progress-bar-container">

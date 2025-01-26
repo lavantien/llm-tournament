@@ -14,21 +14,9 @@ type Prompt struct {
 }
 
 type Result struct {
-	Passes []bool `json:"passes"`
-	Scores []int  `json:"scores"`
+	Scores []int `json:"scores"`
 }
 
-func (r *Result) EnsureScores(promptCount int) {
-	if r.Scores == nil {
-		r.Scores = make([]int, promptCount)
-	} else if len(r.Scores) < promptCount {
-		newScores := make([]int, promptCount)
-		copy(newScores, r.Scores)
-		r.Scores = newScores
-	} else if len(r.Scores) > promptCount {
-		r.Scores = r.Scores[:promptCount]
-	}
-}
 
 type Profile struct {
 	Name        string `json:"name"`
@@ -143,13 +131,6 @@ func ReadResults() map[string]Result {
 		return make(map[string]Result)
 	}
 	for model, result := range results {
-		// Ensure Passes array is correct length
-		if len(result.Passes) < len(prompts) {
-			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
-		} else if len(result.Passes) > len(prompts) {
-			result.Passes = result.Passes[:len(prompts)]
-		}
-		
 		// Ensure Scores array is correct length
 		if result.Scores == nil {
 			result.Scores = make([]int, len(prompts))
@@ -255,15 +236,6 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		return err
 	}
 
-	prompts := ReadPrompts()
-	for model, result := range results {
-		if len(result.Passes) < len(prompts) {
-			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
-			results[model] = result
-		} else if len(result.Passes) > len(prompts) {
-			results[model] = Result{Passes: result.Passes[:len(prompts)]}
-		}
-	}
 
 	return nil
 }

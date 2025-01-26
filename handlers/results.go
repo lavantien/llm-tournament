@@ -22,13 +22,11 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	// Calculate total scores for each model
 	modelScores := make(map[string]int)
 	for model, result := range results {
-		score := 0
-		for _, pass := range result.Passes {
-			if pass {
-				score++
-			}
+		totalScore := 0
+		for _, score := range result.Scores {
+			totalScore += score
 		}
-		modelScores[model] = score
+		modelScores[model] = totalScore
 	}
 
 	log.Println("Sorting models by score in descending order")
