@@ -76,8 +76,10 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	resultsForTemplate := make(map[string]middleware.Result)
 	for model, result := range filteredResults {
-		// Ensure scores array matches prompts length
-		if len(result.Scores) < len(prompts) {
+		// Ensure scores array exists and matches prompts length
+		if result.Scores == nil {
+			result.Scores = make([]int, len(prompts))
+		} else if len(result.Scores) < len(prompts) {
 			newScores := make([]int, len(prompts))
 			copy(newScores, result.Scores)
 			result.Scores = newScores

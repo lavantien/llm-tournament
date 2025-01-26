@@ -129,7 +129,7 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${results[model]?.Scores?.map(
+                    ${results[model] && results[model].Scores ? results[model].Scores.map(
                         (score, index) => `
                         <td>
                             <button
@@ -138,7 +138,7 @@
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
                             ></button>
                         </td>
-                    `).join("") || ''}
+                    `).join("") : ''}
                     <td>
                         ${totalScores[model] || 0}
                         <div class="progress-bar-container">

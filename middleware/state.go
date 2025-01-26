@@ -18,6 +18,16 @@ type Result struct {
 	Scores []int  `json:"scores"`
 }
 
+func (r *Result) EnsureScores(promptCount int) {
+	if r.Scores == nil {
+		r.Scores = make([]int, promptCount)
+	} else if len(r.Scores) < promptCount {
+		newScores := make([]int, promptCount)
+		copy(newScores, r.Scores)
+		r.Scores = newScores
+	}
+}
+
 type Profile struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
