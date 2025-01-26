@@ -361,12 +361,16 @@ body {
     .search-container {
         float: left;
         min-width: 512px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
     }
 
     .search-form {
         display: flex;
         align-items: center;
         gap: 5px;
+        flex: 1;
     }
 
     .search-input {
@@ -375,8 +379,10 @@ body {
         border-radius: 4px;
         background-color: #333;
         color: #e0e0e0;
-        width: 300px;
+        width: 100%;
+        min-width: 200px;
         transition: border-color 0.3s ease, background-color 0.3s ease;
+        flex: 1;
     }
 
     .search-input:focus {
@@ -392,6 +398,7 @@ body {
         color: #1a1a1a;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        white-space: nowrap;
     }
 
     .search-submit:hover {
