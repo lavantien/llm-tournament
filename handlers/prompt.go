@@ -338,7 +338,7 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 			if len(passes) < len(prompts) {
 				passes = append(passes, make([]bool, len(prompts)-len(passes))...)
 			}
-			results[model] = middleware.Result{Passes: passes}
+			results[model] = middleware.Result{Scores: make([]int, len(prompts))}
 		}
 		suiteName = middleware.GetCurrentSuiteName()
 		err = middleware.WriteResults(suiteName, results)

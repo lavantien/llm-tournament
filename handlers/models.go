@@ -28,7 +28,7 @@ func AddModelHandler(w http.ResponseWriter, r *http.Request) {
 		results = make(map[string]middleware.Result)
 	}
 	if _, ok := results[modelName]; !ok {
-		results[modelName] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
+		results[modelName] = middleware.Result{Scores: make([]int, len(middleware.ReadPrompts()))}
 	}
 	suiteName := middleware.GetCurrentSuiteName()
 	err = middleware.WriteResults(suiteName, results)
