@@ -156,11 +156,17 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		results = make(map[string]middleware.Result)
 	}
 	if _, ok := results[model]; !ok {
-		results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
+		results[model] = middleware.Result{
+			Scores: make([]int, len(middleware.ReadPrompts())),
+			Passes: make([]bool, len(middleware.ReadPrompts())),
+		}
 	}
 
 	prompts := middleware.ReadPrompts()
 	result := results[model]
+	if len(result.Scores) < len(prompts) {
+		result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
+	}
 	if len(result.Passes) < len(prompts) {
 		result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
 	}
@@ -233,7 +239,10 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		results := middleware.ReadResults()
 		for model := range results {
-			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
+			results[model] = middleware.Result{
+				Scores: make([]int, len(middleware.ReadPrompts())),
+				Passes: make([]bool, len(middleware.ReadPrompts())),
+			}
 		}
 		suiteName := middleware.GetCurrentSuiteName()
 		err := middleware.WriteResults(suiteName, results)

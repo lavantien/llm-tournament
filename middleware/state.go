@@ -14,7 +14,8 @@ type Prompt struct {
 }
 
 type Result struct {
-	Scores []int `json:"scores"`
+	Scores []int  `json:"scores"`
+	Passes []bool `json:"passes"`
 }
 
 
