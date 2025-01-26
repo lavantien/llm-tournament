@@ -193,7 +193,12 @@
         <div class="title-container">
             <h1>Results</h1>
         </div>
-        <div class="search-container">&nbsp;</div>
+        <div class="search-container">
+            <form action="/results" method="get" class="search-form">
+                <input type="text" name="search" placeholder="Search models..." value="{{.SearchQuery}}" class="search-input">
+                <input type="submit" value="Search" class="search-submit">
+            </form>
+        </div>
     </div>
     <table>
         <thead>

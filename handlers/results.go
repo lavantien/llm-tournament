@@ -42,13 +42,19 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Sorted models: %v", models)
 
 	modelFilter := r.FormValue("model_filter")
+	searchQuery := strings.ToLower(r.FormValue("search"))
+	
 	filteredResults := make(map[string]middleware.Result)
-	if modelFilter != "" {
-		if filteredModel, ok := results[modelFilter]; ok {
-			filteredResults[modelFilter] = filteredModel
+	for model, result := range results {
+		// Apply model filter if specified
+		if modelFilter != "" && model != modelFilter {
+			continue
 		}
-	} else {
-		filteredResults = results
+		// Apply search filter if specified
+		if searchQuery != "" && !strings.Contains(strings.ToLower(model), searchQuery) {
+			continue
+		}
+		filteredResults[model] = result
 	}
 
 	pageName := templates.PageNameResults
@@ -97,6 +103,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		ModelFilter     string
 		TotalScores     map[string]int
 		PromptIndices   []int
+		SearchQuery     string
 	}{
 		PageName:        pageName,
 		Prompts:         promptTexts,
@@ -106,6 +113,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		ModelFilter:     modelFilter,
 		TotalScores:     modelTotalScores,
 		PromptIndices:   promptIndices,
+		SearchQuery:     searchQuery,
 	})
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
