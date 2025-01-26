@@ -87,27 +87,30 @@ func BroadcastResults() {
 		models = append(models, model)
 	}
 	if len(models) == 0 {
-		// If no results exist, get models from somewhere else if needed
-		// This is just a fallback - you may need to adjust based on your data source
 		models = []string{"Model1", "Model2"} // Example fallback
 	}
 	sort.Slice(models, func(i, j int) bool {
 		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
 	})
 
-
 	payload := struct {
-		Results     map[string]Result
-		Models      []string
-		TotalScores map[string]int
-		Prompts     []string
-		SuiteName   string
+		Type string      `json:"type"`
+		Data interface{} `json:"data"`
 	}{
-		Results:     results,
-		Models:      models,
-		TotalScores: modelTotalScores,
-		Prompts:     promptsToStringArray(prompts),
-		SuiteName:   suiteName,
+		Type: "results",
+		Data: struct {
+			Results     map[string]Result
+			Models      []string
+			TotalScores map[string]int
+			Prompts     []string
+			SuiteName   string
+		}{
+			Results:     results,
+			Models:      models,
+			TotalScores: modelTotalScores,
+			Prompts:     promptsToStringArray(prompts),
+			SuiteName:   suiteName,
+		},
 	}
 
 	clientsMutex.Lock()
