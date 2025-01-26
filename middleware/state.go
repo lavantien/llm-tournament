@@ -251,7 +251,7 @@ func MigrateResults(results map[string]Result) map[string]Result {
 	for model, result := range results {
 		// If we have no Scores, initialize empty array
 		if result.Scores == nil {
-			result.Scores = make([]int, len(middleware.ReadPrompts()))
+			result.Scores = make([]int, len(ReadPrompts()))
 		}
 		migrated[model] = result
 	}
