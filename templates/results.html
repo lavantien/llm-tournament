@@ -129,16 +129,18 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${results[model] && results[model].Scores ? results[model].Scores.map(
-                        (score, index) => `
+                    ${Array.from({length: ${prompts.length}}, (_, index) => {
+                        const score = results[model]?.Scores?.[index] || 0;
+                        return `
                         <td>
                             <button
                                 class="result-button"
                                 style="background-color: ${getScoreColor(score)}"
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
-                            >${score}</button>
+                            ></button>
                         </td>
-                    `).join("") : ''}
+                        `;
+                    }).join('')}
                     <td>
                         ${totalScores[model] || 0}
                         <div class="progress-bar-container">

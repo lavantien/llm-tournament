@@ -83,6 +83,8 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			newScores := make([]int, len(prompts))
 			copy(newScores, result.Scores)
 			result.Scores = newScores
+		} else if len(result.Scores) > len(prompts) {
+			result.Scores = result.Scores[:len(prompts)]
 		}
 		resultsForTemplate[model] = result
 	}

@@ -25,6 +25,8 @@ func (r *Result) EnsureScores(promptCount int) {
 		newScores := make([]int, promptCount)
 		copy(newScores, r.Scores)
 		r.Scores = newScores
+	} else if len(r.Scores) > promptCount {
+		r.Scores = r.Scores[:promptCount]
 	}
 }
 
