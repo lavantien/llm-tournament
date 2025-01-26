@@ -140,13 +140,27 @@
                     // Create score cells
                     const scoreCells = [];
                     const scores = results[model]?.Scores || [];
-                    for (let index = 0; index < scores.length; index++) {
+                    const promptsCount = {{len .Prompts}} || 0;
+                    
+                    // Ensure we have enough scores for all prompts
+                    while (scores.length < promptsCount) {
+                        scores.push(0);
+                    }
+                    
+                    for (let index = 0; index < promptsCount; index++) {
                         const score = scores[index] || 0;
                         const scoreCell = document.createElement("td");
                         const button = document.createElement("button");
                         button.className = "result-button";
                         button.style.backgroundColor = getScoreColor(score);
-                        button.style.opacity = 1; // Remove pass/fail opacity for now
+                        button.style.width = "40px"; // Fixed width
+                        button.style.height = "40px"; // Fixed height
+                        button.style.margin = "2px"; // Small margin
+                        button.style.border = "1px solid #ccc"; // Border
+                        button.style.borderRadius = "4px"; // Rounded corners
+                        button.style.display = "flex";
+                        button.style.alignItems = "center";
+                        button.style.justifyContent = "center";
                         button.textContent = score;
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
