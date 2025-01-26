@@ -45,7 +45,11 @@
             placeholder="Enter new prompt"
             style="margin-right: 5px"
           ></textarea>
-          <textarea name="solution" placeholder="Enter solution" style="margin-right: 5px"></textarea>
+          <textarea
+            name="solution"
+            placeholder="Enter solution"
+            style="margin-right: 5px"
+          ></textarea>
           <select name="profile" style="margin-right: 5px">
             <option value="">None</option>
             {{range .Profiles}}
@@ -55,13 +59,15 @@
           <input type="submit" value="Add" />
         </form>
       </div>
-      <div style="
+      <div
+        style="
           flex-grow: 1;
           text-align: right;
           display: flex;
           align-items: center;
           justify-content: flex-end;
-        ">
+        "
+      >
         <form
           action="/update_prompts_order"
           method="post"
@@ -81,7 +87,6 @@
     <div class="title-row">
       <div class="filter-container">
         <form action="/prompts" method="get">
-          <label for="order_filter">Filter:</label>
           <select name="order_filter" id="order_filter">
             <option value="">All Orders</option>
             {{range $index := .PromptIndices}}
@@ -163,7 +168,7 @@
     <ul id="prompt-list">
       {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
       $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.ProfileFilter
-      "") (eq $prompt.Profile $.ProfileFilter)) (or (eq $.SearchQuery "") 
+      "") (eq $prompt.Profile $.ProfileFilter)) (or (eq $.SearchQuery "")
       (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
       <li draggable="true" data-index="{{$index}}">
         <div

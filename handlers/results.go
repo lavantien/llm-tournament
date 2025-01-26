@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 
 	"llm-tournament/middleware"
 	"llm-tournament/templates"
@@ -43,7 +44,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 
 	modelFilter := r.FormValue("model_filter")
 	searchQuery := strings.ToLower(r.FormValue("search"))
-	
+
 	filteredResults := make(map[string]middleware.Result)
 	for model, result := range results {
 		// Apply model filter if specified
