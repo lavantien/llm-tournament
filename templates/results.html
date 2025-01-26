@@ -12,20 +12,19 @@
         let initialLoad = true; // Flag to track initial load
 
         function connectWebSocket() {
-            socket = new WebSocket("ws://" + window.location.host + "/ws");
+            // First load initial data
+            fetchInitialData().then(() => {
+                // Then connect WebSocket
+                socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-            socket.onopen = function (e) {
-                console.log("[open] Connection established");
-                connectionRetries = 0; // Reset retries on successful connection
-                document.getElementById("connection-status").textContent =
-                    "Connected";
-                document.getElementById("connection-status").style.color = "green";
-                if (initialLoad) {
-                    // Request initial data after connection
-                    fetchInitialData();
-                    initialLoad = false;
-                }
-            };
+                socket.onopen = function (e) {
+                    console.log("[open] Connection established");
+                    connectionRetries = 0; // Reset retries on successful connection
+                    document.getElementById("connection-status").textContent =
+                        "Connected";
+                    document.getElementById("connection-status").style.color = "green";
+                };
+            });
 
             socket.onmessage = function (event) {
                 console.log(`[message] Data received from server: ${event.data}`);
@@ -66,7 +65,7 @@
         }
 
         function fetchInitialData() {
-            fetch("/results?model_filter=" + document.getElementById("model_filter").value)
+            return fetch("/results?model_filter=" + document.getElementById("model_filter").value)
                 .then(response => response.text())
                 .then(html => {
                     const parser = new DOMParser();
@@ -78,8 +77,12 @@
                         TotalScores: JSON.parse(doc.getElementById('total-scores-data').textContent),
                     };
                     updateResults(payload);
+                    return payload;
                 })
-                .catch(error => console.error('Error fetching initial ', error));
+                .catch(error => {
+                    console.error('Error fetching initial data:', error);
+                    throw error;
+                });
         }
 
         let currentSearchQuery = "";
@@ -102,8 +105,15 @@
             const modelFilter = document.getElementById("model_filter").value;
 
             const tbody = document.querySelector("table tbody");
-            tbody.innerHTML = ""; // Clear existing rows
+            if (!tbody) {
+                console.error('Table body not found');
+                return;
+            }
+
+            // Create document fragment for batch DOM updates
+            const fragment = document.createDocumentFragment();
             let i = 0;
+            
             models.forEach((model) => {
                 // Apply both filters
                 if ((modelFilter === "" || model === modelFilter) &&
@@ -119,9 +129,8 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${results[model].Scores
-                            .map(
-                                (score, index) => `
+                    ${results[model]?.Scores?.map(
+                        (score, index) => `
                         <td>
                             <button
                                 class="result-button"
@@ -129,19 +138,21 @@
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
                             ></button>
                         </td>
-                    `,
-                            )
-                            .join("")}
+                    `).join("") || ''}
                     <td>
-                        ${totalScores[model]}
+                        ${totalScores[model] || 0}
                         <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: ${passPercentages[model]}%;"></div>
+                            <div class="progress-bar" style="width: ${passPercentages[model] || 0}%;"></div>
                         </div>
                     </td>
                 `;
-                    tbody.appendChild(row);
+                fragment.appendChild(row);
                 }
             });
+
+            // Batch update the DOM
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
         }
 
 
