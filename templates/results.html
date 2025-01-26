@@ -144,34 +144,6 @@
             });
         }
 
-        function updateResult(model, promptIndex, pass, button) {
-            var loadingIndicator = document.createElement("span");
-            loadingIndicator.className = "loading";
-            button.parentNode.appendChild(loadingIndicator);
-            button.style.display = "none";
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/update_result", true);
-            xhr.setRequestHeader(
-                "Content-type",
-                "application/x-www-form-urlencoded",
-            );
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    button.style.display = "";
-                    loadingIndicator.remove();
-                    updateButtonColor(button, pass);
-                }
-            };
-            var params =
-                "model=" +
-                encodeURIComponent(model) +
-                "&promptIndex=" +
-                promptIndex +
-                "&pass=" +
-                pass;
-            xhr.send(params);
-        }
 
         function getScoreColor(score) {
             if (score >= 100) return '#4CAF50'; // Green
@@ -240,10 +212,10 @@
                     </div>
                 </td>
                 <td>{{$model}}</td>
-                {{range $index, $pass := $results}}
+                {{range $index, $score := $results.Scores}}
                 <td>
-                    <button class="result-button" style="background-color: {{if $pass}}green{{else}}red{{end}};"
-                        onclick="updateResult('{{$model}}', {{$index}}, {{not $pass}}, this)"></button>
+                    <button class="result-button" style="background-color: ${getScoreColor({{$score}})};"
+                        onclick="window.location.href='/evaluate?model={{$model}}&prompt={{$index}}'"></button>
                 </td>
                 {{end}}
                 <td>

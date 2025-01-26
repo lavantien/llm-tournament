@@ -85,14 +85,12 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		promptIndices[i] = i + 1
 	}
 	for model, result := range filteredResults {
-		score := 0
-		for _, pass := range result.Passes {
-			if pass {
-				score++
-			}
+		totalScore := 0
+		for _, score := range result.Scores {
+			totalScore += score
 		}
-		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
-		modelTotalScores[model] = score * 100
+		modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		modelTotalScores[model] = totalScore
 	}
 
 	err = t.Execute(w, struct {
