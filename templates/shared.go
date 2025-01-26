@@ -30,4 +30,11 @@ const (
 	PageNameResults  = "Results"
 	PageNamePrompts  = "Prompts"
 	PageNameProfiles = "Profiles"
+	PageNameEvaluate = "Evaluate"
 )
+
+var ScoreOptions = map[string]int{
+	"Perfect": 100,
+	"Alright": 50,
+	"Barely":  20,
+}

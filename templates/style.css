@@ -256,6 +256,31 @@ body {
         }
     }
 
+    .evaluation-form {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #2a2a2a;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .evaluation-form select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        background-color: #333;
+        color: #e0e0e0;
+        border: 1px solid #444;
+    }
+
+    .evaluation-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         padding: 10px;

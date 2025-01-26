@@ -125,8 +125,8 @@
                         <td>
                             <button
                                 class="result-button"
-                                style="background-color: ${pass ? "green" : "red"}"
-                                onclick="updateResult('${model}', ${index}, ${!pass}, this)"
+                                style="background-color: ${getScoreColor(pass)}"
+                                onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
                             ></button>
                         </td>
                     `,
@@ -173,8 +173,11 @@
             xhr.send(params);
         }
 
-        function updateButtonColor(button, pass) {
-            button.style.backgroundColor = pass ? "green" : "red";
+        function getScoreColor(score) {
+            if (score === 100) return '#4CAF50'; // Green
+            if (score === 50) return '#FFC107'; // Yellow
+            if (score === 20) return '#FF9800'; // Orange
+            return '#F44336'; // Red
         }
 
         window.onload = connectWebSocket;

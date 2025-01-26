@@ -262,7 +262,7 @@ func MigrateResults(results map[string]Result) {
 func scoreToBool(scores []int) []bool {
 	passes := make([]bool, len(scores))
 	for i, score := range scores {
-		passes[i] = score >= 50 // Consider 50+ as pass
+		passes[i] = score > 0 // Consider any positive score as pass
 	}
 	return passes
 }

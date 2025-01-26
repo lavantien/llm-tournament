@@ -293,22 +293,27 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Render evaluation form
+	// Get current score for this model/prompt
+	results := middleware.ReadResults()
+	currentScore := 0
+	if result, exists := results[model]; exists {
+		if index, err := strconv.Atoi(promptIndexStr); err == nil && index < len(result.Scores) {
+			currentScore = result.Scores[index]
+		}
+	}
+
 	data := struct {
-		PageName    string
-		Model       string
-		PromptIndex string
-		Scores      map[string]int
+		PageName     string
+		Model        string
+		PromptIndex  string
+		ScoreOptions map[string]int
+		CurrentScore int
 	}{
-		PageName:    "Evaluate",
-		Model:       model,
-		PromptIndex: promptIndexStr,
-		Scores: map[string]int{
-			"Perfect": 100,
-			"Alright": 50,
-			"Barely":  20,
-			"Fail":    0,
-		},
+		PageName:     templates.PageNameEvaluate,
+		Model:        model,
+		PromptIndex:  promptIndexStr,
+		ScoreOptions: templates.ScoreOptions,
+		CurrentScore: currentScore,
 	}
 
 	t, err := template.New("evaluate.html").Funcs(templates.FuncMap).ParseFiles("templates/evaluate.html", "templates/nav.html")
