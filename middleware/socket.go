@@ -73,14 +73,12 @@ func BroadcastResults() {
 	prompts := ReadPrompts()
 	results := ReadResults()
 
-	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
 	for model, result := range results {
 		totalScore := 0
 		for _, score := range result.Scores {
 			totalScore += score
 		}
-		modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
 		modelTotalScores[model] = totalScore
 	}
 
@@ -99,19 +97,17 @@ func BroadcastResults() {
 
 
 	payload := struct {
-		Results         map[string]Result
-		Models          []string
-		PassPercentages map[string]float64
-		TotalScores     map[string]int
-		Prompts         []string
-		SuiteName       string
+		Results     map[string]Result
+		Models      []string
+		TotalScores map[string]int
+		Prompts     []string
+		SuiteName   string
 	}{
-		Results:         results,
-		Models:          models,
-		PassPercentages: modelPassPercentages,
-		TotalScores:     modelTotalScores,
-		Prompts:         promptsToStringArray(prompts),
-		SuiteName:       suiteName,
+		Results:     results,
+		Models:      models,
+		TotalScores: modelTotalScores,
+		Prompts:     promptsToStringArray(prompts),
+		SuiteName:   suiteName,
 	}
 
 	clientsMutex.Lock()

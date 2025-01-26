@@ -14,8 +14,7 @@ type Prompt struct {
 }
 
 type Result struct {
-	Scores []int  `json:"scores"`
-	Passes []bool `json:"passes"`
+	Scores []int `json:"scores"`
 }
 
 
@@ -250,21 +249,9 @@ func MigrateResults(results map[string]Result) map[string]Result {
 	migrated := make(map[string]Result)
 	
 	for model, result := range results {
-		// If we have only Scores, initialize Passes array
-		if result.Passes == nil && result.Scores != nil {
-			result.Passes = make([]bool, len(result.Scores))
-			for i, score := range result.Scores {
-				result.Passes[i] = score > 0
-			}
-		}
-		// If we have only Passes, initialize Scores array
-		if result.Scores == nil && result.Passes != nil {
-			result.Scores = make([]int, len(result.Passes))
-			for i, pass := range result.Passes {
-				if pass {
-					result.Scores[i] = 100
-				}
-			}
+		// If we have no Scores, initialize empty array
+		if result.Scores == nil {
+			result.Scores = make([]int, len(middleware.ReadPrompts()))
 		}
 		migrated[model] = result
 	}
