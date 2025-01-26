@@ -240,39 +240,6 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	return nil
 }
 
-func MigrateResults(results map[string]Result) {
-	for model, result := range results {
-		// If we have Passes but no Scores, migrate from Passes to Scores
-		if len(result.Passes) > 0 && len(result.Scores) == 0 {
-			result.Scores = boolToScore(result.Passes)
-		}
-		// If we have Scores but no Passes, migrate from Scores to Passes
-		if len(result.Scores) > 0 && len(result.Passes) == 0 {
-			result.Passes = scoreToBool(result.Scores)
-		}
-		results[model] = result
-	}
-}
-
-func scoreToBool(scores []int) []bool {
-	passes := make([]bool, len(scores))
-	for i, score := range scores {
-		passes[i] = score > 0 // Consider any positive score as pass
-	}
-	return passes
-}
-
-func boolToScore(passes []bool) []int {
-	scores := make([]int, len(passes))
-	for i, pass := range passes {
-		if pass {
-			scores[i] = 100
-		} else {
-			scores[i] = 0
-		}
-	}
-	return scores
-}
 
 func UpdatePromptsOrder(order []int) {
 	prompts := ReadPrompts()
