@@ -163,7 +163,7 @@
                         button.style.justifyContent = "center";
                         button.style.color = "#fff"; // White text
                         button.style.fontWeight = "bold";
-                        button.textContent = score === 0 ? "F" : score; // Show F for failed
+                        button.textContent = score; // Always show the numeric score
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
@@ -203,7 +203,8 @@
             if (score >= 100) return '#4CAF50'; // Green
             if (score >= 50) return '#FFC107'; // Yellow
             if (score >= 20) return '#FF9800'; // Orange
-            return '#F44336'; // Red for 0-19
+            if (score > 0) return '#F44336'; // Red for 1-19
+            return '#666666'; // Dark gray for 0 (Failed)
         }
 
         document.addEventListener('DOMContentLoaded', () => {
