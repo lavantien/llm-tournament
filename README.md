@@ -133,8 +133,10 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Functional
 
-- Search model.
-- More e laborate scoring scheme with a dedicated page `Evaluate` when click on the square.
+- More elaborate scoring scheme with a dedicated page `Evaluate` when click on the square:
+  - The `Evaluate` page using the same common page template as other edit/delete pages.
+  - A dropdown option for selecting either: Perfect (100), Alright (50), Barely (20).
+  - 2 buttons for accept or cancel as per usual.
 - Incorporate Promptmetheus's core features.
 - Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
 - Update the features section about the tools.
