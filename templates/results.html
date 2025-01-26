@@ -119,13 +119,13 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${results[model]
+                    ${results[model].Scores
                             .map(
-                                (pass, index) => `
+                                (score, index) => `
                         <td>
                             <button
                                 class="result-button"
-                                style="background-color: ${getScoreColor(pass)}"
+                                style="background-color: ${getScoreColor(score)}"
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
                             ></button>
                         </td>
@@ -174,9 +174,9 @@
         }
 
         function getScoreColor(score) {
-            if (score === 100) return '#4CAF50'; // Green
-            if (score === 50) return '#FFC107'; // Yellow
-            if (score === 20) return '#FF9800'; // Orange
+            if (score >= 100) return '#4CAF50'; // Green
+            if (score >= 50) return '#FFC107'; // Yellow
+            if (score >= 20) return '#FF9800'; // Orange
             return '#F44336'; // Red
         }
 

@@ -76,14 +76,12 @@ func BroadcastResults() {
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
 	for model, result := range results {
-		score := 0
-		for _, pass := range result.Passes {
-			if pass {
-				score++
-			}
+		totalScore := 0
+		for _, score := range result.Scores {
+			totalScore += score
 		}
-		modelPassPercentages[model] = float64(score) / float64(len(prompts)) * 100
-		modelTotalScores[model] = score * 100
+		modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		modelTotalScores[model] = totalScore
 	}
 
 	models := make([]string, 0, len(results))

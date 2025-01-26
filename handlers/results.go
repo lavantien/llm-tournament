@@ -74,9 +74,9 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	for i, prompt := range prompts {
 		promptTexts[i] = prompt.Text
 	}
-	resultsForTemplate := make(map[string][]bool)
+	resultsForTemplate := make(map[string]middleware.Result)
 	for model, result := range filteredResults {
-		resultsForTemplate[model] = result.Passes
+		resultsForTemplate[model] = result
 	}
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)
