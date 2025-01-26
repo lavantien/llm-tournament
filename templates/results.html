@@ -136,7 +136,7 @@
                                 class="result-button"
                                 style="background-color: ${getScoreColor(score)}"
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
-                            >${score}</button>
+                            ></button>
                         </td>
                     `).join("") || ''}
                     <td>
@@ -163,7 +163,23 @@
             return '#F44336'; // Red
         }
 
-        window.onload = connectWebSocket;
+        document.addEventListener('DOMContentLoaded', () => {
+            // First render from initial data
+            const results = JSON.parse(document.getElementById('results-data').textContent);
+            const models = JSON.parse(document.getElementById('models-data').textContent);
+            const passPercentages = JSON.parse(document.getElementById('pass-percentages-data').textContent);
+            const totalScores = JSON.parse(document.getElementById('total-scores-data').textContent);
+            
+            updateResults({
+                Results: results,
+                Models: models,
+                PassPercentages: passPercentages,
+                TotalScores: totalScores
+            });
+
+            // Then connect WebSocket
+            connectWebSocket();
+        });
     </script>
 </head>
 
@@ -212,31 +228,7 @@
             </tr>
         </thead>
         <tbody>
-            {{$i := 0}} {{range $model, $results := .Results}} {{if or (eq
-            $.ModelFilter "") (eq $.ModelFilter $model)}}
-            <tr>
-                <td>{{$i = inc $i}}{{$i}}</td>
-                <td class="model-actions">
-                    <div class="prompt-actions">
-                        <a class="action-button edit-button" href="/edit_model?model={{$model}}">Edit</a>
-                        <a class="action-button delete-button" href="/delete_model?model={{$model}}">Delete</a>
-                    </div>
-                </td>
-                <td>{{$model}}</td>
-                {{range $index, $score := $results.Scores}}
-                <td>
-                    <button class="result-button" style="background-color: ${getScoreColor({{$score}})};"
-                        onclick="window.location.href='/evaluate?model={{$model}}&prompt={{$index}}'"></button>
-                </td>
-                {{end}}
-                <td>
-                    {{index $.TotalScores $model}}
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: {{index $.PassPercentages $model}}%;"></div>
-                    </div>
-                </td>
-            </tr>
-            {{end}} {{end}}
+            <!-- Table content will be populated by JavaScript -->
         </tbody>
     </table>
     <div class="sticky-footer">
