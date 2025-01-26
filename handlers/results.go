@@ -76,6 +76,12 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	resultsForTemplate := make(map[string]middleware.Result)
 	for model, result := range filteredResults {
+		// Ensure scores array matches prompts length
+		if len(result.Scores) < len(prompts) {
+			newScores := make([]int, len(prompts))
+			copy(newScores, result.Scores)
+			result.Scores = newScores
+		}
 		resultsForTemplate[model] = result
 	}
 	modelPassPercentages := make(map[string]float64)

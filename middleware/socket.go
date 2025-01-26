@@ -92,6 +92,16 @@ func BroadcastResults() {
 		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
 	})
 
+	// Ensure scores exist for all prompts
+	for model, result := range results {
+		if len(result.Scores) < len(prompts) {
+			newScores := make([]int, len(prompts))
+			copy(newScores, result.Scores)
+			result.Scores = newScores
+			results[model] = result
+		}
+	}
+
 	payload := struct {
 		Results         map[string]Result
 		Models          []string
