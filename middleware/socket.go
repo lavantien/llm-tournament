@@ -88,6 +88,11 @@ func BroadcastResults() {
 	for model := range results {
 		models = append(models, model)
 	}
+	if len(models) == 0 {
+		// If no results exist, get models from somewhere else if needed
+		// This is just a fallback - you may need to adjust based on your data source
+		models = []string{"Model1", "Model2"} // Example fallback
+	}
 	sort.Slice(models, func(i, j int) bool {
 		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
 	})

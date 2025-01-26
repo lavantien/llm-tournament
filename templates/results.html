@@ -167,17 +167,21 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // First render from initial data
-            const results = JSON.parse(document.getElementById('results-data').textContent);
-            const models = JSON.parse(document.getElementById('models-data').textContent);
-            const passPercentages = JSON.parse(document.getElementById('pass-percentages-data').textContent);
-            const totalScores = JSON.parse(document.getElementById('total-scores-data').textContent);
+            const results = JSON.parse(document.getElementById('results-data').textContent || '{}');
+            const models = JSON.parse(document.getElementById('models-data').textContent || '[]');
+            const passPercentages = JSON.parse(document.getElementById('pass-percentages-data').textContent || '{}');
+            const totalScores = JSON.parse(document.getElementById('total-scores-data').textContent || '{}');
             
-            updateResults({
-                Results: results,
-                Models: models,
-                PassPercentages: passPercentages,
-                TotalScores: totalScores
-            });
+            if (Object.keys(results).length > 0 && models.length > 0) {
+                updateResults({
+                    Results: results,
+                    Models: models,
+                    PassPercentages: passPercentages,
+                    TotalScores: totalScores
+                });
+            } else {
+                console.error('Initial data is empty');
+            }
 
             // Then connect WebSocket
             connectWebSocket();
