@@ -339,8 +339,23 @@ body {
         min-width: 512px;
     }
     
-    .filter-container select {
+    .filter-form {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .filter-form label {
+        white-space: nowrap;
+    }
+
+    .filter-form select {
         margin-right: 5px;
+        flex: 1;
+    }
+
+    .filter-submit {
+        white-space: nowrap;
     }
 
     .search-container {

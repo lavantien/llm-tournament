@@ -179,7 +179,7 @@
     </div>
     <div class="title-row">
         <div class="filter-container">
-            <form action="/results" method="get" id="filter-form">
+            <form action="/results" method="get" id="filter-form" class="filter-form">
                 <label for="model_filter">Filter by Model:</label>
                 <select name="model_filter" id="model_filter">
                     <option value="">All Models</option>
@@ -187,7 +187,7 @@
                     <option value="{{$model}}" {{if eq $.ModelFilter $model}}selected{{end}}>{{$model}}</option>
                     {{end}}
                 </select>
-                <input type="submit" value="Filter" />
+                <input type="submit" value="Filter" class="filter-submit" />
             </form>
         </div>
         <div class="title-container">
