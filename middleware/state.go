@@ -143,12 +143,23 @@ func ReadResults() map[string]Result {
 		return make(map[string]Result)
 	}
 	for model, result := range results {
+		// Ensure Passes array is correct length
 		if len(result.Passes) < len(prompts) {
 			result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
-			results[model] = result
 		} else if len(result.Passes) > len(prompts) {
-			results[model] = Result{Passes: result.Passes[:len(prompts)]}
+			result.Passes = result.Passes[:len(prompts)]
 		}
+		
+		// Ensure Scores array is correct length
+		if result.Scores == nil {
+			result.Scores = make([]int, len(prompts))
+		} else if len(result.Scores) < len(prompts) {
+			result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
+		} else if len(result.Scores) > len(prompts) {
+			result.Scores = result.Scores[:len(prompts)]
+		}
+		
+		results[model] = result
 	}
 	return results
 }
