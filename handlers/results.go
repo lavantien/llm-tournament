@@ -365,7 +365,9 @@ func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for model, result := range results {
 		csvString += model + ","
-		for _, pass := range result.Passes {
+		for _, score := range result.Scores {
+			// Convert score to pass/fail (100 = pass, 0 = fail)
+			pass := score == 100
 			csvString += strconv.FormatBool(pass) + ","
 		}
 		csvString += "\n"
