@@ -91,7 +91,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			// Only truncate if needed
 			result.Scores = result.Scores[:len(prompts)]
 		}
-		
+
 		// Preserve existing scores
 		resultsForTemplate[model] = result
 	}
@@ -131,9 +131,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		PromptIndices:   promptIndices,
 		SearchQuery:     searchQuery,
 	}
-	
-	log.Printf("Template data: %+v", templateData)
-	
+
 	err = t.Execute(w, templateData)
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
