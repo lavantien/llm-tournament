@@ -27,9 +27,14 @@
             });
 
             socket.onmessage = function (event) {
-                console.log(`[message] Data received from server: ${event.data}`);
-                const payload = JSON.parse(event.data);
-                updateResults(payload);
+                try {
+                    const payload = JSON.parse(event.data);
+                    if (payload.type === 'results') {
+                        updateResults(payload.data);
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
             };
 
             socket.onclose = function (event) {
