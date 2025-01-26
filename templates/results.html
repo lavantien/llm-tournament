@@ -120,43 +120,60 @@
                     (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
                     i++;
                     const row = document.createElement("tr");
-                    row.innerHTML = `
-                    <td>${i}</td>
-                    <td class="model-actions">
+                    
+                    // Create cells
+                    const rankCell = document.createElement("td");
+                    rankCell.textContent = i;
+                    
+                    const actionsCell = document.createElement("td");
+                    actionsCell.className = "model-actions";
+                    actionsCell.innerHTML = `
                         <div class="prompt-actions">
                             <a class="action-button edit-button" href="/edit_model?model=${model}">Edit</a>
                             <a class="action-button delete-button" href="/delete_model?model=${model}">Delete</a>
                         </div>
-                    </td>
-                    <td>${model}</td>
-                    ${results[model]?.Scores?.map((score, index) => {
-                        const pass = results[model]?.Passes?.[index] || false;
-                        return `
-                        <td>
-                            <button
-                                class="result-button"
-                                style="background-color: ${getScoreColor(score)}; opacity: ${pass ? 1 : 0.3}"
-                                onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
-                            >${score}</button>
-                        </td>
-                        `;
-                    }).join('') || prompts.map((_, index) => `
-                        <td>
-                            <button
-                                class="result-button"
-                                style="background-color: #333; opacity: 0.3"
-                                onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
-                            >0</button>
-                        </td>
-                    `).join('')}
-                    <td>
-                        ${totalScores[model] || 0}
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: ${passPercentages[model] || 0}%;"></div>
-                        </div>
-                    </td>
-                `;
-                fragment.appendChild(row);
+                    `;
+                    
+                    const modelCell = document.createElement("td");
+                    modelCell.textContent = model;
+                    
+                    // Create score cells
+                    const scoreCells = [];
+                    const scores = results[model]?.Scores || [];
+                    for (let index = 0; index < scores.length; index++) {
+                        const score = scores[index] || 0;
+                        const scoreCell = document.createElement("td");
+                        const button = document.createElement("button");
+                        button.className = "result-button";
+                        button.style.backgroundColor = getScoreColor(score);
+                        button.style.opacity = 1; // Remove pass/fail opacity for now
+                        button.textContent = score;
+                        button.onclick = () => {
+                            window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                        };
+                        scoreCell.appendChild(button);
+                        scoreCells.push(scoreCell);
+                    }
+                    
+                    // Create total score cell
+                    const totalCell = document.createElement("td");
+                    totalCell.textContent = totalScores[model] || 0;
+                    const progressDiv = document.createElement("div");
+                    progressDiv.className = "progress-bar-container";
+                    const progressBar = document.createElement("div");
+                    progressBar.className = "progress-bar";
+                    progressBar.style.width = `${passPercentages[model] || 0}%`;
+                    progressDiv.appendChild(progressBar);
+                    totalCell.appendChild(progressDiv);
+                    
+                    // Append all cells to row
+                    row.appendChild(rankCell);
+                    row.appendChild(actionsCell);
+                    row.appendChild(modelCell);
+                    scoreCells.forEach(cell => row.appendChild(cell));
+                    row.appendChild(totalCell);
+                    
+                    fragment.appendChild(row);
                 }
             });
 
