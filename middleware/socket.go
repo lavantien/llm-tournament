@@ -95,14 +95,14 @@ func BroadcastResults() {
 	})
 
 	payload := struct {
-		Results         map[string][]bool
+		Results         map[string]Result
 		Models          []string
 		PassPercentages map[string]float64
 		TotalScores     map[string]int
 		Prompts         []string
 		SuiteName       string
 	}{
-		Results:         resultsToBoolMap(results),
+		Results:         results,
 		Models:          models,
 		PassPercentages: modelPassPercentages,
 		TotalScores:     modelTotalScores,
@@ -122,13 +122,6 @@ func BroadcastResults() {
 	}
 }
 
-func resultsToBoolMap(results map[string]Result) map[string][]bool {
-	resultsForTemplate := make(map[string][]bool)
-	for model, result := range results {
-		resultsForTemplate[model] = result.Passes
-	}
-	return resultsForTemplate
-}
 
 func promptsToStringArray(prompts []Prompt) []string {
 	promptsTexts := make([]string, len(prompts))
