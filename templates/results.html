@@ -164,8 +164,21 @@
                         button.style.color = "#fff"; // White text
                         button.style.fontWeight = "bold";
                         button.textContent = score === 0 ? "F" : score; // Show F for failed
-                        button.onclick = () => {
-                            window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                        button.onclick = async () => {
+                            const response = await fetch(`/evaluate?model=${model}&prompt=${index}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `score=${score}`
+                            });
+                            
+                            if (response.ok) {
+                                // Refresh the results after update
+                                fetchInitialData();
+                            } else {
+                                console.error('Failed to update score');
+                            }
                         };
                         scoreCell.appendChild(button);
                         scoreCells.push(scoreCell);

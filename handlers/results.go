@@ -302,20 +302,49 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		scoreStr := r.FormValue("score")
-		score, _ := strconv.Atoi(scoreStr)
-
-		results := middleware.ReadResults()
-		result := results[model]
-
-		index, _ := strconv.Atoi(promptIndexStr)
-		if index >= 0 && index < len(result.Scores) {
-			result.Scores[index] = score
-			results[model] = result
-			middleware.WriteResults(middleware.GetCurrentSuiteName(), results)
-			middleware.BroadcastResults()
+		score, err := strconv.Atoi(scoreStr)
+		if err != nil {
+			http.Error(w, "Invalid score value", http.StatusBadRequest)
+			return
 		}
 
-		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		results := middleware.ReadResults()
+		if results == nil {
+			results = make(map[string]middleware.Result)
+		}
+
+		result, exists := results[model]
+		if !exists {
+			// Initialize new result with scores array matching prompts length
+			prompts := middleware.ReadPrompts()
+			result = middleware.Result{
+				Scores: make([]int, len(prompts)),
+			}
+		}
+
+		index, err := strconv.Atoi(promptIndexStr)
+		if err != nil || index < 0 || index >= len(result.Scores) {
+			http.Error(w, "Invalid prompt index", http.StatusBadRequest)
+			return
+		}
+
+		// Update the score
+		result.Scores[index] = score
+		results[model] = result
+
+		// Write updated results
+		err = middleware.WriteResults(middleware.GetCurrentSuiteName(), results)
+		if err != nil {
+			http.Error(w, "Failed to save results", http.StatusInternalServerError)
+			return
+		}
+
+		// Broadcast updated results to all clients
+		middleware.BroadcastResults()
+
+		// Return success response
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Score updated successfully"))
 		return
 	}
 
