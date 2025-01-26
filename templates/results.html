@@ -207,9 +207,9 @@
             <h1>Results</h1>
         </div>
         <div class="search-container">
-            <form id="search-form" class="search-form">
+            <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
                 <input type="text" id="modelSearch" placeholder="Search models..." class="search-input" aria-label="Search models">
-                <button type="button" onclick="handleSearch()" class="search-submit">Search</button>
+                <button type="submit" class="search-submit">Search</button>
             </form>
         </div>
     </div>
