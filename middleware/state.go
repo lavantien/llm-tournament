@@ -15,6 +15,7 @@ type Prompt struct {
 
 type Result struct {
 	Passes []bool `json:"passes"`
+	Scores []int  `json:"scores"`
 }
 
 type Profile struct {
@@ -246,10 +247,24 @@ func WriteResults(suiteName string, results map[string]Result) error {
 
 func migrateResults(results map[string]Result) {
 	for model, result := range results {
-		if len(result.Scores) == 0 && len(result.Passes) > 0 { // Migration check
-			results[model] = Result{Scores: boolToScore(result.Passes)}
+		// If we have Passes but no Scores, migrate from Passes to Scores
+		if len(result.Passes) > 0 && len(result.Scores) == 0 {
+			result.Scores = boolToScore(result.Passes)
 		}
+		// If we have Scores but no Passes, migrate from Scores to Passes
+		if len(result.Scores) > 0 && len(result.Passes) == 0 {
+			result.Passes = scoreToBool(result.Scores)
+		}
+		results[model] = result
 	}
+}
+
+func scoreToBool(scores []int) []bool {
+	passes := make([]bool, len(scores))
+	for i, score := range scores {
+		passes[i] = score >= 50 // Consider 50+ as pass
+	}
+	return passes
 }
 
 func boolToScore(passes []bool) []int {
