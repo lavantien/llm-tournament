@@ -129,15 +129,18 @@
                         </div>
                     </td>
                     <td>${model}</td>
-                    ${results[model]?.Scores?.map((score, index) => `
+                    ${results[model]?.Scores?.map((score, index) => {
+                        const pass = results[model]?.Passes?.[index] || false;
+                        return `
                         <td>
                             <button
                                 class="result-button"
-                                style="background-color: ${getScoreColor(score)}"
+                                style="background-color: ${getScoreColor(score)}; opacity: ${pass ? 1 : 0.3}"
                                 onclick="window.location.href='/evaluate?model=${model}&prompt=${index}'"
-                            ></button>
+                            >${score}</button>
                         </td>
-                    `).join('') || ''}
+                        `;
+                    }).join('') || ''}
                     <td>
                         ${totalScores[model] || 0}
                         <div class="progress-bar-container">
@@ -159,7 +162,8 @@
             if (score >= 100) return '#4CAF50'; // Green
             if (score >= 50) return '#FFC107'; // Yellow
             if (score >= 20) return '#FF9800'; // Orange
-            return '#F44336'; // Red
+            if (score > 0) return '#F44336'; // Red
+            return '#333'; // Default gray for 0 scores
         }
 
         document.addEventListener('DOMContentLoaded', () => {
