@@ -131,6 +131,9 @@ func ReadResults() map[string]Result {
 	if results == nil {
 		return make(map[string]Result)
 	}
+	
+	// Migrate any old format results
+	results = MigrateResults(results)
 	for model, result := range results {
 		// Ensure Scores array is correct length
 		if result.Scores == nil {
@@ -241,6 +244,32 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	return nil
 }
 
+
+// MigrateResults converts old result formats to the current format
+func MigrateResults(results map[string]Result) map[string]Result {
+	migrated := make(map[string]Result)
+	
+	for model, result := range results {
+		// If we have only Scores, initialize Passes array
+		if result.Passes == nil && result.Scores != nil {
+			result.Passes = make([]bool, len(result.Scores))
+			for i, score := range result.Scores {
+				result.Passes[i] = score > 0
+			}
+		}
+		// If we have only Passes, initialize Scores array
+		if result.Scores == nil && result.Passes != nil {
+			result.Scores = make([]int, len(result.Passes))
+			for i, pass := range result.Passes {
+				if pass {
+					result.Scores[i] = 100
+				}
+			}
+		}
+		migrated[model] = result
+	}
+	return migrated
+}
 
 func UpdatePromptsOrder(order []int) {
 	prompts := ReadPrompts()
