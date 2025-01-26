@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -9,6 +10,22 @@ import (
 )
 
 func main() {
+	migrate := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
+	flag.Parse()
+
+	if *migrate {
+		log.Println("Migrating results to new scoring system...")
+		results := middleware.ReadResults()
+		middleware.migrateResults(results)
+		suiteName := middleware.GetCurrentSuiteName()
+		err := middleware.WriteResults(suiteName, results)
+		if err != nil {
+			log.Fatalf("Error migrating results: %v", err)
+		}
+		log.Println("Migration completed successfully")
+		return
+	}
+
 	log.Println("Starting the server...")
 	http.HandleFunc("/", router)
 	http.HandleFunc("/ws", middleware.HandleWebSocket)
@@ -47,6 +64,7 @@ var routes = map[string]http.HandlerFunc{
 	"/confirm_refresh_results": handlers.ConfirmRefreshResultsHandler,
 	"/refresh_results":         handlers.RefreshResultsHandler,
 	"/export_results":          handlers.ExportResultsHandler,
+	"/evaluate":                handlers.EvaluateResult,
 	"/profiles":                handlers.ProfilesHandler,
 	"/add_profile":             handlers.AddProfileHandler,
 	"/edit_profile":            handlers.EditProfileHandler,
