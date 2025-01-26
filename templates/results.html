@@ -156,12 +156,14 @@
                         button.style.width = "40px"; // Fixed width
                         button.style.height = "40px"; // Fixed height
                         button.style.margin = "2px"; // Small margin
-                        button.style.border = "1px solid #ccc"; // Border
-                        button.style.borderRadius = "4px"; // Rounded corners
+                        button.style.border = "none"; // No border
+                        button.style.borderRadius = "0"; // Square corners
                         button.style.display = "flex";
                         button.style.alignItems = "center";
                         button.style.justifyContent = "center";
-                        button.textContent = score;
+                        button.style.color = "#fff"; // White text
+                        button.style.fontWeight = "bold";
+                        button.textContent = score === 0 ? "F" : score; // Show F for failed
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
@@ -201,8 +203,7 @@
             if (score >= 100) return '#4CAF50'; // Green
             if (score >= 50) return '#FFC107'; // Yellow
             if (score >= 20) return '#FF9800'; // Orange
-            if (score > 0) return '#F44336'; // Red
-            return '#333'; // Default gray for 0 scores
+            return '#F44336'; // Red for 0-19
         }
 
         document.addEventListener('DOMContentLoaded', () => {
