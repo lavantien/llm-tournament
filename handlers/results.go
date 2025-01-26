@@ -83,13 +83,16 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		if result.Scores == nil {
 			result.Scores = make([]int, len(prompts))
 		} else if len(result.Scores) < len(prompts) {
+			// Only extend with zeros if needed
 			newScores := make([]int, len(prompts))
 			copy(newScores, result.Scores)
 			result.Scores = newScores
 		} else if len(result.Scores) > len(prompts) {
+			// Only truncate if needed
 			result.Scores = result.Scores[:len(prompts)]
 		}
 		
+		// Preserve existing scores
 		resultsForTemplate[model] = result
 	}
 	modelPassPercentages := make(map[string]float64)

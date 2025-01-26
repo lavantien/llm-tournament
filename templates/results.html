@@ -163,7 +163,7 @@
                         button.style.justifyContent = "center";
                         button.style.color = "#fff"; // White text
                         button.style.fontWeight = "bold";
-                        button.textContent = score; // Always show the numeric score
+                        button.textContent = score === 0 ? "F" : score; // Show F for failed
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
