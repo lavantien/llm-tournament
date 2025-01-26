@@ -79,7 +79,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	resultsForTemplate := make(map[string]middleware.Result)
 	for model, result := range filteredResults {
-		// Ensure scores and passes arrays exist and match prompts length
+		// Ensure scores array exists and matches prompts length
 		if result.Scores == nil {
 			result.Scores = make([]int, len(prompts))
 		} else if len(result.Scores) < len(prompts) {
@@ -88,16 +88,6 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			result.Scores = newScores
 		} else if len(result.Scores) > len(prompts) {
 			result.Scores = result.Scores[:len(prompts)]
-		}
-		
-		if result.Passes == nil {
-			result.Passes = make([]bool, len(prompts))
-		} else if len(result.Passes) < len(prompts) {
-			newPasses := make([]bool, len(prompts))
-			copy(newPasses, result.Passes)
-			result.Passes = newPasses
-		} else if len(result.Passes) > len(prompts) {
-			result.Passes = result.Passes[:len(prompts)]
 		}
 		
 		resultsForTemplate[model] = result
@@ -169,7 +159,6 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 	if _, ok := results[model]; !ok {
 		results[model] = middleware.Result{
 			Scores: make([]int, len(middleware.ReadPrompts())),
-			Passes: make([]bool, len(middleware.ReadPrompts())),
 		}
 	}
 
@@ -178,12 +167,12 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 	if len(result.Scores) < len(prompts) {
 		result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
 	}
-	if len(result.Passes) < len(prompts) {
-		result.Passes = append(result.Passes, make([]bool, len(prompts)-len(result.Passes))...)
-	}
-
-	if promptIndex >= 0 && promptIndex < len(result.Passes) {
-		result.Passes[promptIndex] = pass
+	if promptIndex >= 0 && promptIndex < len(result.Scores) {
+		if pass {
+			result.Scores[promptIndex] = 100
+		} else {
+			result.Scores[promptIndex] = 0
+		}
 	}
 	results[model] = result
 	err = middleware.WriteResults(suiteName, results)
@@ -252,7 +241,6 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 		for model := range results {
 			results[model] = middleware.Result{
 				Scores: make([]int, len(middleware.ReadPrompts())),
-				Passes: make([]bool, len(middleware.ReadPrompts())),
 			}
 		}
 		suiteName := middleware.GetCurrentSuiteName()
@@ -285,7 +273,7 @@ func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		results := middleware.ReadResults()
 		for model := range results {
-			results[model] = middleware.Result{Passes: make([]bool, len(middleware.ReadPrompts()))}
+			results[model] = middleware.Result{Scores: make([]int, len(middleware.ReadPrompts()))}
 		}
 		suiteName := middleware.GetCurrentSuiteName()
 		err := middleware.WriteResults(suiteName, results)
