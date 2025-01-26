@@ -269,6 +269,63 @@ func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Handle evaluation of individual results
+func EvaluateResult(w http.ResponseWriter, r *http.Request) {
+	model := r.URL.Query().Get("model")
+	promptIndexStr := r.URL.Query().Get("prompt")
+
+	if r.Method == "POST" {
+		scoreStr := r.FormValue("score")
+		score, _ := strconv.Atoi(scoreStr)
+
+		results := middleware.ReadResults()
+		result := results[model]
+
+		index, _ := strconv.Atoi(promptIndexStr)
+		if index >= 0 && index < len(result.Scores) {
+			result.Scores[index] = score
+			results[model] = result
+			middleware.WriteResults(middleware.GetCurrentSuiteName(), results)
+			middleware.BroadcastResults()
+		}
+
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		return
+	}
+
+	// Render evaluation form
+	data := struct {
+		PageName    string
+		Model       string
+		PromptIndex string
+		Scores      map[string]int
+	}{
+		PageName:    "Evaluate",
+		Model:       model,
+		PromptIndex: promptIndexStr,
+		Scores: map[string]int{
+			"Perfect": 100,
+			"Alright": 50,
+			"Barely":  20,
+			"Fail":    0,
+		},
+	}
+
+	t, err := template.New("evaluate.html").Funcs(templates.FuncMap).ParseFiles("templates/evaluate.html", "templates/nav.html")
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = t.Execute(w, data)
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		return
+	}
+}
+
 // Handle export results
 func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export results")

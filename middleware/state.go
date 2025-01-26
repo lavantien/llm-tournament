@@ -244,6 +244,26 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	return nil
 }
 
+func migrateResults(results map[string]Result) {
+	for model, result := range results {
+		if len(result.Scores) == 0 && len(result.Passes) > 0 { // Migration check
+			results[model] = Result{Scores: boolToScore(result.Passes)}
+		}
+	}
+}
+
+func boolToScore(passes []bool) []int {
+	scores := make([]int, len(passes))
+	for i, pass := range passes {
+		if pass {
+			scores[i] = 100
+		} else {
+			scores[i] = 0
+		}
+	}
+	return scores
+}
+
 func UpdatePromptsOrder(order []int) {
 	prompts := ReadPrompts()
 	if len(order) != len(prompts) {
