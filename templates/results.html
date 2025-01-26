@@ -82,6 +82,18 @@
                 .catch(error => console.error('Error fetching initial ', error));
         }
 
+        let currentSearchQuery = "";
+
+        function handleSearch() {
+            currentSearchQuery = document.getElementById("modelSearch").value.toLowerCase();
+            updateResults({
+                Results: JSON.parse(document.getElementById('results-data').textContent),
+                Models: JSON.parse(document.getElementById('models-data').textContent),
+                PassPercentages: JSON.parse(document.getElementById('pass-percentages-data').textContent),
+                TotalScores: JSON.parse(document.getElementById('total-scores-data').textContent),
+            });
+        }
+
         function updateResults(payload) {
             const results = payload.Results;
             const models = payload.Models;
@@ -93,7 +105,9 @@
             tbody.innerHTML = ""; // Clear existing rows
             let i = 0;
             models.forEach((model) => {
-                if (modelFilter === "" || model === modelFilter) {
+                // Apply both filters
+                if ((modelFilter === "" || model === modelFilter) &&
+                    (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
                     i++;
                     const row = document.createElement("tr");
                     row.innerHTML = `
@@ -193,9 +207,9 @@
             <h1>Results</h1>
         </div>
         <div class="search-container">
-            <form action="/results" method="get" class="search-form">
-                <input type="text" name="search" placeholder="Search models..." value="{{.SearchQuery}}" class="search-input" aria-label="Search models">
-                <input type="submit" value="Search" class="search-submit">
+            <form id="search-form" class="search-form">
+                <input type="text" id="modelSearch" placeholder="Search models..." class="search-input" aria-label="Search models">
+                <button type="button" onclick="handleSearch()" class="search-submit">Search</button>
             </form>
         </div>
     </div>
