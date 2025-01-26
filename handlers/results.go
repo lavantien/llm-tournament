@@ -342,9 +342,8 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		// Broadcast updated results to all clients
 		middleware.BroadcastResults()
 
-		// Return success response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Score updated successfully"))
+		// Redirect back to results page
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
 		return
 	}
 
