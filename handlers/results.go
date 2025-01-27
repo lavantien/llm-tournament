@@ -98,7 +98,10 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		
-		resultsForTemplate[model] = result
+		// Create a new Result struct to ensure proper initialization
+		resultsForTemplate[model] = middleware.Result{
+			Scores: result.Scores,
+		}
 	}
 	modelPassPercentages := make(map[string]float64)
 	modelTotalScores := make(map[string]int)

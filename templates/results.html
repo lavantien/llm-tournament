@@ -156,9 +156,11 @@
                         const score = scores[index] || 0;
                         const scoreCell = document.createElement("td");
                         const button = document.createElement("button");
-                        button.className = "result-button";
-                        // Set button appearance based on score
+                        // Reset button class and content
                         button.className = 'result-button';
+                        button.textContent = '';
+                        
+                        // Set button appearance based on score
                         if (score === 0) {
                             button.className += ' score-0';
                             button.textContent = 'F';
