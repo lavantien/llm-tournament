@@ -1,0 +1,9 @@
+.aider*
+.git*
+.vscode/
+assets/
+data/
+tools/
+go.*
+LICENSE
+PRELIMINARY_DESIGN.md
