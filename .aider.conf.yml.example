@@ -1,9 +1,11 @@
-# openai-api-base: http://localhost:5001/v1
+# openai-api-base: http://localhost:8080/v1
 # openai-api-base: https://glhf.chat/api/openai/v1
-openai-api-base: https://api.hyperbolic.xyz/v1
+openai-api-base: https://api.kluster.ai/v1
+# openai-api-base: https://api.hyperbolic.xyz/v1
 api-key:
-  - openai=
   # - openai=
+  # - openai=
+  - openai=
   # - openai=
   - anthropic=
   - mistral=
@@ -13,8 +15,26 @@ api-key:
   - cohere=
   - openrouter=
   - xai=
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 architect: true
 model: deepseek/deepseek-reasoner
+# model: openai/deepseek-ai/DeepSeek-R1
 # model: deepseek/deepseek-chat
 # model: gemini/gemini-2.0-flash-thinking-exp
 # model: gemini/gemini-exp-1206
@@ -38,7 +58,7 @@ yes-always: true
 # test-cmd: go test ./... -v -race -cover -timeout 10s
 # auto-test: true
 map-tokens: 8192
-timeout: 300
+timeout: 65
 cache-prompts: true
 cache-keepalive-pings: 300
 verbose: false
