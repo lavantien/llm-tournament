@@ -153,12 +153,13 @@
                             <a class="action-button delete-button" href="/delete_model?model=${model}">Delete</a>
                         </div>
                     `;
-                    
+
                     const modelCell = document.createElement("td");
                     modelCell.textContent = model;
-                    
+
                     // Create score cells
                     const scoreCells = [];
+                    console.log(`results[${model}]:`, results[model]); // Log results[model] object
                     const scores = results[model]?.Scores || [];
                     const promptsCount = {{len .Prompts}} || 0;
                     
