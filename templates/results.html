@@ -124,6 +124,8 @@
             const totalScores = payload.TotalScores;
             const modelFilter = document.getElementById("model_filter").value;
 
+            console.log("Full results object:", results); // Log the entire results object
+
             const tbody = document.querySelector("table tbody");
             if (!tbody) {
                 console.error('Table body not found');
