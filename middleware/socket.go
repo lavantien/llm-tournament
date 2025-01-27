@@ -72,6 +72,7 @@ func BroadcastResults() {
     suiteName := GetCurrentSuiteName()
 	prompts := ReadPrompts()
 	results := ReadResults()
+	log.Println("BroadcastResults results:", results)
 
 	modelTotalScores := make(map[string]int)
 	for model, result := range results {
