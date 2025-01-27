@@ -117,6 +117,7 @@
         }
 
         function updateResults(payload) {
+            console.log("updateResults payload:", payload);
             const results = payload.Results;
             const models = payload.Models;
             const passPercentages = payload.PassPercentages;
