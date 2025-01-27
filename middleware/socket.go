@@ -94,22 +94,31 @@ func BroadcastResults() {
 	})
 
 	payload := struct {
-		Type string      `json:"type"`
-		Data interface{} `json:"data"`
+		Type string `json:"type"`
+		Data struct {
+			Results         map[string]Result `json:"results"`
+			Models          []string          `json:"models"`
+			TotalScores     map[string]int    `json:"totalScores"`
+			PassPercentages map[string]float64 `json:"passPercentages"`
+			Prompts         []string          `json:"prompts"`
+			SuiteName       string            `json:"suiteName"`
+		} `json:"data"`
 	}{
 		Type: "results",
 		Data: struct {
-			Results     map[string]Result
-			Models      []string
-			TotalScores map[string]int
-			Prompts     []string
-			SuiteName   string
+			Results         map[string]Result `json:"results"`
+			Models          []string          `json:"models"`
+			TotalScores     map[string]int    `json:"totalScores"`
+			PassPercentages map[string]float64 `json:"passPercentages"`
+			Prompts         []string          `json:"prompts"`
+			SuiteName       string            `json:"suiteName"`
 		}{
-			Results:     results,
-			Models:      models,
-			TotalScores: modelTotalScores,
-			Prompts:     promptsToStringArray(prompts),
-			SuiteName:   suiteName,
+			Results:         results,
+			Models:          models,
+			TotalScores:     modelTotalScores,
+			PassPercentages: calculatePassPercentages(results, len(prompts)),
+			Prompts:         promptsToStringArray(prompts),
+			SuiteName:       suiteName,
 		},
 	}
 
@@ -132,4 +141,16 @@ func promptsToStringArray(prompts []Prompt) []string {
 		promptsTexts[i] = prompt.Text
 	}
 	return promptsTexts
+}
+
+func calculatePassPercentages(results map[string]Result, promptCount int) map[string]float64 {
+	passPercentages := make(map[string]float64)
+	for model, result := range results {
+		totalScore := 0
+		for _, score := range result.Scores {
+			totalScore += score
+		}
+		passPercentages[model] = float64(totalScore) / float64(promptCount*100) * 100
+	}
+	return passPercentages
 }

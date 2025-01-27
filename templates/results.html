@@ -30,7 +30,19 @@
                 try {
                     const payload = JSON.parse(event.data);
                     if (payload.type === 'results') {
-                        updateResults(payload.data);
+                        // Update the hidden data elements with new values
+                        document.getElementById('results-data').textContent = JSON.stringify(payload.data.Results);
+                        document.getElementById('models-data').textContent = JSON.stringify(payload.data.Models);
+                        document.getElementById('pass-percentages-data').textContent = JSON.stringify(payload.data.PassPercentages);
+                        document.getElementById('total-scores-data').textContent = JSON.stringify(payload.data.TotalScores);
+                        
+                        // Update the table with new data
+                        updateResults({
+                            Results: payload.data.Results,
+                            Models: payload.data.Models,
+                            PassPercentages: payload.data.PassPercentages,
+                            TotalScores: payload.data.TotalScores
+                        });
                     }
                 } catch (error) {
                     console.error('Error parsing WebSocket message:', error);
