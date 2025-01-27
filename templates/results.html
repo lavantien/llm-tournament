@@ -169,6 +169,8 @@
                     
                     for (let index = 0; index < promptsCount; index++) {
                         const score = scores[index] || 0;
+                        console.log(`Results for model ${model}:`, results[model]); // Log results for the current model
+                        console.log(`Scores array for model ${model}:`, scores); // Log the scores array
                         const scoreCell = document.createElement("td");
                         const button = document.createElement("button");
                         // Reset button class and content
