@@ -334,7 +334,12 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Update the score
+		// Update the score (ensure it's within 0-100 range)
+		if score < 0 {
+			score = 0
+		} else if score > 100 {
+			score = 100
+		}
 		result.Scores[index] = score
 		results[model] = result
 
@@ -347,6 +352,10 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 
 		// Broadcast updated results to all clients
 		middleware.BroadcastResults()
+
+		// Add debug logging
+		log.Printf("Updated score for model %s, prompt %d: %d", model, index, score)
+		log.Printf("Current results for model %s: %v", model, result.Scores)
 
 		// Redirect back to results page
 		http.Redirect(w, r, "/results", http.StatusSeeOther)

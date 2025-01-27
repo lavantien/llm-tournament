@@ -30,6 +30,8 @@
                 try {
                     const payload = JSON.parse(event.data);
                     if (payload.type === 'results') {
+                        console.log('Received WebSocket update:', payload);
+                        
                         // Update the hidden data elements with new values
                         document.getElementById('results-data').textContent = JSON.stringify(payload.data.Results);
                         document.getElementById('models-data').textContent = JSON.stringify(payload.data.Models);
@@ -174,25 +176,26 @@
                         
                         // Set button appearance based on score
                         if (score === 0) {
-                            button.className += ' score-0';
+                            button.className = 'result-button score-0';
                             button.textContent = 'F';
                         } else if (score > 0 && score <= 19) {
-                            button.className += ' score-1-19';
+                            button.className = 'result-button score-1-19';
                             button.textContent = score;
                         } else if (score >= 20 && score <= 49) {
-                            button.className += ' score-20-49';
+                            button.className = 'result-button score-20-49';
                             button.textContent = score;
                         } else if (score >= 50 && score <= 99) {
-                            button.className += ' score-50-99';
+                            button.className = 'result-button score-50-99';
                             button.textContent = score;
                         } else if (score === 100) {
-                            button.className += ' score-100';
+                            button.className = 'result-button score-100';
                             button.textContent = score;
                         } else {
                             // Handle invalid scores
-                            button.className += ' score-0';
+                            button.className = 'result-button score-0';
                             button.textContent = '?';
                         }
+                        console.log(`Setting score for ${model} prompt ${index}:`, score, button.className);
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
