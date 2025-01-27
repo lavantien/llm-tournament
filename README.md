@@ -34,40 +34,40 @@ Key technical highlights:
 
 ### 🚀 Core Functionality
 
--   **Real-time Evaluation Engine**: WebSocket-powered instant updates for results and metrics.
--   **Modular Test Suites**: Independent prompt and model configurations for different scenarios.
--   **Comprehensive Data Management**: JSON-based storage with CSV import/export capabilities.
--   **Multi-stage Evaluation**: Supports various scoring schemes, including binary (pass/fail) and gradual (0-100 scale) evaluations.
--   **Dynamic Result Visualization**: Gradual color changes in the results table to reflect score ranges.
--   **Model Search**: Ability to search for specific models in the results table.
+- **Real-time Evaluation Engine**: WebSocket-powered instant updates for results and metrics.
+- **Modular Test Suites**: Independent prompt and model configurations for different scenarios.
+- **Comprehensive Data Management**: JSON-based storage with CSV import/export capabilities.
+- **Multi-stage Evaluation**: Supports various scoring schemes, including binary (pass/fail) and gradual (0-100 scale) evaluations.
+- **Dynamic Result Visualization**: Gradual color changes in the results table to reflect score ranges.
+- **Model Search**: Ability to search for specific models in the results table.
 
 ### 📝 Prompt Management
 
--   **Full Lifecycle Control**: Create, edit, delete, and reorder prompts.
--   **Rich Content Support**: Markdown formatting and multiline input.
--   **Advanced Filtering**: Search by text, filter by profile and order.
--   **Bulk Operations**: Delete multiple prompts at once.
--   **Solution Tracking**: Attach reference solutions to each prompt.
--   **Profile Association**: Tag prompts with evaluation profiles.
--   **Improved Prompt Ordering**: Drag and drop interface to reorder prompts.
+- **Full Lifecycle Control**: Create, edit, delete, and reorder prompts.
+- **Rich Content Support**: Markdown formatting and multiline input.
+- **Advanced Filtering**: Search by text, filter by profile and order.
+- **Bulk Operations**: Delete multiple prompts at once.
+- **Solution Tracking**: Attach reference solutions to each prompt.
+- **Profile Association**: Tag prompts with evaluation profiles.
+- **Improved Prompt Ordering**: Drag and drop interface to reorder prompts.
 
 ### 🏆 Model Evaluation
 
--   **Performance Tracking**: Binary (pass/fail) and gradual (0-100 scale) scoring with detailed metrics.
--   **Real-time Analytics**: Scores and pass percentages updated instantly.
--   **Flexible Filtering**: View results by model or profile.
--   **Data Portability**: Import/export results in CSV format.
--   **Evaluation Management**: Reset or refresh results as needed.
--   **Enhanced Result Actions**: Edit and delete models directly from the results table.
+- **Performance Tracking**: Binary (pass/fail) and gradual (0-100 scale) scoring with detailed metrics.
+- **Real-time Analytics**: Scores and pass percentages updated instantly.
+- **Flexible Filtering**: View results by model or profile.
+- **Data Portability**: Import/export results in CSV format.
+- **Evaluation Management**: Reset or refresh results as needed.
+- **Enhanced Result Actions**: Edit and delete models directly from the results table.
 
 ### ⚙️ System Management
 
--   **Prompt Suites**: Create, edit, delete, and switch between different prompt sets.
--   **Model Suites**: Manage different model configurations.
--   **Profile System**: Define and manage evaluation profiles.
--   **Data Integrity**: Automatic backups and version control.
--   **Responsive UI**: Modern interface optimized for all devices.
--   **Streamlined Navigation**: Quick access to results, prompts, and profiles from the main navigation bar.
+- **Prompt Suites**: Create, edit, delete, and switch between different prompt sets.
+- **Model Suites**: Manage different model configurations.
+- **Profile System**: Define and manage evaluation profiles.
+- **Data Integrity**: Automatic backups and version control.
+- **Responsive UI**: Modern interface optimized for all devices.
+- **Streamlined Navigation**: Quick access to results, prompts, and profiles from the main navigation bar.
 
 ### 🔄 Workflow Automation
 
@@ -133,19 +133,22 @@ Anyone can just submit a PR and we'll discuss there.
 
 ## 📝 TODO/Roadmap
 
-### 🔧 Non-Functional
+### 🔧 Issues
+
+- Result list not auto render after import.
+- Switch `,` to `;` so that CSV doesn't cut it out.
 
 ### 🔧 Non-Functional
 
--   Make another prompt suite for vision LLMs.
+- Make another prompt suite for vision LLMs.
 
 ### 🔧 Functional
 
--   Incorporate Promptmetheus's core features.
--   Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
--   Update the features section about the tools.
--   Add a feature to evaluate models using different scoring schemes.
--   Add a feature to compare models' performance.
+- Incorporate Promptmetheus's core features.
+- Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
+- Update the features section about the tools.
+- Add a feature to evaluate models using different scoring schemes.
+- Add a feature to compare models' performance.
 
 [(Back)](#-table-of-contents)
 
