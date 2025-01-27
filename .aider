@@ -1,7 +1,2 @@
 /drop
-/add       handlers\results.go
-/add       middleware\socket.go
-/add       templates\results.html
-/add       templates\shared.go
-/add       templates\style.css
-/read-only system_prompt_programming.xml
+/read-only SYSTEM_PROMPT_PROGRAMMING.xml

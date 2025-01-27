@@ -14,6 +14,6 @@ aiderinstallwindows:
 aiderupdate:
 	aider --install-main-branch
 test:
-	-go test ./... -v -race -cover > test_output.txt
+	-go test ./... -v -race -cover
 run:
 	go run .

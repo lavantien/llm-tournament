@@ -15,25 +15,28 @@ api-key:
   - xai=
 architect: true
 model: deepseek/deepseek-reasoner
+# model: deepseek/deepseek-chat
+# model: gemini/gemini-2.0-flash-thinking-exp
 # model: gemini/gemini-exp-1206
 # model: gemini/gemini-2.0-flash-exp
 # model: mistral/mistral-large-latest
 # model: codestral/codestral-latest
-edit-format: diff
+# edit-format: diff
 editor-model: deepseek/deepseek-chat
-# editor-model: mistral/mistral-large-latest
 # editor-model: gemini/gemini-2.0-flash-exp
+# editor-model: gemini/gemini-exp-1206
 # editor-model: codestral/codestral-latest
-editor-edit-format: editor-diff
+# editor-model: mistral/mistral-large-latest
+# editor-edit-format: editor-diff
 weak-model: codestral/codestral-latest
 # weak-model: mistral/mistral-large-latest
 # weak-model: mistral/pixtral-large-latest
 read:
-  - system_prompt_programming.xml
+  - SYSTEM_PROMPT_PROGRAMMING.xml
   - PRELIMINARY_DESIGN.md
 yes-always: true
-test-cmd: go test ./... -v -race -cover -timeout 10s
-auto-test: true
+# test-cmd: go test ./... -v -race -cover -timeout 10s
+# auto-test: true
 map-tokens: 8192
 timeout: 300
 cache-prompts: true
@@ -42,6 +45,6 @@ verbose: false
 pretty: true
 vim: true
 editor: vim
-multiline: false
+multiline: true
 code-theme: coffee
 show-diffs: false

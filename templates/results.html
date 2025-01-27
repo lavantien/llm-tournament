@@ -162,7 +162,7 @@
                     // Create score cells
                     const scoreCells = [];
                     console.log(`results[${model}]:`, results[model]); // Log results[model] object
-                    const scores = results[model]?.Scores || [];
+                    const scores = results[model]?.scores || [];
                     const promptsCount = {{len .Prompts}} || 0;
                     
                     // Ensure we have enough scores for all prompts
