@@ -157,18 +157,25 @@
                         const scoreCell = document.createElement("td");
                         const button = document.createElement("button");
                         button.className = "result-button";
-                        button.style.backgroundColor = getScoreColor(score);
-                        button.style.width = "40px"; // Fixed width
-                        button.style.height = "40px"; // Fixed height
-                        button.style.margin = "2px"; // Small margin
-                        button.style.border = "none"; // No border
-                        button.style.borderRadius = "0"; // Square corners
+                        // Set button appearance based on score
+                        if (score === 0) {
+                            button.style.backgroundColor = '#666666'; // Dark gray for failed
+                            button.textContent = 'F';
+                        } else {
+                            button.style.backgroundColor = getScoreColor(score);
+                            button.textContent = score;
+                        }
+                        // Common button styles
+                        button.style.width = "40px";
+                        button.style.height = "40px";
+                        button.style.margin = "2px";
+                        button.style.border = "none";
+                        button.style.borderRadius = "0";
                         button.style.display = "flex";
                         button.style.alignItems = "center";
                         button.style.justifyContent = "center";
-                        button.style.color = "#fff"; // White text
+                        button.style.color = "#fff";
                         button.style.fontWeight = "bold";
-                        button.textContent = score === 0 ? "F" : score; // Show F for failed
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
