@@ -161,10 +161,15 @@
                         if (score === 0) {
                             button.style.backgroundColor = '#666666'; // Dark gray for failed
                             button.textContent = 'F';
-                        } else {
+                        } else if (score > 0 && score <= 100) {
                             button.style.backgroundColor = getScoreColor(score);
                             button.textContent = score;
+                        } else {
+                            // Handle invalid scores
+                            button.style.backgroundColor = '#666666';
+                            button.textContent = '?';
                         }
+                        
                         // Common button styles
                         button.style.width = "40px";
                         button.style.height = "40px";
@@ -176,6 +181,7 @@
                         button.style.justifyContent = "center";
                         button.style.color = "#fff";
                         button.style.fontWeight = "bold";
+                        button.style.fontSize = "14px";
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
