@@ -158,30 +158,27 @@
                         const button = document.createElement("button");
                         button.className = "result-button";
                         // Set button appearance based on score
+                        button.className = 'result-button';
                         if (score === 0) {
-                            button.style.backgroundColor = '#666666'; // Dark gray for failed
+                            button.className += ' score-0';
                             button.textContent = 'F';
-                        } else if (score > 0 && score <= 100) {
-                            button.style.backgroundColor = getScoreColor(score);
+                        } else if (score > 0 && score <= 19) {
+                            button.className += ' score-1-19';
+                            button.textContent = score;
+                        } else if (score >= 20 && score <= 49) {
+                            button.className += ' score-20-49';
+                            button.textContent = score;
+                        } else if (score >= 50 && score <= 99) {
+                            button.className += ' score-50-99';
+                            button.textContent = score;
+                        } else if (score === 100) {
+                            button.className += ' score-100';
                             button.textContent = score;
                         } else {
                             // Handle invalid scores
-                            button.style.backgroundColor = '#666666';
+                            button.className += ' score-0';
                             button.textContent = '?';
                         }
-                        
-                        // Common button styles
-                        button.style.width = "40px";
-                        button.style.height = "40px";
-                        button.style.margin = "2px";
-                        button.style.border = "none";
-                        button.style.borderRadius = "0";
-                        button.style.display = "flex";
-                        button.style.alignItems = "center";
-                        button.style.justifyContent = "center";
-                        button.style.color = "#fff";
-                        button.style.fontWeight = "bold";
-                        button.style.fontSize = "14px";
                         button.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
@@ -217,13 +214,6 @@
         }
 
 
-        function getScoreColor(score) {
-            if (score >= 100) return '#4CAF50'; // Green
-            if (score >= 50) return '#FFC107'; // Yellow
-            if (score >= 20) return '#FF9800'; // Orange
-            if (score > 0) return '#F44336'; // Red for 1-19
-            return '#666666'; // Dark gray for 0 (Failed)
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
             // First render from initial data
