@@ -27,6 +27,15 @@
     "top_a": 0.2,
     "temperature": 0
   },
+  "gemini-2.0-flash-thinking-exp-01-21": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0
+  },
   "gemini/gemini-2.0-flash-exp": {
     "max_tokens": -1,
     "repetition_penalty": 1.02,

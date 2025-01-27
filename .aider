@@ -3,4 +3,5 @@
 /add       middleware\socket.go
 /add       templates\results.html
 /add       templates\shared.go
+/add       templates\style.css
 /read-only system_prompt_programming.xml
