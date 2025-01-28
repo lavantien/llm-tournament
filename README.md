@@ -82,8 +82,8 @@ Key technical highlights:
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with
-  - free/unlimited APIs: Gemini 2.0 Advanced, Gemini 2.0 Flash, Codestral 2501, Mistral Large Latest.
-  - paid deepseek-3-chat API since v1.1
+  - free/unlimited APIs: Gemini 2.0, Gemini 2.0 Flash, Gemini 2.0 Flash Thinking, Codestral 2501, Mistral Large Latest.
+  - paid APIs: DeepSeek V3 since v1.1, DeepSeek R1
 
 [(Back)](#-table-of-contents)
 
