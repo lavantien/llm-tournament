@@ -101,6 +101,12 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		scoreStats[model] = stats
 	}
 
+	// Create total scores map for tier calculations
+	totalScores := make(map[string]int)
+	for model, stats := range scoreStats {
+		totalScores[model] = stats.TotalScore
+	}
+
 	// Calculate tiers
 	tiers, tierRanges := calculateTiers(totalScores)
 
