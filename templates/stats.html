@@ -1,131 +1,192 @@
 <!doctype html>
 <html>
-<head>
+  <head>
     <title>Model Statistics</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Total Scores Chart
-            const totalScoresData = {{.TotalScores | json}};
-            const models = Object.keys(totalScoresData);
-            const scores = Object.values(totalScoresData);
+            const totalScoresData = {{.TotalScores | json
+        }};
+        const models = Object.keys(totalScoresData);
+        const scores = Object.values(totalScoresData);
 
-            new Chart(document.getElementById('totalScoresChart'), {
-                type: 'bar',
-                data: {
-                    labels: models,
-                    datasets: [{
-                        label: 'Total Scores',
-                        data: scores,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    indexAxis: 'x',
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Total Score'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
+        new Chart(document.getElementById('totalScoresChart'), {
+            type: 'bar',
+            data: {
+                labels: models,
+                datasets: [{
+                    label: 'Total Scores',
+                    data: scores,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'x',
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Score'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     }
                 }
-            });
+            }
         });
+      });
 
         function getTierClass(score) {
             if (score >= 3000) return 'transcendent';
-            if (score >= 2800) return 'super-grandmaster';
+            if (score >= 2800) return 'supergrandmaster';
             if (score >= 2500) return 'grandmaster';
-            if (score >= 2200) return 'international-master';
+            if (score >= 2200) return 'internationalmaster';
             if (score >= 2000) return 'master';
             if (score >= 1800) return 'expert';
-            if (score >= 1500) return 'pro-player';
-            if (score >= 1200) return 'advanced-player';
-            if (score >= 1000) return 'intermediate-player';
+            if (score >= 1500) return 'proplayer';
+            if (score >= 1200) return 'advancedplayer';
+            if (score >= 1000) return 'intermediateplayer';
             if (score >= 800) return 'veteran';
             return 'beginner';
         }
     </script>
     <style>
-        .tier-table {
-            width: 100%;
-            margin: 20px 0;
-            border-collapse: collapse;
-        }
-        .tier-table th, .tier-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .tier-header {
-            font-weight: bold;
-            text-transform: capitalize;
-        }
-        .tier-row:hover {
-            background-color: #f5f5f5;
-        }
-        /* Tier color coding */
-        .transcendent { background-color: #2196F3; color: white; }          /* Blue */
-        .super-grandmaster { background-color: #42A5F5; color: white; }     /* Azure */
-        .grandmaster { background-color: #00BCD4; color: white; }           /* Cyan */
-        .international-master { background-color: #00E5FF; color: black; }  /* Spring Green */
-        .master { background-color: #4CAF50; color: white; }                /* Green */
-        .expert { background-color: #8BC34A; color: black; }                /* Lime Green */
-        .pro-player { background-color: #FFEB3B; color: black; }            /* Yellow */
-        .advanced-player { background-color: #FF9800; color: black; }       /* Orange */
-        .intermediate-player { background-color: #FF5722; color: white; }   /* Red-Orange */
-        .veteran { background-color: #F44336; color: white; }               /* Red */
-        .beginner { background-color: #D32F2F; color: white; }              /* Dark Red */
+      .tier-table {
+        width: 100%;
+        margin: 20px 0;
+        border-collapse: collapse;
+      }
+
+      .tier-table th,
+      .tier-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .tier-header {
+        font-weight: bold;
+        text-transform: capitalize;
+      }
+
+      .tier-row:hover {
+        background-color: #f5f5f5;
+      }
+
+      /* Tier color coding */
+      .transcendent {
+        background-color: #2196f3;
+        color: white;
+      }
+
+      /* Blue */
+      .supergrandmaster {
+        background-color: #42a5f5;
+        color: white;
+      }
+
+      /* Azure */
+      .grandmaster {
+        background-color: #00bcd4;
+        color: white;
+      }
+
+      /* Cyan */
+      .internationalmaster {
+        background-color: #00e5ff;
+        color: black;
+      }
+
+      /* Spring Green */
+      .master {
+        background-color: #4caf50;
+        color: white;
+      }
+
+      /* Green */
+      .expert {
+        background-color: #8bc34a;
+        color: black;
+      }
+
+      /* Lime Green */
+      .proplayer {
+        background-color: #ffeb3b;
+        color: black;
+      }
+
+      /* Yellow */
+      .advancedplayer {
+        background-color: #ff9800;
+        color: black;
+      }
+
+      /* Orange */
+      .intermediateplayer {
+        background-color: #ff5722;
+        color: white;
+      }
+
+      /* Red-Orange */
+      .veteran {
+        background-color: #f44336;
+        color: white;
+      }
+
+      /* Red */
+      .beginner {
+        background-color: #d32f2f;
+        color: white;
+      }
+
+      /* Dark Red */
     </style>
-</head>
-<body>
+  </head>
+
+  <body>
     {{template "nav" .}}
     <div class="container">
-        <h1>Model Performance Statistics</h1>
-        
-        <div class="tier-list">
-            <h2>Tier List</h2>
-            <table class="tier-table">
-                <thead>
-                    <tr>
-                        <th>Tier</th>
-                        <th>Score Range</th>
-                        <th>Models</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range $tier := .OrderedTiers}}
-                    {{with $models := index $.Tiers $tier}}
-                    <tr class="tier-row {{$tier | tierClass}}">
-                        <td class="tier-header">{{$tier | formatTierName}}</td>
-                        <td>{{index $.TierRanges $tier}}</td>
-                        <td>{{join $models ", "}}</td>
-                    </tr>
-                    {{end}}
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
+      <h1>Model Performance Statistics</h1>
 
-        <div class="chart-container">
-            <h2>Total Scores</h2>
-            <canvas id="totalScoresChart"></canvas>
-        </div>
+      <div class="tier-list">
+        <h2>Tier List</h2>
+        <table class="tier-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Score Range</th>
+              <th>Models</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers
+            $tier}}
+            <tr class="tier-row {{$tier | tierClass}}">
+              <td class="tier-header">{{$tier | formatTierName}}</td>
+              <td>{{index $.TierRanges $tier}}</td>
+              <td>{{join $models ", "}}</td>
+            </tr>
+            {{end}} {{end}}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chart-container">
+        <h2>Total Scores</h2>
+        <canvas id="totalScoresChart"></canvas>
+      </div>
     </div>
-</body>
+  </body>
 </html>
