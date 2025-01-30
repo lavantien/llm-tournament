@@ -109,9 +109,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{$orderedTiers := list "transcendent" "super-grandmaster" "grandmaster" "international-master" "master" 
-                                           "expert" "pro-player" "advanced-player" "intermediate-player" "veteran" "beginner"}}
-                    {{range $tier := $orderedTiers}}
+                    {{range $tier := .OrderedTiers}}
                     {{with $models := index $.Tiers $tier}}
                     <tr class="tier-row {{$tier | tierClass}}">
                         <td class="tier-header">{{$tier | formatTierName}}</td>
