@@ -91,15 +91,29 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare template data
 	templateData := struct {
-		PageName    string
-		TotalScores map[string]int
-		Tiers       map[string][]string
-		TierRanges  map[string]string
+		PageName     string
+		TotalScores  map[string]int
+		Tiers        map[string][]string
+		TierRanges   map[string]string
+		OrderedTiers []string
 	}{
 		PageName:    "Statistics",
 		TotalScores: totalScores,
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
+		OrderedTiers: []string{
+			"transcendent",
+			"super-grandmaster", 
+			"grandmaster",
+			"international-master",
+			"master",
+			"expert",
+			"pro-player",
+			"advanced-player",
+			"intermediate-player",
+			"veteran",
+			"beginner",
+		},
 	}
 
 	// Parse and execute template
