@@ -70,11 +70,12 @@ var routes = map[string]http.HandlerFunc{
 	"/edit_profile":            handlers.EditProfileHandler,
 	"/delete_profile":          handlers.DeleteProfileHandler,
 	"/reset_profiles":          handlers.ResetProfilesHandler,
+	"/stats":                   handlers.StatsHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Request received: %s %s", r.Method, r.URL.Path)
-	
+
 	if handler, exists := routes[r.URL.Path]; exists {
 		handler(w, r)
 	} else {
