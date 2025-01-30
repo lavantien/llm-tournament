@@ -79,6 +79,7 @@
       .tier-header {
         font-weight: bold;
         text-transform: capitalize;
+        min-width: 170px;
       }
 
       .tier-row:hover {
@@ -88,19 +89,19 @@
       /* Tier color coding */
       .transcendent {
         background-color: #2196f3;
-        color: white;
+        color: black;
       }
 
       /* Blue */
       .supergrandmaster {
         background-color: #42a5f5;
-        color: white;
+        color: black;
       }
 
       /* Azure */
       .grandmaster {
         background-color: #00bcd4;
-        color: white;
+        color: black;
       }
 
       /* Cyan */
@@ -112,7 +113,7 @@
       /* Spring Green */
       .master {
         background-color: #4caf50;
-        color: white;
+        color: black;
       }
 
       /* Green */
@@ -136,19 +137,19 @@
       /* Orange */
       .intermediateplayer {
         background-color: #ff5722;
-        color: white;
+        color: black;
       }
 
       /* Red-Orange */
       .veteran {
         background-color: #f44336;
-        color: white;
+        color: black;
       }
 
       /* Red */
       .beginner {
         background-color: #d32f2f;
-        color: white;
+        color: black;
       }
 
       /* Dark Red */
@@ -174,9 +175,9 @@
             {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers
             $tier}}
             <tr class="tier-row {{$tier | tierClass}}">
-              <td class="tier-header">{{$tier | formatTierName}}</td>
-              <td>{{index $.TierRanges $tier}}</td>
-              <td>{{join $models ", "}}</td>
+              <td class="tier-header"><b>{{$tier | formatTierName}}</b></td>
+              <td><i>{{index $.TierRanges $tier}}</i></td>
+              <td>{{join $models " , "}}</td>
             </tr>
             {{end}} {{end}}
           </tbody>
