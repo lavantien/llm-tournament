@@ -7,44 +7,70 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Total Scores Chart
-            const totalScoresData = {{.TotalScores | json
-        }};
-        const models = Object.keys(totalScoresData);
-        const scores = Object.values(totalScoresData);
-
-        new Chart(document.getElementById('totalScoresChart'), {
-            type: 'bar',
-            data: {
+            // Stacked Score Breakdown Chart
+            const scoreData = {{.TotalScores | json}};
+            const models = Object.keys(scoreData);
+            
+            const data = {
                 labels: models,
-                datasets: [{
-                    label: 'Total Scores',
-                    data: scores,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                indexAxis: 'x',
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Score'
+                datasets: [
+                    {
+                        label: '20-point Scores',
+                        data: models.map(model => scoreData[model].Count20),
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '50-point Scores',
+                        data: models.map(model => scoreData[model].Count50),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '100-point Scores',
+                        data: models.map(model => scoreData[model].Count100),
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            new Chart(document.getElementById('totalScoresChart'), {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    indexAxis: 'x',
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Score'
+                            }
                         }
                     },
-                    x: {
-                        ticks: {
-                            autoSkip: false,
-                            maxRotation: 45,
-                            minRotation: 45
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const total = context.parsed._stacks.y[context.dataset.index];
+                                    return `${label}: ${total}`;
+                                }
+                            }
                         }
                     }
                 }
-            }
         });
       });
 

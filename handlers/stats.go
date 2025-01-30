@@ -76,14 +76,29 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling stats page")
 	results := middleware.ReadResults()
 
-	// Calculate total scores
-	totalScores := make(map[string]int)
+	// Calculate score breakdowns
+	type ScoreStats struct {
+		TotalScore int
+		Count20    int
+		Count50    int
+		Count100   int
+	}
+
+	scoreStats := make(map[string]ScoreStats)
 	for model, result := range results {
-		total := 0
+		stats := ScoreStats{}
 		for _, score := range result.Scores {
-			total += score
+			stats.TotalScore += score
+			switch score {
+			case 20:
+				stats.Count20++
+			case 50:
+				stats.Count50++
+			case 100:
+				stats.Count100++
+			}
 		}
-		totalScores[model] = total
+		scoreStats[model] = stats
 	}
 
 	// Calculate tiers
@@ -92,7 +107,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare template data
 	templateData := struct {
 		PageName     string
-		TotalScores  map[string]int
+		TotalScores  map[string]ScoreStats
 		Tiers        map[string][]string
 		TierRanges   map[string]string
 		OrderedTiers []string
