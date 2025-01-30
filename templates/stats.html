@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+    <title>Model Statistics</title>
+    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Total Scores Chart
+            const totalScoresData = {{.TotalScores | json}};
+            const models = Object.keys(totalScoresData);
+            const scores = Object.values(totalScoresData);
+
+            new Chart(document.getElementById('totalScoresChart'), {
+                type: 'bar',
+                data: {
+                    labels: models,
+                    datasets: [{
+                        label: 'Total Scores',
+                        data: scores,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Score'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        function getTierClass(score) {
+            if (score >= 3000) return 'transcendent';
+            if (score >= 2800) return 'super-grandmaster';
+            if (score >= 2500) return 'grandmaster';
+            if (score >= 2200) return 'international-master';
+            if (score >= 2000) return 'master';
+            if (score >= 1800) return 'expert';
+            if (score >= 1500) return 'pro-player';
+            if (score >= 1200) return 'advanced-player';
+            if (score >= 1000) return 'intermediate-player';
+            if (score >= 800) return 'veteran';
+            return 'beginner';
+        }
+    </script>
+    <style>
+        .tier-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        .tier-table th, .tier-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .tier-header {
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .tier-row:hover {
+            background-color: #f5f5f5;
+        }
+        /* Tier color coding */
+        .transcendent { background-color: #ff69b4; }
+        .super-grandmaster { background-color: #ff0000; }
+        .grandmaster { background-color: #ff4500; }
+        .international-master { background-color: #ff8c00; }
+        .master { background-color: #ffa500; }
+        .expert { background-color: #ffd700; }
+        .pro-player { background-color: #adff2f; }
+        .advanced-player { background-color: #32cd32; }
+        .intermediate-player { background-color: #00fa9a; }
+        .veteran { background-color: #00bfff; }
+        .beginner { background-color: #1e90ff; }
+    </style>
+</head>
+<body>
+    {{template "nav" .}}
+    <div class="container">
+        <h1>Model Performance Statistics</h1>
+        
+        <div class="chart-container">
+            <h2>Total Scores</h2>
+            <canvas id="totalScoresChart"></canvas>
+        </div>
+
+        <div class="tier-list">
+            <h2>Tier List</h2>
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Score Range</th>
+                        <th>Models</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range $tier, $models := .Tiers}}
+                    <tr class="tier-row {{$tier | tierClass}}">
+                        <td class="tier-header">{{$tier | formatTierName}}</td>
+                        <td>{{index $.TierRanges $tier}}</td>
+                        <td>{{join $models ", "}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
