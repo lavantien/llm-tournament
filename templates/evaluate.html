@@ -14,14 +14,19 @@
         <h3>Prompt {{.PromptIndex}}</h3>
         
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
-            <label for="score">Select Score:</label>
-            <select name="score" id="score">
+            <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">
+            
+            <div class="score-buttons">
                 {{range $label, $value := .ScoreOptions}}
-                    <option value="{{$value}}" {{if eq $value $.CurrentScore}}selected{{end}}>
-                        {{$label}} ({{$value}})
-                    </option>
+                <button type="button" class="score-button" 
+                    onclick="document.getElementById('selectedScore').value = '{{$value}}'; 
+                             document.querySelectorAll('.score-button').forEach(b => b.style.border = 'none');
+                             this.style.border = '3px solid #000'"
+                    style="background-color: {{if eq $label 'Fail'}}#808080{{else if eq $label 'Barely'}}#ffa500{{else if eq $label 'Alright'}}#ffff00{{else}}#00ff00{{end}}">
+                    {{$label}} ({{$value}})
+                </button>
                 {{end}}
-            </select>
+            </div>
 
             <div class="evaluation-buttons">
                 <button type="submit" class="action-button">Accept</button>

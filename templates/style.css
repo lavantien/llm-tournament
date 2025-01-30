@@ -291,14 +291,29 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
-  .evaluation-form select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
-    background-color: #333;
-    color: #e0e0e0;
-    border: 1px solid #444;
+  .score-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+  }
+
+  .score-button {
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    color: #1a1a1a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 
+      transform 0.2s ease,
+      filter 0.2s ease;
+    text-align: center;
+  }
+
+  .score-button:hover {
+    transform: translateY(-2px);
+    filter: brightness(0.9);
   }
 
   .evaluation-buttons {
