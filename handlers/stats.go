@@ -121,14 +121,16 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buffer := new(bytes.Buffer)
-	err = t.Execute(buffer, templateData)
+	buf := new(bytes.Buffer)
+	err = t.Execute(buf, templateData)
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
+		log.Printf("Template execution error: %v", err)
 		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, err = buffer.WriteTo(w)
+	
+	// Write the buffered template output to response
+	_, err = buf.WriteTo(w)
 	if err != nil {
 		log.Printf("Error writing response: %v", err)
 	}
