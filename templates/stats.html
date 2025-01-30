@@ -26,12 +26,20 @@
                 },
                 options: {
                     responsive: true,
+                    indexAxis: 'x',
                     scales: {
                         y: {
                             beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'Total Score'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     }
@@ -72,17 +80,17 @@
             background-color: #f5f5f5;
         }
         /* Tier color coding */
-        .transcendent { background-color: #ff69b4; }
-        .super-grandmaster { background-color: #ff0000; }
-        .grandmaster { background-color: #ff4500; }
-        .international-master { background-color: #ff8c00; }
-        .master { background-color: #ffa500; }
-        .expert { background-color: #ffd700; }
-        .pro-player { background-color: #adff2f; }
-        .advanced-player { background-color: #32cd32; }
-        .intermediate-player { background-color: #00fa9a; }
-        .veteran { background-color: #00bfff; }
-        .beginner { background-color: #1e90ff; }
+        .transcendent { background-color: hsl(270, 60%, 30%); color: white; }
+        .super-grandmaster { background-color: hsl(270, 60%, 35%); color: white; }
+        .grandmaster { background-color: hsl(260, 60%, 40%); color: white; }
+        .international-master { background-color: hsl(250, 60%, 45%); color: white; }
+        .master { background-color: hsl(240, 60%, 50%); color: white; }
+        .expert { background-color: hsl(220, 70%, 55%); color: white; }
+        .pro-player { background-color: hsl(200, 70%, 60%); color: black; }
+        .advanced-player { background-color: hsl(180, 70%, 65%); color: black; }
+        .intermediate-player { background-color: hsl(160, 70%, 70%); color: black; }
+        .veteran { background-color: hsl(40, 70%, 75%); color: black; }
+        .beginner { background-color: hsl(0, 70%, 80%); color: black; }
     </style>
 </head>
 <body>
@@ -90,11 +98,6 @@
     <div class="container">
         <h1>Model Performance Statistics</h1>
         
-        <div class="chart-container">
-            <h2>Total Scores</h2>
-            <canvas id="totalScoresChart"></canvas>
-        </div>
-
         <div class="tier-list">
             <h2>Tier List</h2>
             <table class="tier-table">
@@ -115,6 +118,11 @@
                     {{end}}
                 </tbody>
             </table>
+        </div>
+
+        <div class="chart-container">
+            <h2>Total Scores</h2>
+            <canvas id="totalScoresChart"></canvas>
         </div>
     </div>
 </body>
