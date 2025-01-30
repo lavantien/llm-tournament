@@ -109,7 +109,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{$orderedTiers := list "transcendent" "super-grandmaster" "grandmaster" "international-master" "master" 
+                    {{$orderedTiers := slice "transcendent" "super-grandmaster" "grandmaster" "international-master" "master" 
                                            "expert" "pro-player" "advanced-player" "intermediate-player" "veteran" "beginner"}}
                     {{range $tier := $orderedTiers}}
                     {{with $models := index $.Tiers $tier}}
