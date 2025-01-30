@@ -109,12 +109,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{range $tier, $models := .Tiers}}
+                    {{$orderedTiers := list "transcendent" "super-grandmaster" "grandmaster" "international-master" "master" 
+                                           "expert" "pro-player" "advanced-player" "intermediate-player" "veteran" "beginner"}}
+                    {{range $tier := $orderedTiers}}
+                    {{with $models := index $.Tiers $tier}}
                     <tr class="tier-row {{$tier | tierClass}}">
                         <td class="tier-header">{{$tier | formatTierName}}</td>
                         <td>{{index $.TierRanges $tier}}</td>
                         <td>{{join $models ", "}}</td>
                     </tr>
+                    {{end}}
                     {{end}}
                 </tbody>
             </table>
