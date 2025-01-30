@@ -119,7 +119,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		OrderedTiers []string
 	}{
 		PageName:    "Statistics",
-		TotalScores: totalScores,
+		TotalScores: scoreStats,
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
