@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
-  <head>
+
+<head>
     <title>Model Statistics</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
@@ -8,69 +9,70 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Stacked Score Breakdown Chart
-            const scoreData = {{.TotalScores | json}};
-            const models = Object.keys(scoreData);
-            
-            const data = {
-                labels: models,
-                datasets: [
-                    {
-                        label: '20-point Scores',
-                        data: models.map(model => scoreData[model].Count20),
-                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: '50-point Scores',
-                        data: models.map(model => scoreData[model].Count50),
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: '100-point Scores',
-                        data: models.map(model => scoreData[model].Count100),
-                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                        borderWidth: 1
-                    }
-                ]
-            };
+            const scoreData = {{.TotalScores | json
+        }};
+        const models = Object.keys(scoreData);
 
-            new Chart(document.getElementById('totalScoresChart'), {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    indexAxis: 'x',
-                    scales: {
-                        x: {
-                            stacked: true,
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Total Score'
-                            }
+        const data = {
+            labels: models,
+            datasets: [
+                {
+                    label: '20-point Scores',
+                    data: models.map(model => scoreData[model].Count20),
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    borderWidth: 1
+                },
+                {
+                    label: '50-point Scores',
+                    data: models.map(model => scoreData[model].Count50),
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderWidth: 1
+                },
+                {
+                    label: '100-point Scores',
+                    data: models.map(model => scoreData[model].Count100),
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderWidth: 1
+                }
+            ]
+        };
+
+        new Chart(document.getElementById('totalScoresChart'), {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                indexAxis: 'x',
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
                         }
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.dataset.label || '';
-                                    const total = context.parsed._stacks.y[context.dataset.index];
-                                    return `${label}: ${total}`;
-                                }
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Score'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const label = context.dataset.label || '';
+                                const total = context.parsed._stacks.y[context.dataset.index];
+                                return `${label}: ${total}`;
                             }
                         }
                     }
                 }
+            }
         });
       });
 
@@ -89,131 +91,132 @@
         }
     </script>
     <style>
-      .tier-table {
-        width: 100%;
-        margin: 20px 0;
-        border-collapse: collapse;
-      }
+        .tier-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
 
-      .tier-table th,
-      .tier-table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
+        .tier-table th,
+        .tier-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
 
-      .tier-header {
-        font-weight: bold;
-        text-transform: capitalize;
-        min-width: 170px;
-      }
+        .tier-header {
+            font-weight: bold;
+            text-transform: capitalize;
+            min-width: 170px;
+        }
 
-      .tier-row:hover {
-        background-color: #f5f5f5;
-      }
+        .tier-row:hover {
+            background-color: #f5f5f5;
+        }
 
-      /* Tier color coding */
-      .transcendent {
-        background-color: #2196f3;
-        color: black;
-      }
+        /* Tier color coding */
+        .transcendent {
+            background-color: #2196f3;
+            color: black;
+        }
 
-      /* Blue */
-      .supergrandmaster {
-        background-color: #42a5f5;
-        color: black;
-      }
+        /* Blue */
+        .supergrandmaster {
+            background-color: #42a5f5;
+            color: black;
+        }
 
-      /* Azure */
-      .grandmaster {
-        background-color: #00bcd4;
-        color: black;
-      }
+        /* Azure */
+        .grandmaster {
+            background-color: #00bcd4;
+            color: black;
+        }
 
-      /* Cyan */
-      .internationalmaster {
-        background-color: #00e5ff;
-        color: black;
-      }
+        /* Cyan */
+        .internationalmaster {
+            background-color: #00e5ff;
+            color: black;
+        }
 
-      /* Spring Green */
-      .master {
-        background-color: #4caf50;
-        color: black;
-      }
+        /* Spring Green */
+        .master {
+            background-color: #4caf50;
+            color: black;
+        }
 
-      /* Green */
-      .expert {
-        background-color: #8bc34a;
-        color: black;
-      }
+        /* Green */
+        .expert {
+            background-color: #8bc34a;
+            color: black;
+        }
 
-      /* Lime Green */
-      .proplayer {
-        background-color: #ffeb3b;
-        color: black;
-      }
+        /* Lime Green */
+        .proplayer {
+            background-color: #ffeb3b;
+            color: black;
+        }
 
-      /* Yellow */
-      .advancedplayer {
-        background-color: #ff9800;
-        color: black;
-      }
+        /* Yellow */
+        .advancedplayer {
+            background-color: #ff9800;
+            color: black;
+        }
 
-      /* Orange */
-      .intermediateplayer {
-        background-color: #ff5722;
-        color: black;
-      }
+        /* Orange */
+        .intermediateplayer {
+            background-color: #ff5722;
+            color: black;
+        }
 
-      /* Red-Orange */
-      .veteran {
-        background-color: #f44336;
-        color: black;
-      }
+        /* Red-Orange */
+        .veteran {
+            background-color: #f44336;
+            color: black;
+        }
 
-      /* Red */
-      .beginner {
-        background-color: #d32f2f;
-        color: black;
-      }
+        /* Red */
+        .beginner {
+            background-color: #d32f2f;
+            color: white;
+        }
 
-      /* Dark Red */
+        /* Dark Red */
     </style>
-  </head>
+</head>
 
-  <body>
+<body>
     {{template "nav" .}}
     <div class="container">
-      <h1>Model Performance Statistics</h1>
+        <h1>Model Performance Statistics</h1>
 
-      <div class="tier-list">
-        <h2>Tier List</h2>
-        <table class="tier-table">
-          <thead>
-            <tr>
-              <th>Tier</th>
-              <th>Score Range</th>
-              <th>Models</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers
-            $tier}}
-            <tr class="tier-row {{$tier | tierClass}}">
-              <td class="tier-header"><b>{{$tier | formatTierName}}</b></td>
-              <td><i>{{index $.TierRanges $tier}}</i></td>
-              <td>{{join $models " --- "}}</td>
-            </tr>
-            {{end}} {{end}}
-          </tbody>
-        </table>
-      </div>
+        <div class="tier-list">
+            <h2>Tier List</h2>
+            <table class="tier-table">
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Score Range</th>
+                        <th>Models</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers
+                    $tier}}
+                    <tr class="tier-row {{$tier | tierClass}}">
+                        <td class="tier-header"><b>{{$tier | formatTierName}}</b></td>
+                        <td><i>{{index $.TierRanges $tier}}</i></td>
+                        <td>{{join $models " --- "}}</td>
+                    </tr>
+                    {{end}} {{end}}
+                </tbody>
+            </table>
+        </div>
 
-      <div class="chart-container">
-        <h2>Total Scores</h2>
-        <canvas id="totalScoresChart"></canvas>
-      </div>
+        <div class="chart-container">
+            <h2>Total Scores</h2>
+            <canvas id="totalScoresChart"></canvas>
+        </div>
     </div>
-  </body>
+</body>
+
 </html>
