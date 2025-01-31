@@ -108,4 +108,13 @@
     "top_a": 0.2,
     "temperature": 0.1
   },
+  "together_ai/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free": {
+    "max_tokens": 131072,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
 }
