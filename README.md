@@ -40,6 +40,13 @@ Key technical highlights:
 - **Multi-stage Evaluation**: Supports various scoring schemes, including binary (pass/fail) and gradual (0-100 scale) evaluations.
 - **Dynamic Result Visualization**: Gradual color changes in the results table to reflect score ranges.
 - **Model Search**: Ability to search for specific models in the results table.
+- **Advanced Statistics**: Comprehensive performance analytics with interactive charts and tier rankings:
+  - Tiered ranking system (Transcendent to Beginner)
+  - Stacked score breakdown visualization (20/50/100-point scores)
+  - Historical performance comparisons
+  - Interactive Chart.js visualizations
+- **Tier System**: Auto-classification of models into skill tiers based on aggregate scores
+- **Score Analytics**: Detailed breakdown of scoring patterns across different evaluation criteria
 
 ### 📝 Prompt Management
 
