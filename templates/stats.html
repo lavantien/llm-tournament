@@ -9,77 +9,88 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Stacked Score Breakdown Chart
-            const scoreData = {{.TotalScores | json
-        }};
-        const models = Object.keys(scoreData);
+            const scoreData = {{.TotalScores | json}};
+            const models = Object.keys(scoreData);
 
-        const data = {
-            labels: models,
-            datasets: [
-                {
-                    label: '20-point Scores',
-                    data: models.map(model => scoreData[model].Count20 * 20),
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                    borderWidth: 1
-                },
-                {
-                    label: '50-point Scores',
-                    data: models.map(model => scoreData[model].Count50 * 50),
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                    borderWidth: 1
-                },
-                {
-                    label: '100-point Scores',
-                    data: models.map(model => scoreData[model].Count100 * 100),
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                    borderWidth: 1
-                }
-            ]
-        };
+            // Combine models with their total scores
+            let modelsWithScores = models.map(model => {
+                return { name: model, totalScore: scoreData[model].TotalScore };
+            });
 
-        const config = {
-            type: 'bar',
-            data: data,
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Total Scores by Model'
+            // Sort the models in ascending order based on total scores
+            modelsWithScores.sort((a, b) => a.totalScore - b.totalScore);
+
+            // Extract sorted models and their scores
+            const sortedModels = modelsWithScores.map(item => item.name);
+            const sortedTotalScores = modelsWithScores.map(item => item.totalScore);
+
+            const data = {
+                labels: sortedModels,
+                datasets: [
+                    {
+                        label: '20-point Scores',
+                        data: sortedModels.map(model => scoreData[model].Count20 * 20),
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                        borderWidth: 1
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => {
-                                const label = context.dataset.label || '';
-                                const value = context.parsed.y;
-                                return `${label}: ${value}`;
+                    {
+                        label: '50-point Scores',
+                        data: sortedModels.map(model => scoreData[model].Count50 * 50),
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '100-point Scores',
+                        data: sortedModels.map(model => scoreData[model].Count100 * 100),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Total Scores by Model'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    },
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Total Score'
                             }
                         }
                     }
-                },
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                        ticks: {
-                            autoSkip: false,
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Score'
-                        }
-                    }
                 }
-            }
-        };
+            };
 
-        new Chart(document.getElementById('totalScoresChart'), config);
-      });
+            new Chart(document.getElementById('totalScoresChart'), config);
+        });
 
         function getTierClass(score) {
             if (score >= 3000) return 'transcendent';
@@ -209,8 +220,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers
-                    $tier}}
+                    {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers $tier}}
                     <tr class="tier-row {{$tier | tierClass}}">
                         <td class="tier-header"><b>{{$tier | formatTierName}}</b></td>
                         <td><i>{{index $.TierRanges $tier}}</i></td>
