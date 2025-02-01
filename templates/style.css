@@ -222,6 +222,15 @@ body {
 
   /* Dark Red */
 
+  /* 结果表格斑马条纹 */
+  .results-table tbody tr:nth-child(even) {
+    background-color: #3a3a3a;
+  }
+
+  .results-table tbody tr:nth-child(odd) {
+    background-color: #2a2a2a;
+  }
+
   input[type="text"],
   input[type="file"],
   select {
