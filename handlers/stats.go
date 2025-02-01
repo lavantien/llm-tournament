@@ -78,10 +78,10 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Calculate score breakdowns
 	type ScoreStats struct {
-		TotalScore int
-		Count20    int
-		Count50    int
-		Count100   int
+		TotalScore int `json:"TotalScore"`
+		Count20    int `json:"Count20"`
+		Count50    int `json:"Count50"`
+		Count100   int `json:"Count100"`
 	}
 
 	scoreStats := make(map[string]ScoreStats)
@@ -124,7 +124,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
 			"transcendent",
-			"super-grandmaster", 
+			"super-grandmaster",
 			"grandmaster",
 			"international-master",
 			"master",
@@ -139,9 +139,9 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse and execute template
 	t, err := template.New("stats.html").Funcs(template.FuncMap{
-		"json": func(v interface{}) string {
+		"json": func(v interface{}) template.JS { // Updated to return template.JS
 			a, _ := json.Marshal(v)
-			return string(a)
+			return template.JS(a)
 		},
 		"tierClass": func(tier string) string {
 			return strings.ReplaceAll(tier, "-", "")
