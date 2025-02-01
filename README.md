@@ -19,6 +19,7 @@ Key technical highlights:
 ## 📚 Table of Contents
 
 - 🔑 [Key Features](#-key-features)
+- 🎓 [Tutorial](#-tutorial)
 - 🛠️ [Stack](#%EF%B8%8F-stack)
 - 🖼️ [UI](#%EF%B8%8F-ui)
 - 🏃 [Run](#-run)
@@ -84,6 +85,70 @@ Key technical highlights:
 - **Real-time Sync**: Instant updates across all connected clients
 
 [(Back)](#-table-of-contents)
+
+## 🎓 Tutorial
+
+### 🚀 Getting Started
+1. **Setup**: Run `make run` then visit <http://localhost:8080>
+2. **Core Pages** (accessible via top navigation):
+   - 📝 **Prompts**: Manage evaluation questions and scoring criteria
+   - 📊 **Results**: View model performance scores and comparisons
+   - 📈 **Stats**: Analyze aggregate metrics and tier rankings
+   - 👤 **Profiles**: Configure evaluation personas/scoring profiles
+
+### 🔄 Common Workflows
+
+#### 🧪 Running Evaluations
+1. Create prompts in _Prompts_ page (click "+ New Prompt")
+2. Configure AI models in _Results_ page (click "+ New Model")
+3. Score responses in _Evaluate_ page (accessible from Results table)
+4. Track live updates in _Stats_ page during evaluation
+
+#### 📦 Managing Content
+- **Bulk Operations**: 
+  - Check multiple items -> Click "Bulk Actions"
+  - Drag to reorder prompts (in Prompts page)
+- **Import/Export**:
+  - Use CSV buttons in page headers
+  - Preserves scoring history and metadata
+
+### 💡 UI/UX Design Philosophy
+- **Visual Hierarchy**: 
+  - Critical actions (Delete, Evaluate) in red
+  - Primary actions (Add New) in green
+  - Gradual color transitions in scores for quick assessment
+- **Realtime Updates**:
+  - Auto-refreshing results tables
+  - WebSocket-powered score updates
+  - Collaborative editing indicators
+- **Mobile Optimization**:
+  - Collapsible action menus on small screens
+  - Touch-friendly drag handles for reordering
+  - Large tap targets for scoring buttons
+
+### 📝 Page Breakdown
+
+#### **Prompts Page**
+- 🔍 **Search/Filter**: Top-right search bar with profile filters
+- ➕ **Add New**: Supports markdown formatting and solution references
+- ↔️ **Reorder**: Drag handle (≡) on left of each prompt
+- 📁 **Suites**: Manage prompt sets via "Suites" dropdown
+
+#### **Results Page**
+- 🏷️ **Model Cards**: Click any model name to edit metadata
+- 🔄 **Evaluate**: Orange button launches scoring interface
+- 📉 **Trend Lines**: Hover over scores to see historical changes
+- 📤 **Export**: Download CSV with all scoring history
+
+#### **Stats Page**
+- 🥇 **Tier System**: Automatic classification based on total scores
+- 📊 **Score Breakdown**: Interactive pie/bar charts (click to filter)
+- 🏅 **Advanced Metrics**: Hover over chart elements for detailed stats
+
+#### **Profiles Page**
+- 🎚️ **Preset Management**: Create scoring profiles for different eval scenarios
+- 📚 **Profile Attribution**: Assign prompts to specific profiles
+- 💡 **Template System**: Clone existing profiles for quick setup
 
 ## 🛠️ Stack
 
