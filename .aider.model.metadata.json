@@ -1,5 +1,6 @@
 {
   "deepseek/deepseek-reasoner": {
+    "reasoning_effort": "high",
     "max_tokens": 8192,
     "repetition_penalty": 1.02,
     "top_k": 0,
@@ -10,6 +11,55 @@
   },
   "deepseek/deepseek-chat": {
     "max_tokens": 8192,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
+  "o3-mini": {
+    "reasoning_effort": "high",
+    "max_tokens": 100000,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
+  "o1-mini": {
+    "reasoning_effort": "high",
+    "max_tokens": 65536,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
+  "openrouter/deepseek/deepseek-r1:free": {
+    "reasoning_effort": "high",
+    "max_tokens": 131072,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
+  "openrouter/google/gemini-2.0-flash-thinking-exp:free": {
+    "reasoning_effort": "high",
+    "max_tokens": -1,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.1
+  },
+  "openrouter/google/gemini-exp-1206:free": {
+    "max_tokens": -1,
     "repetition_penalty": 1.02,
     "top_k": 0,
     "top_p": 0.3,
@@ -54,33 +104,6 @@
     "top_a": 0.2,
     "temperature": 0.1
   },
-  "openrouter/deepseek/deepseek-r1:free": {
-    "max_tokens": 131072,
-    "repetition_penalty": 1.02,
-    "top_k": 0,
-    "top_p": 0.3,
-    "min_p": 0.02,
-    "top_a": 0.2,
-    "temperature": 0.1
-  },
-  "openrouter/google/gemini-2.0-flash-thinking-exp:free": {
-    "max_tokens": -1,
-    "repetition_penalty": 1.02,
-    "top_k": 0,
-    "top_p": 0.3,
-    "min_p": 0.02,
-    "top_a": 0.2,
-    "temperature": 0.1
-  },
-  "openrouter/google/gemini-exp-1206:free": {
-    "max_tokens": -1,
-    "repetition_penalty": 1.02,
-    "top_k": 0,
-    "top_p": 0.3,
-    "min_p": 0.02,
-    "top_a": 0.2,
-    "temperature": 0.1
-  },
   "openai/deepseek-ai/DeepSeek-V3": {
     "max_tokens": 8192,
     "repetition_penalty": 1.02,
@@ -91,6 +114,7 @@
     "temperature": 0.1
   },
   "openai/deepseek-ai/DeepSeek-R1": {
+    "reasoning_effort": "high",
     "max_tokens": 8192,
     "repetition_penalty": 1.02,
     "top_k": 0,
@@ -100,6 +124,7 @@
     "temperature": 0.1
   },
   "groq/deepseek-r1-distill-llama-70b": {
+    "reasoning_effort": "high",
     "max_tokens": 131072,
     "repetition_penalty": 1.02,
     "top_k": 0,
@@ -109,6 +134,7 @@
     "temperature": 0.1
   },
   "together_ai/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free": {
+    "reasoning_effort": "high",
     "max_tokens": 131072,
     "repetition_penalty": 1.02,
     "top_k": 0,
