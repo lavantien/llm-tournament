@@ -115,6 +115,14 @@ body {
       background-color: #333;
       color: #e0e0e0;
     }
+
+    tbody tr:nth-child(even) {
+      background-color: #3a3a3a;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: #2a2a2a;
+    }
   }
 
   input[type="text"],
