@@ -7,7 +7,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "deepseek/deepseek-chat": {
     "max_tokens": 8192,
@@ -16,7 +16,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "o3-mini": {
     "reasoning_effort": "high",
@@ -26,7 +26,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "o1-mini": {
     "reasoning_effort": "high",
@@ -36,7 +36,16 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
+  },
+  "gemini/gemini-2.0-pro-exp-02-05": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.3
   },
   "openrouter/deepseek/deepseek-r1:free": {
     "reasoning_effort": "high",
@@ -46,7 +55,16 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
+  },
+  "openrouter/google/gemini-2.0-pro-exp-02-05:free": {
+    "max_tokens": -1,
+    "repetition_penalty": 1.02,
+    "top_k": 0,
+    "top_p": 0.3,
+    "min_p": 0.02,
+    "top_a": 0.2,
+    "temperature": 0.3
   },
   "openrouter/google/gemini-2.0-flash-thinking-exp:free": {
     "reasoning_effort": "high",
@@ -56,7 +74,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "openrouter/google/gemini-exp-1206:free": {
     "max_tokens": -1,
@@ -65,7 +83,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "codestral/codestral-latest": {
     "num_ctx": 262144,
@@ -75,7 +93,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "mistral/mistral-large-latest": {
     "max_tokens": -1,
@@ -84,7 +102,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "mistral/pixtral-large-latest": {
     "max_tokens": -1,
@@ -93,7 +111,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "mistral/mistral-small-latest": {
     "max_tokens": -1,
@@ -102,7 +120,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "openai/deepseek-ai/DeepSeek-V3": {
     "max_tokens": 8192,
@@ -111,7 +129,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "openai/deepseek-ai/DeepSeek-R1": {
     "reasoning_effort": "high",
@@ -121,7 +139,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "groq/deepseek-r1-distill-llama-70b": {
     "reasoning_effort": "high",
@@ -131,7 +149,7 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
   "together_ai/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free": {
     "reasoning_effort": "high",
@@ -141,6 +159,6 @@
     "top_p": 0.3,
     "min_p": 0.02,
     "top_a": 0.2,
-    "temperature": 0.1
+    "temperature": 0.3
   },
 }
