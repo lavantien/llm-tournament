@@ -8,6 +8,7 @@ api-key:
   - openai=
   # - openai=
   - anthropic=
+  - github=
   - mistral=
   - codestral=
   - gemini=
@@ -15,56 +16,64 @@ api-key:
   - cohere=
   - openrouter=
   - xai=
+  - groq=
+  - together=
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-architect: true
-model: deepseek/deepseek-reasoner
-# model: openai/deepseek-ai/DeepSeek-R1
+architect: false
+# model: deepseek/deepseek-reasoner
 # model: deepseek/deepseek-chat
+# model: openrouter/deepseek/deepseek-r1:free
+# model: github/DeepSeek-R1
+model: openai/deepseek-ai/DeepSeek-R1
+# model: groq/deepseek-r1-distill-llama-70b
+# model: together_ai/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
+# model: gemini/gemini-2.0-pro-exp-02-05
+# model: openrouter/google/gemini-2.0-pro-exp-02-05:free
 # model: gemini/gemini-2.0-flash-thinking-exp
-# model: gemini/gemini-exp-1206
-# model: gemini/gemini-2.0-flash-exp
+# model: gemini/gemini-2.0-flash-lite-exp-02-05
 # model: mistral/mistral-large-latest
 # model: codestral/codestral-latest
 # edit-format: diff
+
+
 editor-model: deepseek/deepseek-chat
-# editor-model: gemini/gemini-2.0-flash-exp
-# editor-model: gemini/gemini-exp-1206
+# editor-model: o1-mini
+# editor-model: openrouter/google/gemini-2.0-flash-thinking-exp:free
+# editor-model: groq/deepseek-r1-distill-llama-70b
+# editor-model: together_ai/deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
 # editor-model: codestral/codestral-latest
 # editor-model: mistral/mistral-large-latest
 # editor-edit-format: editor-diff
-weak-model: codestral/codestral-latest
-# weak-model: mistral/mistral-large-latest
+
+
+# weak-model: codestral/codestral-latest
+weak-model: mistral/mistral-large-latest
 # weak-model: mistral/pixtral-large-latest
+
+
 read:
-  - SYSTEM_PROMPT_PROGRAMMING.xml
-  - PRELIMINARY_DESIGN.md
-yes-always: true
+  # - SYSTEM_PROMPT_PROGRAMMING.xml
+  # - PRELIMINARY_DESIGN.md
+yes-always: false
+auto-commits: false
 # test-cmd: go test ./... -v -race -cover -timeout 10s
 # auto-test: true
+
+
 map-tokens: 8192
+subtree-only: true
 timeout: 65
 cache-prompts: true
 cache-keepalive-pings: 300
+
+
 verbose: false
 pretty: true
 vim: true
 editor: vim
 multiline: true
+detect-urls: false
 code-theme: coffee
 show-diffs: false
+
