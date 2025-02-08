@@ -175,37 +175,26 @@
                         console.log(`Results for model ${model}:`, results[model]); // Log results for the current model
                         console.log(`Scores array for model ${model}:`, scores); // Log the scores array
                         const scoreCell = document.createElement("td");
-                        const button = document.createElement("button");
-                        // Reset button class and content
-                        button.className = 'result-button';
-                        button.textContent = '';
+                        scoreCell.className = 'score-cell';
                         
-                        // Set button appearance based on score
+                        // Set cell class based on score
                         if (score === 0) {
-                            button.className = 'result-button score-0';
-                            button.textContent = 'F';
+                            scoreCell.className = 'score-cell score-0';
                         } else if (score > 0 && score <= 19) {
-                            button.className = 'result-button score-1-19';
-                            button.textContent = score;
+                            scoreCell.className = 'score-cell score-1-19';
                         } else if (score >= 20 && score <= 49) {
-                            button.className = 'result-button score-20-49';
-                            button.textContent = score;
+                            scoreCell.className = 'score-cell score-20-49';
                         } else if (score >= 50 && score <= 99) {
-                            button.className = 'result-button score-50-99';
-                            button.textContent = score;
+                            scoreCell.className = 'score-cell score-50-99';
                         } else if (score === 100) {
-                            button.className = 'result-button score-100';
-                            button.textContent = score;
+                            scoreCell.className = 'score-cell score-100';
                         } else {
-                            // Handle invalid scores
-                            button.className = 'result-button score-0';
-                            button.textContent = '?';
+                            scoreCell.className = 'score-cell score-0';
                         }
-                        console.log(`Setting score for ${model} prompt ${index}:`, score, button.className);
-                        button.onclick = () => {
+                        
+                        scoreCell.onclick = () => {
                             window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                         };
-                        scoreCell.appendChild(button);
                         scoreCells.push(scoreCell);
                     }
                     
