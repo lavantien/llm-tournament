@@ -1,8 +1,3 @@
 /drop
-/add       handlers\results.go
-/add       handlers\stats.go
-/add       middleware\state.go
-/add       templates\nav.html
 /add       templates\results.html
-/add       templates\stats.html
-/read-only SYSTEM_PROMPT_PROGRAMMING.xml
+/add       templates\style.css
