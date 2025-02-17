@@ -21,8 +21,10 @@ api-key:
 
 
 architect: false
-model: deepseek/deepseek-reasoner
-# model: o3-mini
+# model: deepseek/deepseek-reasoner
+# model: openrouter/deepseek/deepseek-r1:free
+# model: openai/deepseek-ai/DeepSeek-R1
+model: o3-mini
 # model: o1-mini
 # model: gemini/gemini-2.0-pro-exp-02-05
 # model: gemini/gemini-2.0-flash-thinking-exp-01-21
@@ -30,7 +32,8 @@ model: deepseek/deepseek-reasoner
 # edit-format: diff
 
 
-editor-model: deepseek/deepseek-chat
+# editor-model: deepseek/deepseek-chat
+editor-model: gpt-4o
 # editor-model: gemini/gemini-2.0-flash
 # editor-model: gemini/gemini-2.0-flash-lite-exp-02-05
 # editor-model: codestral/codestral-latest
@@ -48,13 +51,17 @@ read:
   # - PRELIMINARY_DESIGN.md
 yes-always: false
 auto-commits: true
+attribute-author: false
+attribute-committer: false
+show-diffs: false
 # test-cmd: go test ./... -v -race -cover -timeout 10s
 # auto-test: true
 
 
-map-tokens: 8192
+map-tokens: 2048
+map-multiplier-no-files: 4
 subtree-only: true
-timeout: 65
+timeout: 301
 cache-prompts: true
 cache-keepalive-pings: 300
 
@@ -66,5 +73,4 @@ editor: vim
 multiline: true
 detect-urls: false
 code-theme: coffee
-show-diffs: true
 

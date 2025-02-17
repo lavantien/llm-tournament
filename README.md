@@ -33,7 +33,6 @@ Key technical highlights:
 - **Efficient Data Management:** Robust JSON storage coupled with seamless CSV import/export.
 - **Intuitive Workflow:** Bulk operations, drag-and-drop prompt reordering, and collaborative functionality.
 
-
 ## Getting Started
 
 1. **Run the Application**
@@ -103,7 +102,7 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Issues
 
-- Prompts import.
+- Prompts import; change CSV to JSON
 - Rename prompt suite.
 
 ### 🔧 Non-Functional

@@ -20,17 +20,15 @@
   },
   "o3-mini": {
     "reasoning_effort": "high",
-    "max_tokens": 100000,
-    "repetition_penalty": 1.02,
-    "top_k": 0,
-    "top_p": 0.3,
-    "min_p": 0.02,
-    "top_a": 0.2,
-    "temperature": 0.3
+    "max_completion_tokens": 100000,
   },
   "o1-mini": {
     "reasoning_effort": "high",
-    "max_tokens": 65536,
+    "max_completion_tokens": 100000,
+  },
+  "openrouter/deepseek/deepseek-r1:free": {
+    "reasoning_effort": "high",
+    "max_tokens": 163840,
     "repetition_penalty": 1.02,
     "top_k": 0,
     "top_p": 0.3,
