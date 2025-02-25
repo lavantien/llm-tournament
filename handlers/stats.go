@@ -28,40 +28,40 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 	}
 
 	tierRanges := map[string]string{
-		"transcendent":         "3000-3300",
-		"super-grandmaster":    "2800-2999",
-		"grandmaster":          "2500-2799",
-		"international-master": "2200-2499",
-		"master":               "2000-2199",
-		"expert":               "1800-1999",
-		"pro-player":           "1500-1799",
-		"advanced-player":      "1200-1499",
-		"intermediate-player":  "1000-1199",
-		"veteran":              "800-999",
-		"beginner":             "0-799",
+		"transcendent":         "1900-2000",
+		"super-grandmaster":    "1800-1899",
+		"grandmaster":          "1700-1799",
+		"international-master": "1600-1699",
+		"master":               "1500-1599",
+		"expert":               "1400-1499",
+		"pro-player":           "1200-1399",
+		"advanced-player":      "1000-1199",
+		"intermediate-player":  "800-999",
+		"veteran":              "600-799",
+		"beginner":             "0-599",
 	}
 
 	for model, score := range totalScores {
 		switch {
-		case score >= 3000:
+		case score >= 1900:
 			tiers["transcendent"] = append(tiers["transcendent"], model)
-		case score >= 2800:
-			tiers["super-grandmaster"] = append(tiers["super-grandmaster"], model)
-		case score >= 2500:
-			tiers["grandmaster"] = append(tiers["grandmaster"], model)
-		case score >= 2200:
-			tiers["international-master"] = append(tiers["international-master"], model)
-		case score >= 2000:
-			tiers["master"] = append(tiers["master"], model)
 		case score >= 1800:
-			tiers["expert"] = append(tiers["expert"], model)
+			tiers["super-grandmaster"] = append(tiers["super-grandmaster"], model)
+		case score >= 1700:
+			tiers["grandmaster"] = append(tiers["grandmaster"], model)
+		case score >= 1600:
+			tiers["international-master"] = append(tiers["international-master"], model)
 		case score >= 1500:
-			tiers["pro-player"] = append(tiers["pro-player"], model)
+			tiers["master"] = append(tiers["master"], model)
+		case score >= 1400:
+			tiers["expert"] = append(tiers["expert"], model)
 		case score >= 1200:
-			tiers["advanced-player"] = append(tiers["advanced-player"], model)
+			tiers["pro-player"] = append(tiers["pro-player"], model)
 		case score >= 1000:
-			tiers["intermediate-player"] = append(tiers["intermediate-player"], model)
+			tiers["advanced-player"] = append(tiers["advanced-player"], model)
 		case score >= 800:
+			tiers["intermediate-player"] = append(tiers["intermediate-player"], model)
+		case score >= 600:
 			tiers["veteran"] = append(tiers["veteran"], model)
 		default:
 			tiers["beginner"] = append(tiers["beginner"], model)
