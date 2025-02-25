@@ -28,19 +28,31 @@
                 labels: sortedModels,
                 datasets: [
                     {
-                        label: '20-point Scores',
+                        label: '1/5 (20 points)',
                         data: sortedModels.map(model => scoreData[model].Count20 * 20),
                         backgroundColor: 'rgba(255, 99, 132, 0.8)',
                         borderWidth: 1
                     },
                     {
-                        label: '50-point Scores',
-                        data: sortedModels.map(model => scoreData[model].Count50 * 50),
+                        label: '2/5 (40 points)',
+                        data: sortedModels.map(model => scoreData[model].Count40 * 40),
+                        backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '3/5 (60 points)',
+                        data: sortedModels.map(model => scoreData[model].Count60 * 60),
+                        backgroundColor: 'rgba(255, 205, 86, 0.8)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '4/5 (80 points)',
+                        data: sortedModels.map(model => scoreData[model].Count80 * 80),
                         backgroundColor: 'rgba(75, 192, 192, 0.8)',
                         borderWidth: 1
                     },
                     {
-                        label: '100-point Scores',
+                        label: '5/5 (100 points)',
                         data: sortedModels.map(model => scoreData[model].Count100 * 100),
                         backgroundColor: 'rgba(54, 162, 235, 0.8)',
                         borderWidth: 1
@@ -93,16 +105,16 @@
         });
 
         function getTierClass(score) {
-            if (score >= 3000) return 'transcendent';
-            if (score >= 2800) return 'supergrandmaster';
-            if (score >= 2500) return 'grandmaster';
-            if (score >= 2200) return 'internationalmaster';
-            if (score >= 2000) return 'master';
-            if (score >= 1800) return 'expert';
-            if (score >= 1500) return 'proplayer';
-            if (score >= 1200) return 'advancedplayer';
-            if (score >= 1000) return 'intermediateplayer';
-            if (score >= 800) return 'veteran';
+            if (score >= 1900) return 'transcendent';
+            if (score >= 1800) return 'supergrandmaster';
+            if (score >= 1700) return 'grandmaster';
+            if (score >= 1600) return 'internationalmaster';
+            if (score >= 1500) return 'master';
+            if (score >= 1400) return 'expert';
+            if (score >= 1200) return 'proplayer';
+            if (score >= 1000) return 'advancedplayer';
+            if (score >= 800) return 'intermediateplayer';
+            if (score >= 600) return 'veteran';
             return 'beginner';
         }
     </script>

@@ -34,8 +34,10 @@ const (
 )
 
 var ScoreOptions = map[string]int{
-	"Perfect": 100,
-	"Alright": 50,
-	"Barely":  20,
-	"Failed":  0,
+	"0/5 (0)":   0,
+	"1/5 (20)":  20,
+	"2/5 (40)":  40,
+	"3/5 (60)":  60,
+	"4/5 (80)":  80,
+	"5/5 (100)": 100,
 }
