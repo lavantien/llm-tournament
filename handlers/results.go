@@ -404,35 +404,25 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export results")
 	results := middleware.ReadResults()
-	prompts := middleware.ReadPrompts()
 
-	// Create CSV string
-	csvString := "Model,"
-	for i := range prompts {
-		csvString += "Prompt " + strconv.Itoa(i+1) + ","
-	}
-	csvString += "\n"
-
-	for model, result := range results {
-		csvString += model + ","
-		for _, score := range result.Scores {
-			// Convert score to pass/fail (100 = pass, 0 = fail)
-			pass := score == 100
-			csvString += strconv.FormatBool(pass) + ","
-		}
-		csvString += "\n"
+	// Convert results to JSON
+	jsonData, err := json.MarshalIndent(results, "", "  ")
+	if err != nil {
+		log.Printf("Error marshaling results to JSON: %v", err)
+		http.Error(w, "Error creating JSON export", http.StatusInternalServerError)
+		return
 	}
 
-	// Set headers for CSV download
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment;filename=results.csv")
+	// Set headers for JSON download
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment;filename=results.json")
 
-	// Write CSV to response
-	_, err := w.Write([]byte(csvString))
+	// Write JSON to response
+	_, err = w.Write(jsonData)
 	if err != nil {
 		log.Printf("Error writing response: %v", err)
 		http.Error(w, "Error writing response", http.StatusInternalServerError)
 		return
 	}
-	log.Println("Results exported successfully")
+	log.Println("Results exported successfully as JSON")
 }

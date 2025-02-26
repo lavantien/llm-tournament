@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -198,24 +199,26 @@ func ExportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export prompts")
 	prompts := middleware.ReadPrompts()
 
-	// Create CSV string
-	csvString := "Prompt\n"
-	for _, prompt := range prompts {
-		csvString += prompt.Text + "\n"
+	// Convert prompts to JSON
+	jsonData, err := json.MarshalIndent(prompts, "", "  ")
+	if err != nil {
+		log.Printf("Error marshaling prompts to JSON: %v", err)
+		http.Error(w, "Error creating JSON export", http.StatusInternalServerError)
+		return
 	}
 
-	// Set headers for CSV download
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment;filename=prompts.csv")
+	// Set headers for JSON download
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment;filename=prompts.json")
 
-	// Write CSV to response
-	_, err := w.Write([]byte(csvString))
+	// Write JSON to response
+	_, err = w.Write(jsonData)
 	if err != nil {
 		log.Printf("Error writing response: %v", err)
 		http.Error(w, "Error writing response", http.StatusInternalServerError)
 		return
 	}
-	log.Println("Prompts exported successfully")
+	log.Println("Prompts exported successfully as JSON")
 }
 
 // Handle import prompts
@@ -237,40 +240,38 @@ func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Read the file content
-		data := make([]byte, 0)
-		buf := make([]byte, 1024)
-		for {
-			n, err := file.Read(buf)
-			if err != nil && err.Error() != "EOF" {
-				log.Printf("Error reading file: %v", err)
-				http.Error(w, "Error reading file", http.StatusInternalServerError)
-				return
-			}
-			if n > 0 {
-				data = append(data, buf[:n]...)
-			}
-			if err != nil {
-				break
-			}
+		data, err := io.ReadAll(file)
+		if err != nil {
+			log.Printf("Error reading file: %v", err)
+			http.Error(w, "Error reading file", http.StatusInternalServerError)
+			return
 		}
 
-		// Parse CSV data
-		lines := strings.Split(string(data), "\n")
-		if len(lines) <= 1 {
-			log.Println("Invalid CSV format: No data found")
+		// Parse JSON data
+		var prompts []middleware.Prompt
+		err = json.Unmarshal(data, &prompts)
+		if err != nil {
+			log.Printf("Error parsing JSON: %v", err)
 			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
 			return
 		}
 
-		var prompts []middleware.Prompt
-		for _, line := range lines {
-			if line == "" || line == "Prompt" {
-				continue
-			}
-			prompts = append(prompts, middleware.Prompt{Text: line})
+		// Validate imported prompts
+		if len(prompts) == 0 {
+			log.Println("No prompts found in JSON file")
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
+			return
 		}
-		middleware.WritePrompts(prompts)
-		log.Println("Prompts imported successfully")
+
+		// Write the imported prompts
+		err = middleware.WritePrompts(prompts)
+		if err != nil {
+			log.Printf("Error writing prompts: %v", err)
+			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("Prompts imported successfully from JSON")
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	} else {
@@ -298,56 +299,50 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Read the file content
-		data := make([]byte, 0)
-		buf := make([]byte, 1024)
-		for {
-			n, err := file.Read(buf)
-			if n > 0 {
-				data = append(data, buf[:n]...)
-			}
-			if err != nil {
-				break
-			}
+		data, err := io.ReadAll(file)
+		if err != nil {
+			log.Printf("Error reading file: %v", err)
+			http.Error(w, "Error reading file", http.StatusInternalServerError)
+			return
 		}
 
-		// Parse CSV data
-		lines := strings.Split(string(data), "\n")
-		if len(lines) <= 1 {
-			log.Println("Invalid CSV format: No data found")
+		// Parse JSON data
+		var results map[string]middleware.Result
+		err = json.Unmarshal(data, &results)
+		if err != nil {
+			log.Printf("Error parsing JSON: %v", err)
 			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
 			return
 		}
 
-		suiteName := middleware.GetCurrentSuiteName()
-		results := make(map[string]middleware.Result)
-		prompts := middleware.ReadPrompts()
-		for i, line := range lines {
-			if i == 0 || line == "" {
-				continue
-			}
-			parts := strings.Split(line, ",")
-			if len(parts) < 2 {
-				continue
-			}
-			model := parts[0]
-			var passes []bool
-			for _, passStr := range parts[1:] {
-				pass, _ := strconv.ParseBool(passStr)
-				passes = append(passes, pass)
-			}
-			if len(passes) < len(prompts) {
-				passes = append(passes, make([]bool, len(prompts)-len(passes))...)
-			}
-			results[model] = middleware.Result{Scores: make([]int, len(prompts))}
+		// Validate imported results
+		if len(results) == 0 {
+			log.Println("No results found in JSON file")
+			http.Redirect(w, r, "/import_error", http.StatusSeeOther)
+			return
 		}
-		suiteName = middleware.GetCurrentSuiteName()
+
+		// Ensure scores arrays match prompts length
+		prompts := middleware.ReadPrompts()
+		for model, result := range results {
+			if len(result.Scores) < len(prompts) {
+				newScores := make([]int, len(prompts))
+				copy(newScores, result.Scores)
+				result.Scores = newScores
+				results[model] = result
+			}
+		}
+
+		// Write the imported results
+		suiteName := middleware.GetCurrentSuiteName()
 		err = middleware.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
 			return
 		}
-		log.Println("Results imported successfully")
+
+		log.Println("Results imported successfully from JSON")
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	} else {

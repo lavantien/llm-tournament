@@ -8,7 +8,9 @@
 <body>
     <h1>Import Prompts</h1>
     <form action="/import_prompts" method="post" enctype="multipart/form-data" style="text-align: center;">
-        <input type="file" name="prompts_file" />
+        <p>Select a JSON file containing prompts to import.</p>
+        <p>Expected format: an array of prompt objects with "text", "solution", and "profile" fields.</p>
+        <input type="file" name="prompts_file" accept=".json" />
         <input type="submit" value="Import" />
     </form>
     <div class="scroll-buttons">
