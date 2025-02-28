@@ -5,7 +5,11 @@
 
 📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards**
 
-![UI Dashboard Preview](./assets/ui-prompt-manager.png)
+![UI Result Page Preview](./assets/ui-result-page.png)
+![UI Prompt Manager Preview](./assets/ui-prompt-manager.png)
+![UI Profile Manager Preview](./assets/ui-profile-manager.png)
+![UI Stats Page Preview](./assets/ui-stats-page.png)
+![UI Prompt Edit Preview](./assets/ui-prompt-edit.png)
 
 ## 🚀 Quick Start
 
