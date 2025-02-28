@@ -215,6 +215,20 @@ func DeletePromptSuite(suiteName string) error {
 
 // RenameSuiteFiles renames all files associated with a suite
 func RenameSuiteFiles(oldName, newName string) error {
+    // Add validation
+    if oldName == "" {
+        return fmt.Errorf("original suite name cannot be empty")
+    }
+    if newName == "" {
+        return fmt.Errorf("new suite name cannot be empty")
+    }
+    if strings.ContainsAny(newName, "/\\") {
+        return fmt.Errorf("suite name contains invalid characters")
+    }
+    if SuiteExists(newName) {
+        return fmt.Errorf("suite with name '%s' already exists", newName)
+    }
+
     // Rename prompts file
     oldPrompts := "data/prompts-" + oldName + ".json"
     newPrompts := "data/prompts-" + newName + ".json"
