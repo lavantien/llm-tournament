@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
-  <head>
+
+<head>
     <title>Results</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
@@ -259,147 +260,107 @@
             connectWebSocket();
         });
     </script>
-  </head>
+</head>
 
-  <body>
+<body>
     {{template "nav" .}}
     <div class="sticky-header">
-      <h2>Add Model</h2>
-      <form
-        action="/add_model"
-        method="post"
-        style="display: flex; align-items: center"
-      >
-        <input
-          type="text"
-          name="model"
-          placeholder="Enter new model name"
-          style="margin-right: 5px"
-        />
-        <input type="submit" value="Add" />
-      </form>
-      <span id="connection-status" style="margin-left: 5px"></span>
+        <h2>Add Model</h2>
+        <form action="/add_model" method="post" style="display: flex; align-items: center">
+            <input type="text" name="model" placeholder="Enter new model name" style="margin-right: 5px" />
+            <input type="submit" value="Add" />
+        </form>
+        <span id="connection-status" style="margin-left: 5px"></span>
     </div>
     <div class="title-row">
-      <div class="filter-container">
-        <form
-          action="/results"
-          method="get"
-          id="filter-form"
-          class="filter-form"
-        >
-          <select
-            name="model_filter"
-            id="model_filter"
-            aria-label="Filter by model"
-          >
-            <option value="">All Models</option>
-            {{range $model := .Models}}
-            <option
-              value="{{$model}}"
-              {{if
-              eq
-              $.ModelFilter
-              $model}}selected{{end}}
-            >
-              {{$model}}
-            </option>
-            {{end}}
-          </select>
-          <input type="submit" value="Filter" class="filter-submit" />
-        </form>
-      </div>
-      <div class="title-container">
-        <h1>Results</h1>
-      </div>
-      <div class="search-container">
-        <form
-          id="search-form"
-          class="search-form"
-          onsubmit="handleSearch(); return false;"
-        >
-          <input
-            type="text"
-            id="modelSearch"
-            placeholder="Search models..."
-            class="search-input"
-            aria-label="Search models"
-          />
-          <button type="submit" class="search-submit">Search</button>
-        </form>
-      </div>
+        <div class="filter-container">
+            <form action="/results" method="get" id="filter-form" class="filter-form">
+                <select name="model_filter" id="model_filter" aria-label="Filter by model">
+                    <option value="">All Models</option>
+                    {{range $model := .Models}}
+                    <option value="{{$model}}" {{if eq $.ModelFilter $model}}selected{{end}}>
+                        {{$model}}
+                    </option>
+                    {{end}}
+                </select>
+                <input type="submit" value="Filter" class="filter-submit" />
+            </form>
+        </div>
+        <div class="title-container">
+            <h1>Results</h1>
+        </div>
+        <div class="search-container">
+            <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
+                <input type="text" id="modelSearch" placeholder="Search models..." class="search-input"
+                    aria-label="Search models" />
+                <button type="submit" class="search-submit">Search</button>
+            </form>
+        </div>
     </div>
     <table class="results-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Actions</th>
-          <th>Model</th>
-          {{range $index := .PromptIndices}}
-          <th>{{$index}}</th>
-          {{end}}
-          <th style="min-width: 33vw;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Table content will be populated by JavaScript -->
-      </tbody>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Actions</th>
+                <th>Model</th>
+                {{range $index := .PromptIndices}}
+                <th>{{$index}}</th>
+                {{end}}
+                <th style="min-width: 33vw;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table content will be populated by JavaScript -->
+        </tbody>
     </table>
     <div class="sticky-footer">
-      <div style="display: flex; align-items: center">
-        <h2>Manage Results</h2>
-        &nbsp;&nbsp;&nbsp;
-        <form action="/reset_results" method="get" style="margin-right: 5px">
-          <input type="submit" value="Reset Results" />
-        </form>
-        <form
-          action="/confirm_refresh_results"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="submit" value="Refresh Results" />
-        </form>
-        <form action="/export_results" method="post" style="margin-right: 5px">
-          <input type="submit" value="Export Results" />
-        </form>
-        <form
-          action="/import_results"
-          method="post"
-          enctype="multipart/form-data"
-          style="display: flex; align-items: center"
-        >
-          <input type="file" name="results_file" style="margin-right: 5px" />
-          <input type="submit" value="Import Results" />
-        </form>
-      </div>
+        <div style="display: flex; align-items: center">
+            <h2>Manage Results</h2>
+            &nbsp;&nbsp;&nbsp;
+            <form action="/reset_results" method="get" style="margin-right: 5px">
+                <input type="submit" value="Reset Results" />
+            </form>
+            <form action="/confirm_refresh_results" method="get" style="margin-right: 5px">
+                <input type="submit" value="Refresh Results" />
+            </form>
+            <form action="/export_results" method="post" style="margin-right: 5px">
+                <input type="submit" value="Export Results" />
+            </form>
+            <form action="/import_results" method="post" enctype="multipart/form-data"
+                style="display: flex; align-items: center">
+                <input type="file" name="results_file" style="margin-right: 5px" />
+                <input type="submit" value="Import Results" />
+            </form>
+        </div>
     </div>
     <div class="scroll-buttons">
-      <button class="scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+        <button class="scroll-button" onclick="scrollToTop()">↑</button>
+        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
     </div>
     <script>
-      function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
+        function scrollToTop() {
+            window.scrollTo({top: 0, behavior: "smooth"});
+        }
 
-      function scrollToBottom() {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
-      }
+        function scrollToBottom() {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: "smooth",
+            });
+        }
     </script>
     <div style="display: none">
-      <span id="results-data">{{.Results | json}}</span>
-      <span id="models-data">{{.Models | json}}</span>
-      <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
-      <span id="total-scores-data">{{.TotalScores | json}}</span>
-      <span id="debug-data">
-        Results: {{.Results | json}}<br />
-        Models: {{.Models | json}}<br />
-        PassPercentages: {{.PassPercentages | json}}<br />
-        TotalScores: {{.TotalScores | json}}
-      </span>
+        <span id="results-data">{{.Results | json}}</span>
+        <span id="models-data">{{.Models | json}}</span>
+        <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
+        <span id="total-scores-data">{{.TotalScores | json}}</span>
+        <span id="debug-data">
+            Results: {{.Results | json}}<br />
+            Models: {{.Models | json}}<br />
+            PassPercentages: {{.PassPercentages | json}}<br />
+            TotalScores: {{.TotalScores | json}}
+        </span>
     </div>
-  </body>
+</body>
+
 </html>
