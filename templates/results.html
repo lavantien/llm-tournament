@@ -150,12 +150,39 @@
             document.getElementById('total-scores-data').textContent = JSON.stringify(newTotalScores);
             document.getElementById('pass-percentages-data').textContent = JSON.stringify(newPassPercentages);
             
-            // Refresh the displayed table immediately with the new payload
-            updateResults({
-             Results: newResults,
-             Models: models,
-             TotalScores: newTotalScores,
-             PassPercentages: newPassPercentages
+            // Send the mock data to the server
+            fetch('/update_mock_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    results: newResults,
+                    models: models,
+                    passPercentages: newPassPercentages,
+                    totalScores: newTotalScores
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Mock data saved successfully:', data);
+                // The server will broadcast the changes, but we'll update the UI immediately
+                updateResults({
+                    Results: newResults,
+                    Models: models,
+                    TotalScores: newTotalScores,
+                    PassPercentages: newPassPercentages
+                });
+            })
+            .catch(error => {
+                console.error('Error saving mock data:', error);
+                // Still update the UI even if the server request fails
+                updateResults({
+                    Results: newResults,
+                    Models: models,
+                    TotalScores: newTotalScores,
+                    PassPercentages: newPassPercentages
+                });
             });
         }
 

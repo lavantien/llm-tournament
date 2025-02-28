@@ -427,3 +427,46 @@ func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("Results exported successfully as JSON")
 }
+
+// UpdateMockResultsHandler handles updating results with randomly generated mock data
+func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling update mock results")
+	
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	// Parse the JSON request body
+	var mockData struct {
+		Results         map[string]middleware.Result `json:"results"`
+		Models          []string                     `json:"models"`
+		PassPercentages map[string]float64           `json:"passPercentages"`
+		TotalScores     map[string]int               `json:"totalScores"`
+	}
+	
+	err := json.NewDecoder(r.Body).Decode(&mockData)
+	if err != nil {
+		log.Printf("Error decoding mock data: %v", err)
+		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
+		return
+	}
+	
+	// Save the mock results
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, mockData.Results)
+	if err != nil {
+		log.Printf("Error writing mock results: %v", err)
+		http.Error(w, "Error saving mock results", http.StatusInternalServerError)
+		return
+	}
+	
+	// Broadcast the updated results to all connected clients
+	middleware.BroadcastResults()
+	
+	// Return success response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+	
+	log.Println("Mock results updated successfully")
+}
