@@ -128,16 +128,16 @@
             
             function getRandomScore() {
               let r = Math.random();
-              if (r < 0.3) {
-                // 30% chance for the minimum score
+              if (r < 0.5) {
+                // 50% chance for minimum score (0)
                 return 0;
-              } else if (r > 0.7) {
-                // 30% chance for the maximum score
-                return 100;
-              } else {
-                // 40% chance for one of the mid-tier scores
+              } else if (r < 0.55) {
+                // 5% chance for a mid-tier score
                 const midValues = [20, 40, 60, 80];
                 return midValues[Math.floor(Math.random() * midValues.length)];
+              } else {
+                // 45% chance for maximum score (100)
+                return 100;
               }
             }
             
