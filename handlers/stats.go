@@ -80,7 +80,9 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 	type ScoreStats struct {
 		TotalScore int `json:"TotalScore"`
 		Count20    int `json:"Count20"`
-		Count50    int `json:"Count50"`
+		Count40    int `json:"Count40"`
+		Count60    int `json:"Count60"`
+		Count80    int `json:"Count80"`
 		Count100   int `json:"Count100"`
 	}
 
@@ -92,8 +94,12 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 			switch score {
 			case 20:
 				stats.Count20++
-			case 50:
-				stats.Count50++
+			case 40:
+				stats.Count40++
+			case 60:
+				stats.Count60++
+			case 80:
+				stats.Count80++
 			case 100:
 				stats.Count100++
 			}
