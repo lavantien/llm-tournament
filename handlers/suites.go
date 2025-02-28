@@ -167,7 +167,7 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("Error renaming suite: %v", err), http.StatusBadRequest)
 			return
 		}
-		log.Printf("Prompt suite '%s' edited successfully to '%s'", suiteName, newSuiteName)
+		log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
