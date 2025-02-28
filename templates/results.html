@@ -116,6 +116,44 @@
             });
         }
 
+        function generateMockScores() {
+            // Retrieve the current models list from the hidden element
+            const models = JSON.parse(document.getElementById('models-data').textContent);
+            // Get the number of prompts (using Go template injection)
+            const promptsCount = {{len .Prompts}} || 0;
+            const allowedScores = [0, 20, 40, 60, 80, 100];
+            // Prepare new data containers
+            let newResults = {};
+            let newTotalScores = {};
+            let newPassPercentages = {};
+            
+            models.forEach(model => {
+             let scores = [];
+             let total = 0;
+             for (let i = 0; i < promptsCount; i++) {
+              let score = allowedScores[Math.floor(Math.random() * allowedScores.length)];
+              scores.push(score);
+              total += score;
+             }
+             newResults[model] = { scores: scores };
+             newTotalScores[model] = total;
+             newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
+            });
+            
+            // Update hidden DOM elements with new data
+            document.getElementById('results-data').textContent = JSON.stringify(newResults);
+            document.getElementById('total-scores-data').textContent = JSON.stringify(newTotalScores);
+            document.getElementById('pass-percentages-data').textContent = JSON.stringify(newPassPercentages);
+            
+            // Refresh the displayed table immediately with the new payload
+            updateResults({
+             Results: newResults,
+             Models: models,
+             TotalScores: newTotalScores,
+             PassPercentages: newPassPercentages
+            });
+        }
+
         function updateResults(payload) {
             console.log("updateResults payload:", payload);
             const results = payload.Results;
@@ -287,7 +325,7 @@
             </form>
         </div>
         <div class="title-container">
-            <h1>Results</h1>
+            <button id="generate-mock-btn" onclick="generateMockScores()">Generate Random Mock Scores</button>
         </div>
         <div class="search-container">
             <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
