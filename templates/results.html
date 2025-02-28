@@ -121,17 +121,31 @@
             const models = JSON.parse(document.getElementById('models-data').textContent);
             // Get the number of prompts (using Go template injection)
             const promptsCount = {{len .Prompts}} || 0;
-            const allowedScores = [0, 20, 40, 60, 80, 100];
             // Prepare new data containers
             let newResults = {};
             let newTotalScores = {};
             let newPassPercentages = {};
             
+            function getRandomScore() {
+              let r = Math.random();
+              if (r < 0.3) {
+                // 30% chance for the minimum score
+                return 0;
+              } else if (r > 0.7) {
+                // 30% chance for the maximum score
+                return 100;
+              } else {
+                // 40% chance for one of the mid-tier scores
+                const midValues = [20, 40, 60, 80];
+                return midValues[Math.floor(Math.random() * midValues.length)];
+              }
+            }
+            
             models.forEach(model => {
              let scores = [];
              let total = 0;
              for (let i = 0; i < promptsCount; i++) {
-              let score = allowedScores[Math.floor(Math.random() * allowedScores.length)];
+              let score = getRandomScore();
               scores.push(score);
               total += score;
              }
