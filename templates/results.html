@@ -12,11 +12,11 @@
         let initialLoad = true; // Flag to track initial load
 
         function connectWebSocket() {
+            // Then connect WebSocket
+            socket = new WebSocket("ws://" + window.location.host + "/ws");
+
             // First load initial data
             fetchInitialData().then(() => {
-                // Then connect WebSocket
-                socket = new WebSocket("ws://" + window.location.host + "/ws");
-
                 socket.onopen = function (e) {
                     console.log("[open] Connection established");
                     connectionRetries = 0; // Reset retries on successful connection
@@ -201,14 +201,11 @@
         }
 
         function updateResults(payload) {
-            console.log("updateResults payload:", payload);
             const results = payload.Results;
             const models = payload.Models;
             const passPercentages = payload.PassPercentages;
             const totalScores = payload.TotalScores;
             const modelFilter = document.getElementById("model_filter").value;
-
-            console.log("Full results object:", results); // Log the entire results object
 
             const tbody = document.querySelector("table tbody");
             if (!tbody) {
@@ -245,7 +242,6 @@
 
                     // Create score cells
                     const scoreCells = [];
-                    console.log(`results[${model}]:`, results[model]); // Log results[model] object
                     const scores = results[model]?.scores || [];
                     const promptsCount = {{len .Prompts}} || 0;
 
@@ -256,8 +252,6 @@
 
                 for (let index = 0; index < promptsCount; index++) {
                     const score = scores[index] || 0;
-                    console.log(`Results for model ${model}:`, results[model]); // Log results for the current model
-                    console.log(`Scores array for model ${model}:`, scores); // Log the scores array
                     const scoreCell = document.createElement("td");
                     scoreCell.className = 'score-cell';
 
@@ -371,7 +365,7 @@
             </form>
         </div>
         <div class="title-container">
-            <button id="generate-mock-btn" onclick="generateMockScores()">Generate Random Mock Scores</button>
+            <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Random Mock Scores</button>
         </div>
         <div class="search-container">
             <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
