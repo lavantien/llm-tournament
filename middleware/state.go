@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -210,6 +211,50 @@ func DeletePromptSuite(suiteName string) error {
 		return err
 	}
 	return nil
+}
+
+// RenameSuiteFiles renames all files associated with a suite
+func RenameSuiteFiles(oldName, newName string) error {
+    // Rename prompts file
+    oldPrompts := "data/prompts-" + oldName + ".json"
+    newPrompts := "data/prompts-" + newName + ".json"
+    if err := os.Rename(oldPrompts, newPrompts); err != nil && !os.IsNotExist(err) {
+        return fmt.Errorf("error renaming prompts: %w", err)
+    }
+
+    // Rename profiles file
+    oldProfiles := "data/profiles-" + oldName + ".json"
+    newProfiles := "data/profiles-" + newName + ".json"
+    if err := os.Rename(oldProfiles, newProfiles); err != nil && !os.IsNotExist(err) {
+        return fmt.Errorf("error renaming profiles: %w", err)
+    }
+
+    // Rename results file
+    oldResults := "data/results-" + oldName + ".json"
+    newResults := "data/results-" + newName + ".json"
+    if err := os.Rename(oldResults, newResults); err != nil && !os.IsNotExist(err) {
+        return fmt.Errorf("error renaming results: %w", err)
+    }
+
+    // Update current suite if it was the renamed one
+    if GetCurrentSuiteName() == oldName {
+        if err := os.WriteFile("data/current_suite.txt", []byte(newName), 0644); err != nil {
+            return fmt.Errorf("error updating current suite: %w", err)
+        }
+    }
+    
+    return nil
+}
+
+// SuiteExists checks if a suite with the given name exists
+func SuiteExists(name string) bool {
+    suites, _ := ListPromptSuites()
+    for _, s := range suites {
+        if s == name {
+            return true
+        }
+    }
+    return false
 }
 
 // Get current suite name
