@@ -140,6 +140,11 @@
              newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
             });
             
+            // Sort models in descending order based on their total scores
+            models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
+            // Update hidden models-data with the new sorted order
+            document.getElementById('models-data').textContent = JSON.stringify(models);
+            
             // Update hidden DOM elements with new data
             document.getElementById('results-data').textContent = JSON.stringify(newResults);
             document.getElementById('total-scores-data').textContent = JSON.stringify(newTotalScores);
