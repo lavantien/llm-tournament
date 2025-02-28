@@ -49,8 +49,8 @@ Key technical highlights:
 
 - **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
 - **Assistant**: Aider with
-  - free/unlimited APIs: Gemini 2.0, Gemini 2.0 Flash, Gemini 2.0 Flash Thinking, Codestral 2501, Mistral Large Latest.
-  - paid APIs: DeepSeek V3 since v1.1, DeepSeek R1, o3-mini (high)
+  - free/unlimited APIs: Gemini 2.0 Flash, Codestral 2501, Mistral Large Latest.
+  - paid APIs: DeepSeek V3 since v1.1, DeepSeek R1, o3-mini (high), o1 (high), Claude 3.7 Sonnet.
 
 [(Back)](#-table-of-contents)
 
@@ -102,16 +102,12 @@ Anyone can just submit a PR and we'll discuss there.
 
 ### 🔧 Issues
 
-- Prompts import; change CSV to JSON
-- Rename prompt suite.
-
 ### 🔧 Non-Functional
 
 - Make another prompt suite for vision LLMs.
 
 ### 🔧 Functional
 
-- Incorporate Promptmetheus's core features.
 - Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
 - Update the features section about the tools.
 
