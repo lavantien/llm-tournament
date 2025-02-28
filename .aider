@@ -1,5 +1,4 @@
 /drop
-/add       PRELIMINARY_DESIGN.md
 /add       README.md
 /add       handlers/models.go
 /add       handlers/profiles.go
