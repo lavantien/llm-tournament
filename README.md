@@ -3,7 +3,6 @@
 **A dynamic evaluation platform for benchmarking Large Language Models**  
 *Real-time scoring • Modular test suites • Collaborative evaluation • Granular analytics*
 
-🌐 **Live Demo**: [tournament.llm.arena](https://tournament.llm.arena)  
 📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards**
 
 ![UI Dashboard Preview](./assets/ui-prompt-manager.png)
@@ -12,7 +11,7 @@
 
 ```bash
 # Clone & Run
-git clone https://github.com/yourrepo/llm-tournament.git
+git clone https://github.com/lavantien/llm-tournament.git
 cd llm-tournament
 make run
 ```
@@ -77,7 +76,7 @@ Access at `http://localhost:8080`
 `HTML5` • `CSS3` • `JavaScript ES6+` • `Chart.js`
 
 **Data**  
-`JSON Storage` • `File-based State` • `CSV Import/Export`
+`JSON Storage` • `File-based State` • `JSON Import/Export`
 
 **Security**  
 `XSS Sanitization` • `CORS Protection` • `Rate Limiting`
@@ -90,14 +89,9 @@ Access at `http://localhost:8080`
 - Make
 
 ```bash
-# Installation
-make deps       # Install dependencies
-make assets     # Build frontend assets
-make run        # Start development server
-
 # Production
 make build      # Create production binary
-./release/llm-tournament --port 8080
+./release/llm-tournament
 ```
 
 ## 📚 Usage Guide
@@ -146,12 +140,12 @@ We welcome contributions!
 
 ## 🗺 Roadmap
 
-### Q3 2024
+### Q2 2025
 - 🧠 Multi-LLM consensus scoring
 - 🌐 Distributed evaluation mode
 - 🔍 Advanced search syntax
 
-### Q4 2024
+### Q3 2025
 - 📊 Custom metric support
 - 🤖 Auto-evaluation agents
 - 🔄 CI/CD integration
@@ -162,5 +156,4 @@ MIT License - See [LICENSE](LICENSE) for details
 
 ## 📬 Contact
 
-Core Team: [arena@llm.tournament](mailto:arena@llm.tournament)  
-Security Issues: [security@llm.tournament](mailto:security@llm.tournament)
+My work email: [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com)  
