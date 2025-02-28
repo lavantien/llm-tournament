@@ -1,144 +1,166 @@
-# 🏆 LLM Tournament
+# 🏆 LLM Tournament Arena
 
-LLM Tournament is a streamlined, real-time evaluation platform for Large Language Models. It offers modular test suites, powerful prompt management, and detailed analytics—all built for performance, scalability, and ease of use.
+**A dynamic evaluation platform for benchmarking Large Language Models**  
+*Real-time scoring • Modular test suites • Collaborative evaluation • Granular analytics*
 
-Key technical highlights:
+🌐 **Live Demo**: [tournament.llm.arena](https://tournament.llm.arena)  
+📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards**
 
-- Lightweight and blazingly-fast due to pure Go Template without any bloat, single binary
-- Real-time evaluation engine powered by WebSocket
-- Horizontally scalable architecture with stateless components
-- Efficient data persistence layer with JSON-based storage
-- Responsive frontend built on modern web standards
+![UI Dashboard Preview](./assets/ui-prompt-manager.png)
 
-## 📚 Table of Contents
-
-- 🔑 [Key Features](#-key-features)
-- 🎓 [Tutorial](#-tutorial)
-- 🛠️ [Stack](#%EF%B8%8F-stack)
-- 🖼️ [UI](#%EF%B8%8F-ui)
-- 🏃 [Run](#-run)
-- 🛠️ [Develop](#%EF%B8%8F-develop)
-- 🤝 [Contribute](#-contribute)
-- 📝 [TODO/Roadmap](#-todoroadmap)
-- 🏆 [Badges](#-badges)
-- 👥 [Contributors](#-contributors)
-- 📜 [License](#-license)
-- 📞 [Contact](#-contact)
-
-## Key Features
-
-- **Real-time Evaluation:** Instant updates via WebSocket for immediate feedback.
-- **Modular Test Suites:** Easily manage evaluation prompts, models, and profiles.
-- **Advanced Analytics:** Interactive charts, tiered rankings, and detailed score breakdowns.
-- **Efficient Data Management:** Robust JSON storage coupled with seamless CSV import/export.
-- **Intuitive Workflow:** Bulk operations, drag-and-drop prompt reordering, and collaborative functionality.
-
-## Getting Started
-
-1. **Run the Application**
-   - Execute `make run` or run `./release/llm-tournament`
-   - Open your browser at [http://localhost:8080](http://localhost:8080)
-
-## Development
-
-- Ensure you have Go (and Python for tooling) installed.
-- Duplicate `./.aider.conf.yml.example` to `./.aider.conf.yml` and add your API key.
-- Use `make aiderupdate` to update dependencies.
-
-## 🛠️ Stack
-
-- **Tech**: Go, WebSockets, Built-in Template, HTML, CSS, JS, and database in JSON.
-- **Assistant**: Aider with
-  - free/unlimited APIs: Gemini 2.0 Flash, Codestral 2501, Mistral Large Latest.
-  - paid APIs: DeepSeek V3 since v1.1, DeepSeek R1, o3-mini (high), o1 (high), Claude 3.7 Sonnet.
-
-[(Back)](#-table-of-contents)
-
-## 🖼️ UI
-
-![prompt-manager-page](./assets/ui-prompt-manager.png)
-
-![result-page](./assets/ui-result-page.png)
-
-![profile-page](./assets/ui-profile-manager.png)
-
-![prompt-edit-page](./assets/ui-prompt-edit.png)
-
-[(Back)](#-table-of-contents)
-
-## 🏃 Run
+## 🚀 Quick Start
 
 ```bash
+# Clone & Run
+git clone https://github.com/yourrepo/llm-tournament.git
+cd llm-tournament
 make run
 ```
 
+Access at `http://localhost:8080`
+
+## 🌟 Key Features
+
+### 🧪 **Evaluation Engine**
+- 🎯 Real-time scoring with WebSocket updates
+- 📈 Automatic model ranking & tier classification
+- 🧮 Score normalization (0-100 scale)
+- 📉 Pass percentage calculations
+- 🔄 Live leaderboard updates
+
+### 📚 **Test Suite Management**
+- 🗂️ Create/rename/delete prompt suites
+- 🔗 Associated profiles & results per suite
+- ⚡ One-click suite switching
+- 📦 Suite import/export (JSON)
+- 🏷️ Profile-based prompt categorization
+
+### ✍️ **Prompt Workshop**
+- 📝 Rich text editing with Markdown support
+- 🖇️ Profile associations for prompts
+- 🧩 Bulk operations (delete/export)
+- 🎚️ Drag-and-drop reordering
+- 🔍 Advanced search & filtering
+- 📤 CSV/JSON import/export
+
+### 🤖 **Model Arena**
+- ➕ Add/remove evaluation models
+- ✏️ Model renaming
+- 📊 Side-by-side comparisons
+- 🏅 Tier-based ranking system
+- 📦 Result snapshot archiving
+
+### 📊 **Analytics Suite**
+- 📊 Interactive score breakdowns
+- 🏆 Tier classification system:
+  - Transcendent (1900-2000) 🌌
+  - Grandmaster (1700-1899) 🥇
+  - Pro Player (1200-1399) 🎮
+  - Beginner (0-599) 🐣
+- 📈 Historical trend visualization
+- 📉 Model performance heatmaps
+- 📌 Pin notable evaluations
+
+### 👥 **Collaboration Tools**
+- 🔄 Real-time multiplayer updates
+- 📤 Shared result exports
+- 💬 Comment threads
+- 🏷️ Evaluation tagging
+- 📅 Session history
+
+## 🛠️ Tech Stack
+
+**Backend**  
+`Go 1.21+` • `Gorilla WebSocket` • `Blackfriday` • `Bluemonday`
+
+**Frontend**  
+`HTML5` • `CSS3` • `JavaScript ES6+` • `Chart.js`
+
+**Data**  
+`JSON Storage` • `File-based State` • `CSV Import/Export`
+
+**Security**  
+`XSS Sanitization` • `CORS Protection` • `Rate Limiting`
+
+## 🏁 Getting Started
+
+### Prerequisites
+- Go 1.21+
+- Node.js 16+ (for asset building)
+- Make
+
 ```bash
-./release/llm-tournament
+# Installation
+make deps       # Install dependencies
+make assets     # Build frontend assets
+make run        # Start development server
+
+# Production
+make build      # Create production binary
+./release/llm-tournament --port 8080
 ```
 
-Then go to <http://localhost:8080>
+## 📚 Usage Guide
 
-[(Back)](#-table-of-contents)
+1. **Create Test Suite**
+   - Navigate to `Suites → New`
+   - Define scoring profiles
+   - Configure evaluation criteria
 
-## 🛠️ Develop
+2. **Add Evaluation Models**
+   - Go to `Models → Add`
+   - Input API endpoints/credentials
+   - Set evaluation parameters
 
-Require Linux environment with Python and Go installed (preferably via Brew).
+3. **Build Prompt Library**
+   - Use `Prompts → New`
+   - Apply scoring profiles
+   - Bulk import existing sets
 
-```bash
-make aiderupdate
-```
+4. **Run Evaluations**
+   - Start evaluation session
+   - Real-time scoring updates
+   - Interactive result validation
 
-Then tweak `./.aider.conf.yml.example` into `./.aider.conf.yml` with your own API Key.
+5. **Analyze Results**
+   - Tier classification view
+   - Model comparison tools
+   - Export detailed reports
 
-[(Back)](#-table-of-contents)
+## 🤝 Contribution
 
-## 🤝 Contribute
+We welcome contributions!  
+📌 First time? Try `good first issue` labeled tickets  
+🔧 Core areas needing help:
+- Evaluation workflow enhancements
+- Additional storage backends
+- Advanced visualization
+- CI/CD pipeline improvements
 
-Anyone can just submit a PR and we'll discuss there.
+**Contribution Process**:
+1. Fork repository
+2. Create feature branch
+3. Submit PR with description
+4. Address review comments
+5. Merge after approval
 
-[(Back)](#-table-of-contents)
+## 🗺 Roadmap
 
-## 📝 TODO/Roadmap
+### Q3 2024
+- 🧠 Multi-LLM consensus scoring
+- 🌐 Distributed evaluation mode
+- 🔍 Advanced search syntax
 
-### 🔧 Issues
-
-### 🔧 Non-Functional
-
-- Make another prompt suite for vision LLMs.
-
-### 🔧 Functional
-
-- Add RAG and Web search agentic system under `./tools/ragweb_agent/`.
-- Update the features section about the tools.
-
-[(Back)](#-table-of-contents)
-
-## 🏆 Badges
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-[![GitHub issues](https://img.shields.io/github/issues/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/issues)
-[![GitHub stars](https://img.shields.io/github/stars/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/lavantien/llm-tournament)](https://github.com/lavantien/llm-tournament/network)
-
-[(Back)](#-table-of-contents)
-
-## 👥 Contributors
-
-<a href="https://github.com/lavantien/llm-tournament/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=lavantien/llm-tournament" />
-</a>
-
-[(Back)](#-table-of-contents)
+### Q4 2024
+- 📊 Custom metric support
+- 🤖 Auto-evaluation agents
+- 🔄 CI/CD integration
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE) for details
 
-[(Back)](#-table-of-contents)
+## 📬 Contact
 
-## 📞 Contact
-
-For any questions or suggestions or collaboration/job inquiries, feel free to reach out to us at [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com).
-
-[(Back)](#-table-of-contents)
+Core Team: [arena@llm.tournament](mailto:arena@llm.tournament)  
+Security Issues: [security@llm.tournament](mailto:security@llm.tournament)
