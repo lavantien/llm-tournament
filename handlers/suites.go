@@ -152,50 +152,18 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing form", http.StatusBadRequest)
 			return
 		}
-		suiteName := r.Form.Get("suite_name")
-		if suiteName == "" {
-			log.Println("Suite name cannot be empty")
-			http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
-			return
-		}
+		oldSuiteName := r.Form.Get("suite_name")
 		newSuiteName := r.Form.Get("new_suite_name")
-		if newSuiteName == "" {
-			log.Println("New suite name cannot be empty")
-			http.Error(w, "New suite name cannot be empty", http.StatusBadRequest)
-			return
-		}
-		if suiteName == newSuiteName {
-			log.Println("New suite name is the same as the old suite name")
-			http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+
+		if oldSuiteName == "" || newSuiteName == "" {
+			log.Println("Both old and new names required")
+			http.Error(w, "Both original and new suite names are required", http.StatusBadRequest)
 			return
 		}
 
-		currentSuite := middleware.GetCurrentSuiteName()
-		if suiteName == currentSuite {
-			err = os.WriteFile("data/current_suite.txt", []byte(newSuiteName), 0644)
-			if err != nil {
-				log.Printf("Error updating current suite: %v", err)
-				http.Error(w, "Error updating current suite", http.StatusInternalServerError)
-				return
-			}
-		}
-
-		prompts, err := middleware.ReadPromptSuite(suiteName)
-		if err != nil {
-			log.Printf("Error reading prompt suite: %v", err)
-			http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
-			return
-		}
-		err = middleware.DeletePromptSuite(suiteName)
-		if err != nil {
-			log.Printf("Error deleting prompt suite: %v", err)
-			http.Error(w, "Error deleting prompt suite", http.StatusInternalServerError)
-			return
-		}
-		err = middleware.WritePromptSuite(newSuiteName, prompts)
-		if err != nil {
-			log.Printf("Error creating prompt suite: %v", err)
-			http.Error(w, "Error creating prompt suite", http.StatusInternalServerError)
+		if err := middleware.RenameSuiteFiles(oldSuiteName, newSuiteName); err != nil {
+			log.Printf("Error renaming suite: %v", err)
+			http.Error(w, fmt.Sprintf("Error renaming suite: %v", err), http.StatusBadRequest)
 			return
 		}
 		log.Printf("Prompt suite '%s' edited successfully to '%s'", suiteName, newSuiteName)
