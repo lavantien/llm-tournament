@@ -6,7 +6,7 @@
 📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards**
 
 <details>
-    <summary>Preview Pictures (expand)</summary>
+    <summary>Program Screenshots (expand)</summary>
 
 UI Result Page Preview:
 ![UI Result Page Preview](./assets/ui-result-page.png)
@@ -14,11 +14,11 @@ UI Result Page Preview:
 UI Prompt Manager Preview:
 ![UI Prompt Manager Preview](./assets/ui-prompt-manager.png)
 
-UI Profile Manager Preview:
-![UI Profile Manager Preview](./assets/ui-profile-manager.png)
-
 UI Stats Page Preview:
 ![UI Stats Page Preview](./assets/ui-stats-page.png)
+
+UI Profile Manager Preview:
+![UI Profile Manager Preview](./assets/ui-profile-manager.png)
 
 UI Prompt Edit Preview:
 ![UI Prompt Edit Preview](./assets/ui-prompt-edit.png)
