@@ -99,6 +99,19 @@ Access at `http://localhost:8080`
 **Security**  
 `XSS Sanitization` • `CORS Protection` • `Rate Limiting`
 
+## 🧰 Tools
+
+**Text-to-Speech**  
+`tools/tts/podcast.py` - Generate podcast audio from text scripts using Kokoro ONNX models
+
+**Background Removal**  
+`tools/bg_batch_eraser/main.py` - Remove backgrounds from images using BEN2 model  
+`tools/bg_batch_eraser/vidseg.py` - Extract foreground from videos with alpha channel support  
+`tools/bg_batch_eraser/BEN2.py` - Core background eraser neural network implementation
+
+**LLM Integration**  
+`tools/openwebui/pipes/anthropic_claude_thinking_96k.py` - OpenWebUI pipe for Claude with thinking mode
+
 ## 🏁 Getting Started
 
 ### Prerequisites
