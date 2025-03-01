@@ -636,8 +636,11 @@ body {
 .chart-container {
   height: 80vh;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-container canvas {
+  flex: 1;
   max-height: 100%;
 }
