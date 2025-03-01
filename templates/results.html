@@ -15,16 +15,16 @@
             // Then connect WebSocket
             socket = new WebSocket("ws://" + window.location.host + "/ws");
 
+            socket.onopen = function (e) {
+                console.log("[open] Connection established");
+                connectionRetries = 0; // Reset retries on successful connection
+                document.getElementById("connection-status").textContent =
+                    "Connected";
+                document.getElementById("connection-status").style.color = "green";
+            };
+
             // First load initial data
-            fetchInitialData().then(() => {
-                socket.onopen = function (e) {
-                    console.log("[open] Connection established");
-                    connectionRetries = 0; // Reset retries on successful connection
-                    document.getElementById("connection-status").textContent =
-                        "Connected";
-                    document.getElementById("connection-status").style.color = "green";
-                };
-            });
+            fetchInitialData();
 
             socket.onmessage = function (event) {
                 try {
