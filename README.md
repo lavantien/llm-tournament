@@ -105,15 +105,18 @@ Access at `http://localhost:8080`
 - Go 1.21+
 - Node.js 16+ (for asset building)
 - Make
-- Aider
+- [Aider](https://aider.chat/)
 - Aider's configs from my [dotfiles](https://github.com/lavantien/dotfiles)
 
+### Development
+- Read through the Aider's usage guide: <https://aider.chat/docs/usage.html>
+- Aider with o3-mini (high) as architect and claude-3.7-sonnet as editor 
 ```bash
-# Development
-aider --no-gitignore
+# Development 
+aider --no-gitignore --watch-files
 
 # Production
-make build      # Create production binary
+make build
 ./release/llm-tournament
 ```
 
