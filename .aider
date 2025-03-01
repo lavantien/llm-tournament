@@ -1,21 +1,5 @@
 /drop
 /add       README.md
-/add       handlers/models.go
-/add       handlers/profiles.go
-/add       handlers/prompt.go
-/add       handlers/results.go
-/add       handlers/stats.go
-/add       handlers/suites.go
-/add       main.go
-/add       middleware/handler_utils.go
-/add       middleware/import_error.go
-/add       middleware/socket.go
-/add       middleware/state.go
-/add       templates/edit_prompt.html
-/add       templates/evaluate.html
-/add       templates/nav.html
-/add       templates/prompt_list.html
-/add       templates/results.html
-/add       templates/shared.go
-/add       templates/stats.html
-/add       templates/style.css
+/add       tools/bg_batch_eraser/main.py
+/add       tools/bg_batch_eraser/vidseg.py
+/add       tools/tts/podcast.py
