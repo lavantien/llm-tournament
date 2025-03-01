@@ -91,8 +91,13 @@ Access at `http://localhost:8080`
 - Go 1.21+
 - Node.js 16+ (for asset building)
 - Make
+- Aider
+- Aider's configs from my [dotfiles](https://github.com/lavantien/dotfiles)
 
 ```bash
+# Development
+aider --no-gitignore
+
 # Production
 make build      # Create production binary
 ./release/llm-tournament
