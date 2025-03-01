@@ -631,8 +631,13 @@ body {
     }
   }
 
-  .chart-container {
-    max-height: 80vh;
-    overflow-y: auto;
-  }
+}
+
+.chart-container {
+  height: 80vh;
+  overflow-y: auto;
+}
+
+.chart-container canvas {
+  max-height: 100%;
 }
