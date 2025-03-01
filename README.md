@@ -113,7 +113,7 @@ Access at `http://localhost:8080`
 - Aider with o3-mini (high) as architect and claude-3.7-sonnet as editor 
 ```bash
 # Development 
-aider --no-gitignore --watch-files
+./dev.sh
 
 # Production
 make build
