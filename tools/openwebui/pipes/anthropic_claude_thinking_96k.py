@@ -3,7 +3,7 @@ title: Anthropic Claude Thinking 96K
 authors: lavantien, based on work by justinh-rahb and christian-taillon
 author_url: https://github.com/lavantien
 repo_url: https://github.com/lavantien/llm-tournament/tree/main/tools/openwebui/pipes/
-version: 0.3
+version: 0.4
 required_open_webui_version: 0.5.17+
 license: MIT
 """
@@ -159,8 +159,7 @@ class Pipe:
         }
 
         # Add additional headers for 128k output and prompt caching
-        headers["anthropic-beta"] = "output-128k-2025-02-19"
-        headers["prompt-caching-2024-07-31"] = ""
+        headers["anthropic-beta"] = "output-128k-2025-02-19,prompt-caching-2024-07-31"
 
         url = "https://api.anthropic.com/v1/messages"
 
@@ -238,7 +237,7 @@ class Pipe:
                                         and not in_thinking_section
                                         and not thinking_text
                                     ):
-                                        yield "\n\n🔍 [Response]\n\n"
+                                        yield "---\n\n🔍 [Response]\n\n"
                                     yield data["content_block"]["text"]
 
                                 # Handle regular text delta
@@ -259,10 +258,10 @@ class Pipe:
                                     if is_thinking_mode:
                                         for content in data.get("content", []):
                                             if content.get("type") == "thinking":
-                                                yield "\n💭 [Thinking] " + content.get(
+                                                yield "\n💭 [Thinking]\n\n" + content.get(
                                                     "thinking", ""
                                                 )
-                                                yield "\n\n🔍 [Response] "
+                                                yield "---\n\n🔍 [Response]\n\n"
                                                 break
 
                                     # Then process text content
@@ -302,10 +301,11 @@ class Pipe:
                 # Check for thinking content
                 for content in res.get("content", []):
                     if content.get("type") == "thinking":
-                        result += f"\n💭 [Thinking] {
+                        result += f"\n💭 [Thinking]\n\n{
                             content.get('thinking', '')}\n\n"
                     elif content.get("type") == "text":
-                        result += f"🔍 [Response] {content.get('text', '')}"
+                        result += f"---\n\n🔍 [Response]\n\n{
+                            content.get('text', '')}"
                 return result
             else:
                 # Normal response processing
