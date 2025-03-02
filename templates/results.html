@@ -291,7 +291,7 @@
                 totalCell.className = "progress-bar-wrapper";
                 const progressDiv = document.createElement("div");
                 progressDiv.className = "progress-bar-container";
-                progressDiv.style.width = "33vw"; // Set width to 1/3 of viewport width
+                progressDiv.style.width = "20vw"; // Set width to 20% of viewport width
                 const progressBar = document.createElement("div");
                 progressBar.className = "progress-bar";
                 progressBar.style.width = `${passPercentages[model] || 0}%`;
@@ -384,7 +384,7 @@
                 {{range $index := .PromptIndices}}
                 <th>{{$index}}</th>
                 {{end}}
-                <th style="min-width: 33vw;">Total</th>
+                <th style="min-width: 20vw;">Total</th>
             </tr>
         </thead>
         <tbody>
