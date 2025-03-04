@@ -1,5 +1,3 @@
 /drop
-/add       README.md
-/add       tools/bg_batch_eraser/main.py
-/add       tools/bg_batch_eraser/vidseg.py
-/add       tools/tts/podcast.py
+/add       templates\results.html
+/add       templates\style.css
