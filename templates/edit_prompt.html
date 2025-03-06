@@ -12,9 +12,7 @@
     <form action="/edit_prompt" method="post" style="text-align: center">
       <input type="hidden" name="index" value="{{.Index}}" />
       <label for="prompt">Prompt:</label><br />
-      <textarea name="prompt" rows="10" cols="50" id="prompt">
-{{.Prompt.Text}}</textarea
-      ><br />
+      <textarea name="prompt" rows="10" cols="50" id="prompt">{{.Prompt.Text}}</textarea><br />
       <label for="solution">Solution:</label><br />
       <textarea name="solution" rows="5" cols="50" id="solution">{{.Prompt.Solution}}</textarea><br />
       <label for="profile">Profile:</label><br />

@@ -234,6 +234,7 @@ body {
             border-color: #bb86fc;
             background-color: #444;
         }
+        text-align: center;
     }
 
     input[type="submit"] {
