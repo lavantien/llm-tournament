@@ -29,25 +29,30 @@
             socket.onmessage = function (event) {
                 try {
                     const payload = JSON.parse(event.data);
+                    console.log('Received WebSocket update:', payload);
+        
                     if (payload.type === 'results') {
-                        console.log('Received WebSocket update:', payload);
+                        // Create a safe data object with defaults
+                        const safeData = {
+                            Results: payload.data.results || {},
+                            Models: payload.data.models || [],
+                            PassPercentages: payload.data.passPercentages || {},
+                            TotalScores: payload.data.totalScores || {}
+                        };
+            
+                        console.log('Processed WebSocket data:', safeData);
 
                         // Update the hidden data elements with new values
-                        document.getElementById('results-data').textContent = JSON.stringify(payload.data.Results);
-                        document.getElementById('models-data').textContent = JSON.stringify(payload.data.Models);
-                        document.getElementById('pass-percentages-data').textContent = JSON.stringify(payload.data.PassPercentages);
-                        document.getElementById('total-scores-data').textContent = JSON.stringify(payload.data.TotalScores);
+                        document.getElementById('results-data').textContent = JSON.stringify(safeData.Results);
+                        document.getElementById('models-data').textContent = JSON.stringify(safeData.Models);
+                        document.getElementById('pass-percentages-data').textContent = JSON.stringify(safeData.PassPercentages);
+                        document.getElementById('total-scores-data').textContent = JSON.stringify(safeData.TotalScores);
 
                         // Update the table with new data
-                        updateResults({
-                            Results: payload.data.Results,
-                            Models: payload.data.Models,
-                            PassPercentages: payload.data.PassPercentages,
-                            TotalScores: payload.data.TotalScores
-                        });
+                        updateResults(safeData);
                     }
                 } catch (error) {
-                    console.error('Error parsing WebSocket message:', error);
+                    console.error('Error parsing WebSocket message:', error, event.data);
                 }
             };
 
@@ -207,15 +212,34 @@
         }
 
         function updateResults(payload) {
-            const results = payload.Results;
-            const models = payload.Models;
-            const passPercentages = payload.PassPercentages;
-            const totalScores = payload.TotalScores;
+            // Apply defensive programming to handle potential undefined values
+            const results = payload.Results || {};
+            const models = payload.Models || [];
+            const passPercentages = payload.PassPercentages || {};
+            const totalScores = payload.TotalScores || {};
             const modelFilter = document.getElementById("model_filter").value;
 
+            console.log('Updating UI with models:', models);
+            
             const tbody = document.querySelector("table tbody");
             if (!tbody) {
                 console.error('Table body not found');
+                return;
+            }
+            
+            // If models array is empty, try to rebuild it from results object
+            if (models.length === 0 && Object.keys(results).length > 0) {
+                console.log('Models array is empty, rebuilding from results keys');
+                Object.keys(results).forEach(model => {
+                    if (!models.includes(model)) {
+                        models.push(model);
+                    }
+                });
+            }
+            
+            if (models.length === 0) {
+                console.error('No models available to display');
+                tbody.innerHTML = '<tr><td colspan="100" style="text-align:center">No models available</td></tr>';
                 return;
             }
 
@@ -248,7 +272,7 @@
 
                     // Create score cells
                     const scoreCells = [];
-                    const scores = results[model]?.scores || [];
+                    const scores = results[model]?.Scores || [];
                     const promptsCount = {{len .Prompts}} || 0;
 
                 // Ensure we have enough scores for all prompts
@@ -323,21 +347,41 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // First render from initial data
-            const results = JSON.parse(document.getElementById('results-data').textContent || '{}');
-            const models = JSON.parse(document.getElementById('models-data').textContent || '[]');
-            const passPercentages = JSON.parse(document.getElementById('pass-percentages-data').textContent || '{}');
-            const totalScores = JSON.parse(document.getElementById('total-scores-data').textContent || '{}');
+            try {
+                // First render from initial data
+                const resultsEl = document.getElementById('results-data');
+                const modelsEl = document.getElementById('models-data');
+                const passPercentagesEl = document.getElementById('pass-percentages-data');
+                const totalScoresEl = document.getElementById('total-scores-data');
+                
+                // Safely parse JSON with fallbacks
+                const results = resultsEl && resultsEl.textContent ? 
+                    JSON.parse(resultsEl.textContent) : {};
+                    
+                const models = modelsEl && modelsEl.textContent ? 
+                    JSON.parse(modelsEl.textContent) : [];
+                    
+                const passPercentages = passPercentagesEl && passPercentagesEl.textContent ? 
+                    JSON.parse(passPercentagesEl.textContent) : {};
+                    
+                const totalScores = totalScoresEl && totalScoresEl.textContent ? 
+                    JSON.parse(totalScoresEl.textContent) : {};
+                
+                console.log('Initial data loaded:', { 
+                    results, 
+                    models: models || [], 
+                    models_length: models ? models.length : 0 
+                });
 
-            if (Object.keys(results).length > 0 && models.length > 0) {
+                // Update UI with initial data
                 updateResults({
                     Results: results,
                     Models: models,
                     PassPercentages: passPercentages,
                     TotalScores: totalScores
                 });
-            } else {
-                console.error('Initial data is empty');
+            } catch (error) {
+                console.error('Error loading initial data:', error);
             }
 
             // Then connect WebSocket

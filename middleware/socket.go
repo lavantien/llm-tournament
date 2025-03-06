@@ -94,6 +94,9 @@ func BroadcastResults() {
 		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
 	})
 
+	// Log the data we're about to send
+	log.Printf("Broadcasting data - Models: %v", models)
+	
 	payload := struct {
 		Type string `json:"type"`
 		Data struct {
