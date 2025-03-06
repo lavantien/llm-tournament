@@ -27,13 +27,13 @@
             </div>
 
             <div class="evaluation-buttons">
-                <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>Previous</a>
-                <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>Next</a>
+                <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>⬅️</a>
+                <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>➡️</a>
                 <span>_</span>
-                <button type="button" class="action-button" onclick="copyPromptText()">Copy</button>
+                <button type="button" class="action-button" onclick="copyPromptText()">📋</button>
                 <span>_</span>
-                <button type="submit" class="action-button">Accept</button>
-                <a href="/results" class="action-button">Cancel</a>
+                <button type="submit" class="action-button">✅</button>
+                <a href="/results" class="action-button">❌</a>
             </div>
         </form>
 
@@ -88,7 +88,7 @@
             
             // Reset button text after 2 seconds
             setTimeout(() => {
-              copyButton.textContent = originalText;
+              copyButton.textContent = "📋";
             }, 2000);
           })
           .catch(err => {
