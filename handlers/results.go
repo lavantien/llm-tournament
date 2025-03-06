@@ -120,6 +120,11 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		modelTotalScores[model] = totalScore
 	}
 
+	// Log the data we're about to send to the template for debugging
+	if len(models) > 0 && len(promptTexts) > 0 {
+		log.Printf("First model: %s, scores: %v", models[0], resultsForTemplate[models[0]].Scores)
+	}
+
 	templateData := struct {
 		PageName        string
 		Prompts         []string

@@ -306,12 +306,26 @@ func WriteResults(suiteName string, results map[string]Result) error {
 // MigrateResults converts old result formats to the current format
 func MigrateResults(results map[string]Result) map[string]Result {
 	migrated := make(map[string]Result)
+	prompts := ReadPrompts()
 	
 	for model, result := range results {
 		// If we have no Scores, initialize empty array
 		if result.Scores == nil {
-			result.Scores = make([]int, len(ReadPrompts()))
+			result.Scores = make([]int, len(prompts))
+		} else if len(result.Scores) < len(prompts) {
+			// Ensure scores array has correct length
+			newScores := make([]int, len(prompts))
+			copy(newScores, result.Scores)
+			result.Scores = newScores
 		}
+		
+		// Ensure all scores are within valid range
+		for i, score := range result.Scores {
+			if score < 0 || score > 100 {
+				result.Scores[i] = 0
+			}
+		}
+		
 		migrated[model] = result
 	}
 	return migrated

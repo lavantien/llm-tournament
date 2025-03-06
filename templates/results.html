@@ -219,7 +219,7 @@
             const totalScores = payload.TotalScores || {};
             const modelFilter = document.getElementById("model_filter").value;
 
-            console.log('Updating UI with models:', models);
+            console.log('Updating UI with models:', models, 'First model results:', models.length > 0 ? results[models[0]] : null);
             
             const tbody = document.querySelector("table tbody");
             if (!tbody) {
@@ -243,9 +243,14 @@
                 return;
             }
 
+            // Clear the table first
+            tbody.innerHTML = '';
+            
             // Create document fragment for batch DOM updates
             const fragment = document.createDocumentFragment();
             let i = 0;
+            
+            console.log('Rendering table with models:', models);
 
             models.forEach((model) => {
                 // Apply both filters
@@ -272,7 +277,9 @@
 
                     // Create score cells
                     const scoreCells = [];
-                    const scores = results[model]?.Scores || [];
+                    // Ensure we check both uppercase and lowercase field names for compatibility
+                    const scores = results[model]?.Scores || results[model]?.scores || [];
+                    if (i === 1) console.log(`First model scores for ${model}:`, scores);
                     const promptsCount = {{len .Prompts}} || 0;
 
                 // Ensure we have enough scores for all prompts
@@ -354,6 +361,10 @@
                 const passPercentagesEl = document.getElementById('pass-percentages-data');
                 const totalScoresEl = document.getElementById('total-scores-data');
                 
+                if (!resultsEl || !resultsEl.textContent) {
+                    console.error('Results data element is missing or empty');
+                }
+                
                 // Safely parse JSON with fallbacks
                 const results = resultsEl && resultsEl.textContent ? 
                     JSON.parse(resultsEl.textContent) : {};
@@ -370,16 +381,21 @@
                 console.log('Initial data loaded:', { 
                     results, 
                     models: models || [], 
-                    models_length: models ? models.length : 0 
+                    models_length: models ? models.length : 0,
+                    firstModelData: models && models.length > 0 ? results[models[0]] : null
                 });
 
-                // Update UI with initial data
-                updateResults({
-                    Results: results,
-                    Models: models,
-                    PassPercentages: passPercentages,
-                    TotalScores: totalScores
-                });
+                // Add a small delay to ensure DOM is fully loaded and ready
+                setTimeout(() => {
+                    // Update UI with initial data
+                    updateResults({
+                        Results: results,
+                        Models: models,
+                        PassPercentages: passPercentages,
+                        TotalScores: totalScores
+                    });
+                    console.log('Initial table update completed');
+                }, 50);
             } catch (error) {
                 console.error('Error loading initial data:', error);
             }
