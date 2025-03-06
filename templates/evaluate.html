@@ -28,9 +28,11 @@
 
             <div class="evaluation-buttons">
                 <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>Previous</a>
-                <button type="submit" class="action-button">Accept</button>
-                <button type="button" class="action-button" onclick="copyPromptText()">Copy</button>
                 <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>Next</a>
+                <span>_</span>
+                <button type="button" class="action-button" onclick="copyPromptText()">Copy</button>
+                <span>_</span>
+                <button type="submit" class="action-button">Accept</button>
                 <a href="/results" class="action-button">Cancel</a>
             </div>
         </form>

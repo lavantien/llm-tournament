@@ -33,6 +33,7 @@ body {
 
     .action-button {
         padding: 8px 12px;
+        margin: 0 5px;
         border: none;
         border-radius: 4px;
         background-color: #bb86fc;
@@ -401,18 +402,17 @@ body {
     }
 
     .evaluation-form {
-        max-width: 400px;
         margin: 20px auto;
         padding: 20px;
         background-color: #2a2a2a;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        text-align: center;
+        text-align: left;
     }
 
     .score-buttons {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 10px;
         margin: 15px 0;
     }
@@ -437,7 +437,7 @@ body {
 
     .evaluation-buttons {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         margin-top: 20px;
     }
 
