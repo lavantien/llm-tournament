@@ -311,21 +311,31 @@
 
             console.log('Updating UI with models:', models, 'First model results:', models.length > 0 ? results[models[0]] : null);
             
-            const tbody = document.querySelector("table.results-table tbody");
+            // Try different ways to get the tbody element
+            let tbody = document.querySelector("table.results-table tbody");
+            
             if (!tbody) {
-                console.error('Table body not found');
+                console.error('Table body not found with class selector, trying direct selector');
+                tbody = document.querySelector("table tbody");
+            }
+            
+            if (!tbody) {
+                console.error('Table body still not found, creating one');
                 // Create the table if it doesn't exist
-                const table = document.querySelector("table.results-table");
+                const table = document.querySelector("table.results-table") || document.querySelector("table");
                 if (table) {
                     const newTbody = document.createElement("tbody");
                     table.appendChild(newTbody);
                     console.log('Created new tbody element');
-                    updateResults(payload); // Try again with the new tbody
+                    tbody = newTbody;
+                } else {
+                    console.error('Could not find or create table body');
                     return;
                 }
-                console.error('Could not find or create table body');
-                return;
             }
+            
+            // Log that we found the table body
+            console.log('Found table body:', tbody);
             
             // If models array is empty, try to rebuild it from results object
             if (models.length === 0 && Object.keys(results).length > 0) {
@@ -342,6 +352,8 @@
                 tbody.innerHTML = '<tr><td colspan="100" style="text-align:center">No models available</td></tr>';
                 return;
             }
+            
+            console.log(`About to render ${models.length} models to table`);
 
             // Clear the table first
             tbody.innerHTML = '';
@@ -449,6 +461,19 @@
         // Batch update the DOM
         tbody.innerHTML = '';
         tbody.appendChild(fragment);
+        
+        // Log the final number of rows created
+        console.log(`Table updated with ${i} rows`);
+        
+        // Force a redraw if needed
+        if (i > 0 && tbody.children.length === 0) {
+            console.error("Rows not appearing in table despite being created. Forcing redraw...");
+            const temp = tbody.innerHTML;
+            tbody.innerHTML = '';
+            setTimeout(() => {
+                tbody.innerHTML = temp;
+            }, 10);
+        }
       }
 
 
@@ -458,7 +483,7 @@
             // and rely solely on the connectWebSocket function which will
             // call fetchInitialData() inside it
             console.log("DOM loaded, connecting to WebSocket...");
-            // Moved this above so it's always executed
+            connectWebSocket(); // Actually call the function
         });
     </script>
 </head>
