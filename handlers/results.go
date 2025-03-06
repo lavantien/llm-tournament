@@ -378,18 +378,31 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Get the prompt text and solution for display
+	prompts := middleware.ReadPrompts()
+	var promptText, solution string
+	promptIndex, err := strconv.Atoi(promptIndexStr)
+	if err == nil && promptIndex >= 0 && promptIndex < len(prompts) {
+		promptText = prompts[promptIndex].Text
+		solution = prompts[promptIndex].Solution
+	}
+
 	data := struct {
 		PageName     string
 		Model        string
 		PromptIndex  string
 		ScoreOptions map[string]int
 		CurrentScore int
+		PromptText   string
+		Solution     string
 	}{
 		PageName:     templates.PageNameEvaluate,
 		Model:        model,
 		PromptIndex:  promptIndexStr,
 		ScoreOptions: templates.ScoreOptions,
 		CurrentScore: currentScore,
+		PromptText:   promptText,
+		Solution:     solution,
 	}
 
 	t, err := template.New("evaluate.html").Funcs(templates.FuncMap).ParseFiles("templates/evaluate.html", "templates/nav.html")

@@ -13,6 +13,16 @@
         <h2>Evaluate Model: {{.Model}}</h2>
         <h3>Prompt {{inc (atoi .PromptIndex)}}</h3>
 
+        <div class="prompt-markdown">
+            <h4>Prompt:</h4>
+            <div class="markdown-content">{{.PromptText}}</div>
+        </div>
+
+        <div class="solution-markdown">
+            <h4>Solution:</h4>
+            <div class="markdown-content">{{.Solution}}</div>
+        </div>
+
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
             <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">
 
@@ -32,6 +42,25 @@
             </div>
         </form>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Convert markdown to HTML for prompt and solution
+        const markdownElements = document.querySelectorAll('.markdown-content');
+        markdownElements.forEach(function(el) {
+          el.innerHTML = marked.parse(el.textContent);
+        });
+        
+        // Set initial border for the currently selected score button
+        const currentScore = document.getElementById('selectedScore').value;
+        document.querySelectorAll('.score-button').forEach(function(button) {
+          if (button.onclick.toString().includes(`'${currentScore}'`)) {
+            button.style.border = '3px solid #000';
+          }
+        });
+      });
+    </script>
 </body>
 
 </html>
