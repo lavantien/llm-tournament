@@ -118,7 +118,12 @@
 
         function generateMockScores() {
             // Retrieve the current models list from the hidden element
-            const models = JSON.parse(document.getElementById('models-data').textContent);
+            const modelsText = document.getElementById('models-data').textContent;
+            if (!modelsText || modelsText.trim() === '') {
+                console.error('Models data is empty');
+                return;
+            }
+            const models = JSON.parse(modelsText);
             // Get the number of prompts (using Go template injection)
             const promptsCount = {{len .Prompts}} || 0;
             // Prepare new data containers
@@ -149,7 +154,7 @@
               scores.push(score);
               total += score;
              }
-             newResults[model] = { scores: scores };
+             newResults[model] = { Scores: scores };
              newTotalScores[model] = total;
              newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
             });
@@ -157,9 +162,8 @@
             // Sort models in descending order based on their total scores
             models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
             // Update hidden models-data with the new sorted order
+            // Store updated data in hidden elements
             document.getElementById('models-data').textContent = JSON.stringify(models);
-            
-            // Update hidden DOM elements with new data
             document.getElementById('results-data').textContent = JSON.stringify(newResults);
             document.getElementById('total-scores-data').textContent = JSON.stringify(newTotalScores);
             document.getElementById('pass-percentages-data').textContent = JSON.stringify(newPassPercentages);
@@ -187,6 +191,7 @@
                     TotalScores: newTotalScores,
                     PassPercentages: newPassPercentages
                 });
+                console.log('UI updated with mock data');
             })
             .catch(error => {
                 console.error('Error saving mock data:', error);
@@ -197,6 +202,7 @@
                     TotalScores: newTotalScores,
                     PassPercentages: newPassPercentages
                 });
+                console.log('UI updated despite server error');
             });
         }
 

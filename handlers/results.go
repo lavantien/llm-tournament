@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -445,7 +446,18 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores     map[string]int               `json:"totalScores"`
 	}
 	
-	err := json.NewDecoder(r.Body).Decode(&mockData)
+	log.Println("Received mock data request")
+	
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Error reading request body", http.StatusBadRequest)
+		return
+	}
+	
+	log.Printf("Received mock data: %s", string(body))
+	
+	err = json.Unmarshal(body, &mockData)
 	if err != nil {
 		log.Printf("Error decoding mock data: %v", err)
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
