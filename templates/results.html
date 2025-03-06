@@ -11,6 +11,14 @@
         const maxRetries = 3;
         let initialLoad = true; // Flag to track initial load
 
+        // Add storage for previous state
+        let previousState = {
+            Results: {},
+            Models: [],
+            TotalScores: {},
+            PassPercentages: {}
+        };
+
         function connectWebSocket() {
             // Then connect WebSocket
             socket = new WebSocket("ws://" + window.location.host + "/ws");
@@ -121,7 +129,62 @@
             });
         }
 
+        function backupCurrentState() {
+            previousState = {
+                Results: JSON.parse(document.getElementById('results-data').textContent || '{}'),
+                Models: JSON.parse(document.getElementById('models-data').textContent || '[]'),
+                TotalScores: JSON.parse(document.getElementById('total-scores-data').textContent || '{}'),
+                PassPercentages: JSON.parse(document.getElementById('pass-percentages-data').textContent || '{}')
+            };
+            console.log('Current state backed up:', previousState);
+            // Enable the Previous button
+            document.getElementById('restore-previous-btn').disabled = false;
+        }
+
+        function restorePrevious() {
+            if (!previousState.Models || previousState.Models.length === 0) {
+                console.log('No previous state to restore');
+                return;
+            }
+            
+            console.log('Restoring previous state:', previousState);
+            
+            // Update hidden elements with previous state data
+            document.getElementById('results-data').textContent = JSON.stringify(previousState.Results);
+            document.getElementById('models-data').textContent = JSON.stringify(previousState.Models);
+            document.getElementById('total-scores-data').textContent = JSON.stringify(previousState.TotalScores);
+            document.getElementById('pass-percentages-data').textContent = JSON.stringify(previousState.PassPercentages);
+            
+            // Send the previous data to the server
+            fetch('/update_mock_results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    results: previousState.Results,
+                    models: previousState.Models,
+                    passPercentages: previousState.PassPercentages,
+                    totalScores: previousState.TotalScores
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Previous state restored successfully:', data);
+                // Update the UI with previous data
+                updateResults(previousState);
+            })
+            .catch(error => {
+                console.error('Error restoring previous state:', error);
+                // Still update the UI even if the server request fails
+                updateResults(previousState);
+            });
+        }
+
         function generateMockScores() {
+            // Backup current state before generating new random scores
+            backupCurrentState();
+            
             // Retrieve the current models list from the hidden element
             const modelsText = document.getElementById('models-data').textContent;
             if (!modelsText || modelsText.trim() === '') {
@@ -432,6 +495,7 @@
         </div>
         <div class="title-container">
             <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Random Mock Scores</button>
+            <button class="action-button" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
         </div>
         <div class="search-container">
             <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
