@@ -395,6 +395,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		CurrentScore int
 		PromptText   string
 		Solution     string
+		TotalPrompts int
 	}{
 		PageName:     templates.PageNameEvaluate,
 		Model:        model,
@@ -403,6 +404,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		CurrentScore: currentScore,
 		PromptText:   promptText,
 		Solution:     solution,
+		TotalPrompts: len(prompts),
 	}
 
 	t, err := template.New("evaluate.html").Funcs(templates.FuncMap).ParseFiles("templates/evaluate.html", "templates/nav.html")
