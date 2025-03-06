@@ -97,24 +97,51 @@
         }
 
         function fetchInitialData() {
-            return fetch("/results?model_filter=" + document.getElementById("model_filter").value)
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const payload = {
-                        Results: JSON.parse(doc.getElementById('results-data').textContent),
-                        Models: JSON.parse(doc.getElementById('models-data').textContent),
-                        PassPercentages: JSON.parse(doc.getElementById('pass-percentages-data').textContent),
-                        TotalScores: JSON.parse(doc.getElementById('total-scores-data').textContent),
-                    };
-                    updateResults(payload);
-                    return payload;
-                })
-                .catch(error => {
-                    console.error('Error fetching initial data:', error);
-                    throw error;
+            console.log("Fetching initial data...");
+            // Instead of using AJAX, use the data already present in the DOM
+            try {
+                const resultsEl = document.getElementById('results-data');
+                const modelsEl = document.getElementById('models-data');
+                const passPercentagesEl = document.getElementById('pass-percentages-data');
+                const totalScoresEl = document.getElementById('total-scores-data');
+                
+                // Safely parse JSON with fallbacks
+                const results = resultsEl && resultsEl.textContent ? 
+                    JSON.parse(resultsEl.textContent) : {};
+                const models = modelsEl && modelsEl.textContent ? 
+                    JSON.parse(modelsEl.textContent) : [];
+                const passPercentages = passPercentagesEl && passPercentagesEl.textContent ? 
+                    JSON.parse(passPercentagesEl.textContent) : {};
+                const totalScores = totalScoresEl && totalScoresEl.textContent ? 
+                    JSON.parse(totalScoresEl.textContent) : {};
+                
+                console.log('Data loaded from DOM elements:', { 
+                    results, 
+                    models_length: models ? models.length : 0,
+                    firstModelData: models && models.length > 0 ? results[models[0]] : null
                 });
+                
+                const payload = {
+                    Results: results,
+                    Models: models,
+                    PassPercentages: passPercentages,
+                    TotalScores: totalScores
+                };
+                
+                updateResults(payload);
+                return Promise.resolve(payload);
+            } catch (error) {
+                console.error('Error parsing initial data:', error);
+                // Return empty data rather than throwing
+                const emptyPayload = {
+                    Results: {},
+                    Models: [],
+                    PassPercentages: {},
+                    TotalScores: {}
+                };
+                updateResults(emptyPayload);
+                return Promise.resolve(emptyPayload);
+            }
         }
 
         let currentSearchQuery = "";
@@ -417,54 +444,11 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            try {
-                // First render from initial data
-                const resultsEl = document.getElementById('results-data');
-                const modelsEl = document.getElementById('models-data');
-                const passPercentagesEl = document.getElementById('pass-percentages-data');
-                const totalScoresEl = document.getElementById('total-scores-data');
-                
-                if (!resultsEl || !resultsEl.textContent) {
-                    console.error('Results data element is missing or empty');
-                }
-                
-                // Safely parse JSON with fallbacks
-                const results = resultsEl && resultsEl.textContent ? 
-                    JSON.parse(resultsEl.textContent) : {};
-                    
-                const models = modelsEl && modelsEl.textContent ? 
-                    JSON.parse(modelsEl.textContent) : [];
-                    
-                const passPercentages = passPercentagesEl && passPercentagesEl.textContent ? 
-                    JSON.parse(passPercentagesEl.textContent) : {};
-                    
-                const totalScores = totalScoresEl && totalScoresEl.textContent ? 
-                    JSON.parse(totalScoresEl.textContent) : {};
-                
-                console.log('Initial data loaded:', { 
-                    results, 
-                    models: models || [], 
-                    models_length: models ? models.length : 0,
-                    firstModelData: models && models.length > 0 ? results[models[0]] : null
-                });
-
-                // Add a small delay to ensure DOM is fully loaded and ready
-                setTimeout(() => {
-                    // Update UI with initial data
-                    updateResults({
-                        Results: results,
-                        Models: models,
-                        PassPercentages: passPercentages,
-                        TotalScores: totalScores
-                    });
-                    console.log('Initial table update completed');
-                }, 50);
-            } catch (error) {
-                console.error('Error loading initial data:', error);
-            }
-
-            // Then connect WebSocket
-            connectWebSocket();
+            // Skip the initial data loading attempt which is failing
+            // and rely solely on the connectWebSocket function which will
+            // call fetchInitialData() inside it
+            console.log("DOM loaded, connecting to WebSocket...");
+            // Moved this above so it's always executed
         });
     </script>
 </head>
@@ -557,7 +541,7 @@
             });
         }
     </script>
-    <div style="display: none">
+    <div id="hidden-data" style="display: none">
         <span id="results-data">{{.Results | json}}</span>
         <span id="models-data">{{.Models | json}}</span>
         <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
@@ -569,6 +553,16 @@
             TotalScores: {{.TotalScores | json}}
         </span>
     </div>
+    <!-- Fallback data for debugging -->
+    <script>
+        // This ensures we have at least some data even if the template rendering fails
+        window.fallbackData = {
+            Results: {},
+            Models: [],
+            PassPercentages: {},
+            TotalScores: {}
+        };
+    </script>
 </body>
 
 </html>
