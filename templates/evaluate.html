@@ -10,18 +10,8 @@
 <body>
     {{template "nav" .}}
     <div class="evaluation-form">
-        <h2>Evaluate Model: {{.Model}}</h2>
-        <h3>Prompt {{inc (atoi .PromptIndex)}}</h3>
-
-        <div class="prompt-markdown">
-            <h4>Prompt:</h4>
-            <div class="markdown-content">{{.PromptText}}</div>
-        </div>
-
-        <div class="solution-markdown">
-            <h4>Solution:</h4>
-            <div class="markdown-content">{{.Solution}}</div>
-        </div>
+        <h2 style="text-align: center;">Evaluate Model: {{.Model}}</h2>
+        <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}}</h3>
 
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
             <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">
@@ -41,6 +31,16 @@
                 <a href="/results" class="action-button">Cancel</a>
             </div>
         </form>
+
+        <div class="prompt-markdown">
+          <h4>Prompt:</h4>
+          <div class="markdown-content">{{.PromptText}}</div>
+      </div>
+      <hr/>
+      <div class="solution-markdown">
+          <h4>Solution:</h4>
+          <div class="markdown-content">{{.Solution}}</div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
