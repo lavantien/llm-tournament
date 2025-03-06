@@ -28,6 +28,7 @@
 
             <div class="evaluation-buttons">
                 <button type="submit" class="action-button">Accept</button>
+                <button type="button" class="action-button" onclick="copyPromptText()">Copy Prompt</button>
                 <a href="/results" class="action-button">Cancel</a>
             </div>
         </form>
@@ -60,6 +61,30 @@
           }
         });
       });
+      
+      function copyPromptText() {
+        // Get the original markdown text before parsing
+        const promptMarkdownElement = document.querySelector('.prompt-markdown .markdown-content');
+        const originalText = promptMarkdownElement.textContent;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(originalText)
+          .then(() => {
+            // Visual feedback for successful copy
+            const copyButton = document.querySelector('button[onclick="copyPromptText()"]');
+            const originalText = copyButton.textContent;
+            copyButton.textContent = 'Copied!';
+            
+            // Reset button text after 2 seconds
+            setTimeout(() => {
+              copyButton.textContent = originalText;
+            }, 2000);
+          })
+          .catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert('Failed to copy text. Please try again.');
+          });
+      }
     </script>
 </body>
 
