@@ -11,7 +11,7 @@
     {{template "nav" .}}
     <div class="evaluation-form">
         <h2>Evaluate Model: {{.Model}}</h2>
-        <h3>Prompt {{.PromptIndex}}</h3>
+        <h3>Prompt {{inc (atoi .PromptIndex)}}</h3>
 
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
             <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">

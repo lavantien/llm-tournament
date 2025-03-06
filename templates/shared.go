@@ -3,6 +3,7 @@ package templates
 import (
 	"encoding/json"
 	"html/template"
+	"strconv"
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -12,6 +13,10 @@ import (
 var FuncMap = map[string]interface{}{
 	"inc": func(i int) int {
 		return i + 1
+	},
+	"atoi": func(s string) int {
+		i, _ := strconv.Atoi(s)
+		return i
 	},
 	"markdown": func(text string) template.HTML {
 		unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
