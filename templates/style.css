@@ -117,7 +117,6 @@ body {
             color: #e0e0e0;
         }
 
-        /* 修改全局表格斑马条纹，排除 .tier-table 类 */
         table:not(.tier-table) tbody tr:nth-child(even) {
             background-color: #3a3a3a;
         }
@@ -127,7 +126,6 @@ body {
         }
     }
 
-    /* 移动 Tier List 表格的 CSS 到主样式表 */
     .tier-table {
         width: 100%;
         margin: 20px 0;
@@ -151,67 +149,56 @@ body {
         background-color: #f5f5f5;
     }
 
-    /* Tier color coding */
     .transcendent {
         background-color: #2196f3;
         color: black;
     }
 
-    /* Blue */
     .supergrandmaster {
         background-color: #42a5f5;
         color: black;
     }
 
-    /* Azure */
     .grandmaster {
         background-color: #00bcd4;
         color: black;
     }
 
-    /* Cyan */
     .internationalmaster {
         background-color: #00e5ff;
         color: black;
     }
 
-    /* Spring Green */
     .master {
         background-color: #4caf50;
         color: black;
     }
 
-    /* Green */
     .expert {
         background-color: #8bc34a;
         color: black;
     }
 
-    /* Lime Green */
     .proplayer {
         background-color: #ffeb3b;
         color: black;
     }
 
-    /* Yellow */
     .advancedplayer {
         background-color: #ff9800;
         color: black;
     }
 
-    /* Orange */
     .intermediateplayer {
         background-color: #ff5722;
         color: black;
     }
 
-    /* Red-Orange */
     .veteran {
         background-color: #f44336;
         color: black;
     }
 
-    /* Red */
     .beginner {
         background-color: #d32f2f;
         color: white;
@@ -221,9 +208,6 @@ body {
         }
     }
 
-    /* Dark Red */
-
-    /* 结果表格斑马条纹 */
     .results-table tbody tr:nth-child(even) {
         background-color: #3a3a3a;
     }
