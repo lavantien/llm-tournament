@@ -46,7 +46,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
+      // Store raw markdown text
+      let rawPromptMarkdown = '';
+      let rawSolutionMarkdown = '';
+      
       document.addEventListener('DOMContentLoaded', function() {
+        // Store the original markdown before converting
+        const promptMarkdownElement = document.querySelector('.prompt-markdown .markdown-content');
+        const solutionMarkdownElement = document.querySelector('.solution-markdown .markdown-content');
+        
+        rawPromptMarkdown = promptMarkdownElement.textContent;
+        rawSolutionMarkdown = solutionMarkdownElement.textContent;
+        
         // Convert markdown to HTML for prompt and solution
         const markdownElements = document.querySelectorAll('.markdown-content');
         markdownElements.forEach(function(el) {
@@ -63,12 +74,8 @@
       });
       
       function copyPromptText() {
-        // Get the original markdown text before parsing
-        const promptMarkdownElement = document.querySelector('.prompt-markdown .markdown-content');
-        const originalText = promptMarkdownElement.textContent;
-        
-        // Copy to clipboard
-        navigator.clipboard.writeText(originalText)
+        // Copy the stored raw markdown to clipboard
+        navigator.clipboard.writeText(rawPromptMarkdown)
           .then(() => {
             // Visual feedback for successful copy
             const copyButton = document.querySelector('button[onclick="copyPromptText()"]');
