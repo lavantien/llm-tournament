@@ -1,1 +1,1 @@
-aider --watch-files --no-gitignore
+aider --watch-files --no-gitignore --model sonnet
