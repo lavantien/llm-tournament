@@ -20,7 +20,7 @@
                 {{range $label, $value := .ScoreOptions}}
                 <button type="button" class="score-button" onclick="document.getElementById('selectedScore').value = '{{$value}}'; 
                              document.querySelectorAll('.score-button').forEach(b => b.style.border = 'none');
-                             this.style.border = '3px solid #000'" style="background-color: {{if eq $label "0/5 (0)"}}#808080{{else if eq $label "1/5 (20)"}}#ffa500{{else if eq $label "2/5 (40)"}}#ffcc00{{else if eq $label "3/5 (60)"}}#ffff00{{else if eq $label "4/5 (80)"}}#ccff00{{else if eq $label "5/5 (100)"}}#00ff00{{end}}">
+                             this.style.border = '3px solid #000'" style="background-color: {{if eq $value 0}}#808080{{else if eq $value 20}}#ffa500{{else if eq $value 40}}#ffcc00{{else if eq $value 60}}#ffff00{{else if eq $value 80}}#ccff00{{else if eq $value 100}}#00ff00{{end}}">
                     {{$label}}
                 </button>
                 {{end}}
