@@ -10,7 +10,7 @@
 <body>
     {{template "nav" .}}
     <div class="evaluation-form">
-        <h2 style="text-align: center;">Evaluate Model: {{.Model}}</h2>
+        <h2 style="text-align: center;">{{.Model}}</h2>
         <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}} of {{.TotalPrompts}}</h3>
 
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">

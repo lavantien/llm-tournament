@@ -414,7 +414,8 @@ body {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 10px;
-        margin: 15px 0;
+        margin: 0 25%;
+        width: 50%;
     }
 
     .score-button {
