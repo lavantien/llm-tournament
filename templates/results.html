@@ -311,9 +311,19 @@
 
             console.log('Updating UI with models:', models, 'First model results:', models.length > 0 ? results[models[0]] : null);
             
-            const tbody = document.querySelector("table tbody");
+            const tbody = document.querySelector("table.results-table tbody");
             if (!tbody) {
                 console.error('Table body not found');
+                // Create the table if it doesn't exist
+                const table = document.querySelector("table.results-table");
+                if (table) {
+                    const newTbody = document.createElement("tbody");
+                    table.appendChild(newTbody);
+                    console.log('Created new tbody element');
+                    updateResults(payload); // Try again with the new tbody
+                    return;
+                }
+                console.error('Could not find or create table body');
                 return;
             }
             
