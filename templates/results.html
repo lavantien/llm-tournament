@@ -479,7 +479,7 @@
                 <select name="model_filter" id="model_filter" aria-label="Filter by model">
                     <option value="">All Models</option>
                     {{range $model := .Models}}
-                    <option value="{{$model}}" {{if eq $.ModelFilter $model}}selected{{end}}>
+                    <option value="{{$model}}" {{if and ($.ModelFilter) (eq $.ModelFilter $model)}}selected{{end}}>
                         {{$model}}
                     </option>
                     {{end}}
