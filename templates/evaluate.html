@@ -11,7 +11,7 @@
     {{template "nav" .}}
     <div class="evaluation-form">
         <h2 style="text-align: center;">Evaluate Model: {{.Model}}</h2>
-        <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}}</h3>
+        <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}} of {{.TotalPrompts}}</h3>
 
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
             <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">
@@ -27,8 +27,10 @@
             </div>
 
             <div class="evaluation-buttons">
+                <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>Previous</a>
                 <button type="submit" class="action-button">Accept</button>
                 <button type="button" class="action-button" onclick="copyPromptText()">Copy</button>
+                <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>Next</a>
                 <a href="/results" class="action-button">Cancel</a>
             </div>
         </form>
