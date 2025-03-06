@@ -143,7 +143,7 @@ body {
     .tier-header {
         font-weight: bold;
         text-transform: capitalize;
-        min-width: 170px;
+        min-width: 180px;
     }
 
     .tier-row:hover {

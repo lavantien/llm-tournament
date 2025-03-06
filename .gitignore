@@ -1,4 +1,3 @@
-.aider*
 .env
 release/*
 tools/tts/.python-version
@@ -27,3 +26,4 @@ tools/bg_batch_eraser/foreground_output_with_audio.mp4
 tools/bg_batch_eraser/video.mp4
 tools/bg_batch_eraser/foreground.webm
 .webui_secret_key
+.aider*
