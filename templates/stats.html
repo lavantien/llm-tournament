@@ -12,48 +12,61 @@
             const scoreData = {{.TotalScores | json}};
             const models = Object.keys(scoreData);
 
-            // Combine models with their total scores
-            let modelsWithScores = models.map(model => {
-                return { name: model, totalScore: scoreData[model].TotalScore };
-            });
+            // Create array with models and all their data
+            let modelsData = [];
+            for (const model of models) {
+                modelsData.push({
+                    name: model,
+                    totalScore: scoreData[model].TotalScore,
+                    count20: scoreData[model].Count20 * 20,
+                    count40: scoreData[model].Count40 * 40,
+                    count60: scoreData[model].Count60 * 60,
+                    count80: scoreData[model].Count80 * 80,
+                    count100: scoreData[model].Count100 * 100
+                });
+            }
 
             // Sort the models in descending order based on total scores
-            modelsWithScores.sort((a, b) => b.totalScore - a.totalScore);
+            modelsData.sort((a, b) => b.totalScore - a.totalScore);
 
-            // Extract sorted models and their scores
-            const sortedModels = modelsWithScores.map(item => item.name);
-            const sortedTotalScores = modelsWithScores.map(item => item.totalScore);
+            // Extract sorted data
+            const sortedModels = modelsData.map(item => item.name);
+            const sortedCount20 = modelsData.map(item => item.count20);
+            const sortedCount40 = modelsData.map(item => item.count40);
+            const sortedCount60 = modelsData.map(item => item.count60);
+            const sortedCount80 = modelsData.map(item => item.count80);
+            const sortedCount100 = modelsData.map(item => item.count100);
 
             const data = {
                 labels: sortedModels,
                 datasets: [
                     {
                         label: '1/5 (20 points)',
-                        data: sortedModels.map(model => scoreData[model].Count20 * 20),
+                        data: sortedCount20,
                         backgroundColor: 'rgba(255, 99, 132, 0.8)',
                         borderWidth: 1
                     },
                     {
                         label: '2/5 (40 points)',
-                        data: sortedModels.map(model => scoreData[model].Count40 * 40),
+                        data: sortedCount40,
                         backgroundColor: 'rgba(255, 159, 64, 0.8)',
                         borderWidth: 1
                     },
                     {
                         label: '3/5 (60 points)',
-                        data: sortedModels.map(model => scoreData[model].Count60 * 60),
+                        data: sortedCount60,
                         backgroundColor: 'rgba(255, 205, 86, 0.8)',
                         borderWidth: 1
                     },
                     {
                         label: '4/5 (80 points)',
-                        data: sortedModels.map(model => scoreData[model].Count80 * 80),
+                        data: sortedCount80,
                         backgroundColor: 'rgba(75, 192, 192, 0.8)',
                         borderWidth: 1
                     },
                     {
                         label: '5/5 (100 points)',
-                        data: sortedModels.map(model => scoreData[model].Count100 * 100),
+                        data: sortedCount100,
                         backgroundColor: 'rgba(54, 162, 235, 0.8)',
                         borderWidth: 1
                     }
