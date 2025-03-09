@@ -679,9 +679,33 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	// Broadcast the updated results to all connected clients
 	middleware.BroadcastResults()
 	
-	// Return success response
+	// Calculate totalScores and passPercentages for the response
+	totalScores := make(map[string]int)
+	passPercentages := make(map[string]float64)
+	
+	for model, result := range results {
+		totalScore := 0
+		for _, score := range result.Scores {
+			totalScore += score
+		}
+		totalScores[model] = totalScore
+		passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+	}
+	
+	// Return success response with the generated data
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+	response := map[string]interface{}{
+		"status": "success",
+		"results": results,
+		"models": models,
+		"totalScores": totalScores,
+		"passPercentages": passPercentages,
+	}
+	
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Printf("Error encoding response: %v", err)
+	}
 	
 	log.Println("Mock results with even tier distribution updated successfully")
 }

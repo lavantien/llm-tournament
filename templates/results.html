@@ -279,14 +279,33 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Mock data saved successfully:', data);
-                // The server will broadcast the changes, but we'll update the UI immediately
-                updateResults({
-                    Results: newResults,
-                    Models: models,
-                    TotalScores: newTotalScores,
-                    PassPercentages: newPassPercentages
-                });
-                console.log('UI updated with mock data');
+                
+                // Use the server-generated data instead of our local calculations
+                if (data.results && data.models && data.totalScores && data.passPercentages) {
+                    // Update the hidden data elements with the server's generated data
+                    document.getElementById('results-data').textContent = JSON.stringify(data.results);
+                    document.getElementById('models-data').textContent = JSON.stringify(data.models);
+                    document.getElementById('total-scores-data').textContent = JSON.stringify(data.totalScores);
+                    document.getElementById('pass-percentages-data').textContent = JSON.stringify(data.passPercentages);
+                    
+                    // Update the UI with the server's data
+                    updateResults({
+                        Results: data.results,
+                        Models: data.models,
+                        TotalScores: data.totalScores,
+                        PassPercentages: data.passPercentages
+                    });
+                    console.log('UI updated with server-generated data');
+                } else {
+                    // Fall back to local data if server didn't return the expected format
+                    updateResults({
+                        Results: newResults,
+                        Models: models,
+                        TotalScores: newTotalScores,
+                        PassPercentages: newPassPercentages
+                    });
+                    console.log('UI updated with local mock data (fallback)');
+                }
             })
             .catch(error => {
                 console.error('Error saving mock data:', error);
@@ -297,7 +316,7 @@
                     TotalScores: newTotalScores,
                     PassPercentages: newPassPercentages
                 });
-                console.log('UI updated despite server error');
+                console.log('UI updated with local data despite server error');
             });
         }
 
