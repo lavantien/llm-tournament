@@ -106,20 +106,17 @@
         });
 
         function getTierClass(score) {
-            if (score >= 3000) return 'divine';
-            if (score >= 2800) return 'legendary';
-            if (score >= 2600) return 'mythical';
-            if (score >= 2400) return 'transcendent';
-            if (score >= 2200) return 'supergrandmaster';
-            if (score >= 2000) return 'grandmaster';
-            if (score >= 1800) return 'internationalmaster';
-            if (score >= 1600) return 'master';
-            if (score >= 1400) return 'expert';
-            if (score >= 1200) return 'proplayer';
-            if (score >= 1000) return 'advancedplayer';
-            if (score >= 800) return 'intermediateplayer';
-            if (score >= 600) return 'veteran';
-            return 'beginner';
+            if (score >= 3000) return 'tier1';
+            if (score >= 2700) return 'tier2';
+            if (score >= 2400) return 'tier3';
+            if (score >= 2100) return 'tier4';
+            if (score >= 1800) return 'tier5';
+            if (score >= 1500) return 'tier6';
+            if (score >= 1200) return 'tier7';
+            if (score >= 900) return 'tier8';
+            if (score >= 600) return 'tier9';
+            if (score >= 300) return 'tier10';
+            return 'tier11';
         }
     </script>
 </head>

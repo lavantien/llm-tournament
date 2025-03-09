@@ -149,63 +149,59 @@ body {
         background-color: #f5f5f5;
     }
 
-    .transcendent {
-        background-color: #2196f3;
-        color: black;
-    }
-
-    .supergrandmaster {
-        background-color: #42a5f5;
-        color: black;
-    }
-
-    .grandmaster {
-        background-color: #00bcd4;
-        color: black;
-    }
-
-    .internationalmaster {
-        background-color: #00e5ff;
-        color: black;
-    }
-
-    .master {
-        background-color: #4caf50;
-        color: black;
-    }
-
-    .expert {
-        background-color: #8bc34a;
-        color: black;
-    }
-
-    .proplayer {
-        background-color: #ffeb3b;
-        color: black;
-    }
-
-    .advancedplayer {
-        background-color: #ff9800;
-        color: black;
-    }
-
-    .intermediateplayer {
-        background-color: #ff5722;
-        color: black;
-    }
-
-    .veteran {
-        background-color: #f44336;
-        color: black;
-    }
-
-    .beginner {
-        background-color: #d32f2f;
+    .tier1 {
+        background-color: #ff0000; /* Red - Hottest */
         color: white;
+    }
 
-        &:hover {
-            color: black;
-        }
+    .tier2 {
+        background-color: #ff4500; /* Orange-Red */
+        color: white;
+    }
+
+    .tier3 {
+        background-color: #ff8c00; /* Dark Orange */
+        color: black;
+    }
+
+    .tier4 {
+        background-color: #ffa500; /* Orange */
+        color: black;
+    }
+
+    .tier5 {
+        background-color: #ffcc00; /* Yellow-Orange */
+        color: black;
+    }
+    
+    .tier6 {
+        background-color: #ffff00; /* Yellow */
+        color: black;
+    }
+
+    .tier7 {
+        background-color: #adff2f; /* Yellow-Green */
+        color: black;
+    }
+
+    .tier8 {
+        background-color: #00ff7f; /* Spring Green */
+        color: black;
+    }
+
+    .tier9 {
+        background-color: #00ffff; /* Cyan */
+        color: black;
+    }
+
+    .tier10 {
+        background-color: #1e90ff; /* Dodger Blue */
+        color: white;
+    }
+
+    .tier11 {
+        background-color: #0000ff; /* Blue - Coldest */
+        color: white;
     }
 
     .results-table tbody tr:nth-child(even) {

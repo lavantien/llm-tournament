@@ -14,69 +14,57 @@ import (
 // Calculate tiers based on total scores
 func calculateTiers(totalScores map[string]int) (map[string][]string, map[string]string) {
 	tiers := map[string][]string{
-		"divine":               {},
-		"legendary":            {},
-		"mythical":             {},
-		"transcendent":         {},
-		"super-grandmaster":    {},
-		"grandmaster":          {},
-		"international-master": {},
-		"master":               {},
-		"expert":               {},
-		"pro-player":           {},
-		"advanced-player":      {},
-		"intermediate-player":  {},
-		"veteran":              {},
-		"beginner":             {},
+		"tier-1":  {},
+		"tier-2":  {},
+		"tier-3":  {},
+		"tier-4":  {},
+		"tier-5":  {},
+		"tier-6":  {},
+		"tier-7":  {},
+		"tier-8":  {},
+		"tier-9":  {},
+		"tier-10": {},
+		"tier-11": {},
 	}
 
 	tierRanges := map[string]string{
-		"divine":               "3000+",
-		"legendary":            "2800-2999",
-		"mythical":             "2600-2799",
-		"transcendent":         "2400-2599",
-		"super-grandmaster":    "2200-2399",
-		"grandmaster":          "2000-2199",
-		"international-master": "1800-1999",
-		"master":               "1600-1799",
-		"expert":               "1400-1599",
-		"pro-player":           "1200-1399",
-		"advanced-player":      "1000-1199",
-		"intermediate-player":  "800-999",
-		"veteran":              "600-799",
-		"beginner":             "0-599",
+		"tier-1":  "3000+",
+		"tier-2":  "2700-2999",
+		"tier-3":  "2400-2699",
+		"tier-4":  "2100-2399",
+		"tier-5":  "1800-2099",
+		"tier-6":  "1500-1799",
+		"tier-7":  "1200-1499",
+		"tier-8":  "900-1199",
+		"tier-9":  "600-899",
+		"tier-10": "300-599",
+		"tier-11": "0-299",
 	}
 
 	for model, score := range totalScores {
 		switch {
 		case score >= 3000:
-			tiers["divine"] = append(tiers["divine"], model)
-		case score >= 2800:
-			tiers["legendary"] = append(tiers["legendary"], model)
-		case score >= 2600:
-			tiers["mythical"] = append(tiers["mythical"], model)
+			tiers["tier-1"] = append(tiers["tier-1"], model)
+		case score >= 2700:
+			tiers["tier-2"] = append(tiers["tier-2"], model)
 		case score >= 2400:
-			tiers["transcendent"] = append(tiers["transcendent"], model)
-		case score >= 2200:
-			tiers["super-grandmaster"] = append(tiers["super-grandmaster"], model)
-		case score >= 2000:
-			tiers["grandmaster"] = append(tiers["grandmaster"], model)
+			tiers["tier-3"] = append(tiers["tier-3"], model)
+		case score >= 2100:
+			tiers["tier-4"] = append(tiers["tier-4"], model)
 		case score >= 1800:
-			tiers["international-master"] = append(tiers["international-master"], model)
-		case score >= 1600:
-			tiers["master"] = append(tiers["master"], model)
-		case score >= 1400:
-			tiers["expert"] = append(tiers["expert"], model)
+			tiers["tier-5"] = append(tiers["tier-5"], model)
+		case score >= 1500:
+			tiers["tier-6"] = append(tiers["tier-6"], model)
 		case score >= 1200:
-			tiers["pro-player"] = append(tiers["pro-player"], model)
-		case score >= 1000:
-			tiers["advanced-player"] = append(tiers["advanced-player"], model)
-		case score >= 800:
-			tiers["intermediate-player"] = append(tiers["intermediate-player"], model)
+			tiers["tier-7"] = append(tiers["tier-7"], model)
+		case score >= 900:
+			tiers["tier-8"] = append(tiers["tier-8"], model)
 		case score >= 600:
-			tiers["veteran"] = append(tiers["veteran"], model)
+			tiers["tier-9"] = append(tiers["tier-9"], model)
+		case score >= 300:
+			tiers["tier-10"] = append(tiers["tier-10"], model)
 		default:
-			tiers["beginner"] = append(tiers["beginner"], model)
+			tiers["tier-11"] = append(tiers["tier-11"], model)
 		}
 	}
 
@@ -141,20 +129,17 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
-			"divine",
-			"legendary",
-			"mythical",
-			"transcendent",
-			"super-grandmaster",
-			"grandmaster",
-			"international-master",
-			"master",
-			"expert",
-			"pro-player",
-			"advanced-player",
-			"intermediate-player",
-			"veteran",
-			"beginner",
+			"tier-1",
+			"tier-2",
+			"tier-3",
+			"tier-4",
+			"tier-5",
+			"tier-6",
+			"tier-7",
+			"tier-8",
+			"tier-9",
+			"tier-10",
+			"tier-11",
 		},
 	}
 
