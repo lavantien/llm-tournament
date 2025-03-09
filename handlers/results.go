@@ -590,7 +590,14 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 						// Determine a score that helps reach our target
 						// but with some variability
 						maxForThis := min(remainingPoints, 100)
-						pointsForThisPrompt = min(maxForThis, 20+rng.Intn(maxForThis-10))
+						
+						// Make sure we don't call Intn with a non-positive number
+						randomVariance := 0
+						if maxForThis > 10 {
+							randomVariance = rng.Intn(maxForThis - 10)
+						}
+						
+						pointsForThisPrompt = min(maxForThis, 20+randomVariance)
 					}
 					scores[j] = pointsForThisPrompt
 					remainingPoints -= pointsForThisPrompt
