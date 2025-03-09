@@ -227,11 +227,61 @@
             let newTotalScores = {};
             let newPassPercentages = {};
     
-            // Only generate valid scores recognized by the system: 0, 20, 40, 60, 80, 100
-            function getRandomScore() {
+            // Divide models into 11 tiers
+            const groupSize = Math.ceil(models.length / 11);
+            
+            // Function to get weighted scores based on tier
+            function getRandomScoreForTier(tierIndex) {
               const validScores = [0, 20, 40, 60, 80, 100];
-              const weights = [17, 16, 16, 16, 16, 16];
-      
+              let weights;
+              
+              // Different weights for each tier
+              // Higher tiers have higher probability of high scores
+              switch(tierIndex) {
+                case 0: // cosmic (highest tier)
+                  weights = [1, 1, 8, 15, 25, 50]; // heavily weighted toward 100s
+                  break;
+                case 1: // divine
+                  weights = [1, 2, 10, 20, 40, 27];
+                  break;
+                case 2: // celestial
+                  weights = [2, 5, 15, 30, 35, 13];
+                  break;
+                case 3: // ascendant
+                  weights = [5, 10, 25, 30, 20, 10];
+                  break;
+                case 4: // ethereal
+                  weights = [7, 15, 33, 25, 15, 5];
+                  break;
+                case 5: // mystic
+                  weights = [10, 20, 35, 20, 10, 5];
+                  break;
+                case 6: // astral
+                  weights = [15, 30, 30, 15, 8, 2];
+                  break;
+                case 7: // spiritual
+                  weights = [20, 35, 25, 15, 4, 1];
+                  break;
+                case 8: // primal
+                  weights = [30, 35, 20, 12, 2, 1];
+                  break;
+                case 9: // mortal
+                  weights = [40, 35, 15, 8, 2, 0];
+                  break;
+                case 10: // primordial (lowest tier)
+                  weights = [55, 30, 10, 5, 0, 0];
+                  break;
+                default:
+                  weights = [17, 16, 16, 16, 16, 16]; // fallback to even distribution
+              }
+              
+              // Apply some randomness to the weights
+              const jitterFactor = 0.2; // 20% random variation
+              weights = weights.map(w => {
+                const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
+                return Math.max(0, Math.round(w * jitter));
+              });
+              
               // Use weighted random selection
               const totalWeight = weights.reduce((a, b) => a + b, 0);
               let random = Math.random() * totalWeight;
@@ -245,17 +295,21 @@
               return 0; // Fallback
             }
             
-            models.forEach(model => {
-             let scores = [];
-             let total = 0;
-             for (let i = 0; i < promptsCount; i++) {
-              let score = getRandomScore();
-              scores.push(score);
-              total += score;
-             }
-             newResults[model] = { Scores: scores };
-             newTotalScores[model] = total;
-             newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
+            // Process each model by its tier
+            models.forEach((model, index) => {
+              const tierIndex = Math.min(10, Math.floor(index / groupSize));
+              let scores = [];
+              let total = 0;
+              
+              for (let i = 0; i < promptsCount; i++) {
+                let score = getRandomScoreForTier(tierIndex);
+                scores.push(score);
+                total += score;
+              }
+              
+              newResults[model] = { Scores: scores };
+              newTotalScores[model] = total;
+              newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
             });
             
             // Sort models in descending order based on their total scores
