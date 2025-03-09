@@ -3,13 +3,18 @@ package main
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"llm-tournament/handlers"
 	"llm-tournament/middleware"
 )
 
 func main() {
+	// Seed the random number generator for mock data generation
+	rand.Seed(time.Now().UnixNano())
+	
 	migrate := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
 	flag.Parse()
 
