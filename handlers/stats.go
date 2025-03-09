@@ -14,57 +14,57 @@ import (
 // Calculate tiers based on total scores
 func calculateTiers(totalScores map[string]int) (map[string][]string, map[string]string) {
 	tiers := map[string][]string{
-		"cosmic-unity":           {},
-		"divine-enlightenment":   {},
-		"celestial-ascension":    {},
-		"transcendent-awakening": {},
-		"ethereal-harmony":       {},
-		"mystic-resonance":       {},
-		"astral-perception":      {},
-		"spiritual-awakening":    {},
-		"primal-awareness":       {},
-		"mortal-consciousness":   {},
-		"primordial-essence":     {},
+		"cosmic":     {},
+		"divine":     {},
+		"celestial":  {},
+		"ascendant":  {},
+		"ethereal":   {},
+		"mystic":     {},
+		"astral":     {},
+		"spiritual":  {},
+		"primal":     {},
+		"mortal":     {},
+		"primordial": {},
 	}
 
 	tierRanges := map[string]string{
-		"cosmic-unity":           "3000+",
-		"divine-enlightenment":   "2700-2999",
-		"celestial-ascension":    "2400-2699",
-		"transcendent-awakening": "2100-2399",
-		"ethereal-harmony":       "1800-2099",
-		"mystic-resonance":       "1500-1799",
-		"astral-perception":      "1200-1499",
-		"spiritual-awakening":    "900-1199",
-		"primal-awareness":       "600-899",
-		"mortal-consciousness":   "300-599",
-		"primordial-essence":     "0-299",
+		"cosmic":     "3000+",
+		"divine":     "2700-2999",
+		"celestial":  "2400-2699",
+		"ascendant":  "2100-2399",
+		"ethereal":   "1800-2099",
+		"mystic":     "1500-1799",
+		"astral":     "1200-1499",
+		"spiritual":  "900-1199",
+		"primal":     "600-899",
+		"mortal":     "300-599",
+		"primordial": "0-299",
 	}
 
 	for model, score := range totalScores {
 		switch {
 		case score >= 3000:
-			tiers["cosmic-unity"] = append(tiers["cosmic-unity"], model)
+			tiers["cosmic"] = append(tiers["cosmic"], model)
 		case score >= 2700:
-			tiers["divine-enlightenment"] = append(tiers["divine-enlightenment"], model)
+			tiers["divine"] = append(tiers["divine"], model)
 		case score >= 2400:
-			tiers["celestial-ascension"] = append(tiers["celestial-ascension"], model)
+			tiers["celestial"] = append(tiers["celestial"], model)
 		case score >= 2100:
-			tiers["transcendent-awakening"] = append(tiers["transcendent-awakening"], model)
+			tiers["ascendant"] = append(tiers["ascendant"], model)
 		case score >= 1800:
-			tiers["ethereal-harmony"] = append(tiers["ethereal-harmony"], model)
+			tiers["ethereal"] = append(tiers["ethereal"], model)
 		case score >= 1500:
-			tiers["mystic-resonance"] = append(tiers["mystic-resonance"], model)
+			tiers["mystic"] = append(tiers["mystic"], model)
 		case score >= 1200:
-			tiers["astral-perception"] = append(tiers["astral-perception"], model)
+			tiers["astral"] = append(tiers["astral"], model)
 		case score >= 900:
-			tiers["spiritual-awakening"] = append(tiers["spiritual-awakening"], model)
+			tiers["spiritual"] = append(tiers["spiritual"], model)
 		case score >= 600:
-			tiers["primal-awareness"] = append(tiers["primal-awareness"], model)
+			tiers["primal"] = append(tiers["primal"], model)
 		case score >= 300:
-			tiers["mortal-consciousness"] = append(tiers["mortal-consciousness"], model)
+			tiers["mortal"] = append(tiers["mortal"], model)
 		default:
-			tiers["primordial-essence"] = append(tiers["primordial-essence"], model)
+			tiers["primordial"] = append(tiers["primordial"], model)
 		}
 	}
 
@@ -129,17 +129,17 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
-			"cosmic-unity",
-			"divine-enlightenment",
-			"celestial-ascension",
-			"transcendent-awakening",
-			"ethereal-harmony",
-			"mystic-resonance",
-			"astral-perception",
-			"spiritual-awakening",
-			"primal-awareness",
-			"mortal-consciousness",
-			"primordial-essence",
+			"cosmic",
+			"divine",
+			"celestial",
+			"ascendant",
+			"ethereal",
+			"mystic",
+			"astral",
+			"spiritual",
+			"primal",
+			"mortal",
+			"primordial",
 		},
 	}
 
@@ -150,7 +150,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 			return template.JS(a)
 		},
 		"tierClass": func(tier string) string {
-			return strings.ReplaceAll(tier, "-", "")
+			return tier
 		},
 		"formatTierName": func(tier string) string {
 			return strings.Title(strings.ReplaceAll(tier, "-", " "))
