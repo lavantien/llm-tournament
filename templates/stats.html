@@ -17,8 +17,8 @@
                 return { name: model, totalScore: scoreData[model].TotalScore };
             });
 
-            // Sort the models in ascending order based on total scores
-            modelsWithScores.sort((a, b) => a.totalScore - b.totalScore);
+            // Sort the models in descending order based on total scores
+            modelsWithScores.sort((a, b) => b.totalScore - a.totalScore);
 
             // Extract sorted models and their scores
             const sortedModels = modelsWithScores.map(item => item.name);
