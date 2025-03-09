@@ -11,6 +11,8 @@
             // Stacked Score Breakdown Chart
             const scoreData = {{.TotalScores | json}};
             const models = Object.keys(scoreData);
+            
+            console.log("Stats page data:", scoreData);
 
             // Create array with models and all their data
             let modelsData = [];

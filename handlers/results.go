@@ -507,7 +507,9 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// We'll ignore the random scores from the client and generate evenly distributed ones
+	// Use client-provided scores instead of generating new ones
+	log.Println("Using client-provided scores for mock data")
+	
 	prompts := middleware.ReadPrompts()
 	
 	// Get all model names
@@ -519,155 +521,26 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	
-	// Define tier ranges to ensure even distribution
-	tierRanges := []struct {
-		min int
-		max int
-		name string
-	}{
-		{3000, 3300, "cosmic"},     // cosmic
-		{2700, 2999, "divine"},     // divine
-		{2400, 2699, "celestial"},  // celestial
-		{2100, 2399, "ascendant"},  // ascendant
-		{1800, 2099, "ethereal"},   // ethereal
-		{1500, 1799, "mystic"},     // mystic
-		{1200, 1499, "astral"},     // astral
-		{900, 1199, "spiritual"},   // spiritual
-		{600, 899, "primal"},       // primal
-		{300, 599, "mortal"},       // mortal
-		{0, 299, "primordial"},     // primordial
+	// Use the client's results directly
+	results := mockData.Results
+	
+	// Validate that all scores are legitimate values: 0, 20, 40, 60, 80, 100
+	for model, result := range results {
+		for i, score := range result.Scores {
+			// Only allow valid score values
+			switch score {
+			case 0, 20, 40, 60, 80, 100:
+				// Valid score, keep it
+			default:
+				// Invalid score, set to 0
+				log.Printf("Correcting invalid score %d for model %s prompt %d", score, model, i)
+				result.Scores[i] = 0
+			}
+		}
+		results[model] = result
 	}
 	
-	// Calculate how many models per tier
-	modelsPerTier := len(models) / len(tierRanges)
-	if modelsPerTier < 1 {
-		modelsPerTier = 1
-	}
-	
-	log.Printf("Generating mock data with %d models across %d tiers", len(models), len(tierRanges))
-	
-	results := make(map[string]middleware.Result)
-	
-	// Distribute models evenly across tiers
-	modelIndex := 0
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	
-	for tierIndex, tierRange := range tierRanges {
-		// Calculate how many models to put in this tier
-		tierModelCount := modelsPerTier
-		// Add extra models to the first few tiers if there are remainders
-		if tierIndex < len(models)%len(tierRanges) {
-			tierModelCount++
-		}
-		
-		// Stop if we've used all models
-		if modelIndex >= len(models) {
-			break
-		}
-		
-		// Assign models to this tier
-		for i := 0; i < tierModelCount && modelIndex < len(models); i++ {
-			model := models[modelIndex]
-			
-			// Calculate desired total score directly from tier range
-			// This ensures we can reach all tiers including 3000+ and below 300
-			totalPointsAvailable := len(prompts) * 100
-			
-			// Determine target score within the tier range
-			var targetScore int
-			if tierRange.min >= 3000 {
-				// For cosmic tier, make some models go higher than 3000
-				targetScore = tierRange.min + rng.Intn(tierRange.max-tierRange.min+200)
-			} else if tierRange.max <= 299 {
-				// For primordial tier, make some models go really low
-				targetScore = rng.Intn(tierRange.max+1)
-			} else {
-				// For other tiers, distribute evenly within the range
-				targetScore = tierRange.min + 
-					(tierRange.max-tierRange.min)*i/max(1, tierModelCount-1)
-			}
-			
-			// Calculate as percentage for the remaining algorithm
-			targetPercentage := float64(targetScore) / float64(totalPointsAvailable) * 100
-			
-			// Calculate scores for individual prompts to achieve the target percentage
-			scores := make([]int, len(prompts))
-			remainingPoints := int(float64(totalPointsAvailable) * targetPercentage / 100)
-			
-			// Distribute points across prompts
-			for j := 0; j < len(prompts); j++ {
-				if j == len(prompts)-1 {
-					// Last prompt gets all remaining points (if any) within 0-100 range
-					scores[j] = remainingPoints
-					if scores[j] > 100 {
-						scores[j] = 100
-					} else if scores[j] < 0 {
-						scores[j] = 0
-					}
-				} else {
-					// Other prompts get a distributed portion of points
-					pointsForThisPrompt := 0
-					if remainingPoints > 0 {
-						// Determine a score that helps reach our target
-						// but with some variability
-						maxForThis := min(remainingPoints, 100)
-						
-						// More extreme distribution strategy based on tier
-						// Create a distribution that fits the spiritual tier theme
-						randomVariance := 0
-						if tierRange.name == "cosmic" {
-							// Cosmic tier: higher chance of perfect scores (enlightened performance)
-							if rng.Float64() < 0.8 {  // 80% chance for max scores
-								pointsForThisPrompt = 100
-							} else if maxForThis > 10 {
-								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 60+randomVariance)
-							}
-						} else if tierRange.name == "divine" || tierRange.name == "celestial" {
-							// Divine/Celestial tiers: consistently high scores
-							if rng.Float64() < 0.6 {  // 60% chance for max or near-max
-								pointsForThisPrompt = 80 + rng.Intn(21) // 80-100
-							} else if maxForThis > 10 {
-								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 50+randomVariance)
-							}
-						} else if tierRange.name == "primordial" {
-							// Primordial tier: higher chance of very low scores
-							if rng.Float64() < 0.7 {  // 70% chance for low scores
-								pointsForThisPrompt = rng.Intn(30)  // 0-29
-							} else if maxForThis > 10 {
-								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 20+randomVariance)
-							}
-						} else if tierRange.name == "mortal" || tierRange.name == "primal" {
-							// Lower tiers: inconsistent performance
-							if rng.Float64() < 0.5 {  // 50% chance for low-mid scores
-								pointsForThisPrompt = 20 + rng.Intn(40)  // 20-59
-							} else if maxForThis > 10 {
-								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 30+randomVariance)
-							}
-						} else {
-							// Middle tiers: balanced distribution with more variance
-							if maxForThis > 10 {
-								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 40+randomVariance)
-							}
-						}
-					}
-					scores[j] = pointsForThisPrompt
-					remainingPoints -= pointsForThisPrompt
-				}
-			}
-			
-			// Add results for this model
-			results[model] = middleware.Result{
-				Scores: scores,
-			}
-			
-			modelIndex++
-		}
-	}
+	// Skip the evenly distributed tier generation since we're using client scores
 	
 	// Save the evenly distributed mock results
 	suiteName := middleware.GetCurrentSuiteName()
@@ -685,6 +558,7 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	totalScores := make(map[string]int)
 	passPercentages := make(map[string]float64)
 	
+	log.Println("Calculating total scores for each model:")
 	for model, result := range results {
 		totalScore := 0
 		for _, score := range result.Scores {
@@ -692,6 +566,9 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		totalScores[model] = totalScore
 		passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		
+		log.Printf("Model %s: total score = %d, pass percentage = %.2f%%", 
+			model, totalScore, passPercentages[model])
 	}
 	
 	// Sort models by total score in descending order

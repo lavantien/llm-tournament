@@ -104,6 +104,15 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 				stats.Count100++
 			}
 		}
+		
+		// Double-check total score calculation to ensure consistency
+		calculatedTotal := stats.Count20*20 + stats.Count40*40 + stats.Count60*60 + stats.Count80*80 + stats.Count100*100
+		if calculatedTotal != stats.TotalScore {
+			log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", 
+				model, calculatedTotal, stats.TotalScore)
+			// Fix the total score if there's a discrepancy
+			stats.TotalScore = calculatedTotal
+		}
 		scoreStats[model] = stats
 	}
 
