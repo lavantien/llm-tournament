@@ -5,14 +5,30 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"llm-tournament/middleware"
 	"llm-tournament/templates"
 )
+
+// min returns the smaller of x or y
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// initRand returns a new random number generator seeded with the current time
+func initRand() *rand.Rand {
+	source := rand.NewSource(time.Now().UnixNano())
+	return rand.New(source)
+}
 
 // Handle results page
 func ResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -450,6 +466,7 @@ func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateMockResultsHandler handles updating results with randomly generated mock data
+// that ensures even distribution across all tier levels
 func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update mock results")
 	
@@ -475,8 +492,6 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	log.Printf("Received mock data: %s", string(body))
-	
 	err = json.Unmarshal(body, &mockData)
 	if err != nil {
 		log.Printf("Error decoding mock data: %v", err)
@@ -484,9 +499,116 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Save the mock results
+	// We'll ignore the random scores from the client and generate evenly distributed ones
+	prompts := middleware.ReadPrompts()
+	
+	// Get all model names
+	models := mockData.Models
+	if len(models) == 0 {
+		// If no models passed, use models from existing results
+		for model := range mockData.Results {
+			models = append(models, model)
+		}
+	}
+	
+	// Define tier ranges to ensure even distribution
+	tierRanges := []struct {
+		min int
+		max int
+	}{
+		{3000, 3100},        // divine
+		{2800, 2999},        // legendary
+		{2600, 2799},        // mythical
+		{2400, 2599},        // transcendent
+		{2200, 2399},        // super-grandmaster
+		{2000, 2199},        // grandmaster
+		{1800, 1999},        // international-master
+		{1600, 1799},        // master
+		{1400, 1599},        // expert
+		{1200, 1399},        // pro-player
+		{1000, 1199},        // advanced-player
+		{800, 999},          // intermediate-player
+		{600, 799},          // veteran
+		{0, 599},            // beginner
+	}
+	
+	// Calculate how many models per tier
+	modelsPerTier := len(models) / len(tierRanges)
+	if modelsPerTier < 1 {
+		modelsPerTier = 1
+	}
+	
+	results := make(map[string]middleware.Result)
+	
+	// Distribute models evenly across tiers
+	modelIndex := 0
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	
+	for tierIndex, tierRange := range tierRanges {
+		// Calculate how many models to put in this tier
+		tierModelCount := modelsPerTier
+		// Add extra models to the first few tiers if there are remainders
+		if tierIndex < len(models)%len(tierRanges) {
+			tierModelCount++
+		}
+		
+		// Stop if we've used all models
+		if modelIndex >= len(models) {
+			break
+		}
+		
+		// Assign models to this tier
+		for i := 0; i < tierModelCount && modelIndex < len(models); i++ {
+			model := models[modelIndex]
+			
+			// Calculate desired total score within tier range
+			totalPointsAvailable := len(prompts) * 100
+			minPercentage := float64(tierRange.min) / float64(totalPointsAvailable) * 100
+			maxPercentage := float64(tierRange.max) / float64(totalPointsAvailable) * 100
+			
+			// Pick a target percentage within the tier range
+			targetPercentage := minPercentage + (maxPercentage-minPercentage)*float64(i)/float64(tierModelCount)
+			
+			// Calculate scores for individual prompts to achieve the target percentage
+			scores := make([]int, len(prompts))
+			remainingPoints := int(float64(totalPointsAvailable) * targetPercentage / 100)
+			
+			// Distribute points across prompts
+			for j := 0; j < len(prompts); j++ {
+				if j == len(prompts)-1 {
+					// Last prompt gets all remaining points (if any) within 0-100 range
+					scores[j] = remainingPoints
+					if scores[j] > 100 {
+						scores[j] = 100
+					} else if scores[j] < 0 {
+						scores[j] = 0
+					}
+				} else {
+					// Other prompts get a distributed portion of points
+					pointsForThisPrompt := 0
+					if remainingPoints > 0 {
+						// Determine a score that helps reach our target
+						// but with some variability
+						maxForThis := min(remainingPoints, 100)
+						pointsForThisPrompt = min(maxForThis, 20+rng.Intn(maxForThis-10))
+					}
+					scores[j] = pointsForThisPrompt
+					remainingPoints -= pointsForThisPrompt
+				}
+			}
+			
+			// Add results for this model
+			results[model] = middleware.Result{
+				Scores: scores,
+			}
+			
+			modelIndex++
+		}
+	}
+	
+	// Save the evenly distributed mock results
 	suiteName := middleware.GetCurrentSuiteName()
-	err = middleware.WriteResults(suiteName, mockData.Results)
+	err = middleware.WriteResults(suiteName, results)
 	if err != nil {
 		log.Printf("Error writing mock results: %v", err)
 		http.Error(w, "Error saving mock results", http.StatusInternalServerError)
@@ -500,5 +622,5 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 	
-	log.Println("Mock results updated successfully")
+	log.Println("Mock results with even tier distribution updated successfully")
 }
