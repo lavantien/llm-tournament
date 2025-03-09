@@ -14,6 +14,9 @@ import (
 // Calculate tiers based on total scores
 func calculateTiers(totalScores map[string]int) (map[string][]string, map[string]string) {
 	tiers := map[string][]string{
+		"divine":               {},
+		"legendary":            {},
+		"mythical":             {},
 		"transcendent":         {},
 		"super-grandmaster":    {},
 		"grandmaster":          {},
@@ -28,12 +31,15 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 	}
 
 	tierRanges := map[string]string{
-		"transcendent":         "1900-2000",
-		"super-grandmaster":    "1800-1899",
-		"grandmaster":          "1700-1799",
-		"international-master": "1600-1699",
-		"master":               "1500-1599",
-		"expert":               "1400-1499",
+		"divine":               "3000+",
+		"legendary":            "2800-2999",
+		"mythical":             "2600-2799",
+		"transcendent":         "2400-2599",
+		"super-grandmaster":    "2200-2399",
+		"grandmaster":          "2000-2199",
+		"international-master": "1800-1999",
+		"master":               "1600-1799",
+		"expert":               "1400-1599",
 		"pro-player":           "1200-1399",
 		"advanced-player":      "1000-1199",
 		"intermediate-player":  "800-999",
@@ -43,15 +49,21 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 
 	for model, score := range totalScores {
 		switch {
-		case score >= 1900:
+		case score >= 3000:
+			tiers["divine"] = append(tiers["divine"], model)
+		case score >= 2800:
+			tiers["legendary"] = append(tiers["legendary"], model)
+		case score >= 2600:
+			tiers["mythical"] = append(tiers["mythical"], model)
+		case score >= 2400:
 			tiers["transcendent"] = append(tiers["transcendent"], model)
-		case score >= 1800:
+		case score >= 2200:
 			tiers["super-grandmaster"] = append(tiers["super-grandmaster"], model)
-		case score >= 1700:
+		case score >= 2000:
 			tiers["grandmaster"] = append(tiers["grandmaster"], model)
-		case score >= 1600:
+		case score >= 1800:
 			tiers["international-master"] = append(tiers["international-master"], model)
-		case score >= 1500:
+		case score >= 1600:
 			tiers["master"] = append(tiers["master"], model)
 		case score >= 1400:
 			tiers["expert"] = append(tiers["expert"], model)
@@ -129,6 +141,9 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
+			"divine",
+			"legendary",
+			"mythical",
 			"transcendent",
 			"super-grandmaster",
 			"grandmaster",

@@ -106,11 +106,14 @@
         });
 
         function getTierClass(score) {
-            if (score >= 1900) return 'transcendent';
-            if (score >= 1800) return 'supergrandmaster';
-            if (score >= 1700) return 'grandmaster';
-            if (score >= 1600) return 'internationalmaster';
-            if (score >= 1500) return 'master';
+            if (score >= 3000) return 'divine';
+            if (score >= 2800) return 'legendary';
+            if (score >= 2600) return 'mythical';
+            if (score >= 2400) return 'transcendent';
+            if (score >= 2200) return 'supergrandmaster';
+            if (score >= 2000) return 'grandmaster';
+            if (score >= 1800) return 'internationalmaster';
+            if (score >= 1600) return 'master';
             if (score >= 1400) return 'expert';
             if (score >= 1200) return 'proplayer';
             if (score >= 1000) return 'advancedplayer';
