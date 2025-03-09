@@ -523,21 +523,19 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	tierRanges := []struct {
 		min int
 		max int
+		name string
 	}{
-		{3000, 3200},        // divine
-		{2800, 2999},        // legendary
-		{2600, 2799},        // mythical
-		{2400, 2599},        // transcendent
-		{2200, 2399},        // super-grandmaster
-		{2000, 2199},        // grandmaster
-		{1800, 1999},        // international-master
-		{1600, 1799},        // master
-		{1400, 1599},        // expert
-		{1200, 1399},        // pro-player
-		{1000, 1199},        // advanced-player
-		{800, 999},          // intermediate-player
-		{600, 799},          // veteran
-		{0, 599},            // beginner
+		{3000, 3300, "cosmic"},     // cosmic
+		{2700, 2999, "divine"},     // divine
+		{2400, 2699, "celestial"},  // celestial
+		{2100, 2399, "ascendant"},  // ascendant
+		{1800, 2099, "ethereal"},   // ethereal
+		{1500, 1799, "mystic"},     // mystic
+		{1200, 1499, "astral"},     // astral
+		{900, 1199, "spiritual"},   // spiritual
+		{600, 899, "primal"},       // primal
+		{300, 599, "mortal"},       // mortal
+		{0, 299, "primordial"},     // primordial
 	}
 	
 	// Calculate how many models per tier
@@ -570,17 +568,16 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 			model := models[modelIndex]
 			
 			// Calculate desired total score directly from tier range
-			// This ensures we can reach all tiers including 3000+ and below 600
+			// This ensures we can reach all tiers including 3000+ and below 300
 			totalPointsAvailable := len(prompts) * 100
 			
 			// Determine target score within the tier range
-			// For highest tier, make sure some models go beyond 3000
 			var targetScore int
 			if tierRange.min >= 3000 {
-				// For divine tier, make some models go higher than 3000
+				// For cosmic tier, make some models go higher than 3000
 				targetScore = tierRange.min + rng.Intn(tierRange.max-tierRange.min+200)
-			} else if tierRange.max <= 599 {
-				// For beginner tier, make some models go really low
+			} else if tierRange.max <= 299 {
+				// For primordial tier, make some models go really low
 				targetScore = rng.Intn(tierRange.max+1)
 			} else {
 				// For other tiers, distribute evenly within the range
@@ -613,33 +610,46 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 						// but with some variability
 						maxForThis := min(remainingPoints, 100)
 						
-						// More extreme distribution strategy
-						// For highest tier, make more 100s
-						// For lowest tier, make more 0s
-						// For middle tiers, more variance
-						
+						// More extreme distribution strategy based on tier
+						// Create a distribution that fits the spiritual tier theme
 						randomVariance := 0
-						if tierRange.min >= 3000 {
-							// Divine tier: higher chance of 100 scores
-							if rng.Float64() < 0.7 {  // 70% chance for max scores
+						if tierRange.name == "cosmic" {
+							// Cosmic tier: higher chance of perfect scores (enlightened performance)
+							if rng.Float64() < 0.8 {  // 80% chance for max scores
 								pointsForThisPrompt = 100
 							} else if maxForThis > 10 {
 								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 20+randomVariance)
+								pointsForThisPrompt = min(maxForThis, 60+randomVariance)
 							}
-						} else if tierRange.max <= 599 {
-							// Beginner tier: higher chance of low scores
+						} else if tierRange.name == "divine" || tierRange.name == "celestial" {
+							// Divine/Celestial tiers: consistently high scores
+							if rng.Float64() < 0.6 {  // 60% chance for max or near-max
+								pointsForThisPrompt = 80 + rng.Intn(21) // 80-100
+							} else if maxForThis > 10 {
+								randomVariance = rng.Intn(maxForThis - 10)
+								pointsForThisPrompt = min(maxForThis, 50+randomVariance)
+							}
+						} else if tierRange.name == "primordial" {
+							// Primordial tier: higher chance of very low scores
 							if rng.Float64() < 0.7 {  // 70% chance for low scores
 								pointsForThisPrompt = rng.Intn(30)  // 0-29
 							} else if maxForThis > 10 {
 								randomVariance = rng.Intn(maxForThis - 10)
 								pointsForThisPrompt = min(maxForThis, 20+randomVariance)
 							}
+						} else if tierRange.name == "mortal" || tierRange.name == "primal" {
+							// Lower tiers: inconsistent performance
+							if rng.Float64() < 0.5 {  // 50% chance for low-mid scores
+								pointsForThisPrompt = 20 + rng.Intn(40)  // 20-59
+							} else if maxForThis > 10 {
+								randomVariance = rng.Intn(maxForThis - 10)
+								pointsForThisPrompt = min(maxForThis, 30+randomVariance)
+							}
 						} else {
-							// Middle tiers: regular distribution with more variance
+							// Middle tiers: balanced distribution with more variance
 							if maxForThis > 10 {
 								randomVariance = rng.Intn(maxForThis - 10)
-								pointsForThisPrompt = min(maxForThis, 20+randomVariance)
+								pointsForThisPrompt = min(maxForThis, 40+randomVariance)
 							}
 						}
 					}
