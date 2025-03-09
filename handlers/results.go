@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"math"
 	"math/rand"
 	"net/http"
 	"sort"
