@@ -14,57 +14,57 @@ import (
 // Calculate tiers based on total scores
 func calculateTiers(totalScores map[string]int) (map[string][]string, map[string]string) {
 	tiers := map[string][]string{
-		"tier-1":  {},
-		"tier-2":  {},
-		"tier-3":  {},
-		"tier-4":  {},
-		"tier-5":  {},
-		"tier-6":  {},
-		"tier-7":  {},
-		"tier-8":  {},
-		"tier-9":  {},
-		"tier-10": {},
-		"tier-11": {},
+		"cosmic-unity":           {},
+		"divine-enlightenment":   {},
+		"celestial-ascension":    {},
+		"transcendent-awakening": {},
+		"ethereal-harmony":       {},
+		"mystic-resonance":       {},
+		"astral-perception":      {},
+		"spiritual-awakening":    {},
+		"primal-awareness":       {},
+		"mortal-consciousness":   {},
+		"primordial-essence":     {},
 	}
 
 	tierRanges := map[string]string{
-		"tier-1":  "3000+",
-		"tier-2":  "2700-2999",
-		"tier-3":  "2400-2699",
-		"tier-4":  "2100-2399",
-		"tier-5":  "1800-2099",
-		"tier-6":  "1500-1799",
-		"tier-7":  "1200-1499",
-		"tier-8":  "900-1199",
-		"tier-9":  "600-899",
-		"tier-10": "300-599",
-		"tier-11": "0-299",
+		"cosmic-unity":           "3000+",
+		"divine-enlightenment":   "2700-2999",
+		"celestial-ascension":    "2400-2699",
+		"transcendent-awakening": "2100-2399",
+		"ethereal-harmony":       "1800-2099",
+		"mystic-resonance":       "1500-1799",
+		"astral-perception":      "1200-1499",
+		"spiritual-awakening":    "900-1199",
+		"primal-awareness":       "600-899",
+		"mortal-consciousness":   "300-599",
+		"primordial-essence":     "0-299",
 	}
 
 	for model, score := range totalScores {
 		switch {
 		case score >= 3000:
-			tiers["tier-1"] = append(tiers["tier-1"], model)
+			tiers["cosmic-unity"] = append(tiers["cosmic-unity"], model)
 		case score >= 2700:
-			tiers["tier-2"] = append(tiers["tier-2"], model)
+			tiers["divine-enlightenment"] = append(tiers["divine-enlightenment"], model)
 		case score >= 2400:
-			tiers["tier-3"] = append(tiers["tier-3"], model)
+			tiers["celestial-ascension"] = append(tiers["celestial-ascension"], model)
 		case score >= 2100:
-			tiers["tier-4"] = append(tiers["tier-4"], model)
+			tiers["transcendent-awakening"] = append(tiers["transcendent-awakening"], model)
 		case score >= 1800:
-			tiers["tier-5"] = append(tiers["tier-5"], model)
+			tiers["ethereal-harmony"] = append(tiers["ethereal-harmony"], model)
 		case score >= 1500:
-			tiers["tier-6"] = append(tiers["tier-6"], model)
+			tiers["mystic-resonance"] = append(tiers["mystic-resonance"], model)
 		case score >= 1200:
-			tiers["tier-7"] = append(tiers["tier-7"], model)
+			tiers["astral-perception"] = append(tiers["astral-perception"], model)
 		case score >= 900:
-			tiers["tier-8"] = append(tiers["tier-8"], model)
+			tiers["spiritual-awakening"] = append(tiers["spiritual-awakening"], model)
 		case score >= 600:
-			tiers["tier-9"] = append(tiers["tier-9"], model)
+			tiers["primal-awareness"] = append(tiers["primal-awareness"], model)
 		case score >= 300:
-			tiers["tier-10"] = append(tiers["tier-10"], model)
+			tiers["mortal-consciousness"] = append(tiers["mortal-consciousness"], model)
 		default:
-			tiers["tier-11"] = append(tiers["tier-11"], model)
+			tiers["primordial-essence"] = append(tiers["primordial-essence"], model)
 		}
 	}
 
@@ -129,17 +129,17 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
-			"tier-1",
-			"tier-2",
-			"tier-3",
-			"tier-4",
-			"tier-5",
-			"tier-6",
-			"tier-7",
-			"tier-8",
-			"tier-9",
-			"tier-10",
-			"tier-11",
+			"cosmic-unity",
+			"divine-enlightenment",
+			"celestial-ascension",
+			"transcendent-awakening",
+			"ethereal-harmony",
+			"mystic-resonance",
+			"astral-perception",
+			"spiritual-awakening",
+			"primal-awareness",
+			"mortal-consciousness",
+			"primordial-essence",
 		},
 	}
 
