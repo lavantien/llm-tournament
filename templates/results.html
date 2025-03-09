@@ -282,6 +282,8 @@
                 
                 // Use the server-generated data instead of our local calculations
                 if (data.results && data.models && data.totalScores && data.passPercentages) {
+                    console.log('Received sorted models from server:', data.models.slice(0, 5));
+                    
                     // Update the hidden data elements with the server's generated data
                     document.getElementById('results-data').textContent = JSON.stringify(data.results);
                     document.getElementById('models-data').textContent = JSON.stringify(data.models);
@@ -291,16 +293,24 @@
                     // Update the UI with the server's data
                     updateResults({
                         Results: data.results,
-                        Models: data.models,
+                        Models: data.models, // These are already sorted by the server
                         TotalScores: data.totalScores,
                         PassPercentages: data.passPercentages
                     });
                     console.log('UI updated with server-generated data');
                 } else {
                     // Fall back to local data if server didn't return the expected format
+                    console.log('Server returned invalid data format, using local calculations');
+                    
+                    // Sort the models by total score
+                    models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
+                    
+                    // Update hidden elements with sorted data
+                    document.getElementById('models-data').textContent = JSON.stringify(models);
+                    
                     updateResults({
                         Results: newResults,
-                        Models: models,
+                        Models: models, // Locally sorted as fallback
                         TotalScores: newTotalScores,
                         PassPercentages: newPassPercentages
                     });

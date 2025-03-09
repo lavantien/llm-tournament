@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -544,6 +545,8 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		modelsPerTier = 1
 	}
 	
+	log.Printf("Generating mock data with %d models across %d tiers", len(models), len(tierRanges))
+	
 	results := make(map[string]middleware.Result)
 	
 	// Distribute models evenly across tiers
@@ -692,12 +695,19 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
 	}
 	
+	// Sort models by total score in descending order
+	sort.Slice(models, func(i, j int) bool {
+		return totalScores[models[i]] > totalScores[models[j]]
+	})
+	
+	log.Printf("Sorted models after mock generation: %v", models[:min(5, len(models))])
+	
 	// Return success response with the generated data
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]interface{}{
 		"status": "success",
 		"results": results,
-		"models": models,
+		"models": models, // Now sorted by score
 		"totalScores": totalScores,
 		"passPercentages": passPercentages,
 	}
