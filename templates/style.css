@@ -644,9 +644,3 @@ body {
     flex: 1;
     max-height: 93%;
 }
-
-.score-button.selected {
-    border: 4px solid #fff;
-    transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-}

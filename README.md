@@ -138,15 +138,23 @@ Access at `http://localhost:8080`
 ## 🏁 Getting Started
 
 ### Prerequisites
-- Go 1.21+
+- Go 1.24+
 - Make
 - Git
+- SQLite
+- GCC
 
 ### Installation & Running
 
 ```bash
 # Development mode
 ./dev.sh
+
+# Setup
+make setenv
+make migrate
+make dedup
+make run
 
 # Production build
 make build
