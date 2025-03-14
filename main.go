@@ -18,6 +18,7 @@ func main() {
 	// Parse command line flags
 	migrateResults := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
 	migrateToSQLite := flag.Bool("migrate-to-sqlite", false, "Migrate data from JSON files to SQLite database")
+	remigrateScores := flag.Bool("remigrate-scores", false, "Remigrate just the scores from JSON to SQLite")
 	dbPath := flag.String("db", "data/tournament.db", "SQLite database path")
 	flag.Parse()
 
@@ -35,6 +36,16 @@ func main() {
 			log.Fatalf("Error migrating data to SQLite: %v", err)
 		}
 		log.Println("Migration to SQLite completed successfully")
+		return
+	}
+	
+	// Handle remigration of scores
+	if *remigrateScores {
+		log.Println("Remigrating scores from JSON files to SQLite database...")
+		if err := middleware.RemigrateScores(); err != nil {
+			log.Fatalf("Error remigrating scores to SQLite: %v", err)
+		}
+		log.Println("Score remigration completed successfully")
 		return
 	}
 

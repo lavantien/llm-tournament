@@ -305,8 +305,12 @@ func MigrateFromJSON() error {
 		suites = []string{"default"}
 	}
 
+	log.Printf("Migrating %d suites: %v", len(suites), suites)
+
 	// Process each suite
 	for _, suiteName := range suites {
+		log.Printf("Migrating suite: %s", suiteName)
+		
 		// Get or create suite in DB
 		stmt, err := tx.Prepare("INSERT OR IGNORE INTO suites (name, is_current) VALUES (?, ?)")
 		if err != nil {
@@ -330,11 +334,13 @@ func MigrateFromJSON() error {
 		if err != nil {
 			return fmt.Errorf("failed to get suite ID: %w", err)
 		}
+		log.Printf("Suite ID for %s: %d", suiteName, suiteID)
 
 		// Migrate profiles
 		profilesMap := make(map[string]int) // Maps profile name to ID
 		profiles, err := ReadProfileSuiteFromJSON(suiteName)
 		if err == nil && len(profiles) > 0 {
+			log.Printf("Migrating %d profiles", len(profiles))
 			stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare profile insert: %w", err)
@@ -354,14 +360,18 @@ func MigrateFromJSON() error {
 				}
 				
 				profilesMap[profile.Name] = int(profileID)
+				log.Printf("Migrated profile %s with ID %d", profile.Name, profileID)
 			}
 			stmt.Close()
+		} else if err != nil {
+			log.Printf("No profiles found or error: %v", err)
 		}
 
 		// Migrate prompts
 		promptsMap := make(map[int]int) // Maps old index to new ID
 		prompts, err := ReadPromptSuiteFromJSON(suiteName)
 		if err == nil && len(prompts) > 0 {
+			log.Printf("Migrating %d prompts", len(prompts))
 			stmt, err := tx.Prepare("INSERT INTO prompts (text, solution, profile_id, suite_id, display_order) VALUES (?, ?, ?, ?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare prompt insert: %w", err)
@@ -389,13 +399,18 @@ func MigrateFromJSON() error {
 				}
 				
 				promptsMap[i] = int(promptID)
+				log.Printf("Migrated prompt %d with ID %d", i, promptID)
 			}
 			stmt.Close()
+		} else if err != nil {
+			log.Printf("No prompts found or error: %v", err)
 		}
 
 		// Migrate results
 		results, err := ReadResultsFromJSON(suiteName)
 		if err == nil && len(results) > 0 {
+			log.Printf("Migrating results for %d models", len(results))
+			
 			// First, insert all models
 			modelMap := make(map[string]int) // Maps model name to ID
 			modelStmt, err := tx.Prepare("INSERT INTO models (name, suite_id) VALUES (?, ?)")
@@ -417,8 +432,18 @@ func MigrateFromJSON() error {
 				}
 				
 				modelMap[modelName] = int(modelID)
+				log.Printf("Migrated model %s with ID %d", modelName, modelID)
 			}
 			modelStmt.Close()
+
+			// Debug the result of the models insert
+			var count int
+			err = tx.QueryRow("SELECT COUNT(*) FROM models WHERE suite_id = ?", suiteID).Scan(&count)
+			if err != nil {
+				log.Printf("Error checking models count: %v", err)
+			} else {
+				log.Printf("Verified %d models were inserted for suite %s", count, suiteName)
+			}
 
 			// Then insert scores
 			scoreStmt, err := tx.Prepare("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)")
@@ -426,25 +451,211 @@ func MigrateFromJSON() error {
 				return fmt.Errorf("failed to prepare score insert: %w", err)
 			}
 			
+			scoreCount := 0
 			for modelName, result := range results {
-				modelID := modelMap[modelName]
+				modelID, exists := modelMap[modelName]
+				if !exists {
+					log.Printf("Warning: Model ID not found for %s", modelName)
+					continue
+				}
+				
+				log.Printf("Migrating %d scores for model %s (ID: %d)", len(result.Scores), modelName, modelID)
 				
 				for i, score := range result.Scores {
-					if promptID, exists := promptsMap[i]; exists {
-						_, err := scoreStmt.Exec(modelID, promptID, score)
-						if err != nil {
-							scoreStmt.Close()
-							return fmt.Errorf("failed to insert score: %w", err)
-						}
+					promptID, exists := promptsMap[i]
+					if !exists {
+						log.Printf("Warning: Prompt ID not found for index %d", i)
+						continue
 					}
+					
+					_, err := scoreStmt.Exec(modelID, promptID, score)
+					if err != nil {
+						scoreStmt.Close()
+						return fmt.Errorf("failed to insert score for model %s, prompt %d: %w", modelName, i, err)
+					}
+					scoreCount++
 				}
 			}
 			scoreStmt.Close()
+			log.Printf("Total of %d scores migrated for suite %s", scoreCount, suiteName)
+			
+			// Verify scores were inserted
+			err = tx.QueryRow("SELECT COUNT(*) FROM scores s JOIN models m ON s.model_id = m.id WHERE m.suite_id = ?", suiteID).Scan(&count)
+			if err != nil {
+				log.Printf("Error checking scores count: %v", err)
+			} else {
+				log.Printf("Verified %d scores were inserted for suite %s", count, suiteName)
+			}
+		} else if err != nil {
+			log.Printf("No results found or error: %v", err)
+		} else {
+			log.Printf("No results to migrate for suite %s", suiteName)
 		}
 	}
 
 	// Commit the transaction
-	return tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
+	log.Println("Migration completed successfully!")
+	return nil
+}
+
+// RemigrateScores specifically remigrates just the scores
+func RemigrateScores() error {
+	// Start a transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Get list of all suites from database
+	rows, err := tx.Query("SELECT id, name FROM suites")
+	if err != nil {
+		return fmt.Errorf("failed to query suites: %w", err)
+	}
+	
+	var suites []struct {
+		ID   int
+		Name string
+	}
+	
+	for rows.Next() {
+		var suite struct {
+			ID   int
+			Name string
+		}
+		if err := rows.Scan(&suite.ID, &suite.Name); err != nil {
+			rows.Close()
+			return fmt.Errorf("failed to scan suite: %w", err)
+		}
+		suites = append(suites, suite)
+	}
+	rows.Close()
+	
+	log.Printf("Re-migrating scores for %d suites", len(suites))
+
+	// Clear existing scores
+	_, err = tx.Exec("DELETE FROM scores")
+	if err != nil {
+		return fmt.Errorf("failed to clear scores: %w", err)
+	}
+	log.Println("Cleared existing scores")
+
+	for _, suite := range suites {
+		log.Printf("Processing suite: %s (ID: %d)", suite.Name, suite.ID)
+		
+		// Get all prompts for this suite with their index
+		promptRows, err := tx.Query("SELECT id, display_order FROM prompts WHERE suite_id = ? ORDER BY display_order", suite.ID)
+		if err != nil {
+			return fmt.Errorf("failed to query prompts: %w", err)
+		}
+		
+		promptMap := make(map[int]int) // Maps display_order to ID
+		for promptRows.Next() {
+			var id, displayOrder int
+			if err := promptRows.Scan(&id, &displayOrder); err != nil {
+				promptRows.Close()
+				return fmt.Errorf("failed to scan prompt: %w", err)
+			}
+			promptMap[displayOrder] = id
+		}
+		promptRows.Close()
+		
+		log.Printf("Found %d prompts for suite %s", len(promptMap), suite.Name)
+		
+		// Get all models for this suite
+		modelRows, err := tx.Query("SELECT id, name FROM models WHERE suite_id = ?", suite.ID)
+		if err != nil {
+			return fmt.Errorf("failed to query models: %w", err)
+		}
+		
+		modelMap := make(map[string]int) // Maps name to ID
+		for modelRows.Next() {
+			var id int
+			var name string
+			if err := modelRows.Scan(&id, &name); err != nil {
+				modelRows.Close()
+				return fmt.Errorf("failed to scan model: %w", err)
+			}
+			modelMap[name] = id
+		}
+		modelRows.Close()
+		
+		log.Printf("Found %d models for suite %s", len(modelMap), suite.Name)
+		
+		// Get results from JSON
+		results, err := ReadResultsFromJSON(suite.Name)
+		if err != nil {
+			log.Printf("Warning: could not read results for suite %s: %v", suite.Name, err)
+			continue
+		}
+		
+		log.Printf("Found results for %d models in JSON for suite %s", len(results), suite.Name)
+		
+		// Insert scores
+		scoreStmt, err := tx.Prepare("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)")
+		if err != nil {
+			return fmt.Errorf("failed to prepare score insert: %w", err)
+		}
+		
+		scoreCount := 0
+		for modelName, result := range results {
+			modelID, modelExists := modelMap[modelName]
+			if !modelExists {
+				log.Printf("Warning: Model %s not found in database, creating it", modelName)
+				// Create the model if it doesn't exist
+				res, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suite.ID)
+				if err != nil {
+					scoreStmt.Close()
+					return fmt.Errorf("failed to insert model %s: %w", modelName, err)
+				}
+				
+				id, err := res.LastInsertId()
+				if err != nil {
+					scoreStmt.Close()
+					return fmt.Errorf("failed to get model ID: %w", err)
+				}
+				
+				modelID = int(id)
+				log.Printf("Created model %s with ID %d", modelName, modelID)
+			}
+			
+			for i, score := range result.Scores {
+				promptID, promptExists := promptMap[i]
+				if !promptExists {
+					log.Printf("Warning: Prompt with index %d not found for suite %s", i, suite.Name)
+					continue
+				}
+				
+				_, err := scoreStmt.Exec(modelID, promptID, score)
+				if err != nil {
+					scoreStmt.Close()
+					return fmt.Errorf("failed to insert score for model %s, prompt %d: %w", modelName, i, err)
+				}
+				scoreCount++
+			}
+		}
+		scoreStmt.Close()
+		
+		log.Printf("Inserted %d scores for suite %s", scoreCount, suite.Name)
+	}
+
+	// Commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
+	log.Println("Score remigration completed successfully!")
+	return nil
 }
 
 // GetProfileID returns the profile ID for a given name and suite
