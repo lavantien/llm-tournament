@@ -1,5 +1,6 @@
 /drop
 /add       README.md
+/add       go.mod
 /add       handlers\models.go
 /add       handlers\profiles.go
 /add       handlers\prompt.go
@@ -7,6 +8,7 @@
 /add       handlers\stats.go
 /add       handlers\suites.go
 /add       main.go
+/add       middleware\database.go
 /add       middleware\handler_utils.go
 /add       middleware\import_error.go
 /add       middleware\socket.go
