@@ -413,8 +413,8 @@ body {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 10px;
-        margin: 0 25%;
-        width: 50%;
+        margin: 0 auto;
+        width: 12%;
     }
 
     .score-button {
@@ -643,4 +643,10 @@ body {
 .chart-container canvas {
     flex: 1;
     max-height: 93%;
+}
+
+.score-button.selected {
+    border: 4px solid #fff;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
 }
