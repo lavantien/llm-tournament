@@ -40,62 +40,57 @@ Access at `http://localhost:8080`
 ## 🌟 Key Features
 
 ### 🧪 **Evaluation Engine**
-- 🎯 Real-time scoring with WebSocket updates (0-100 scale with 5 levels)
-- 📈 Automatic model ranking with real-time leaderboard
-- 🧮 Granular scoring system (0/5, 1/5, 2/5, 3/5, 4/5, 5/5)
-- 📉 Pass percentage calculations and visualization
-- 🔄 Instant updates across all connected clients
-- 🔀 Random score generation for prototyping
-- ⏪ State backup and restore functionality
+- 🎯 Real-time scoring with WebSocket updates on a 0-100 scale (scored in increments: 0, 20, 40, 60, 80, 100)
+- 📈 Automatic model ranking with live leaderboard updates
+- 🧮 Granular scoring system with state backup and rollback (restore "Previous" state)
+- 🔄 Instant propagation of score changes to all connected clients via WebSockets
+- 🔀 Random mock score generation using weighted tiers for prototyping
 
-### 📚 **Test Suite Management**
-- 🗂️ Create/rename/delete independent prompt suites
-- 🔗 Isolated profiles and results per suite
-- ⚡ One-click suite switching with instant UI updates
-- 📦 Complete suite export/import (JSON)
-- 🏷️ Profile-based prompt categorization and filtering
+### 📚 **Prompt Suite & Test Management**
+- 🗂️ Create, rename, select, and delete independent prompt suites
+- 🔗 Isolated profiles, prompts, and results per suite for organized evaluations
+- ⚡ One-click suite switching with instantaneous UI updates
+- 📦 JSON import/export for prompt suites and evaluation results
+- 🧩 Integrity features including duplicate prompt cleanup and migration support from JSON to SQLite
 
 ### ✍️ **Prompt Workshop**
-- 📝 Rich Markdown editing with live preview
-- 🖇️ Profile assignment for prompt categorization
-- 🧩 Bulk selection, deletion, and export operations
-- 🎚️ Drag-and-drop reordering with automatic saving
-- 🔍 Real-time search and multi-criteria filtering
-- 📋 One-click copy functionality for prompt text
-- 📤 JSON export/import with validation
+- 📝 Rich Markdown editor with live preview for crafting prompts and solutions
+- 🖇️ Assign reusable evaluation profiles to prompts for categorization
+- 🔍 Advanced search and multi-criteria filtering within prompts
+- 🎚️ Intuitive drag-and-drop reordering and bulk operations (selection, deletion, export)
+- 📋 One-click copy-to-clipboard functionality for prompt text
 
 ### 🤖 **Model Arena**
-- ➕ Quick model addition with automatic score initialization
-- ✏️ In-place model renaming with result preservation
-- 🗑️ Model deletion with confirmation
-- 📊 Color-coded scoring visualization (red to blue gradient)
-- 🔄 Consistent state persistence across sessions
-- 🔍 Model search and filtering capabilities
+- ➕ Seamless addition of new models with automatic score initialization
+- ✏️ In-place model renaming while preserving existing scores and results
+- 🗑️ Model removal with confirmation to maintain data integrity
+- 📊 Dynamic, color-coded scoring visualization with real-time updates
+- 🔍 Advanced model search and filtering to compare performance effectively
+- 🎲 Random mock score generation with weighted distribution reflecting performance tiers
 
 ### 👤 **Profile System**
-- 📋 Create reusable evaluation profiles
-- 🔖 Associate profiles with prompts for categorization
-- 🔄 Automatic prompt updates when profiles are renamed
-- 🔍 Profile-based filtering in prompt view
-- 📝 Markdown description support with preview
+- 📋 Creation of reusable evaluation profiles with descriptive Markdown support
+- 🔖 Automatic updating of associated prompts when profiles are renamed
+- 🔍 Profile-based filtering in prompt views to focus on specific categories
+- 📝 Live preview of profile descriptions for intuitive setup
 
-### 📊 **Analytics Suite**
-- 📊 Detailed score breakdowns with Chart.js visualizations
-- 🏆 Comprehensive tier classification system:
-  - Transcendent (1900-2000) 🌌
-  - Super-Grandmaster (1800-1899) 🌟
-  - Grandmaster (1700-1799) 🥇
-  - International Master (1600-1699) 🎖️
-  - Master (1500-1599) 🏅
-  - Expert (1400-1499) 🎓
-  - Pro Player (1200-1399) 🎮
-  - Advanced Player (1000-1199) 🎯
-  - Intermediate Player (800-999) 📈
-  - Veteran (600-799) 👨‍💼
-  - Beginner (0-599) 🐣
-- 📈 Score distribution visualization
-- 📋 Tier-based model grouping
-- 📑 Performance comparison across models
+### 📊 **Analytics & Tier Insights**
+- 📊 Detailed score breakdowns powered by Chart.js with interactive visualizations
+- 🏆 Comprehensive tier classification based on total scores:
+  - Transcendental (≥3780)
+  - Cosmic (3360–3779)
+  - Divine (2700–3359)
+  - Celestial (2400–2699)
+  - Ascendant (2100–2399)
+  - Ethereal (1800–2099)
+  - Mystic (1500–1799)
+  - Astral (1200–1499)
+  - Spiritual (900–1199)
+  - Primal (600–899)
+  - Mortal (300–599)
+  - Primordial (<300)
+- 📈 Visualization of score distributions and tier-based model grouping
+- 📑 Interactive performance comparisons across evaluated models
 
 ### 💻 **Evaluation Interface**
 - 🎯 Streamlined scoring with color-coded buttons
@@ -121,7 +116,7 @@ Access at `http://localhost:8080`
 `HTML5` • `CSS3` • `JavaScript ES6+` • `Chart.js 4.x` • `Marked.js`
 
 **Data**  
-`JSON Storage` • `File-based Persistence` • `JSON Import/Export` • `State Versioning`
+`SQLite Storage` • `Robust Data Migration (JSON import/export, duplicate cleanup)` • `State Versioning`
 
 **Security**  
 `XSS Sanitization` • `CORS Protection` • `Input Validation` • `Error Handling`
@@ -187,11 +182,13 @@ make build
 
 ## 🔧 Advanced Features
 
-- **Bulk Operations**: Select multiple prompts for deletion or other actions
-- **Drag-and-Drop**: Reorder prompts with intuitive drag-and-drop interface
-- **State Preservation**: Previous state can be restored with the "Previous" button
-- **Mock Data**: Generate random scores to prototype and test visualizations
-- **Search & Filter**: Find specific prompts, models, or profiles quickly
+- **Bulk Operations**: Select multiple prompts for deletion, export, or other actions
+- **Drag-and-Drop & Ordering**: Reorder prompts with an intuitive drag-and-drop interface
+- **State Management**: Backup and restore previous evaluation states with a "Previous" button
+- **Mock Data Generation**: Generate random mock scores with weighted distributions for testing
+- **Advanced Search & Filtering**: Quickly find prompts, models, or profiles using multi-criteria filters
+- **Robust Data Migration**: Seamlessly migrate data from JSON files to SQLite with duplicate prompt cleanup
+- **Suite Management**: Easily switch, create, rename, and delete prompt suites
 
 ## 🤝 Contribution
 
