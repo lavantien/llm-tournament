@@ -149,58 +149,75 @@ body {
         background-color: #f5f5f5;
     }
 
+    .transcendental {
+        background-color: #8A2BE2;
+        /* Purple - Transcendental */
+        color: white;
+    }
+
     .cosmic {
-        background-color: #0000ff; /* Blue - Hottest */
+        background-color: #0000ff;
+        /* Blue - Hottest */
         color: white;
     }
 
     .divine {
-        background-color: #1e90ff; /* Dodger Blue */
+        background-color: #1e90ff;
+        /* Dodger Blue */
         color: white;
     }
 
     .celestial {
-        background-color: #00ffff; /* Cyan */
+        background-color: #00ffff;
+        /* Cyan */
         color: black;
     }
 
     .ascendant {
-        background-color: #00ff7f; /* Spring Green */
+        background-color: #00ff7f;
+        /* Spring Green */
         color: black;
     }
 
     .ethereal {
-        background-color: #adff2f; /* Yellow-Green */
+        background-color: #adff2f;
+        /* Yellow-Green */
         color: black;
     }
-    
+
     .mystic {
-        background-color: #ffff00; /* Yellow */
+        background-color: #ffff00;
+        /* Yellow */
         color: black;
     }
 
     .astral {
-        background-color: #ffcc00; /* Yellow-Orange */
+        background-color: #ffcc00;
+        /* Yellow-Orange */
         color: black;
     }
 
     .spiritual {
-        background-color: #ffa500; /* Orange */
+        background-color: #ffa500;
+        /* Orange */
         color: black;
     }
 
     .primal {
-        background-color: #ff8c00; /* Dark Orange */
+        background-color: #ff8c00;
+        /* Dark Orange */
         color: black;
     }
 
     .mortal {
-        background-color: #ff4500; /* Orange-Red */
+        background-color: #ff4500;
+        /* Orange-Red */
         color: white;
     }
 
     .primordial {
-        background-color: #ff0000; /* Red - Coldest */
+        background-color: #ff0000;
+        /* Red - Coldest */
         color: white;
     }
 
@@ -230,6 +247,7 @@ body {
             border-color: #bb86fc;
             background-color: #444;
         }
+
         text-align: center;
     }
 

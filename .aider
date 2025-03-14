@@ -24,8 +24,4 @@
 /add       templates\results.html
 /add       templates\shared.go
 /add       templates\stats.html
-/add       tools\bg_batch_eraser\BEN2.py
-/add       tools\bg_batch_eraser\main.py
-/add       tools\bg_batch_eraser\vidseg.py
-/add       tools\openwebui\pipes\anthropic_claude_thinking_96k.py
-/add       tools\tts\podcast.py
+/add       templates\style.css
