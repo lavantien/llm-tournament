@@ -14,35 +14,39 @@ import (
 // Calculate tiers based on total scores
 func calculateTiers(totalScores map[string]int) (map[string][]string, map[string]string) {
 	tiers := map[string][]string{
-		"cosmic":     {},
-		"divine":     {},
-		"celestial":  {},
-		"ascendant":  {},
-		"ethereal":   {},
-		"mystic":     {},
-		"astral":     {},
-		"spiritual":  {},
-		"primal":     {},
-		"mortal":     {},
-		"primordial": {},
+		"transcendental": {},
+		"cosmic":         {},
+		"divine":         {},
+		"celestial":      {},
+		"ascendant":      {},
+		"ethereal":       {},
+		"mystic":         {},
+		"astral":         {},
+		"spiritual":      {},
+		"primal":         {},
+		"mortal":         {},
+		"primordial":     {},
 	}
 
 	tierRanges := map[string]string{
-		"cosmic":     "3000+",
-		"divine":     "2700-2999",
-		"celestial":  "2400-2699",
-		"ascendant":  "2100-2399",
-		"ethereal":   "1800-2099",
-		"mystic":     "1500-1799",
-		"astral":     "1200-1499",
-		"spiritual":  "900-1199",
-		"primal":     "600-899",
-		"mortal":     "300-599",
-		"primordial": "0-299",
+		"transcendental": "3780+",
+		"cosmic":         "3000-3779",
+		"divine":         "2700-2999",
+		"celestial":      "2400-2699",
+		"ascendant":      "2100-2399",
+		"ethereal":       "1800-2099",
+		"mystic":         "1500-1799",
+		"astral":         "1200-1499",
+		"spiritual":      "900-1199",
+		"primal":         "600-899",
+		"mortal":         "300-599",
+		"primordial":     "0-299",
 	}
 
 	for model, score := range totalScores {
 		switch {
+		case score >= 3780:
+			tiers["transcendental"] = append(tiers["transcendental"], model)
 		case score >= 3000:
 			tiers["cosmic"] = append(tiers["cosmic"], model)
 		case score >= 2700:
@@ -104,12 +108,11 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 				stats.Count100++
 			}
 		}
-		
+
 		// Double-check total score calculation to ensure consistency
 		calculatedTotal := stats.Count20*20 + stats.Count40*40 + stats.Count60*60 + stats.Count80*80 + stats.Count100*100
 		if calculatedTotal != stats.TotalScore {
-			log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", 
-				model, calculatedTotal, stats.TotalScore)
+			log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", model, calculatedTotal, stats.TotalScore)
 			// Fix the total score if there's a discrepancy
 			stats.TotalScore = calculatedTotal
 		}
@@ -138,6 +141,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
 		OrderedTiers: []string{
+			"transcendental",
 			"cosmic",
 			"divine",
 			"celestial",
@@ -179,7 +183,7 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Write the buffered template output to response
 	_, err = buf.WriteTo(w)
 	if err != nil {
