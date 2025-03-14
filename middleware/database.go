@@ -77,7 +77,8 @@ func createTables() error {
 		suite_id INTEGER NOT NULL,
 		display_order INTEGER NOT NULL,
 		FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL,
-		FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE
+		FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
+		UNIQUE(text, suite_id)
 	);
 
 	CREATE TABLE IF NOT EXISTS models (
@@ -372,6 +373,14 @@ func MigrateFromJSON() error {
 		prompts, err := ReadPromptSuiteFromJSON(suiteName)
 		if err == nil && len(prompts) > 0 {
 			log.Printf("Migrating %d prompts", len(prompts))
+			
+			// First, delete any existing prompts for this suite to avoid duplicates
+			_, err := tx.Exec("DELETE FROM prompts WHERE suite_id = ?", suiteID)
+			if err != nil {
+				return fmt.Errorf("failed to clear existing prompts: %w", err)
+			}
+			log.Printf("Cleared existing prompts for suite %s", suiteName)
+			
 			stmt, err := tx.Prepare("INSERT INTO prompts (text, solution, profile_id, suite_id, display_order) VALUES (?, ?, ?, ?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare prompt insert: %w", err)
@@ -500,6 +509,169 @@ func MigrateFromJSON() error {
 	}
 	
 	log.Println("Migration completed successfully!")
+	return nil
+}
+
+// CleanupDuplicatePrompts removes duplicate prompts from the database
+func CleanupDuplicatePrompts() error {
+	log.Println("Starting cleanup of duplicate prompts...")
+	
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+	
+	// Get all suites
+	rows, err := tx.Query("SELECT id, name FROM suites")
+	if err != nil {
+		return fmt.Errorf("failed to query suites: %w", err)
+	}
+	
+	var suites []struct {
+		ID   int
+		Name string
+	}
+	
+	for rows.Next() {
+		var suite struct {
+			ID   int
+			Name string
+		}
+		if err := rows.Scan(&suite.ID, &suite.Name); err != nil {
+			rows.Close()
+			return fmt.Errorf("failed to scan suite: %w", err)
+		}
+		suites = append(suites, suite)
+	}
+	rows.Close()
+	
+	for _, suite := range suites {
+		log.Printf("Cleaning up duplicates for suite: %s (ID: %d)", suite.Name, suite.ID)
+		
+		// First find duplicate prompts by text within the same suite
+		duplicateRows, err := tx.Query(`
+		SELECT MIN(id) as keep_id, text, COUNT(*) as count
+		FROM prompts 
+		WHERE suite_id = ?
+		GROUP BY text
+		HAVING COUNT(*) > 1
+		`, suite.ID)
+		if err != nil {
+			return fmt.Errorf("failed to find duplicates: %w", err)
+		}
+		
+		type DuplicateGroup struct {
+			KeepID int
+			Text   string
+			Count  int
+		}
+		
+		var duplicates []DuplicateGroup
+		for duplicateRows.Next() {
+			var dg DuplicateGroup
+			if err := duplicateRows.Scan(&dg.KeepID, &dg.Text, &dg.Count); err != nil {
+				duplicateRows.Close()
+				return fmt.Errorf("failed to scan duplicate row: %w", err)
+			}
+			duplicates = append(duplicates, dg)
+		}
+		duplicateRows.Close()
+		
+		if len(duplicates) == 0 {
+			log.Printf("No duplicates found for suite %s", suite.Name)
+			continue
+		}
+		
+		log.Printf("Found %d duplicate prompt groups in suite %s", len(duplicates), suite.Name)
+		
+		// For each duplicate group, keep the one with the lowest ID and delete the rest
+		for _, dg := range duplicates {
+			// Get the IDs of all duplicates for this text
+			dupIDs, err := tx.Query(`
+			SELECT id FROM prompts 
+			WHERE text = ? AND suite_id = ? AND id != ?
+			`, dg.Text, suite.ID, dg.KeepID)
+			if err != nil {
+				return fmt.Errorf("failed to query duplicate IDs: %w", err)
+			}
+			
+			var idsToDelete []int
+			for dupIDs.Next() {
+				var id int
+				if err := dupIDs.Scan(&id); err != nil {
+					dupIDs.Close()
+					return fmt.Errorf("failed to scan duplicate ID: %w", err)
+				}
+				idsToDelete = append(idsToDelete, id)
+			}
+			dupIDs.Close()
+			
+			if len(idsToDelete) > 0 {
+				log.Printf("Deleting %d duplicates for prompt text: %s...", len(idsToDelete), dg.Text[:min(20, len(dg.Text))])
+				
+				// Update any scores to point to the kept prompt
+				for _, idToDelete := range idsToDelete {
+					_, err = tx.Exec(`
+					UPDATE scores SET prompt_id = ? 
+					WHERE prompt_id = ?
+					`, dg.KeepID, idToDelete)
+					if err != nil {
+						return fmt.Errorf("failed to update scores for duplicate prompt: %w", err)
+					}
+				}
+				
+				// Now delete the duplicate prompts
+				for _, idToDelete := range idsToDelete {
+					_, err = tx.Exec("DELETE FROM prompts WHERE id = ?", idToDelete)
+					if err != nil {
+						return fmt.Errorf("failed to delete duplicate prompt: %w", err)
+					}
+				}
+			}
+		}
+		
+		// Finally, reorder the display_order values to be consecutive
+		log.Printf("Reordering prompts for suite %s", suite.Name)
+		promptRows, err := tx.Query(`
+		SELECT id FROM prompts 
+		WHERE suite_id = ? 
+		ORDER BY display_order
+		`, suite.ID)
+		if err != nil {
+			return fmt.Errorf("failed to query prompts for reordering: %w", err)
+		}
+		
+		var promptIDs []int
+		for promptRows.Next() {
+			var id int
+			if err := promptRows.Scan(&id); err != nil {
+				promptRows.Close()
+				return fmt.Errorf("failed to scan prompt ID: %w", err)
+			}
+			promptIDs = append(promptIDs, id)
+		}
+		promptRows.Close()
+		
+		for i, id := range promptIDs {
+			_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", i, id)
+			if err != nil {
+				return fmt.Errorf("failed to update prompt order: %w", err)
+			}
+		}
+	}
+	
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
+	log.Println("Duplicate prompt cleanup completed successfully!")
 	return nil
 }
 

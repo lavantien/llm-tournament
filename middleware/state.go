@@ -246,9 +246,9 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 		return nil, fmt.Errorf("failed to get suite ID: %w", err)
 	}
 
-	// Query to get prompts with profile names
+	// Query to get prompts with profile names - ensure distinct results
 	query := `
-	SELECT p.text, p.solution, COALESCE(pr.name, '') as profile_name
+	SELECT p.text, p.solution, COALESCE(pr.name, '') as profile_name, p.display_order
 	FROM prompts p
 	LEFT JOIN profiles pr ON p.profile_id = pr.id
 	WHERE p.suite_id = ?
@@ -262,15 +262,38 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 	defer rows.Close()
 
 	var prompts []Prompt
+	seenTexts := make(map[string]bool) // Track unique prompts by text content
+	
 	for rows.Next() {
 		var p Prompt
-		if err := rows.Scan(&p.Text, &p.Solution, &p.Profile); err != nil {
+		var displayOrder int
+		if err := rows.Scan(&p.Text, &p.Solution, &p.Profile, &displayOrder); err != nil {
 			return nil, fmt.Errorf("failed to scan prompt: %w", err)
 		}
-		prompts = append(prompts, p)
+		
+		// Ensure we don't add duplicates
+		if !seenTexts[p.Text] {
+			prompts = append(prompts, p)
+			seenTexts[p.Text] = true
+		} else {
+			log.Printf("Warning: Skipped duplicate prompt with text: %s", p.Text[:min(20, len(p.Text))])
+		}
+	}
+
+	// Check for any errors during iteration
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating prompt rows: %w", err)
 	}
 
 	return prompts, nil
+}
+
+// min returns the smaller of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // Write prompt suite to database
