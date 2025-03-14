@@ -30,8 +30,8 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 
 	tierRanges := map[string]string{
 		"transcendental": "3780+",
-		"cosmic":         "3000-3779",
-		"divine":         "2700-2999",
+		"cosmic":         "3360-3779",
+		"divine":         "2700-3359",
 		"celestial":      "2400-2699",
 		"ascendant":      "2100-2399",
 		"ethereal":       "1800-2099",
@@ -47,7 +47,7 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 		switch {
 		case score >= 3780:
 			tiers["transcendental"] = append(tiers["transcendental"], model)
-		case score >= 3000:
+		case score >= 3360:
 			tiers["cosmic"] = append(tiers["cosmic"], model)
 		case score >= 2700:
 			tiers["divine"] = append(tiers["divine"], model)
