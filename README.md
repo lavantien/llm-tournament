@@ -29,6 +29,9 @@ UI Profiles:
 # Clone & Run
 git clone https://github.com/lavantien/llm-tournament.git
 cd llm-tournament
+make setenv
+make migrate
+make dedup
 make run
 ```
 
@@ -145,6 +148,7 @@ Access at `http://localhost:8080`
 - Git
 
 ### Installation & Running
+
 ```bash
 # Development mode
 ./dev.sh
