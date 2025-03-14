@@ -147,43 +147,194 @@ func WritePrompts(prompts []Prompt) error {
 	return WritePromptSuite(suiteName, prompts)
 }
 
-// Read results from data/results-<suiteName>.json
+// Read results from database
 func ReadResults() map[string]Result {
 	suiteName := GetCurrentSuiteName()
+	var suiteID int
+	err := db.QueryRow("SELECT id FROM suites WHERE name = ?", suiteName).Scan(&suiteID)
+	if err != nil {
+		log.Printf("Error getting suite ID: %v", err)
+		return make(map[string]Result)
+	}
+
+	// Get all prompts for this suite
+	promptCountQuery := "SELECT COUNT(*) FROM prompts WHERE suite_id = ?"
+	var promptCount int
+	err = db.QueryRow(promptCountQuery, suiteID).Scan(&promptCount)
+	if err != nil {
+		log.Printf("Error counting prompts: %v", err)
+		return make(map[string]Result)
+	}
+
+	// Get all models for this suite
+	modelQuery := "SELECT id, name FROM models WHERE suite_id = ?"
+	modelRows, err := db.Query(modelQuery, suiteID)
+	if err != nil {
+		log.Printf("Error querying models: %v", err)
+		return make(map[string]Result)
+	}
+	defer modelRows.Close()
+
+	results := make(map[string]Result)
+	for modelRows.Next() {
+		var modelID int
+		var modelName string
+		if err := modelRows.Scan(&modelID, &modelName); err != nil {
+			log.Printf("Error scanning model: %v", err)
+			continue
+		}
+
+		// Initialize scores array
+		scores := make([]int, promptCount)
+
+		// Get scores for this model
+		scoreQuery := `
+		SELECT p.display_order, s.score
+		FROM scores s
+		JOIN prompts p ON s.prompt_id = p.id
+		WHERE s.model_id = ? AND p.suite_id = ?
+		ORDER BY p.display_order
+		`
+		scoreRows, err := db.Query(scoreQuery, modelID, suiteID)
+		if err != nil {
+			log.Printf("Error querying scores: %v", err)
+			continue
+		}
+
+		for scoreRows.Next() {
+			var promptOrder, score int
+			if err := scoreRows.Scan(&promptOrder, &score); err != nil {
+				log.Printf("Error scanning score: %v", err)
+				continue
+			}
+			
+			if promptOrder >= 0 && promptOrder < promptCount {
+				scores[promptOrder] = score
+			}
+		}
+		scoreRows.Close()
+
+		results[modelName] = Result{Scores: scores}
+	}
+
+	return results
+}
+
+// Read results from JSON file (for migration)
+func ReadResultsFromJSON(suiteName string) (map[string]Result, error) {
 	var filename string
 	if suiteName == "default" {
 		filename = "data/results-default.json"
 	} else {
 		filename = "data/results-" + suiteName + ".json"
 	}
-	data, _ := os.ReadFile(filename)
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
 	var results map[string]Result
-	json.Unmarshal(data, &results)
-
-	prompts := ReadPrompts()
-	if results == nil {
-		return make(map[string]Result)
+	err = json.Unmarshal(data, &results)
+	if err != nil {
+		return nil, err
 	}
-	
-	// Migrate any old format results
-	results = MigrateResults(results)
-	for model, result := range results {
-		// Ensure Scores array is correct length
-		if result.Scores == nil {
-			result.Scores = make([]int, len(prompts))
-		} else if len(result.Scores) < len(prompts) {
-			result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
-		} else if len(result.Scores) > len(prompts) {
-			result.Scores = result.Scores[:len(prompts)]
-		}
-		
-		results[model] = result
-	}
-	return results
+	return results, nil
 }
 
-// Read prompt suite from data/prompts-<suiteName>.json
+// Read prompt suite from database
 func ReadPromptSuite(suiteName string) ([]Prompt, error) {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	// Query to get prompts with profile names
+	query := `
+	SELECT p.text, p.solution, COALESCE(pr.name, '') as profile_name
+	FROM prompts p
+	LEFT JOIN profiles pr ON p.profile_id = pr.id
+	WHERE p.suite_id = ?
+	ORDER BY p.display_order
+	`
+
+	rows, err := db.Query(query, suiteID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query prompts: %w", err)
+	}
+	defer rows.Close()
+
+	var prompts []Prompt
+	for rows.Next() {
+		var p Prompt
+		if err := rows.Scan(&p.Text, &p.Solution, &p.Profile); err != nil {
+			return nil, fmt.Errorf("failed to scan prompt: %w", err)
+		}
+		prompts = append(prompts, p)
+	}
+
+	return prompts, nil
+}
+
+// Write prompt suite to database
+func WritePromptSuite(suiteName string, prompts []Prompt) error {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Delete existing prompts for this suite
+	_, err = tx.Exec("DELETE FROM prompts WHERE suite_id = ?", suiteID)
+	if err != nil {
+		return fmt.Errorf("failed to delete prompts: %w", err)
+	}
+
+	// Insert new prompts
+	if len(prompts) > 0 {
+		stmt, err := tx.Prepare(`
+		INSERT INTO prompts (text, solution, profile_id, suite_id, display_order) 
+		VALUES (?, ?, ?, ?, ?)
+		`)
+		if err != nil {
+			return fmt.Errorf("failed to prepare prompt insert: %w", err)
+		}
+		defer stmt.Close()
+
+		for i, prompt := range prompts {
+			// Get profile ID if a profile is specified
+			var profileID sql.NullInt64
+			if prompt.Profile != "" {
+				id, exists, err := GetProfileID(prompt.Profile, suiteID)
+				if err != nil {
+					return fmt.Errorf("failed to get profile ID: %w", err)
+				}
+				if exists {
+					profileID.Int64 = int64(id)
+					profileID.Valid = true
+				}
+			}
+
+			_, err = stmt.Exec(prompt.Text, prompt.Solution, profileID, suiteID, i)
+			if err != nil {
+				return fmt.Errorf("failed to insert prompt: %w", err)
+			}
+		}
+	}
+
+	return tx.Commit()
+}
+
+// Read prompt suite from JSON file (for migration)
+func ReadPromptSuiteFromJSON(suiteName string) ([]Prompt, error) {
 	var filename string
 	if suiteName == "default" {
 		filename = "data/prompts-default.json"
@@ -202,106 +353,25 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 	return prompts, nil
 }
 
-// Write prompt suite to data/prompts-<suiteName>.json
-func WritePromptSuite(suiteName string, prompts []Prompt) error {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/prompts-default.json"
-	} else {
-		filename = "data/prompts-" + suiteName + ".json"
-	}
-	data, err := json.Marshal(prompts)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(filename, data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // List all prompt suites
 func ListPromptSuites() ([]string, error) {
-	var suites []string
-	files, err := os.ReadDir("data")
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		if !file.IsDir() && strings.HasPrefix(file.Name(), "prompts-") && strings.HasSuffix(file.Name(), ".json") {
-			suiteName := strings.TrimSuffix(strings.TrimPrefix(file.Name(), "prompts-"), ".json")
-			suites = append(suites, suiteName)
-		}
-	}
-	return suites, nil
+	return ListSuites()
 }
 
 func DeletePromptSuite(suiteName string) error {
-	filename := "data/prompts-" + suiteName + ".json"
-	err := os.Remove(filename)
-	if err != nil {
-		return err
-	}
-	return nil
+	return DeleteSuite(suiteName)
 }
 
 // RenameSuiteFiles renames all files associated with a suite
 func RenameSuiteFiles(oldName, newName string) error {
-    // Add validation
-    if oldName == "" {
-        return fmt.Errorf("original suite name cannot be empty")
-    }
-    if newName == "" {
-        return fmt.Errorf("new suite name cannot be empty")
-    }
-    if strings.ContainsAny(newName, "/\\") {
-        return fmt.Errorf("suite name contains invalid characters")
-    }
-    if SuiteExists(newName) {
-        return fmt.Errorf("suite with name '%s' already exists", newName)
-    }
-
-    // Rename prompts file
-    oldPrompts := "data/prompts-" + oldName + ".json"
-    newPrompts := "data/prompts-" + newName + ".json"
-    if err := os.Rename(oldPrompts, newPrompts); err != nil && !os.IsNotExist(err) {
-        return fmt.Errorf("error renaming prompts: %w", err)
-    }
-
-    // Rename profiles file
-    oldProfiles := "data/profiles-" + oldName + ".json"
-    newProfiles := "data/profiles-" + newName + ".json"
-    if err := os.Rename(oldProfiles, newProfiles); err != nil && !os.IsNotExist(err) {
-        return fmt.Errorf("error renaming profiles: %w", err)
-    }
-
-    // Rename results file
-    oldResults := "data/results-" + oldName + ".json"
-    newResults := "data/results-" + newName + ".json"
-    if err := os.Rename(oldResults, newResults); err != nil && !os.IsNotExist(err) {
-        return fmt.Errorf("error renaming results: %w", err)
-    }
-
-    // Update current suite if it was the renamed one
-    if GetCurrentSuiteName() == oldName {
-        if err := os.WriteFile("data/current_suite.txt", []byte(newName), 0644); err != nil {
-            return fmt.Errorf("error updating current suite: %w", err)
-        }
-    }
-    
-    return nil
+	return RenameSuite(oldName, newName)
 }
 
 // SuiteExists checks if a suite with the given name exists
 func SuiteExists(name string) bool {
-    suites, _ := ListPromptSuites()
-    for _, s := range suites {
-        if s == name {
-            return true
-        }
-    }
-    return false
+	var exists int
+	err := db.QueryRow("SELECT 1 FROM suites WHERE name = ?", name).Scan(&exists)
+	return err == nil
 }
 
 // Get current suite name
@@ -450,19 +520,63 @@ func UpdatePromptsOrder(order []int) {
 		log.Println("Invalid order length")
 		return
 	}
-	orderedPrompts := make([]Prompt, len(prompts))
-	for i, index := range order {
-		if index < 0 || index >= len(prompts) {
+	
+	suiteID, err := GetCurrentSuiteID()
+	if err != nil {
+		log.Printf("Error getting current suite ID: %v", err)
+		return
+	}
+	
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		log.Printf("Error beginning transaction: %v", err)
+		return
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Get all prompt IDs for this suite
+	promptRows, err := tx.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
+	if err != nil {
+		log.Printf("Error querying prompts: %v", err)
+		return
+	}
+	
+	var promptIDs []int
+	for promptRows.Next() {
+		var id int
+		if err := promptRows.Scan(&id); err != nil {
+			promptRows.Close()
+			log.Printf("Error scanning prompt ID: %v", err)
+			return
+		}
+		promptIDs = append(promptIDs, id)
+	}
+	promptRows.Close()
+	
+	// Update each prompt's display_order
+	for newOrder, oldIndex := range order {
+		if oldIndex < 0 || oldIndex >= len(promptIDs) {
 			log.Println("Invalid index in order")
 			return
 		}
-		orderedPrompts[i] = prompts[index]
+		
+		_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, promptIDs[oldIndex])
+		if err != nil {
+			log.Printf("Error updating prompt order: %v", err)
+			return
+		}
 	}
-	err := WritePrompts(orderedPrompts)
-	if err != nil {
-		log.Printf("Error writing prompts: %v", err)
+	
+	if err = tx.Commit(); err != nil {
+		log.Printf("Error committing transaction: %v", err)
 		return
 	}
+	
 	log.Println("Prompts order updated successfully")
 	BroadcastResults()
 }
