@@ -15,10 +15,31 @@ func main() {
 	// Seed the random number generator for mock data generation
 	rand.Seed(time.Now().UnixNano())
 	
-	migrate := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
+	// Parse command line flags
+	migrateResults := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
+	migrateToSQLite := flag.Bool("migrate-to-sqlite", false, "Migrate data from JSON files to SQLite database")
+	dbPath := flag.String("db", "data/tournament.db", "SQLite database path")
 	flag.Parse()
 
-	if *migrate {
+	// Initialize the database
+	log.Println("Initializing database...")
+	if err := middleware.InitDB(*dbPath); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer middleware.CloseDB()
+
+	// Handle migration from JSON to SQLite
+	if *migrateToSQLite {
+		log.Println("Migrating data from JSON files to SQLite database...")
+		if err := middleware.MigrateFromJSON(); err != nil {
+			log.Fatalf("Error migrating data to SQLite: %v", err)
+		}
+		log.Println("Migration to SQLite completed successfully")
+		return
+	}
+
+	// Handle old result format migration
+	if *migrateResults {
 		log.Println("Migrating results to new scoring system...")
 		results := middleware.ReadResults()
 		middleware.MigrateResults(results)

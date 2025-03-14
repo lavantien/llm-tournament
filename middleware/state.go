@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -18,27 +19,94 @@ type Result struct {
 	Scores []int `json:"scores"`
 }
 
-
 type Profile struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
-// Read profiles from data/profiles-default.json
+// Read profiles from database for current suite
 func ReadProfiles() []Profile {
 	suiteName := GetCurrentSuiteName()
 	profiles, _ := ReadProfileSuite(suiteName)
 	return profiles
 }
 
-// Write profiles to data/profiles-default.json
+// Write profiles to database
 func WriteProfiles(profiles []Profile) error {
 	suiteName := GetCurrentSuiteName()
 	return WriteProfileSuite(suiteName, profiles)
 }
 
-// Read profile suite from data/profiles-<suiteName>.json
+// Read profile suite from database
 func ReadProfileSuite(suiteName string) ([]Profile, error) {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	rows, err := db.Query("SELECT name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query profiles: %w", err)
+	}
+	defer rows.Close()
+
+	var profiles []Profile
+	for rows.Next() {
+		var p Profile
+		if err := rows.Scan(&p.Name, &p.Description); err != nil {
+			return nil, fmt.Errorf("failed to scan profile: %w", err)
+		}
+		profiles = append(profiles, p)
+	}
+
+	return profiles, nil
+}
+
+// Write profile suite to database
+func WriteProfileSuite(suiteName string, profiles []Profile) error {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Delete existing profiles for this suite
+	_, err = tx.Exec("DELETE FROM profiles WHERE suite_id = ?", suiteID)
+	if err != nil {
+		return fmt.Errorf("failed to delete profiles: %w", err)
+	}
+
+	// Insert new profiles
+	if len(profiles) > 0 {
+		stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
+		if err != nil {
+			return fmt.Errorf("failed to prepare profile insert: %w", err)
+		}
+		defer stmt.Close()
+
+		for _, profile := range profiles {
+			_, err = stmt.Exec(profile.Name, profile.Description, suiteID)
+			if err != nil {
+				return fmt.Errorf("failed to insert profile: %w", err)
+			}
+		}
+	}
+
+	return tx.Commit()
+}
+
+// Read profile suite from JSON file (for migration)
+func ReadProfileSuiteFromJSON(suiteName string) ([]Profile, error) {
 	var filename string
 	if suiteName == "default" {
 		filename = "data/profiles-default.json"
@@ -57,48 +125,13 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	return profiles, nil
 }
 
-// Write profile suite to data/profiles-<suiteName>.json
-func WriteProfileSuite(suiteName string, profiles []Profile) error {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/profiles-default.json"
-	} else {
-		filename = "data/profiles-" + suiteName + ".json"
-	}
-	data, err := json.Marshal(profiles)
-	if err != nil {
-		return err
-	}
-	err = os.WriteFile(filename, data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // List all profile suites
 func ListProfileSuites() ([]string, error) {
-	var suites []string
-	files, err := os.ReadDir("data")
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		if !file.IsDir() && strings.HasPrefix(file.Name(), "profiles-") && strings.HasSuffix(file.Name(), ".json") {
-			suiteName := strings.TrimSuffix(strings.TrimPrefix(file.Name(), "profiles-"), ".json")
-			suites = append(suites, suiteName)
-		}
-	}
-	return suites, nil
+	return ListSuites()
 }
 
 func DeleteProfileSuite(suiteName string) error {
-	filename := "data/profiles-" + suiteName + ".json"
-	err := os.Remove(filename)
-	if err != nil {
-		return err
-	}
-	return nil
+	return DeleteSuite(suiteName)
 }
 
 // Read prompts from prompts.json
@@ -273,33 +306,113 @@ func SuiteExists(name string) bool {
 
 // Get current suite name
 func GetCurrentSuiteName() string {
-	data, err := os.ReadFile("data/current_suite.txt")
+	var name string
+	err := db.QueryRow("SELECT name FROM suites WHERE is_current = 1").Scan(&name)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			// Set default suite as current if none is set
+			_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
+			if err != nil {
+				log.Printf("Error setting default suite as current: %v", err)
+				return ""
+			}
+			return "default"
+		}
+		log.Printf("Error getting current suite name: %v", err)
 		return ""
 	}
-	suiteName := string(data)
-	return strings.TrimSpace(suiteName)
+	return name
 }
 
-// Write results to data/results-<suiteName>.json
+// Write results to database
 func WriteResults(suiteName string, results map[string]Result) error {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/results-default.json"
-	} else {
-		filename = "data/results-" + suiteName + ".json"
-	}
-	data, err := json.Marshal(results)
+	suiteID, err := GetSuiteID(suiteName)
 	if err != nil {
-		return err
-	}
-	err = os.WriteFile(filename, data, 0644)
-	if err != nil {
-		return err
+		return fmt.Errorf("failed to get suite ID: %w", err)
 	}
 
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
-	return nil
+	// Get all prompt IDs for this suite
+	promptRows, err := tx.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
+	if err != nil {
+		return fmt.Errorf("failed to query prompts: %w", err)
+	}
+	
+	var promptIDs []int
+	for promptRows.Next() {
+		var id int
+		if err := promptRows.Scan(&id); err != nil {
+			promptRows.Close()
+			return fmt.Errorf("failed to scan prompt ID: %w", err)
+		}
+		promptIDs = append(promptIDs, id)
+	}
+	promptRows.Close()
+	
+	if err := promptRows.Err(); err != nil {
+		return fmt.Errorf("error iterating prompt rows: %w", err)
+	}
+
+	// Clear existing scores for this suite
+	_, err = tx.Exec(`
+		DELETE FROM scores 
+		WHERE model_id IN (SELECT id FROM models WHERE suite_id = ?)
+	`, suiteID)
+	if err != nil {
+		return fmt.Errorf("failed to delete scores: %w", err)
+	}
+
+	// Process each model
+	for modelName, result := range results {
+		// Get or create model
+		var modelID int
+		err := tx.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&modelID)
+		if err == sql.ErrNoRows {
+			// Create new model
+			modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+			if err != nil {
+				return fmt.Errorf("failed to insert model: %w", err)
+			}
+			modelIDInt64, err := modelResult.LastInsertId()
+			if err != nil {
+				return fmt.Errorf("failed to get model ID: %w", err)
+			}
+			modelID = int(modelIDInt64)
+		} else if err != nil {
+			return fmt.Errorf("failed to query model: %w", err)
+		}
+
+		// Insert scores
+		if len(result.Scores) > 0 {
+			scoreStmt, err := tx.Prepare("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)")
+			if err != nil {
+				return fmt.Errorf("failed to prepare score insert: %w", err)
+			}
+			
+			for i, score := range result.Scores {
+				if i < len(promptIDs) {
+					_, err = scoreStmt.Exec(modelID, promptIDs[i], score)
+					if err != nil {
+						scoreStmt.Close()
+						return fmt.Errorf("failed to insert score: %w", err)
+					}
+				}
+			}
+			scoreStmt.Close()
+		}
+	}
+
+	return tx.Commit()
 }
 
 
