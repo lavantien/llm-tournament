@@ -341,7 +341,7 @@ func MigrateFromJSON() error {
 		profiles, err := ReadProfileSuiteFromJSON(suiteName)
 		if err == nil && len(profiles) > 0 {
 			log.Printf("Migrating %d profiles", len(profiles))
-			stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
+			stmt, err := tx.Prepare("INSERT OR REPLACE INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare profile insert: %w", err)
 			}
@@ -413,7 +413,7 @@ func MigrateFromJSON() error {
 			
 			// First, insert all models
 			modelMap := make(map[string]int) // Maps model name to ID
-			modelStmt, err := tx.Prepare("INSERT INTO models (name, suite_id) VALUES (?, ?)")
+			modelStmt, err := tx.Prepare("INSERT OR REPLACE INTO models (name, suite_id) VALUES (?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare model insert: %w", err)
 			}
@@ -612,7 +612,7 @@ func RemigrateScores() error {
 			if !modelExists {
 				log.Printf("Warning: Model %s not found in database, creating it", modelName)
 				// Create the model if it doesn't exist
-				res, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suite.ID)
+				res, err := tx.Exec("INSERT OR REPLACE INTO models (name, suite_id) VALUES (?, ?)", modelName, suite.ID)
 				if err != nil {
 					scoreStmt.Close()
 					return fmt.Errorf("failed to insert model %s: %w", modelName, err)
