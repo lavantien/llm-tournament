@@ -526,12 +526,23 @@
                     const scoreClass = validScores.includes(score) ? `score-${score}` : 'score-0';
                     scoreCell.className = `score-cell ${scoreClass}`;
                     
-                    // Set data attribute to help with profile boundary identification
+                    // Set data attributes for styling and interactivity
                     scoreCell.setAttribute('data-prompt-index', index.toString());
+                    scoreCell.setAttribute('data-score', `Score: ${score}`);
+                    scoreCell.setAttribute('tabindex', '0'); // Make cell focusable for keyboard navigation
                     
+                    // Attach event listeners
                     scoreCell.onclick = () => {
                         window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                     };
+                    
+                    // Add keyboard navigation
+                    scoreCell.onkeydown = (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                        }
+                    };
+                    
                     scoreCells.push(scoreCell);
                 }
 
@@ -918,6 +929,39 @@
                 behavior: "smooth",
             });
         }
+        
+        // Add keyboard navigation for the table
+        document.addEventListener('keydown', function(e) {
+            if (document.activeElement && document.activeElement.classList.contains('score-cell')) {
+                const currentCell = document.activeElement;
+                const currentRow = currentCell.parentElement;
+                const currentIndex = Array.from(currentRow.children).indexOf(currentCell);
+                
+                let nextCell;
+                
+                switch(e.key) {
+                    case 'ArrowRight':
+                        nextCell = currentRow.children[currentIndex + 1];
+                        break;
+                    case 'ArrowLeft':
+                        nextCell = currentRow.children[currentIndex - 1];
+                        break;
+                    case 'ArrowUp':
+                        const prevRow = currentRow.previousElementSibling;
+                        if (prevRow) nextCell = prevRow.children[currentIndex];
+                        break;
+                    case 'ArrowDown':
+                        const nextRow = currentRow.nextElementSibling;
+                        if (nextRow) nextCell = nextRow.children[currentIndex];
+                        break;
+                }
+                
+                if (nextCell && nextCell.classList.contains('score-cell')) {
+                    e.preventDefault();
+                    nextCell.focus();
+                }
+            }
+        });
     </script>
     <div id="hidden-data" class="hidden-data">
         <span id="results-data">{{.Results | json}}</span>
