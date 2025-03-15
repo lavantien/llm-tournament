@@ -594,7 +594,7 @@
             profileRow.appendChild(emptyHeader);
             
             // Add profile group headers
-            profileGroups.forEach(group => {
+            profileGroups.forEach((group, index) => {
                 if (group.StartCol !== -1) { // Only include groups with prompts
                     const span = group.EndCol - group.StartCol + 1;
                     const header = document.createElement('th');
@@ -611,6 +611,16 @@
                     // Apply profile-specific styling with CSS classes and variables
                     header.classList.add('profile-header-styled');
                     header.style.setProperty('--profile-color', group.Color);
+                    
+                    // Add divider classes between profile groups (except for the first one)
+                    if (index > 0) {
+                        header.classList.add('profile-divider-left');
+                    }
+                    
+                    // Add divider to the previous header if this isn't the first
+                    if (index > 0 && profileRow.lastChild && profileRow.lastChild.classList) {
+                        profileRow.lastChild.classList.add('profile-divider-right');
+                    }
                     
                     profileRow.appendChild(header);
                 }
@@ -735,14 +745,16 @@
             <!-- Profile grouping row -->
             <tr class="profile-row">
                 <th colspan="3"></th> <!-- For rank, actions, model columns -->
-                {{range .ProfileGroups}}
+                {{$first := true}}
+                {{range $index, $group := .ProfileGroups}}
                     {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
-                        class="profile-header profile-header-cell profile-header-styled" 
+                        class="profile-header profile-header-cell profile-header-styled {{if not $first}}profile-divider-left{{end}}" 
                         data-profile-id="{{.ID}}"
                         style="--profile-color: {{.Color}};">
                         <div class="profile-header-text">{{.Name}}</div>
                     </th>
+                    {{$first = false}}
                     {{end}}
                 {{end}}
                 <th rowspan="2">Total</th>

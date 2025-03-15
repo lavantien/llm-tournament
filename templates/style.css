@@ -764,6 +764,17 @@ body {
         border-bottom: 2px solid var(--profile-color, #333);
         box-shadow: 0 0 4px color-mix(in srgb, var(--profile-color, #333) 40%, transparent);
     }
+
+    /* Profile divider - for separating profiles in the header row */
+    .profile-divider-left {
+        border-left: 4px solid var(--border-color, #333) !important;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-divider-right {
+        border-right: 4px solid var(--border-color, #333) !important;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    }
     
     /* Connection status colors */
     .connection-status-connected {
