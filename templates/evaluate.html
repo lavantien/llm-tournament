@@ -21,8 +21,7 @@
                 {{range $label, $value := .ScoreOptions}}
                 <button type="button" class="score-button score-{{$value}}" 
                         onclick="selectScoreButton('{{$value}}')" 
-                        data-score="{{$value}}"
-                        style="background-color: var(--score-color-{{$value}}, {{$value | scoreColorDefault}});">
+                        data-score="{{$value}}">
                     {{$label}}
                 </button>
                 {{end}}
