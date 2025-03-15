@@ -455,6 +455,33 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		return fmt.Errorf("error iterating prompt rows: %w", err)
 	}
 
+	// Get current model names in the database
+	modelNamesRows, err := tx.Query("SELECT name FROM models WHERE suite_id = ?", suiteID)
+	if err != nil {
+		return fmt.Errorf("failed to query model names: %w", err)
+	}
+	
+	var dbModelNames []string
+	for modelNamesRows.Next() {
+		var name string
+		if err := modelNamesRows.Scan(&name); err != nil {
+			modelNamesRows.Close()
+			return fmt.Errorf("failed to scan model name: %w", err)
+		}
+		dbModelNames = append(dbModelNames, name)
+	}
+	modelNamesRows.Close()
+	
+	// Delete models that are in the database but not in the results map
+	for _, dbModelName := range dbModelNames {
+		if _, exists := results[dbModelName]; !exists {
+			_, err = tx.Exec("DELETE FROM models WHERE name = ? AND suite_id = ?", dbModelName, suiteID)
+			if err != nil {
+				return fmt.Errorf("failed to delete model: %w", err)
+			}
+		}
+	}
+
 	// Clear existing scores for this suite
 	_, err = tx.Exec(`
 		DELETE FROM scores 
