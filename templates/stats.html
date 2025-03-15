@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="/templates/score-utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Stacked Score Breakdown Chart
@@ -39,40 +40,23 @@
             const sortedCount80 = modelsData.map(item => item.count80);
             const sortedCount100 = modelsData.map(item => item.count100);
 
+            // Get document styles for score colors
+            const rootStyles = getComputedStyle(document.documentElement);
+            
+            // Create datasets with standardized labeling and colors
+            const datasets = [20, 40, 60, 80, 100].map(score => {
+                const scoreVar = getScoreColorVar(score);
+                return {
+                    label: `${getScoreLabel(score)} (${score} points)`,
+                    data: modelsData.map(item => item[`count${score}`]),
+                    backgroundColor: rootStyles.getPropertyValue(scoreVar).trim(),
+                    borderWidth: 1
+                };
+            });
+            
             const data = {
                 labels: sortedModels,
-                datasets: [
-                    {
-                        label: '1/5 (20 points)',
-                        data: sortedCount20,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-20').trim(),
-                        borderWidth: 1
-                    },
-                    {
-                        label: '2/5 (40 points)',
-                        data: sortedCount40,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-40').trim(),
-                        borderWidth: 1
-                    },
-                    {
-                        label: '3/5 (60 points)',
-                        data: sortedCount60,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-60').trim(),
-                        borderWidth: 1
-                    },
-                    {
-                        label: '4/5 (80 points)',
-                        data: sortedCount80,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-80').trim(),
-                        borderWidth: 1
-                    },
-                    {
-                        label: '5/5 (100 points)',
-                        data: sortedCount100,
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-100').trim(),
-                        borderWidth: 1
-                    }
-                ]
+                datasets: datasets
             };
 
             const config = {

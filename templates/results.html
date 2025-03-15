@@ -508,24 +508,11 @@
                 for (let index = 0; index < promptsCount; index++) {
                     const score = scores[index] || 0;
                     const scoreCell = document.createElement("td");
-                    scoreCell.className = 'score-cell';
-
-                    // Set cell class based on score
-                    if (score === 0) {
-                        scoreCell.className = 'score-cell score-0';
-                    } else if (score === 20) {
-                        scoreCell.className = 'score-cell score-20';
-                    } else if (score === 40) {
-                        scoreCell.className = 'score-cell score-40';
-                    } else if (score === 60) {
-                        scoreCell.className = 'score-cell score-60';
-                    } else if (score === 80) {
-                        scoreCell.className = 'score-cell score-80';
-                    } else if (score === 100) {
-                        scoreCell.className = 'score-cell score-100';
-                    } else {
-                        scoreCell.className = 'score-cell score-0';
-                    }
+                    
+                    // Set cell class based on score using a more maintainable approach
+                    const validScores = [0, 20, 40, 60, 80, 100];
+                    const scoreClass = validScores.includes(score) ? `score-${score}` : 'score-0';
+                    scoreCell.className = `score-cell ${scoreClass}`;
 
                     scoreCell.onclick = () => {
                         window.location.href = `/evaluate?model=${model}&prompt=${index}`;

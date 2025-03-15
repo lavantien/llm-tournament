@@ -5,6 +5,7 @@
     <title>Evaluate</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <script src="/templates/score-utils.js"></script>
 </head>
 
 <body>
@@ -18,9 +19,9 @@
 
             <div class="score-buttons">
                 {{range $label, $value := .ScoreOptions}}
-                <button type="button" class="score-button" onclick="document.getElementById('selectedScore').value = '{{$value}}'; 
-                             document.querySelectorAll('.score-button').forEach(b => b.style.border = 'none');
-                             this.style.border = '10px solid #000'" style="background-color: var({{if eq $value 0}}--score-color-0{{else if eq $value 20}}--score-color-20{{else if eq $value 40}}--score-color-40{{else if eq $value 60}}--score-color-60{{else if eq $value 80}}--score-color-80{{else if eq $value 100}}--score-color-100{{end}})">
+                <button type="button" class="score-button score-{{$value}}" 
+                        onclick="selectScoreButton('{{$value}}')" 
+                        data-score="{{$value}}">
                     {{$label}}
                 </button>
                 {{end}}
@@ -53,6 +54,12 @@
       // Store raw markdown text
       let rawPromptMarkdown = '';
       let rawSolutionMarkdown = '';
+      
+      function selectScoreButton(score) {
+        document.getElementById('selectedScore').value = score;
+        document.querySelectorAll('.score-button').forEach(b => b.style.border = 'none');
+        document.querySelector(`.score-button[data-score="${score}"]`).style.border = '10px solid #000';
+      }
       
       document.addEventListener('DOMContentLoaded', function() {
         // Store the original markdown before converting

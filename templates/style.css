@@ -427,26 +427,6 @@ body {
         aspect-ratio: 1/1;
         box-sizing: border-box;
 
-        &.score-0 {
-            background-color: #666666;
-        }
-
-        &.score-1-19 {
-            background-color: #f44336;
-        }
-
-        &.score-20-49 {
-            background-color: #ff9800;
-        }
-
-        &.score-50-99 {
-            background-color: #ffc107;
-        }
-
-        &.score-100 {
-            background-color: #4caf50;
-        }
-
         &:hover {
             opacity: 0.8;
             transform: scale(1.1);
@@ -482,6 +462,14 @@ body {
             filter 0.2s ease;
         text-align: center;
     }
+    
+    /* Score buttons with specific colors */
+    .score-button.score-0 { background-color: var(--score-color-0); }
+    .score-button.score-20 { background-color: var(--score-color-20); }
+    .score-button.score-40 { background-color: var(--score-color-40); }
+    .score-button.score-60 { background-color: var(--score-color-60); }
+    .score-button.score-80 { background-color: var(--score-color-80); }
+    .score-button.score-100 { background-color: var(--score-color-100); }
 
     .score-button:hover {
         transform: translateY(-2px);
