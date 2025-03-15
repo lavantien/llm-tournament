@@ -785,6 +785,26 @@ body {
     .progress-bar-standard-width {
         width: 21.2vw;
     }
+    
+    /* No models available message */
+    .no-models-message {
+        text-align: center;
+    }
+    
+    /* Debug data */
+    .debug-data {
+        font-size: 0.8em;
+        margin-top: 10px;
+        border-top: 1px dashed #666;
+        padding-top: 10px;
+    }
+    
+    /* Chart layout */
+    .chart-wrapper {
+        position: relative;
+        height: 93%;
+        width: 100%;
+    }
 }
 
 .chart-container {

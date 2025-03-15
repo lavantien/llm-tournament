@@ -455,7 +455,7 @@
             
             if (models.length === 0) {
                 console.error('No models available to display');
-                tbody.innerHTML = '<tr><td colspan="100" style="text-align:center">No models available</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="100" class="no-models-message">No models available</td></tr>';
                 return;
             }
             
@@ -814,7 +814,7 @@
         <span id="total-scores-data">{{.TotalScores | json}}</span>
         <span id="profile-groups-data">{{.ProfileGroups | json}}</span>
         <span id="ordered-prompts-data">{{.OrderedPrompts | json}}</span>
-        <span id="debug-data">
+        <span id="debug-data" class="debug-data">
             Results: {{.Results | json}}<br />
             Models: {{.Models | json}}<br />
             PassPercentages: {{.PassPercentages | json}}<br />
