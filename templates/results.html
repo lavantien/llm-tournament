@@ -694,24 +694,16 @@
                         isEnd: endCol === promptIndex
                     };
                     
-                    // Apply border styling to header columns
+                    // Simple direct border application for header columns
                     if (startCol === promptIndex) {
                         col.classList.add('profile-start');
-                        // Force all border properties individually
-                        col.style.borderLeft = `5px solid ${profileColor}`;
-                        col.style.borderLeftWidth = '5px';
-                        col.style.borderLeftStyle = 'solid';
-                        col.style.borderLeftColor = profileColor;
+                        col.style.borderLeft = '5px solid #333';
                         console.log(`Applied start border to header col ${promptIndex}`);
                     }
                     
                     if (endCol === promptIndex) {
                         col.classList.add('profile-end');
-                        // Force all border properties individually
-                        col.style.borderRight = `5px solid ${profileColor}`;
-                        col.style.borderRightWidth = '5px';
-                        col.style.borderRightStyle = 'solid';
-                        col.style.borderRightColor = profileColor;
+                        col.style.borderRight = '5px solid #333';
                         console.log(`Applied end border to header col ${promptIndex}`);
                     }
                 }
@@ -756,8 +748,12 @@
                 
                 // Reset all cell borders before applying new styles
                 for (let i = 3; i < cells.length - 1; i++) {
-                    // Reset to default border first
+                    // Completely reset all borders to ensure clean slate
                     cells[i].style.border = '1px solid #333';
+                    cells[i].style.borderLeft = '1px solid #333';
+                    cells[i].style.borderRight = '1px solid #333';
+                    cells[i].style.borderTop = '1px solid #333';
+                    cells[i].style.borderBottom = '1px solid #333';
                 }
                 
                 // Now apply styling for all cells
@@ -771,25 +767,19 @@
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Apply border for first cell of each profile group in this row
+                        // Direct border application for first cell of profile group
                         if (profileFirstCells[style.profileId] === i) {
+                            // Add class and set direct border style
                             cells[i].classList.add('profile-start');
-                            // Force all border properties individually
-                            cells[i].style.borderLeft = `5px solid ${style.color}`;
-                            cells[i].style.borderLeftWidth = '5px';
-                            cells[i].style.borderLeftStyle = 'solid';
-                            cells[i].style.borderLeftColor = style.color;
+                            cells[i].style.borderLeft = '5px solid #333';
                             console.log(`Applied start border to cell ${i} for profile ${style.profileId}`);
                         }
                         
-                        // Apply border for last cell of each profile group in this row
+                        // Direct border application for last cell of profile group
                         if (profileLastCells[style.profileId] === i) {
+                            // Add class and set direct border style
                             cells[i].classList.add('profile-end');
-                            // Force all border properties individually
-                            cells[i].style.borderRight = `5px solid ${style.color}`;
-                            cells[i].style.borderRightWidth = '5px';
-                            cells[i].style.borderRightStyle = 'solid';
-                            cells[i].style.borderRightColor = style.color;
+                            cells[i].style.borderRight = '5px solid #333';
                             console.log(`Applied end border to cell ${i} for profile ${style.profileId}`);
                         }
                     }

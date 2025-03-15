@@ -752,21 +752,17 @@ body {
     .score-80 { background-color: var(--score-color-80); }
     .score-100 { background-color: var(--score-color-100); }
     
-    /* Profile styling - strong borders with maximum specificity */
+    /* Profile group borders - simplified with direct colors */
     .profile-start, 
     th.profile-start, 
     td.profile-start { 
-        border-left: 5px solid var(--profile-color, #333) !important; 
-        border-left-style: solid !important;
-        border-left-width: 5px !important;
+        border-left: 5px solid #333 !important; 
     }
     
     .profile-end, 
     th.profile-end, 
     td.profile-end { 
-        border-right: 5px solid var(--profile-color, #333) !important;
-        border-right-style: solid !important;
-        border-right-width: 5px !important;
+        border-right: 5px solid #333 !important;
     }
     
     /* Force table cell styling */
