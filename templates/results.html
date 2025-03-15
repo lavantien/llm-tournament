@@ -660,7 +660,7 @@
                         isEnd: profileGroup.EndCol === promptIndex
                     };
                     
-                    // Apply border styling to header with classes
+                    // Simple direct border styling for group boundaries
                     if (profileGroup.StartCol === promptIndex) {
                         col.classList.add('profile-start');
                     }
@@ -688,20 +688,16 @@
                     // Find the style for this column
                     const style = columnStyles[columnIndex];
                     if (style) {
-                        // Apply styling with CSS classes and variables
+                        // Apply basic column styling
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Apply border styling with classes
+                        // Simple direct border styling for group boundaries
                         if (style.isStart) {
                             cells[i].classList.add('profile-start');
-                            // Explicitly set the left border with color
-                            cells[i].style.borderLeft = `5px solid ${style.color}`;
                         }
                         if (style.isEnd) {
                             cells[i].classList.add('profile-end');
-                            // Explicitly set the right border with color
-                            cells[i].style.borderRight = `5px solid ${style.color}`;
                         }
                     }
                 }
