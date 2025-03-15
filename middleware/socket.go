@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -78,7 +80,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func BroadcastResults() {
-    suiteName := GetCurrentSuiteName()
+	suiteName := GetCurrentSuiteName()
 	prompts := ReadPrompts()
 	results := ReadResults()
 	log.Println("BroadcastResults results:", results)
@@ -172,30 +174,30 @@ func BroadcastResults() {
 
 	// Log the data we're about to send
 	log.Printf("Broadcasting data - Models: %v", models)
-	
+
 	payload := struct {
 		Type string `json:"type"`
 		Data struct {
-			Results         map[string]Result `json:"results"`
-			Models          []string          `json:"models"`
-			TotalScores     map[string]int    `json:"totalScores"`
+			Results         map[string]Result  `json:"results"`
+			Models          []string           `json:"models"`
+			TotalScores     map[string]int     `json:"totalScores"`
 			PassPercentages map[string]float64 `json:"passPercentages"`
-			Prompts         []string          `json:"prompts"`
-			SuiteName       string            `json:"suiteName"`
+			Prompts         []string           `json:"prompts"`
+			SuiteName       string             `json:"suiteName"`
 			ProfileGroups   []*ProfileGroup    `json:"profileGroups"`
-			OrderedPrompts  interface{}       `json:"orderedPrompts"`
+			OrderedPrompts  interface{}        `json:"orderedPrompts"`
 		} `json:"data"`
 	}{
 		Type: "results",
 		Data: struct {
-			Results         map[string]Result `json:"results"`
-			Models          []string          `json:"models"`
-			TotalScores     map[string]int    `json:"totalScores"`
+			Results         map[string]Result  `json:"results"`
+			Models          []string           `json:"models"`
+			TotalScores     map[string]int     `json:"totalScores"`
 			PassPercentages map[string]float64 `json:"passPercentages"`
-			Prompts         []string          `json:"prompts"`
-			SuiteName       string            `json:"suiteName"`
+			Prompts         []string           `json:"prompts"`
+			SuiteName       string             `json:"suiteName"`
 			ProfileGroups   []*ProfileGroup    `json:"profileGroups"`
-			OrderedPrompts  interface{}       `json:"orderedPrompts"`
+			OrderedPrompts  interface{}        `json:"orderedPrompts"`
 		}{
 			Results:         results,
 			Models:          models,
@@ -219,7 +221,6 @@ func BroadcastResults() {
 		}
 	}
 }
-
 
 func promptsToStringArray(prompts []Prompt) []string {
 	promptsTexts := make([]string, len(prompts))

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -40,19 +41,19 @@ func initRand() *rand.Rand {
 
 // GroupedPrompt represents a prompt with its profile information
 type GroupedPrompt struct {
-    Index       int
-    Text        string
-    ProfileID   string
-    ProfileName string
+	Index       int
+	Text        string
+	ProfileID   string
+	ProfileName string
 }
 
 // ProfileGroup represents a group of prompts with the same profile
 type ProfileGroup struct {
-    ID       string
-    Name     string
-    StartCol int // Column index where this profile starts
-    EndCol   int // Column index where this profile ends
-    Color    string // Generated color for this profile
+	ID       string
+	Name     string
+	StartCol int    // Column index where this profile starts
+	EndCol   int    // Column index where this profile ends
+	Color    string // Generated color for this profile
 }
 
 // Handle results page
@@ -62,61 +63,61 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	results := middleware.ReadResults()
 
 	// Group prompts by profile
-    profileMap := make(map[string]*ProfileGroup)
-    var profileGroups []*ProfileGroup
-    var orderedPrompts []GroupedPrompt
-    
-    // Get all profiles first (to include empty ones)
-    profiles := middleware.ReadProfiles()
-    
-    // Create initial profile groups, including those with no prompts
-    for i, profile := range profiles {
-        colorHue := (i * 137) % 360 // Generate evenly distributed colors
-        color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
-        
-        profileGroups = append(profileGroups, &ProfileGroup{
-            ID:       strconv.Itoa(i),
-            Name:     profile.Name,
-            Color:    color,
-            StartCol: -1, // Will be populated later
-            EndCol:   -1,
-        })
-        profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
-    }
-    
-    // Add a group for prompts with no profile
-    noProfileGroup := &ProfileGroup{
-        ID:    "none",
-        Name:  "Uncategorized",
-        Color: "hsl(0, 0%, 50%)",
-    }
-    profileGroups = append(profileGroups, noProfileGroup)
-    profileMap[""] = noProfileGroup
-    
-    // Process prompts and assign them to profile groups
-    currentCol := 0
-    for i, prompt := range prompts {
-        profileName := prompt.Profile
-        
-        group, exists := profileMap[profileName]
-        if !exists {
-            group = noProfileGroup
-        }
-        
-        if group.StartCol == -1 {
-            group.StartCol = currentCol
-        }
-        group.EndCol = currentCol
-        
-        orderedPrompts = append(orderedPrompts, GroupedPrompt{
-            Index:       i,
-            Text:        prompt.Text,
-            ProfileID:   group.ID,
-            ProfileName: profileName,
-        })
-        
-        currentCol++
-    }
+	profileMap := make(map[string]*ProfileGroup)
+	var profileGroups []*ProfileGroup
+	var orderedPrompts []GroupedPrompt
+
+	// Get all profiles first (to include empty ones)
+	profiles := middleware.ReadProfiles()
+
+	// Create initial profile groups, including those with no prompts
+	for i, profile := range profiles {
+		colorHue := (i * 137) % 360 // Generate evenly distributed colors
+		color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
+
+		profileGroups = append(profileGroups, &ProfileGroup{
+			ID:       strconv.Itoa(i),
+			Name:     profile.Name,
+			Color:    color,
+			StartCol: -1, // Will be populated later
+			EndCol:   -1,
+		})
+		profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+	}
+
+	// Add a group for prompts with no profile
+	noProfileGroup := &ProfileGroup{
+		ID:    "none",
+		Name:  "Uncategorized",
+		Color: "hsl(0, 0%, 50%)",
+	}
+	profileGroups = append(profileGroups, noProfileGroup)
+	profileMap[""] = noProfileGroup
+
+	// Process prompts and assign them to profile groups
+	currentCol := 0
+	for i, prompt := range prompts {
+		profileName := prompt.Profile
+
+		group, exists := profileMap[profileName]
+		if !exists {
+			group = noProfileGroup
+		}
+
+		if group.StartCol == -1 {
+			group.StartCol = currentCol
+		}
+		group.EndCol = currentCol
+
+		orderedPrompts = append(orderedPrompts, GroupedPrompt{
+			Index:       i,
+			Text:        prompt.Text,
+			ProfileID:   group.ID,
+			ProfileName: profileName,
+		})
+
+		currentCol++
+	}
 
 	log.Println("Calculating total scores for each model")
 	// Calculate total scores for each model
@@ -555,12 +556,12 @@ func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 // that ensures even distribution across all tier levels
 func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update mock results")
-	
+
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	// Parse the JSON request body
 	var mockData struct {
 		Results         map[string]middleware.Result `json:"results"`
@@ -568,28 +569,28 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		PassPercentages map[string]float64           `json:"passPercentages"`
 		TotalScores     map[string]int               `json:"totalScores"`
 	}
-	
+
 	log.Println("Received mock data request")
-	
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
-	
+
 	err = json.Unmarshal(body, &mockData)
 	if err != nil {
 		log.Printf("Error decoding mock data: %v", err)
 		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Use client-provided scores instead of generating new ones
 	log.Println("Using client-provided scores for mock data")
-	
+
 	prompts := middleware.ReadPrompts()
-	
+
 	// Get all model names
 	models := mockData.Models
 	if len(models) == 0 {
@@ -598,10 +599,10 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 			models = append(models, model)
 		}
 	}
-	
+
 	// Use the client's results directly
 	results := mockData.Results
-	
+
 	// Validate that all scores are legitimate values: 0, 20, 40, 60, 80, 100
 	for model, result := range results {
 		for i, score := range result.Scores {
@@ -617,9 +618,9 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		results[model] = result
 	}
-	
+
 	// Skip the evenly distributed tier generation since we're using client scores
-	
+
 	// Save the evenly distributed mock results
 	suiteName := middleware.GetCurrentSuiteName()
 	err = middleware.WriteResults(suiteName, results)
@@ -628,14 +629,14 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error saving mock results", http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Broadcast the updated results to all connected clients
 	middleware.BroadcastResults()
-	
+
 	// Calculate totalScores and passPercentages for the response
 	totalScores := make(map[string]int)
 	passPercentages := make(map[string]float64)
-	
+
 	log.Println("Calculating total scores for each model:")
 	for model, result := range results {
 		totalScore := 0
@@ -644,32 +645,32 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		totalScores[model] = totalScore
 		passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
-		
-		log.Printf("Model %s: total score = %d, pass percentage = %.2f%%", 
+
+		log.Printf("Model %s: total score = %d, pass percentage = %.2f%%",
 			model, totalScore, passPercentages[model])
 	}
-	
+
 	// Sort models by total score in descending order
 	sort.Slice(models, func(i, j int) bool {
 		return totalScores[models[i]] > totalScores[models[j]]
 	})
-	
+
 	log.Printf("Sorted models after mock generation: %v", models[:min(5, len(models))])
-	
+
 	// Return success response with the generated data
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string]interface{}{
-		"status": "success",
-		"results": results,
-		"models": models, // Now sorted by score
-		"totalScores": totalScores,
+		"status":          "success",
+		"results":         results,
+		"models":          models, // Now sorted by score
+		"totalScores":     totalScores,
 		"passPercentages": passPercentages,
 	}
-	
+
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		log.Printf("Error encoding response: %v", err)
 	}
-	
+
 	log.Println("Mock results with even tier distribution updated successfully")
 }
