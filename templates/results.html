@@ -634,30 +634,62 @@
         }
 
         function applyProfileStyling(profileGroups, orderedPrompts) {
-            // Apply styling to prompt columns based on their profile
+            // First, apply styling to header columns and create a mapping of column styles
             const promptCols = document.querySelectorAll('.prompt-col');
+            const columnStyles = {}; // Store styles for each column index
+            
             promptCols.forEach(col => {
                 const profileId = col.getAttribute('data-profile-id');
                 const profileGroup = profileGroups.find(g => g.ID === profileId);
+                const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
                 
                 if (profileGroup) {
                     // Apply base styling
                     col.style.backgroundColor = `${profileGroup.Color}05`; // 5% opacity
                     
-                    // Find this column's position within its profile group
-                    const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
-                    const promptInfo = orderedPrompts.find(p => p.Index === promptIndex);
+                    // Store style information for this column
+                    columnStyles[promptIndex] = {
+                        color: profileGroup.Color,
+                        isStart: profileGroup.StartCol === promptIndex,
+                        isEnd: profileGroup.EndCol === promptIndex
+                    };
                     
-                    if (promptInfo) {
-                        // Check if it's the first or last column in its group
-                        if (profileGroup.StartCol === promptIndex) {
-                            col.classList.add('profile-start');
-                            col.style.borderLeft = `4px solid ${profileGroup.Color}`;
+                    // Apply border styling to header
+                    if (profileGroup.StartCol === promptIndex) {
+                        col.classList.add('profile-start');
+                        col.style.borderLeft = `4px solid ${profileGroup.Color}`;
+                    }
+                    
+                    if (profileGroup.EndCol === promptIndex) {
+                        col.classList.add('profile-end');
+                        col.style.borderRight = `4px solid ${profileGroup.Color}`;
+                    }
+                }
+            });
+            
+            // Now apply the same border styling to all data cells in the table
+            const table = document.querySelector('.results-table');
+            if (!table) return;
+            
+            const tableRows = table.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                if (cells.length <= 3) return; // Skip rows with insufficient cells
+                
+                // Skip the first 3 cells (rank, actions, model)
+                // The 4th cell onward corresponds to prompt columns
+                for (let i = 3; i < cells.length - 1; i++) { // Exclude the last total column
+                    const columnIndex = i - 3; // Adjust index to match prompt indices
+                    
+                    // Find the style for this column
+                    const style = columnStyles[columnIndex];
+                    if (style) {
+                        // Apply the same border styling to the data cell
+                        if (style.isStart) {
+                            cells[i].style.borderLeft = `4px solid ${style.color}`;
                         }
-                        
-                        if (profileGroup.EndCol === promptIndex) {
-                            col.classList.add('profile-end');
-                            col.style.borderRight = `4px solid ${profileGroup.Color}`;
+                        if (style.isEnd) {
+                            cells[i].style.borderRight = `4px solid ${style.color}`;
                         }
                     }
                 }

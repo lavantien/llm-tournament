@@ -70,29 +70,71 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	// Get all profiles first (to include empty ones)
 	profiles := middleware.ReadProfiles()
 
-	// Create initial profile groups, including those with no prompts
+	// Define the expected profile order
+	expectedOrder := map[string]int{
+		"general":       0,
+		"programming":   1,
+		"writing":       2,
+		"worldbuilding": 3,
+		"translation":   4,
+	}
+	
+	// First, add profiles in the expected order if they exist
+	for name, order := range expectedOrder {
+		for i, profile := range profiles {
+			if strings.ToLower(profile.Name) == name {
+				colorHue := (order * 137) % 360 // Generate evenly distributed colors
+				color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
+				
+				profileGroups = append(profileGroups, &ProfileGroup{
+					ID:       strconv.Itoa(i),
+					Name:     profile.Name,
+					Color:    color,
+					StartCol: -1, // Will be populated later
+					EndCol:   -1,
+				})
+				profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+				break
+			}
+		}
+	}
+	
+	// Then add any remaining profiles not in the expected order
 	for i, profile := range profiles {
-		colorHue := (i * 137) % 360 // Generate evenly distributed colors
-		color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
-
-		profileGroups = append(profileGroups, &ProfileGroup{
-			ID:       strconv.Itoa(i),
-			Name:     profile.Name,
-			Color:    color,
-			StartCol: -1, // Will be populated later
-			EndCol:   -1,
-		})
-		profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+		if _, exists := profileMap[profile.Name]; !exists {
+			colorHue := ((len(expectedOrder) + i) * 137) % 360
+			color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
+			
+			profileGroups = append(profileGroups, &ProfileGroup{
+				ID:       strconv.Itoa(i),
+				Name:     profile.Name,
+				Color:    color,
+				StartCol: -1, // Will be populated later
+				EndCol:   -1,
+			})
+			profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+		}
 	}
 
-	// Add a group for prompts with no profile
-	noProfileGroup := &ProfileGroup{
-		ID:    "none",
-		Name:  "Uncategorized",
-		Color: "hsl(0, 0%, 50%)",
+	// Check if we have any uncategorized prompts
+	hasUncategorized := false
+	for _, prompt := range prompts {
+		if prompt.Profile == "" {
+			hasUncategorized = true
+			break
+		}
 	}
-	profileGroups = append(profileGroups, noProfileGroup)
-	profileMap[""] = noProfileGroup
+
+	// Add a group for prompts with no profile only if needed
+	if hasUncategorized {
+		noProfileGroup := &ProfileGroup{
+			ID:    "none",
+			Name:  "Uncategorized",
+			Color: "hsl(0, 0%, 50%)",
+		}
+		profileGroups = append(profileGroups, noProfileGroup)
+		profileMap[""] = noProfileGroup
+	}
 
 	// Process prompts and assign them to profile groups
 	currentCol := 0
