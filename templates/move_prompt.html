@@ -12,12 +12,17 @@
         <input type="hidden" name="index" value="{{.Index}}">
         <select name="new_index">
             {{range $i, $p := .Prompts}}
-                <option value="{{$i}}">{{inc $i}}</option>
+                {{if or (eq $p.Profile $.SourceProfile) 
+                        (and (gt $i 0) (eq (index $.Prompts (sub $i 1)).Profile $.SourceProfile))
+                        (and (lt $i (sub (len $.Prompts) 1)) (eq (index $.Prompts (add $i 1)).Profile $.SourceProfile))}}
+                    <option value="{{$i}}" {{if eq $i $.Index}}selected{{end}}>{{inc $i}}</option>
+                {{end}}
             {{end}}
         </select>
         <input type="submit" value="Confirm">
         <input type="submit" form="cancel-form" value="Cancel">
     </form>
+    <p style="text-align: center;"><small>Only showing positions that maintain profile group contiguity</small></p>
     <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
     <p style="text-align: center;">Select the new position for the prompt:</p>
     <div id="preview" class="markdown-content" style="text-align: left;">
