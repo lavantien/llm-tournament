@@ -614,10 +614,13 @@
                     header.setAttribute('data-profile-id', group.ID);
                     header.textContent = group.Name;
                     
-                    // Apply profile-specific styling
-                    header.style.backgroundColor = `${group.Color}10`; // 10% opacity
+                    // Apply profile-specific styling with stronger borders
+                    header.style.backgroundColor = `${group.Color}20`; // 20% opacity
                     header.style.borderLeft = `4px solid ${group.Color}`;
                     header.style.borderRight = `4px solid ${group.Color}`;
+                    header.style.borderTop = `2px solid ${group.Color}`;
+                    header.style.borderBottom = `2px solid ${group.Color}`;
+                    header.style.boxShadow = `0 0 4px ${group.Color}40`; // subtle glow
                     
                     profileRow.appendChild(header);
                 }
@@ -691,7 +694,27 @@
                         if (style.isEnd) {
                             cells[i].style.borderRight = `4px solid ${style.color}`;
                         }
+                        
+                        // Ensure all cells in this column have consistent width
+                        cells[i].style.width = '32px';
+                        cells[i].style.minWidth = '32px';
+                        cells[i].style.maxWidth = '32px';
+                        cells[i].style.height = '32px';
+                        cells[i].style.aspectRatio = '1/1';
+                        cells[i].style.boxSizing = 'border-box';
                     }
+                }
+            });
+            
+            // Fix column 42 specifically if it exists (the last column)
+            tableRows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td'));
+                if (cells.length > 4) { // Ensure we have enough cells
+                    // Get the last prompt cell (not including the total column)
+                    const lastPromptCell = cells[cells.length - 2];
+                    lastPromptCell.style.width = '32px';
+                    lastPromptCell.style.minWidth = '32px';
+                    lastPromptCell.style.maxWidth = '32px';
                 }
             });
         }
