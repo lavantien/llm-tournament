@@ -16,6 +16,7 @@ const SCORE_LABELS = {
 };
 
 // CSS color variables matching the style.css definitions
+// This is our single source of truth for score colors
 const SCORE_COLORS = {
     0: '#808080',   // Gray
     20: '#ffa500',  // Orange
@@ -24,6 +25,21 @@ const SCORE_COLORS = {
     80: '#ccff00',  // Yellow-Green
     100: '#00ff00'  // Green
 };
+
+/**
+ * Gets the color for a score from CSS variables or fallback
+ * @param {number} score - The score value
+ * @returns {string} The color as a hex code
+ */
+function getScoreColor(score) {
+    // First try to get from CSS variables (they're in body)
+    const bodyStyles = getComputedStyle(document.body);
+    const varName = `--score-color-${score}`;
+    const cssColor = bodyStyles.getPropertyValue(varName).trim();
+    
+    // Return CSS variable if available, otherwise use our constants
+    return cssColor || SCORE_COLORS[score] || SCORE_COLORS[0];
+}
 
 /**
  * Get the appropriate CSS class for a score value
@@ -51,3 +67,18 @@ function getScoreLabel(score) {
 function getScoreColorVar(score) {
     return `--score-color-${score}`;
 }
+
+/**
+ * Initialize CSS variables with our score colors
+ * Called on page load to ensure variables are always available
+ */
+function initScoreColorVariables() {
+    // Set CSS variables based on our SCORE_COLORS constants
+    SCORE_VALUES.forEach(score => {
+        document.body.style.setProperty(`--score-color-${score}`, SCORE_COLORS[score]);
+    });
+    console.log("Score color CSS variables initialized");
+}
+
+// Initialize score color variables on script load
+document.addEventListener('DOMContentLoaded', initScoreColorVariables);

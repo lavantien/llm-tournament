@@ -40,35 +40,16 @@
             const sortedCount80 = modelsData.map(item => item.count80);
             const sortedCount100 = modelsData.map(item => item.count100);
 
-            // Get document styles for score colors
-            const rootStyles = getComputedStyle(document.documentElement);
-            
-            // Define fallback colors matching the CSS variables in style.css
-            const fallbackColors = {
-                0: '#808080',   // Gray (--score-color-0)
-                20: '#ffa500',  // Orange (--score-color-20)
-                40: '#ffcc00',  // Yellow-Orange (--score-color-40) 
-                60: '#ffff00',  // Yellow (--score-color-60)
-                80: '#ccff00',  // Yellow-Green (--score-color-80)
-                100: '#00ff00'  // Green (--score-color-100)
-            };
-            
-            // Log the colors for debugging
+            // Log the colors we'll be using for debugging
             console.log("Available score colors:");
             SCORE_VALUES.forEach(score => {
-                const varName = getScoreColorVar(score);
-                console.log(`${score}: CSS var ${varName} = ${rootStyles.getPropertyValue(varName).trim() || 'Not set'}`);
+                console.log(`${score}: ${getScoreColor(score)}`);
             });
             
             // Create datasets with standardized labeling and colors
             const datasets = SCORE_VALUES.map(score => {
-                const scoreVar = getScoreColorVar(score);
-                // Get color from CSS variable or use fallback
-                let bgColor = rootStyles.getPropertyValue(scoreVar).trim();
-                if (!bgColor) {
-                    bgColor = fallbackColors[score];
-                    console.log(`Using fallback color for score ${score}: ${bgColor}`);
-                }
+                // Use our utility function from score-utils.js
+                const bgColor = getScoreColor(score);
                 
                 return {
                     label: `${getScoreLabel(score)} (${score} points)`,
@@ -162,19 +143,8 @@
             return 'primordial';
         }
         
-        /**
-         * Gets the color for a score from CSS variables or fallback
-         * @param {number} score - The score value
-         * @returns {string} The color as a hex code
-         */
-        function getScoreColor(score) {
-            const rootStyles = getComputedStyle(document.documentElement);
-            const varName = getScoreColorVar(score);
-            const cssColor = rootStyles.getPropertyValue(varName).trim();
-            
-            // Return CSS variable if available, otherwise use the constants from score-utils.js
-            return cssColor || SCORE_COLORS[score] || '#808080';
-        }
+        // We now use the getScoreColor function from score-utils.js directly
+        // The function has been moved to the shared utility file
     </script>
 </head>
 

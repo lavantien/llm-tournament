@@ -21,7 +21,8 @@
                 {{range $label, $value := .ScoreOptions}}
                 <button type="button" class="score-button score-{{$value}}" 
                         onclick="selectScoreButton('{{$value}}')" 
-                        data-score="{{$value}}">
+                        data-score="{{$value}}"
+                        style="background-color: var(--score-color-{{$value}}, {{$value | scoreColorDefault}});">
                     {{$label}}
                 </button>
                 {{end}}
@@ -50,6 +51,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/templates/score-utils.js"></script>
     <script>
       // Store raw markdown text
       let rawPromptMarkdown = '';
