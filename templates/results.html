@@ -696,10 +696,10 @@
                         }
                         
                         // Ensure all cells in this column have consistent width
-                        cells[i].style.width = '32px';
-                        cells[i].style.minWidth = '32px';
-                        cells[i].style.maxWidth = '32px';
-                        cells[i].style.height = '32px';
+                        cells[i].style.width = '50px';
+                        cells[i].style.minWidth = '50px';
+                        cells[i].style.maxWidth = '50px';
+                        cells[i].style.height = '50px';
                         cells[i].style.aspectRatio = '1/1';
                         cells[i].style.boxSizing = 'border-box';
                     }
@@ -712,9 +712,9 @@
                 if (cells.length > 4) { // Ensure we have enough cells
                     // Get the last prompt cell (not including the total column)
                     const lastPromptCell = cells[cells.length - 2];
-                    lastPromptCell.style.width = '32px';
-                    lastPromptCell.style.minWidth = '32px';
-                    lastPromptCell.style.maxWidth = '32px';
+                    lastPromptCell.style.width = '50px';
+                    lastPromptCell.style.minWidth = '50px';
+                    lastPromptCell.style.maxWidth = '50px';
                 }
             });
         }
@@ -767,7 +767,7 @@
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
                         class="profile-header" 
                         data-profile-id="{{.ID}}"
-                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
+                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         {{.Name}}
                     </th>
                     {{end}}
