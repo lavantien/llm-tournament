@@ -758,6 +758,16 @@ body {
         font-weight: bold;
         border-bottom: 2px solid #333;
     }
+    
+    /* Profile header styling with color variables */
+    .profile-header-styled {
+        background-color: color-mix(in srgb, var(--profile-color, #333) 20%, transparent);
+        border-left: 4px solid var(--profile-color, #333);
+        border-right: 4px solid var(--profile-color, #333);
+        border-top: 2px solid var(--profile-color, #333);
+        border-bottom: 2px solid var(--profile-color, #333);
+        box-shadow: 0 0 4px color-mix(in srgb, var(--profile-color, #333) 40%, transparent);
+    }
 }
 
 .chart-container {

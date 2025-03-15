@@ -612,14 +612,9 @@
                     textDiv.textContent = group.Name;
                     header.appendChild(textDiv);
                     
-                    // Apply profile-specific styling with CSS variables
+                    // Apply profile-specific styling with CSS classes and variables
+                    header.classList.add('profile-header-styled');
                     header.style.setProperty('--profile-color', group.Color);
-                    header.style.backgroundColor = `${group.Color}20`; // 20% opacity
-                    header.style.borderLeft = `4px solid ${group.Color}`;
-                    header.style.borderRight = `4px solid ${group.Color}`;
-                    header.style.borderTop = `2px solid ${group.Color}`;
-                    header.style.borderBottom = `2px solid ${group.Color}`;
-                    header.style.boxShadow = `0 0 4px ${group.Color}40`; // subtle glow
                     
                     profileRow.appendChild(header);
                 }
@@ -747,9 +742,9 @@
                 {{range .ProfileGroups}}
                     {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
-                        class="profile-header profile-header-cell" 
+                        class="profile-header profile-header-cell profile-header-styled" 
                         data-profile-id="{{.ID}}"
-                        style="--profile-color: {{.Color}}; background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
+                        style="--profile-color: {{.Color}};">
                         <div class="profile-header-text">{{.Name}}</div>
                     </th>
                     {{end}}
