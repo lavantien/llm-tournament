@@ -694,18 +694,18 @@
                         isEnd: endCol === promptIndex
                     };
                     
-                    // Apply border styling to header columns with direct color
+                    // Apply border styling to header columns with CSS classes
                     if (startCol === promptIndex) {
-                        col.classList.add('profile-start');
-                        // Apply border color directly with inline style
-                        col.style.borderLeftColor = profileColor || '#333';
+                        col.classList.add('profile-start', 'profile-start-border');
+                        // Set color as CSS variable
+                        col.style.setProperty('--profile-color', profileColor || '#333');
                         console.log(`Applied start border to header col ${promptIndex} with color ${profileColor}`);
                     }
                     
                     if (endCol === promptIndex) {
-                        col.classList.add('profile-end');
-                        // Apply border color directly with inline style
-                        col.style.borderRightColor = profileColor || '#333';
+                        col.classList.add('profile-end', 'profile-end-border');
+                        // Set color as CSS variable
+                        col.style.setProperty('--profile-color', profileColor || '#333');
                         console.log(`Applied end border to header col ${promptIndex} with color ${profileColor}`);
                     }
                 }
@@ -748,16 +748,14 @@
                 console.log("Profile first cells in row:", profileFirstCells);
                 console.log("Profile last cells in row:", profileLastCells);
                 
-                // Reset all cell borders by removing previous profile classes and inline styles
+                // Reset all cell borders by removing previous profile classes and applying reset class
                 for (let i = 3; i < cells.length - 1; i++) {
                     // Remove profile classes to start fresh
-                    cells[i].classList.remove('profile-start', 'profile-end');
+                    cells[i].classList.remove('profile-start', 'profile-end', 
+                                             'profile-start-border', 'profile-end-border');
                     
-                    // Reset border styles to default
-                    cells[i].style.borderLeft = '1px solid #333';
-                    cells[i].style.borderRight = '1px solid #333';
-                    cells[i].style.borderLeftColor = '#333';
-                    cells[i].style.borderRightColor = '#333';
+                    // Apply border reset class instead of inline styles
+                    cells[i].classList.add('cell-border-reset');
                 }
                 
                 // Now apply styling for all cells
@@ -771,19 +769,19 @@
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Apply styling for first cell of profile group with direct border color
+                        // Apply styling for first cell of profile group with CSS classes
                         if (profileFirstCells[style.profileId] === i) {
-                            cells[i].classList.add('profile-start');
-                            // Apply border color directly with inline style
-                            cells[i].style.borderLeftColor = style.color || '#333';
+                            cells[i].classList.add('profile-start', 'profile-start-border');
+                            // Set color as CSS variable instead of direct style
+                            cells[i].style.setProperty('--profile-color', style.color || '#333');
                             console.log(`Applied start border to cell ${i} for profile ${style.profileId} with color ${style.color}`);
                         }
                         
-                        // Apply styling for last cell of profile group with direct border color
+                        // Apply styling for last cell of profile group with CSS classes
                         if (profileLastCells[style.profileId] === i) {
-                            cells[i].classList.add('profile-end');
-                            // Apply border color directly with inline style
-                            cells[i].style.borderRightColor = style.color || '#333';
+                            cells[i].classList.add('profile-end', 'profile-end-border');
+                            // Set color as CSS variable instead of direct style
+                            cells[i].style.setProperty('--profile-color', style.color || '#333');
                             console.log(`Applied end border to cell ${i} for profile ${style.profileId} with color ${style.color}`);
                         }
                     }

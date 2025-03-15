@@ -786,6 +786,29 @@ body {
         border-bottom: 1px solid #333 !important;
     }
     
+    /* Profile cell styling classes */
+    .cell-border-reset {
+        border-left: 1px solid #333 !important;
+        border-right: 1px solid #333 !important;
+        border-left-color: #333 !important;
+        border-right-color: #333 !important;
+    }
+    
+    /* Profile boundary classes with customizable colors through CSS variables */
+    .profile-start-border {
+        border-left: 5px solid var(--profile-color, #333) !important;
+        border-left-width: 5px !important;
+        border-left-style: solid !important;
+        border-left-color: var(--profile-color, #333) !important;
+    }
+    
+    .profile-end-border {
+        border-right: 5px solid var(--profile-color, #333) !important;
+        border-right-width: 5px !important;
+        border-right-style: solid !important;
+        border-right-color: var(--profile-color, #333) !important;
+    }
+    
     /* Profile header row */
     .profile-header {
         text-align: center;
