@@ -706,17 +706,6 @@
                 }
             });
             
-            // Fix column 42 specifically if it exists (the last column)
-            tableRows.forEach(row => {
-                const cells = Array.from(row.querySelectorAll('td'));
-                if (cells.length > 4) { // Ensure we have enough cells
-                    // Get the last prompt cell (not including the total column)
-                    const lastPromptCell = cells[cells.length - 2];
-                    lastPromptCell.style.width = '50px';
-                    lastPromptCell.style.minWidth = '50px';
-                    lastPromptCell.style.maxWidth = '50px';
-                }
-            });
         }
     </script>
 </head>
