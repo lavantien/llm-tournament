@@ -14,6 +14,7 @@
 /add       middleware\state.go
 /add       middleware\utils.go
 /add       templates\bulk_delete_prompts.html
+/add       templates\constants.js
 /add       templates\edit_model.html
 /add       templates\edit_profile.html
 /add       templates\edit_prompt.html
@@ -24,6 +25,8 @@
 /add       templates\profiles.html
 /add       templates\prompt_list.html
 /add       templates\results.html
+/add       templates\score-utils.js
 /add       templates\shared.go
 /add       templates\stats.html
 /add       templates\style.css
+/add       templates\utils.js
