@@ -641,7 +641,24 @@
             const promptCols = document.querySelectorAll('.prompt-col');
             const columnStyles = {}; // Store styles for each column index
             
-            // First pass: identify all columns by profile and their positions
+            console.log("Profile groups:", profileGroups);
+            
+            // First pass: create profile start/end maps by profile ID
+            const profileStartColumns = {};
+            const profileEndColumns = {};
+            
+            // Map profile boundaries by profile ID for easier lookup
+            profileGroups.forEach(group => {
+                if (group.StartCol !== -1) {
+                    profileStartColumns[group.ID] = group.StartCol;
+                    profileEndColumns[group.ID] = group.EndCol;
+                }
+            });
+            
+            console.log("Profile start columns:", profileStartColumns);
+            console.log("Profile end columns:", profileEndColumns);
+            
+            // Apply to header columns and build style mapping
             promptCols.forEach(col => {
                 const profileId = col.getAttribute('data-profile-id');
                 const profileGroup = profileGroups.find(g => g.ID === profileId);
@@ -660,7 +677,7 @@
                         isEnd: profileGroup.EndCol === promptIndex
                     };
                     
-                    // Simple direct border styling for group boundaries
+                    // Apply border styling to header columns
                     if (profileGroup.StartCol === promptIndex) {
                         col.classList.add('profile-start');
                     }
@@ -675,13 +692,34 @@
             const table = document.querySelector('.results-table');
             if (!table) return;
             
+            // Get all profile IDs for tracking profile boundaries per row
+            const profileIds = [...new Set(profileGroups.map(g => g.ID))].filter(id => id); // Remove empty IDs
+            
             const tableRows = table.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 if (cells.length <= 3) return; // Skip rows with insufficient cells
                 
-                // Skip the first 3 cells (rank, actions, model)
-                // The 4th cell onward corresponds to prompt columns
+                // Track the first cell of each profile group in this row
+                const profileFirstCells = {};
+                const profileLastCells = {};
+                
+                // First pass - identify first and last cells for each profile in this row
+                for (let i = 3; i < cells.length - 1; i++) { // Skip first 3 cells and total cell
+                    const columnIndex = i - 3; // Adjust index to match prompt indices
+                    const style = columnStyles[columnIndex];
+                    
+                    if (style && style.profileId) {
+                        // Track the first cell we see for each profile ID
+                        if (!profileFirstCells[style.profileId]) {
+                            profileFirstCells[style.profileId] = i;
+                        }
+                        // Always update the last cell we see for this profile ID
+                        profileLastCells[style.profileId] = i;
+                    }
+                }
+                
+                // Now apply styling for all cells
                 for (let i = 3; i < cells.length - 1; i++) { // Exclude the last total column
                     const columnIndex = i - 3; // Adjust index to match prompt indices
                     
@@ -692,12 +730,18 @@
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Simple direct border styling for group boundaries
-                        if (style.isStart) {
+                        // Apply border for first cell of each profile group in this row
+                        if (profileFirstCells[style.profileId] === i) {
                             cells[i].classList.add('profile-start');
+                            // Force the border style directly to ensure it appears
+                            cells[i].style.borderLeft = `5px solid ${style.color}`;
                         }
-                        if (style.isEnd) {
+                        
+                        // Apply border for last cell of each profile group in this row
+                        if (profileLastCells[style.profileId] === i) {
                             cells[i].classList.add('profile-end');
+                            // Force the border style directly to ensure it appears
+                            cells[i].style.borderRight = `5px solid ${style.color}`;
                         }
                     }
                 }
