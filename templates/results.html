@@ -426,8 +426,8 @@
                 createProfileHeaderRow(profileGroups);
             }
             
-            // Apply profile-specific styling to columns
-            applyProfileStyling(profileGroups, orderedPrompts);
+            // Apply styling to header columns only - will apply to data cells after table is built
+            applyHeaderStyling(profileGroups);
             
             // Try different ways to get the tbody element
             let tbody = document.querySelector("table.results-table tbody");
@@ -574,6 +574,12 @@
                 tbody.innerHTML = temp;
             }, 10);
         }
+        
+        // Apply styling to data cells after they've been created
+        // Use a small timeout to ensure DOM is fully updated
+        setTimeout(() => {
+            applyDataCellStyling();
+        }, 50);
       }
           
       // Helper function to log the colors being used for debugging
@@ -651,11 +657,15 @@
             thead.insertBefore(profileRow, thead.firstChild);
         }
 
-        function applyProfileStyling(profileGroups, orderedPrompts) {
-            console.log("Applying profile styling with simplified approach");
+        // Function to only style the header cells
+        function applyHeaderStyling(profileGroups) {
+            console.log("Applying profile styling to headers");
             
             // Create a mapping from column index to profile boundary information
             const columnMap = {};
+            
+            // Store column map in global variable so it can be used later
+            window.profileColumnMap = {};
             
             // Process groups to identify start and end columns
             profileGroups.forEach(group => {
@@ -679,6 +689,10 @@
                         isEnd: true,
                         color: color
                     };
+                    
+                    // Store in global map
+                    window.profileColumnMap[startCol] = { isStart: true, color: color };
+                    window.profileColumnMap[endCol] = { isEnd: true, color: color };
                 }
             });
             
@@ -709,17 +723,31 @@
                     }
                 }
             });
+        }
+
+        // Function to apply styling to data cells
+        function applyDataCellStyling() {
+            console.log("Applying profile styling to data cells");
             
-            // Apply to data cells - process each row
+            if (!window.profileColumnMap) {
+                console.error("Profile column map not initialized");
+                return;
+            }
+            
+            const columnMap = window.profileColumnMap;
+            
+            // Get the table and check if it exists
             const table = document.querySelector('.results-table');
             if (!table) {
                 console.error("Table not found");
                 return;
             }
             
+            // Get all table rows
             const tableRows = table.querySelectorAll('tbody tr');
             console.log(`Found ${tableRows.length} table rows to process`);
             
+            // Process each row
             tableRows.forEach((row, rowIndex) => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 if (cells.length <= 3) return; // Skip rows with insufficient cells
@@ -730,13 +758,17 @@
                     const boundary = columnMap[columnIndex];
                     
                     if (boundary) {
-                        // First reset any existing border styles
+                        // Remove existing classes
                         cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
                         
                         if (boundary.isStart) {
                             cells[i].classList.add('profile-group-start');
-                            // Apply direct style for immediate visual effect
+                            // Apply a strong border style that will override any existing styles
                             cells[i].style.borderLeft = `5px solid ${boundary.color}`;
+                            // Force the border to be visible
+                            cells[i].style.borderLeftWidth = '5px';
+                            cells[i].style.borderLeftStyle = 'solid';
+                            cells[i].style.borderLeftColor = boundary.color;
                             
                             if (rowIndex === 0) {
                                 console.log(`Applied start border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
@@ -745,8 +777,12 @@
                         
                         if (boundary.isEnd) {
                             cells[i].classList.add('profile-group-end');
-                            // Apply direct style for immediate visual effect
+                            // Apply a strong border style that will override any existing styles
                             cells[i].style.borderRight = `5px solid ${boundary.color}`;
+                            // Force the border to be visible
+                            cells[i].style.borderRightWidth = '5px';
+                            cells[i].style.borderRightStyle = 'solid';
+                            cells[i].style.borderRightColor = boundary.color;
                             
                             if (rowIndex === 0) {
                                 console.log(`Applied end border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
