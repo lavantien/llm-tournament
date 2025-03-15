@@ -602,12 +602,17 @@
                 if (group.StartCol !== -1) { // Only include groups with prompts
                     const span = group.EndCol - group.StartCol + 1;
                     const header = document.createElement('th');
-                    header.className = 'profile-header';
+                    header.className = 'profile-header profile-header-cell';
                     header.setAttribute('colspan', span);
                     header.setAttribute('data-profile-id', group.ID);
-                    header.textContent = group.Name;
                     
-                    // Apply profile-specific styling with stronger borders
+                    // Create inner text element
+                    const textDiv = document.createElement('div');
+                    textDiv.className = 'profile-header-text';
+                    textDiv.textContent = group.Name;
+                    header.appendChild(textDiv);
+                    
+                    // Apply profile-specific styling with CSS variables
                     header.style.setProperty('--profile-color', group.Color);
                     header.style.backgroundColor = `${group.Color}20`; // 20% opacity
                     header.style.borderLeft = `4px solid ${group.Color}`;
@@ -641,8 +646,9 @@
                 const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
                 
                 if (profileGroup) {
-                    // Apply base styling
-                    col.style.backgroundColor = `${profileGroup.Color}05`; // 5% opacity
+                    // Apply base styling with CSS classes and variables
+                    col.classList.add('profile-column');
+                    col.style.setProperty('--profile-color', profileGroup.Color);
                     
                     // Store style information for this column
                     columnStyles[promptIndex] = {
@@ -651,15 +657,13 @@
                         isEnd: profileGroup.EndCol === promptIndex
                     };
                     
-                    // Apply border styling to header
+                    // Apply border styling to header with classes
                     if (profileGroup.StartCol === promptIndex) {
                         col.classList.add('profile-start');
-                        col.style.borderLeft = `4px solid ${profileGroup.Color}`;
                     }
                     
                     if (profileGroup.EndCol === promptIndex) {
                         col.classList.add('profile-end');
-                        col.style.borderRight = `4px solid ${profileGroup.Color}`;
                     }
                 }
             });
@@ -681,20 +685,20 @@
                     // Find the style for this column
                     const style = columnStyles[columnIndex];
                     if (style) {
-                        // Apply the same border styling to the data cell
+                        // Apply styling with CSS classes and variables
+                        cells[i].classList.add('score-cell', 'profile-column');
+                        cells[i].style.setProperty('--profile-color', style.color);
+                        
+                        // Apply border styling with classes
                         if (style.isStart) {
-                            cells[i].style.borderLeft = `4px solid ${style.color}`;
+                            cells[i].classList.add('profile-start');
                         }
                         if (style.isEnd) {
-                            cells[i].style.borderRight = `4px solid ${style.color}`;
+                            cells[i].classList.add('profile-end');
                         }
-                        
-                        // Add score-cell class to ensure consistent sizing
-                        cells[i].classList.add('score-cell');
                     }
                 }
             });
-            
         }
     </script>
 </head>
