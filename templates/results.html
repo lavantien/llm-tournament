@@ -560,6 +560,16 @@
             }, 10);
         }
       }
+          
+      // Helper function to log the colors being used for debugging
+      function logScoreColors() {
+          const rootStyles = getComputedStyle(document.documentElement);
+          console.log("Score colors used in chart:");
+          [0, 20, 40, 60, 80, 100].forEach(score => {
+              const varName = `--score-color-${score}`;
+              console.log(`${score}: ${rootStyles.getPropertyValue(varName).trim() || 'Not set'}`);
+          });
+      }
 
 
 

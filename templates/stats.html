@@ -43,13 +43,30 @@
             // Get document styles for score colors
             const rootStyles = getComputedStyle(document.documentElement);
             
-            // Create datasets with standardized labeling and colors
-            const datasets = [20, 40, 60, 80, 100].map(score => {
+            // Define fallback colors in case CSS variables aren't available
+            const fallbackColors = {
+                0: '#808080',   // Gray
+                20: '#ffa500',  // Orange
+                40: '#ffcc00',  // Yellow-Orange
+                60: '#ffff00',  // Yellow
+                80: '#ccff00',  // Yellow-Green
+                100: '#00ff00'  // Green
+            };
+            
+            // Create datasets with standardized labeling and colors (including score 0)
+            const datasets = [0, 20, 40, 60, 80, 100].map(score => {
                 const scoreVar = getScoreColorVar(score);
+                // Get color from CSS variable or use fallback
+                let bgColor = rootStyles.getPropertyValue(scoreVar).trim();
+                if (!bgColor) {
+                    bgColor = fallbackColors[score];
+                    console.log(`Using fallback color for score ${score}: ${bgColor}`);
+                }
+                
                 return {
                     label: `${getScoreLabel(score)} (${score} points)`,
-                    data: modelsData.map(item => item[`count${score}`]),
-                    backgroundColor: rootStyles.getPropertyValue(scoreVar).trim(),
+                    data: modelsData.map(item => item[`count${score}`] || 0),
+                    backgroundColor: bgColor,
                     borderWidth: 1
                 };
             });
@@ -73,7 +90,26 @@
                                 label: (context) => {
                                     const label = context.dataset.label || '';
                                     const value = context.parsed.y;
-                                    return `${label}: ${value}`;
+                                    const percentage = context.parsed.y / (modelsData.find(m => m.name === context.chart.data.labels[context.dataIndex])?.totalScore || 1) * 100;
+                                    return `${label}: ${value} points (${percentage.toFixed(1)}%)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                // Generate colored boxes for legend
+                                generateLabels: (chart) => {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => {
+                                        return {
+                                            text: dataset.label,
+                                            fillStyle: dataset.backgroundColor,
+                                            strokeStyle: dataset.backgroundColor,
+                                            lineWidth: 0,
+                                            hidden: !chart.isDatasetVisible(i),
+                                            index: i
+                                        };
+                                    });
                                 }
                             }
                         }
