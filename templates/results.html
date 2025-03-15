@@ -756,8 +756,8 @@
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
                         class="profile-header" 
                         data-profile-id="{{.ID}}"
-                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        {{.Name}}
+                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; width: auto; box-sizing: border-box;">
+                        <div style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{.Name}}</div>
                     </th>
                     {{end}}
                 {{end}}
