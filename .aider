@@ -1,6 +1,5 @@
 /drop
 /add       README.md
-/add       go.mod
 /add       handlers\models.go
 /add       handlers\profiles.go
 /add       handlers\prompt.go
@@ -13,6 +12,7 @@
 /add       middleware\import_error.go
 /add       middleware\socket.go
 /add       middleware\state.go
+/add       middleware\utils.go
 /add       templates\bulk_delete_prompts.html
 /add       templates\edit_model.html
 /add       templates\edit_profile.html

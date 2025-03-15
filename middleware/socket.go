@@ -2,11 +2,9 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"sync"
 
 	"github.com/gorilla/websocket"
