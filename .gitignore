@@ -27,3 +27,5 @@ tools/bg_batch_eraser/video.mp4
 tools/bg_batch_eraser/foreground.webm
 .webui_secret_key
 .aider*
+data/tournament.db-shm
+data/tournament.db-wal
