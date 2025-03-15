@@ -817,45 +817,19 @@ body {
     .score-80 { background-color: var(--score-color-80); }
     .score-100 { background-color: var(--score-color-100); }
     
-    /* Profile borders - direct styling with high specificity */
-    .profile-group-start {
-        border-left: 5px solid #333 !important;
-        border-left-width: 5px !important;
-        border-left-style: solid !important;
-    }
-    
-    .profile-group-end {
-        border-right: 5px solid #333 !important;
-        border-right-width: 5px !important;
-        border-right-style: solid !important;
-    }
-    
-    /* Increase specificity for table cells */
+    /* Profile boundaries - using CSS variables */
+    .profile-group-start,
     table.results-table tbody tr td.profile-group-start,
-    table.results-table thead tr th.profile-group-start {
-        border-left: 5px solid #333 !important;
-        border-left-width: 5px !important;
-        border-left-style: solid !important;
-    }
-    
-    table.results-table tbody tr td.profile-group-end,
-    table.results-table thead tr th.profile-group-end {
-        border-right: 5px solid #333 !important;
-        border-right-width: 5px !important;
-        border-right-style: solid !important;
-    }
-    
-    /* Score cells with profile group borders - maximum specificity */
+    table.results-table thead tr th.profile-group-start,
     .score-cell.profile-group-start {
-        border-left: 5px solid #333 !important;
-        border-left-width: 5px !important;
-        border-left-style: solid !important;
+        border-left: var(--profile-border-width) var(--profile-border-style) var(--profile-color, var(--border-color)) !important;
     }
     
+    .profile-group-end,
+    table.results-table tbody tr td.profile-group-end,
+    table.results-table thead tr th.profile-group-end,
     .score-cell.profile-group-end {
-        border-right: 5px solid #333 !important;
-        border-right-width: 5px !important;
-        border-right-style: solid !important;
+        border-right: var(--profile-border-width) var(--profile-border-style) var(--profile-color, var(--border-color)) !important;
     }
     
     /* Force table cell styling */
