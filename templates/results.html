@@ -694,16 +694,16 @@
                         isEnd: endCol === promptIndex
                     };
                     
-                    // Simple direct border application for header columns
+                    // Apply CSS classes for header columns
                     if (startCol === promptIndex) {
                         col.classList.add('profile-start');
-                        col.style.borderLeft = '5px solid #333';
+                        col.classList.add(`profile-${profileId}-start`);
                         console.log(`Applied start border to header col ${promptIndex}`);
                     }
                     
                     if (endCol === promptIndex) {
                         col.classList.add('profile-end');
-                        col.style.borderRight = '5px solid #333';
+                        col.classList.add(`profile-${profileId}-end`);
                         console.log(`Applied end border to header col ${promptIndex}`);
                     }
                 }
@@ -746,14 +746,15 @@
                 console.log("Profile first cells in row:", profileFirstCells);
                 console.log("Profile last cells in row:", profileLastCells);
                 
-                // Reset all cell borders before applying new styles
+                // Reset all cell borders by removing previous profile classes
                 for (let i = 3; i < cells.length - 1; i++) {
-                    // Completely reset all borders to ensure clean slate
-                    cells[i].style.border = '1px solid #333';
-                    cells[i].style.borderLeft = '1px solid #333';
-                    cells[i].style.borderRight = '1px solid #333';
-                    cells[i].style.borderTop = '1px solid #333';
-                    cells[i].style.borderBottom = '1px solid #333';
+                    // Remove all profile classes to start fresh
+                    cells[i].classList.remove('profile-start', 'profile-end');
+                    
+                    // Remove profile-specific classes
+                    for (let j = 0; j < 5; j++) {
+                        cells[i].classList.remove(`profile-${j}-start`, `profile-${j}-end`);
+                    }
                 }
                 
                 // Now apply styling for all cells
@@ -767,19 +768,19 @@
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Direct border application for first cell of profile group
+                        // Apply CSS classes for first cell of profile group
                         if (profileFirstCells[style.profileId] === i) {
-                            // Add class and set direct border style
+                            // Add general and profile-specific classes
                             cells[i].classList.add('profile-start');
-                            cells[i].style.borderLeft = '5px solid #333';
+                            cells[i].classList.add(`profile-${style.profileId}-start`);
                             console.log(`Applied start border to cell ${i} for profile ${style.profileId}`);
                         }
                         
-                        // Direct border application for last cell of profile group
+                        // Apply CSS classes for last cell of profile group
                         if (profileLastCells[style.profileId] === i) {
-                            // Add class and set direct border style
+                            // Add general and profile-specific classes
                             cells[i].classList.add('profile-end');
-                            cells[i].style.borderRight = '5px solid #333';
+                            cells[i].classList.add(`profile-${style.profileId}-end`);
                             console.log(`Applied end border to cell ${i} for profile ${style.profileId}`);
                         }
                     }
