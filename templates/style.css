@@ -340,7 +340,6 @@ body {
         width: 160px;
 
         .progress-bar-container {
-            width: 95%;
             background-color: #333;
             border-radius: 5px;
             margin: 5px;
@@ -783,7 +782,7 @@ body {
     
     /* Progress bar styles */
     .progress-bar-standard-width {
-        width: 21.2vw;
+        width: 21.2vw !important; /* Use !important to ensure this takes precedence */
     }
     
     /* No models available message */
