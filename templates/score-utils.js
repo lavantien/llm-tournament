@@ -15,6 +15,16 @@ const SCORE_LABELS = {
     100: "5/5"
 };
 
+// CSS color variables matching the style.css definitions
+const SCORE_COLORS = {
+    0: '#808080',   // Gray
+    20: '#ffa500',  // Orange
+    40: '#ffcc00',  // Yellow-Orange
+    60: '#ffff00',  // Yellow
+    80: '#ccff00',  // Yellow-Green
+    100: '#00ff00'  // Green
+};
+
 /**
  * Get the appropriate CSS class for a score value
  * @param {number} score - The score value (0, 20, 40, 60, 80, 100)
