@@ -513,25 +513,18 @@
                     // Set cell class based on score
                     if (score === 0) {
                         scoreCell.className = 'score-cell score-0';
-                        scoreCell.style.backgroundColor = '#808080'; // Gray for 0/5
                     } else if (score === 20) {
                         scoreCell.className = 'score-cell score-20';
-                        scoreCell.style.backgroundColor = 'rgba(255, 99, 132, 0.8)'; // 1/5: 20 points
                     } else if (score === 40) {
                         scoreCell.className = 'score-cell score-40';
-                        scoreCell.style.backgroundColor = 'rgba(255, 159, 64, 0.8)'; // 2/5: 40 points
                     } else if (score === 60) {
                         scoreCell.className = 'score-cell score-60';
-                        scoreCell.style.backgroundColor = 'rgba(255, 205, 86, 0.8)'; // 3/5: 60 points
                     } else if (score === 80) {
                         scoreCell.className = 'score-cell score-80';
-                        scoreCell.style.backgroundColor = 'rgba(75, 192, 192, 0.8)'; // 4/5: 80 points
                     } else if (score === 100) {
                         scoreCell.className = 'score-cell score-100';
-                        scoreCell.style.backgroundColor = 'rgba(54, 162, 235, 0.8)'; // 5/5: 100 points
                     } else {
                         scoreCell.className = 'score-cell score-0';
-                        scoreCell.style.backgroundColor = '#808080'; // Default to gray
                     }
 
                     scoreCell.onclick = () => {
@@ -615,6 +608,7 @@
                     header.textContent = group.Name;
                     
                     // Apply profile-specific styling with stronger borders
+                    header.style.setProperty('--profile-color', group.Color);
                     header.style.backgroundColor = `${group.Color}20`; // 20% opacity
                     header.style.borderLeft = `4px solid ${group.Color}`;
                     header.style.borderRight = `4px solid ${group.Color}`;
@@ -695,13 +689,8 @@
                             cells[i].style.borderRight = `4px solid ${style.color}`;
                         }
                         
-                        // Ensure all cells in this column have consistent width
-                        cells[i].style.width = '50px';
-                        cells[i].style.minWidth = '50px';
-                        cells[i].style.maxWidth = '50px';
-                        cells[i].style.height = '50px';
-                        cells[i].style.aspectRatio = '1/1';
-                        cells[i].style.boxSizing = 'border-box';
+                        // Add score-cell class to ensure consistent sizing
+                        cells[i].classList.add('score-cell');
                     }
                 }
             });
@@ -756,7 +745,7 @@
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
                         class="profile-header profile-header-cell" 
                         data-profile-id="{{.ID}}"
-                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
+                        style="--profile-color: {{.Color}}; background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
                         <div class="profile-header-text">{{.Name}}</div>
                     </th>
                     {{end}}

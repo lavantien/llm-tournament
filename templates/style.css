@@ -5,6 +5,17 @@ body {
     margin: 0;
     padding: 20px;
     transition: background-color 0.3s ease;
+    
+    /* CSS Variables for theming */
+    --primary-color: #bb86fc;
+    --secondary-color: #03dac6;
+    --background-color: #121212;
+    --surface-color: #1a1a1a;
+    --surface-color-light: #2a2a2a;
+    --surface-color-lighter: #3a3a3a;
+    --border-color: #333;
+    --text-color: #e0e0e0;
+    --text-color-dark: #1a1a1a;
 
     h1 {
         color: #bb86fc;
@@ -223,10 +234,11 @@ body {
 
     /* Profile header styling */
     .profile-header {
+        --profile-color: #333;
         text-align: center;
         padding: 8px;
         font-weight: bold;
-        border-bottom: 2px solid #333;
+        border-bottom: 2px solid var(--profile-color, #333);
         max-width: 50px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -243,11 +255,19 @@ body {
     /* First column in a profile group */
     .prompt-col.profile-start {
         border-left-width: 4px;
+        border-left-color: var(--profile-color, #333);
     }
 
     /* Last column in a profile group */
     .prompt-col.profile-end {
         border-right-width: 4px;
+        border-right-color: var(--profile-color, #333);
+    }
+    
+    /* Profile column styling */
+    .profile-column {
+        --profile-color: #333;
+        background-color: color-mix(in srgb, var(--profile-color, #333) 5%, transparent);
     }
 
     .results-table tbody tr:nth-child(even) {
@@ -707,6 +727,36 @@ body {
     .file-import-form {
         display: flex;
         align-items: center;
+    }
+    
+    /* Score cell styling */
+    .score-cell {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        max-width: 50px;
+        aspect-ratio: 1/1;
+        box-sizing: border-box;
+    }
+    
+    /* Score colors */
+    .score-0 { background-color: #808080; }
+    .score-20 { background-color: rgba(255, 99, 132, 0.8); }
+    .score-40 { background-color: rgba(255, 159, 64, 0.8); }
+    .score-60 { background-color: rgba(255, 205, 86, 0.8); }
+    .score-80 { background-color: rgba(75, 192, 192, 0.8); }
+    .score-100 { background-color: rgba(54, 162, 235, 0.8); }
+    
+    /* Profile styling */
+    .profile-start { border-left-width: 4px; }
+    .profile-end { border-right-width: 4px; }
+    
+    /* Profile header row */
+    .profile-header {
+        text-align: center;
+        padding: 8px;
+        font-weight: bold;
+        border-bottom: 2px solid #333;
     }
 }
 
