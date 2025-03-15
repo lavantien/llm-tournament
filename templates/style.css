@@ -277,6 +277,15 @@ body {
         --profile-color: #333;
         background-color: color-mix(in srgb, var(--profile-color, #333) 5%, transparent);
     }
+    
+    /* Enhance profile column borders */
+    .profile-column.profile-start {
+        border-left-color: var(--profile-color, #333) !important;
+    }
+    
+    .profile-column.profile-end {
+        border-right-color: var(--profile-color, #333) !important;
+    }
 
     .results-table tbody tr:nth-child(even) {
         background-color: #3a3a3a;
@@ -744,8 +753,14 @@ body {
     .score-100 { background-color: var(--score-color-100); }
     
     /* Profile styling */
-    .profile-start { border-left-width: 4px; }
-    .profile-end { border-right-width: 4px; }
+    .profile-start { 
+        border-left: 5px solid var(--profile-color, #333); 
+        box-shadow: -2px 0 4px rgba(0, 0, 0, 0.2);
+    }
+    .profile-end { 
+        border-right: 5px solid var(--profile-color, #333);
+        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2);
+    }
     
     /* Profile header row */
     .profile-header {

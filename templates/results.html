@@ -641,6 +641,7 @@
             const promptCols = document.querySelectorAll('.prompt-col');
             const columnStyles = {}; // Store styles for each column index
             
+            // First pass: identify all columns by profile and their positions
             promptCols.forEach(col => {
                 const profileId = col.getAttribute('data-profile-id');
                 const profileGroup = profileGroups.find(g => g.ID === profileId);
@@ -654,6 +655,7 @@
                     // Store style information for this column
                     columnStyles[promptIndex] = {
                         color: profileGroup.Color,
+                        profileId: profileGroup.ID,
                         isStart: profileGroup.StartCol === promptIndex,
                         isEnd: profileGroup.EndCol === promptIndex
                     };
@@ -693,9 +695,13 @@
                         // Apply border styling with classes
                         if (style.isStart) {
                             cells[i].classList.add('profile-start');
+                            // Explicitly set the left border with color
+                            cells[i].style.borderLeft = `5px solid ${style.color}`;
                         }
                         if (style.isEnd) {
                             cells[i].classList.add('profile-end');
+                            // Explicitly set the right border with color
+                            cells[i].style.borderRight = `5px solid ${style.color}`;
                         }
                     }
                 }
