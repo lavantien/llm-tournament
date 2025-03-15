@@ -25,6 +25,11 @@ body {
     --score-color-80: #ccff00;
     --score-color-100: #00ff00;
     
+    /* Border styling */
+    --default-border: 1px solid var(--border-color);
+    --profile-border-width: 5px;
+    --profile-border-style: solid;
+    
     /* Profile colors will be applied dynamically via JavaScript */
 
     h1 {
@@ -244,11 +249,11 @@ body {
 
     /* Profile header styling */
     .profile-header {
-        --profile-color: #333;
+        --profile-color: var(--border-color);
         text-align: center;
         padding: 8px;
         font-weight: bold;
-        border-bottom: 2px solid var(--profile-color, #333);
+        border-bottom: 2px solid var(--profile-color);
         max-width: 50px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -526,7 +531,10 @@ body {
         text-align: center;
     }
     
-    /* Score buttons with specific colors */
+    /* Score buttons with dynamic colors */
+    .score-button[class*="score-"] {
+        background-color: var(--score-color-0);
+    }
     .score-button.score-0 { background-color: var(--score-color-0); }
     .score-button.score-20 { background-color: var(--score-color-20); }
     .score-button.score-40 { background-color: var(--score-color-40); }
@@ -798,7 +806,10 @@ body {
         box-sizing: border-box;
     }
     
-    /* Score colors */
+    /* Score colors - dynamically created based on --score-color-X variables */
+    [class*="score-"] {
+        background-color: var(--score-color-0);
+    }
     .score-0 { background-color: var(--score-color-0); }
     .score-20 { background-color: var(--score-color-20); }
     .score-40 { background-color: var(--score-color-40); }
@@ -864,25 +875,17 @@ body {
     
     /* Profile cell styling classes */
     .cell-border-reset {
-        border-left: 1px solid #333 !important;
-        border-right: 1px solid #333 !important;
-        border-left-color: #333 !important;
-        border-right-color: #333 !important;
+        border-left: var(--default-border) !important;
+        border-right: var(--default-border) !important;
     }
     
     /* Profile boundary classes with customizable colors through CSS variables */
     .profile-start-border {
-        border-left: 5px solid var(--profile-color, #333) !important;
-        border-left-width: 5px !important;
-        border-left-style: solid !important;
-        border-left-color: var(--profile-color, #333) !important;
+        border-left: var(--profile-border-width) var(--profile-border-style) var(--profile-color, var(--border-color)) !important;
     }
     
     .profile-end-border {
-        border-right: 5px solid var(--profile-color, #333) !important;
-        border-right-width: 5px !important;
-        border-right-style: solid !important;
-        border-right-color: var(--profile-color, #333) !important;
+        border-right: var(--profile-border-width) var(--profile-border-style) var(--profile-color, var(--border-color)) !important;
     }
     
     /* Profile header row */

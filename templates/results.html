@@ -5,13 +5,15 @@
     <title>Results</title>
     <link rel="stylesheet" href="/templates/style.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <script src="/templates/constants.js"></script>
+    <script src="/templates/utils.js"></script>
     <script>
         let socket;
         let connectionRetries = 0;
-        const maxRetries = 3;
         let initialLoad = true; // Flag to track initial load
+        let currentSearchQuery = "";
 
-        // Add storage for previous state
+        // Storage for previous state
         let previousState = {
             Results: {},
             Models: [],
@@ -19,21 +21,24 @@
             PassPercentages: {}
         };
 
+        /**
+         * Connects to the WebSocket server and sets up event handlers
+         */
         function connectWebSocket() {
-            // Then connect WebSocket
+            // Create WebSocket connection
             socket = new WebSocket("ws://" + window.location.host + "/ws");
 
+            // Handle connection open
             socket.onopen = function (e) {
                 console.log("[open] Connection established");
                 connectionRetries = 0; // Reset retries on successful connection
-                document.getElementById("connection-status").textContent =
-                    "Connected";
-                document.getElementById("connection-status").className = "connection-status connection-status-connected";
+                updateConnectionStatus("Connected", "connected");
             };
 
             // First load initial data
             fetchInitialData();
 
+            // Handle incoming messages
             socket.onmessage = function (event) {
                 try {
                     const payload = JSON.parse(event.data);
@@ -48,13 +53,8 @@
                             TotalScores: payload.data.totalScores || {}
                         };
             
-                        console.log('Processed WebSocket data:', safeData);
-
                         // Update the hidden data elements with new values
-                        document.getElementById('results-data').textContent = JSON.stringify(safeData.Results);
-                        document.getElementById('models-data').textContent = JSON.stringify(safeData.Models);
-                        document.getElementById('pass-percentages-data').textContent = JSON.stringify(safeData.PassPercentages);
-                        document.getElementById('total-scores-data').textContent = JSON.stringify(safeData.TotalScores);
+                        updateHiddenData(safeData);
 
                         // Update the table with new data
                         updateResults(safeData);
@@ -64,79 +64,90 @@
                 }
             };
 
+            // Handle connection close
             socket.onclose = function (event) {
                 if (event.wasClean) {
-                    console.log(
-                        `[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`,
-                    );
+                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
                 } else {
                     console.log("[close] Connection died");
                 }
-                document.getElementById("connection-status").textContent =
-                    "Disconnected";
-                document.getElementById("connection-status").className = "connection-status connection-status-disconnected";
-                if (connectionRetries < maxRetries) {
+                
+                updateConnectionStatus("Disconnected", "disconnected");
+                
+                // Handle reconnection attempts
+                if (connectionRetries < MAX_WS_RETRIES) {
                     connectionRetries++;
-                    console.log(
-                        `Attempting to reconnect (${connectionRetries}/${maxRetries})...`,
-                    );
-                    setTimeout(connectWebSocket, 1000 * connectionRetries); // Exponential backoff
+                    console.log(`Attempting to reconnect (${connectionRetries}/${MAX_WS_RETRIES})...`);
+                    setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries); // Exponential backoff
                 } else {
-                    document.getElementById("connection-status").textContent =
-                        "Connection failed";
-                    document.getElementById("connection-status").className = "connection-status connection-status-failed";
+                    updateConnectionStatus("Connection failed", "failed");
                     console.log("Max retries reached. Connection failed.");
                 }
             };
 
+            // Handle connection errors
             socket.onerror = function (error) {
                 console.log(`[error] ${error.message}`);
-                document.getElementById("connection-status").textContent = "Error";
-                document.getElementById("connection-status").className = "connection-status connection-status-error";
+                updateConnectionStatus("Error", "error");
             };
         }
+        
+        /**
+         * Updates the connection status display
+         * @param {string} text - Status text to display
+         * @param {string} state - Status state (connected, disconnected, error, failed)
+         */
+        function updateConnectionStatus(text, state) {
+            const statusElement = document.getElementById("connection-status");
+            statusElement.textContent = text;
+            statusElement.className = `connection-status connection-status-${state}`;
+        }
+        
+        /**
+         * Updates the hidden data elements with new values
+         * @param {Object} data - Data object containing Results, Models, etc.
+         */
+        function updateHiddenData(data) {
+            document.getElementById('results-data').textContent = JSON.stringify(data.Results || {});
+            document.getElementById('models-data').textContent = JSON.stringify(data.Models || []);
+            document.getElementById('pass-percentages-data').textContent = JSON.stringify(data.PassPercentages || {});
+            document.getElementById('total-scores-data').textContent = JSON.stringify(data.TotalScores || {});
+        }
 
+        /**
+         * Fetches initial data from the DOM hidden elements
+         * @returns {Promise<Object>} Promise resolving to the data payload
+         */
         function fetchInitialData() {
             console.log("Fetching initial data...");
-            // Instead of using AJAX, use the data already present in the DOM
             try {
-                const resultsEl = document.getElementById('results-data');
-                const modelsEl = document.getElementById('models-data');
-                const passPercentagesEl = document.getElementById('pass-percentages-data');
-                const totalScoresEl = document.getElementById('total-scores-data');
-                const profileGroupsEl = document.getElementById('profile-groups-data');
-                const orderedPromptsEl = document.getElementById('ordered-prompts-data');
-                
-                // Safely parse JSON with fallbacks
-                const results = resultsEl && resultsEl.textContent ? 
-                    JSON.parse(resultsEl.textContent) : {};
-                const models = modelsEl && modelsEl.textContent ? 
-                    JSON.parse(modelsEl.textContent) : [];
-                const passPercentages = passPercentagesEl && passPercentagesEl.textContent ? 
-                    JSON.parse(passPercentagesEl.textContent) : {};
-                const totalScores = totalScoresEl && totalScoresEl.textContent ? 
-                    JSON.parse(totalScoresEl.textContent) : {};
-                const profileGroups = profileGroupsEl && profileGroupsEl.textContent ? 
-                    JSON.parse(profileGroupsEl.textContent) : [];
-                const orderedPrompts = orderedPromptsEl && orderedPromptsEl.textContent ? 
-                    JSON.parse(orderedPromptsEl.textContent) : [];
-                
-                console.log('Data loaded from DOM elements:', { 
-                    results, 
-                    models_length: models ? models.length : 0,
-                    firstModelData: models && models.length > 0 ? results[models[0]] : null,
-                    profileGroups: profileGroups
-                });
-                
-                const payload = {
-                    Results: results,
-                    Models: models,
-                    PassPercentages: passPercentages,
-                    TotalScores: totalScores,
-                    ProfileGroups: profileGroups,
-                    OrderedPrompts: orderedPrompts
+                // Get DOM elements
+                const elements = {
+                    results: document.getElementById('results-data'),
+                    models: document.getElementById('models-data'),
+                    passPercentages: document.getElementById('pass-percentages-data'),
+                    totalScores: document.getElementById('total-scores-data'),
+                    profileGroups: document.getElementById('profile-groups-data'),
+                    orderedPrompts: document.getElementById('ordered-prompts-data')
                 };
                 
+                // Parse data with fallbacks using the utility function
+                const payload = {
+                    Results: safeJsonParse(elements.results?.textContent, {}),
+                    Models: safeJsonParse(elements.models?.textContent, []),
+                    PassPercentages: safeJsonParse(elements.passPercentages?.textContent, {}),
+                    TotalScores: safeJsonParse(elements.totalScores?.textContent, {}),
+                    ProfileGroups: safeJsonParse(elements.profileGroups?.textContent, []),
+                    OrderedPrompts: safeJsonParse(elements.orderedPrompts?.textContent, [])
+                };
+                
+                console.log('Data loaded from DOM elements:', { 
+                    models_length: payload.Models.length,
+                    firstModelData: payload.Models.length > 0 ? payload.Results[payload.Models[0]] : null,
+                    profileGroups: payload.ProfileGroups
+                });
+                
+                // Update the UI with the loaded data
                 updateResults(payload);
                 return Promise.resolve(payload);
             } catch (error) {
@@ -153,262 +164,239 @@
             }
         }
 
-        let currentSearchQuery = "";
-
+        /**
+         * Handles search input and filters results accordingly
+         */
         function handleSearch() {
             currentSearchQuery = document.getElementById("modelSearch").value.toLowerCase();
-            updateResults({
-                Results: JSON.parse(document.getElementById('results-data').textContent),
-                Models: JSON.parse(document.getElementById('models-data').textContent),
-                PassPercentages: JSON.parse(document.getElementById('pass-percentages-data').textContent),
-                TotalScores: JSON.parse(document.getElementById('total-scores-data').textContent),
-            });
             
-            // Debug verification of styles - inspect the first row
-            const firstRow = tableRows[0];
-            if (firstRow) {
-                const firstRowCells = Array.from(firstRow.querySelectorAll('td'));
-                console.log("First row cell styles verification:");
-                for (let i = 3; i < firstRowCells.length - 1; i++) {
-                    const cell = firstRowCells[i];
-                    console.log(`Cell ${i} border-left: ${window.getComputedStyle(cell).borderLeftWidth}`);
-                    console.log(`Cell ${i} border-right: ${window.getComputedStyle(cell).borderRightWidth}`);
-                }
-            }
+            // Get current data from hidden elements
+            const currentData = {
+                Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
+                Models: safeJsonParse(document.getElementById('models-data').textContent, []),
+                PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {}),
+                TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {})
+            };
+            
+            // Update the results with the filtered data
+            updateResults(currentData);
         }
 
+        /**
+         * Backs up the current state for potential restoration
+         */
         function backupCurrentState() {
             previousState = {
-                Results: JSON.parse(document.getElementById('results-data').textContent || '{}'),
-                Models: JSON.parse(document.getElementById('models-data').textContent || '[]'),
-                TotalScores: JSON.parse(document.getElementById('total-scores-data').textContent || '{}'),
-                PassPercentages: JSON.parse(document.getElementById('pass-percentages-data').textContent || '{}')
+                Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
+                Models: safeJsonParse(document.getElementById('models-data').textContent, []),
+                TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {}),
+                PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {})
             };
-            console.log('Current state backed up:', previousState);
+            
+            console.log('Current state backed up');
+            
             // Enable the Previous button
             document.getElementById('restore-previous-btn').disabled = false;
         }
 
+        /**
+         * Restores the previous state
+         */
         function restorePrevious() {
             if (!previousState.Models || previousState.Models.length === 0) {
                 console.log('No previous state to restore');
                 return;
             }
             
-            console.log('Restoring previous state:', previousState);
+            console.log('Restoring previous state');
             
             // Update hidden elements with previous state data
-            document.getElementById('results-data').textContent = JSON.stringify(previousState.Results);
-            document.getElementById('models-data').textContent = JSON.stringify(previousState.Models);
-            document.getElementById('total-scores-data').textContent = JSON.stringify(previousState.TotalScores);
-            document.getElementById('pass-percentages-data').textContent = JSON.stringify(previousState.PassPercentages);
+            updateHiddenData(previousState);
             
             // Send the previous data to the server
-            fetch('/update_mock_results', {
+            sendDataToServer(previousState)
+                .then(data => {
+                    console.log('Previous state restored successfully');
+                    // Update the UI with previous data
+                    updateResults(previousState);
+                })
+                .catch(error => {
+                    console.error('Error restoring previous state:', error);
+                    // Still update the UI even if the server request fails
+                    updateResults(previousState);
+                });
+        }
+        
+        /**
+         * Sends data to the server
+         * @param {Object} data - Data to send to the server
+         * @returns {Promise} Promise that resolves with the server response
+         */
+        function sendDataToServer(data) {
+            return fetch('/update_mock_results', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    results: previousState.Results,
-                    models: previousState.Models,
-                    passPercentages: previousState.PassPercentages,
-                    totalScores: previousState.TotalScores
+                    results: data.Results,
+                    models: data.Models,
+                    passPercentages: data.PassPercentages,
+                    totalScores: data.TotalScores
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Previous state restored successfully:', data);
-                // Update the UI with previous data
-                updateResults(previousState);
-            })
-            .catch(error => {
-                console.error('Error restoring previous state:', error);
-                // Still update the UI even if the server request fails
-                updateResults(previousState);
-            });
+            .then(response => response.json());
         }
 
+        /**
+         * Generates mock scores for all models
+         */
         function generateMockScores() {
             console.log("Generating mock scores...");
             // Backup current state before generating new random scores
             backupCurrentState();
     
             // Retrieve the current models list from the hidden element
-            const modelsText = document.getElementById('models-data').textContent;
-            if (!modelsText || modelsText.trim() === '') {
+            const models = safeJsonParse(document.getElementById('models-data').textContent, []);
+            if (models.length === 0) {
                 console.error('Models data is empty');
                 return;
             }
-            const models = JSON.parse(modelsText);
+            
             // Get the number of prompts (using Go template injection)
             const promptsCount = {{len .Prompts}} || 0;
+            
             // Prepare new data containers
-            let newResults = {};
-            let newTotalScores = {};
-            let newPassPercentages = {};
-    
+            let newData = generateTieredScores(models, promptsCount);
+            
+            // Update hidden elements with the new data
+            updateHiddenData(newData);
+            
+            // Send the mock data to the server
+            sendDataToServer(newData)
+                .then(data => {
+                    console.log('Mock data saved successfully');
+                    
+                    // Use the server-generated data if available
+                    if (data.results && data.models && data.totalScores && data.passPercentages) {
+                        const serverData = {
+                            Results: data.results,
+                            Models: data.models,
+                            TotalScores: data.totalScores,
+                            PassPercentages: data.passPercentages
+                        };
+                        
+                        // Update hidden elements with server data
+                        updateHiddenData(serverData);
+                        
+                        // Update the UI with the server's data
+                        updateResults(serverData);
+                        console.log('UI updated with server-generated data');
+                    } else {
+                        // Fall back to local data if server didn't return the expected format
+                        console.log('Server returned invalid data format, using local calculations');
+                        updateResults(newData);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving mock data:', error);
+                    // Still update the UI even if the server request fails
+                    updateResults(newData);
+                });
+        }
+        
+        /**
+         * Generates tiered scores for models
+         * @param {Array<string>} models - Array of model names
+         * @param {number} promptsCount - Number of prompts
+         * @returns {Object} Object containing results, models, scores and percentages
+         */
+        function generateTieredScores(models, promptsCount) {
             // Divide models into 11 tiers
             const groupSize = Math.ceil(models.length / 11);
             
-            // Function to get weighted scores based on tier
-            function getRandomScoreForTier(tierIndex) {
-              const validScores = [0, 20, 40, 60, 80, 100];
-              let weights;
-              
-              // Different weights for each tier
-              // Higher tiers have higher probability of high scores
-              switch(tierIndex) {
-                case 0: // cosmic (highest tier)
-                  weights = [1, 1, 8, 15, 25, 50]; // heavily weighted toward 100s
-                  break;
-                case 1: // divine
-                  weights = [1, 2, 10, 20, 40, 27];
-                  break;
-                case 2: // celestial
-                  weights = [2, 5, 15, 30, 35, 13];
-                  break;
-                case 3: // ascendant
-                  weights = [5, 10, 25, 30, 20, 10];
-                  break;
-                case 4: // ethereal
-                  weights = [7, 15, 33, 25, 15, 5];
-                  break;
-                case 5: // mystic
-                  weights = [10, 20, 35, 20, 10, 5];
-                  break;
-                case 6: // astral
-                  weights = [15, 30, 30, 15, 8, 2];
-                  break;
-                case 7: // spiritual
-                  weights = [20, 35, 25, 15, 4, 1];
-                  break;
-                case 8: // primal
-                  weights = [30, 35, 20, 12, 2, 1];
-                  break;
-                case 9: // mortal
-                  weights = [40, 35, 15, 8, 2, 0];
-                  break;
-                case 10: // primordial (lowest tier)
-                  weights = [55, 30, 10, 5, 0, 0];
-                  break;
-                default:
-                  weights = [17, 16, 16, 16, 16, 16]; // fallback to even distribution
-              }
-              
-              // Apply some randomness to the weights
-              const jitterFactor = 0.2; // 20% random variation
-              weights = weights.map(w => {
-                const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
-                return Math.max(0, Math.round(w * jitter));
-              });
-              
-              // Use weighted random selection
-              const totalWeight = weights.reduce((a, b) => a + b, 0);
-              let random = Math.random() * totalWeight;
-      
-              for (let i = 0; i < weights.length; i++) {
-                random -= weights[i];
-                if (random <= 0) {
-                  return validScores[i];
-                }
-              }
-              return 0; // Fallback
-            }
+            // Prepare data containers
+            let newResults = {};
+            let newTotalScores = {};
+            let newPassPercentages = {};
             
             // Process each model by its tier
             models.forEach((model, index) => {
-              const tierIndex = Math.min(10, Math.floor(index / groupSize));
-              let scores = [];
-              let total = 0;
-              
-              for (let i = 0; i < promptsCount; i++) {
-                let score = getRandomScoreForTier(tierIndex);
-                scores.push(score);
-                total += score;
-              }
-              
-              newResults[model] = { Scores: scores };
-              newTotalScores[model] = total;
-              newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
+                const tierIndex = Math.min(10, Math.floor(index / groupSize));
+                let scores = [];
+                let total = 0;
+                
+                for (let i = 0; i < promptsCount; i++) {
+                    let score = getRandomScoreForTier(tierIndex);
+                    scores.push(score);
+                    total += score;
+                }
+                
+                newResults[model] = { Scores: scores };
+                newTotalScores[model] = total;
+                newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
             });
             
             // Sort models in descending order based on their total scores
             models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
-            // Update hidden models-data with the new sorted order
-            // Store updated data in hidden elements
-            document.getElementById('models-data').textContent = JSON.stringify(models);
-            document.getElementById('results-data').textContent = JSON.stringify(newResults);
-            document.getElementById('total-scores-data').textContent = JSON.stringify(newTotalScores);
-            document.getElementById('pass-percentages-data').textContent = JSON.stringify(newPassPercentages);
             
-            // Send the mock data to the server
-            fetch('/update_mock_results', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    results: newResults,
-                    models: models,
-                    passPercentages: newPassPercentages,
-                    totalScores: newTotalScores
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Mock data saved successfully:', data);
-                
-                // Use the server-generated data instead of our local calculations
-                if (data.results && data.models && data.totalScores && data.passPercentages) {
-                    console.log('Received sorted models from server:', data.models.slice(0, 5));
-                    
-                    // Update the hidden data elements with the server's generated data
-                    document.getElementById('results-data').textContent = JSON.stringify(data.results);
-                    document.getElementById('models-data').textContent = JSON.stringify(data.models);
-                    document.getElementById('total-scores-data').textContent = JSON.stringify(data.totalScores);
-                    document.getElementById('pass-percentages-data').textContent = JSON.stringify(data.passPercentages);
-                    
-                    // Update the UI with the server's data
-                    updateResults({
-                        Results: data.results,
-                        Models: data.models, // These are already sorted by the server
-                        TotalScores: data.totalScores,
-                        PassPercentages: data.passPercentages
-                    });
-                    console.log('UI updated with server-generated data');
-                } else {
-                    // Fall back to local data if server didn't return the expected format
-                    console.log('Server returned invalid data format, using local calculations');
-                    
-                    // Sort the models by total score
-                    models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
-                    
-                    // Update hidden elements with sorted data
-                    document.getElementById('models-data').textContent = JSON.stringify(models);
-                    
-                    updateResults({
-                        Results: newResults,
-                        Models: models, // Locally sorted as fallback
-                        TotalScores: newTotalScores,
-                        PassPercentages: newPassPercentages
-                    });
-                    console.log('UI updated with local mock data (fallback)');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving mock data:', error);
-                // Still update the UI even if the server request fails
-                updateResults({
-                    Results: newResults,
-                    Models: models,
-                    TotalScores: newTotalScores,
-                    PassPercentages: newPassPercentages
-                });
-                console.log('UI updated with local data despite server error');
+            return {
+                Results: newResults,
+                Models: models,
+                TotalScores: newTotalScores,
+                PassPercentages: newPassPercentages
+            };
+        }
+        
+        /**
+         * Gets a random score based on tier weighting
+         * @param {number} tierIndex - Index of the tier (0-10)
+         * @returns {number} A score value (0, 20, 40, 60, 80, 100)
+         */
+        function getRandomScoreForTier(tierIndex) {
+            // Define tier weights mapping
+            const tierWeights = [
+                [1, 1, 8, 15, 25, 50],    // cosmic (highest tier)
+                [1, 2, 10, 20, 40, 27],   // divine
+                [2, 5, 15, 30, 35, 13],   // celestial
+                [5, 10, 25, 30, 20, 10],  // ascendant
+                [7, 15, 33, 25, 15, 5],   // ethereal
+                [10, 20, 35, 20, 10, 5],  // mystic
+                [15, 30, 30, 15, 8, 2],   // astral
+                [20, 35, 25, 15, 4, 1],   // spiritual
+                [30, 35, 20, 12, 2, 1],   // primal
+                [40, 35, 15, 8, 2, 0],    // mortal
+                [55, 30, 10, 5, 0, 0],    // primordial (lowest tier)
+                [17, 16, 16, 16, 16, 16]  // fallback to even distribution
+            ];
+            
+            let weights = tierWeights[tierIndex] || tierWeights[11];
+            
+            // Apply some randomness to the weights
+            const jitterFactor = 0.2; // 20% random variation
+            weights = weights.map(w => {
+                const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
+                return Math.max(0, Math.round(w * jitter));
             });
+            
+            // Use weighted random selection
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < weights.length; i++) {
+                random -= weights[i];
+                if (random <= 0) {
+                    return SCORE_VALUES[i];
+                }
+            }
+            
+            return 0; // Fallback
         }
 
+        /**
+         * Updates the results table with the provided data
+         * @param {Object} payload - Data payload containing Results, Models, etc.
+         */
         function updateResults(payload) {
             // Apply defensive programming to handle potential undefined values
             const results = payload.Results || {};
@@ -419,179 +407,249 @@
             const orderedPrompts = payload.OrderedPrompts || [];
             const modelFilter = document.getElementById("model_filter").value;
 
-            console.log('Updating UI with models:', models, 'First model results:', models.length > 0 ? results[models[0]] : null);
+            // Initialize profile headers if needed
+            initializeProfileHeaders(profileGroups);
             
-            // Create header with profile spans if not already present
-            if (document.querySelector('.profile-row') === null && profileGroups.length > 0) {
-                createProfileHeaderRow(profileGroups);
-            }
-            
-            // Apply styling to header columns only - will apply to data cells after table is built
-            applyHeaderStyling(profileGroups);
-            
-            // Try different ways to get the tbody element
-            let tbody = document.querySelector("table.results-table tbody");
-            
+            // Get the table body
+            const tbody = getTableBody();
             if (!tbody) {
-                console.error('Table body not found with class selector, trying direct selector');
-                tbody = document.querySelector("table tbody");
+                console.error('Could not find or create table body');
+                return;
             }
             
-            if (!tbody) {
-                console.error('Table body still not found, creating one');
-                // Create the table if it doesn't exist
-                const table = document.querySelector("table.results-table") || document.querySelector("table");
-                if (table) {
-                    const newTbody = document.createElement("tbody");
-                    table.appendChild(newTbody);
-                    console.log('Created new tbody element');
-                    tbody = newTbody;
-                } else {
-                    console.error('Could not find or create table body');
-                    return;
-                }
-            }
+            // Ensure we have models to display
+            const displayModels = ensureModelsExist(models, results);
             
-            // Log that we found the table body
-            console.log('Found table body:', tbody);
-            
-            // If models array is empty, try to rebuild it from results object
-            if (models.length === 0 && Object.keys(results).length > 0) {
-                console.log('Models array is empty, rebuilding from results keys');
-                Object.keys(results).forEach(model => {
-                    if (!models.includes(model)) {
-                        models.push(model);
-                    }
-                });
-            }
-            
-            if (models.length === 0) {
+            if (displayModels.length === 0) {
                 console.error('No models available to display');
                 tbody.innerHTML = '<tr><td colspan="100" class="no-models-message">No models available</td></tr>';
                 return;
             }
             
-            console.log(`About to render ${models.length} models to table`);
-
+            // Render the models
+            renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter);
+            
+            // Apply styling to data cells after they've been created
+            setTimeout(applyDataCellStyling, 50);
+        }
+        
+        /**
+         * Initializes profile headers if they don't exist
+         * @param {Array} profileGroups - Array of profile group data
+         */
+        function initializeProfileHeaders(profileGroups) {
+            if (document.querySelector('.profile-row') === null && profileGroups.length > 0) {
+                createProfileHeaderRow(profileGroups);
+            }
+            
+            // Apply styling to header columns
+            applyHeaderStyling(profileGroups);
+        }
+        
+        /**
+         * Gets or creates the table body element
+         * @returns {HTMLElement|null} The table body element or null if it couldn't be created
+         */
+        function getTableBody() {
+            // Try different selectors
+            let tbody = document.querySelector("table.results-table tbody") || 
+                         document.querySelector("table tbody");
+            
+            if (!tbody) {
+                console.log('Table body not found, creating one');
+                const table = document.querySelector("table.results-table") || document.querySelector("table");
+                if (table) {
+                    const newTbody = document.createElement("tbody");
+                    table.appendChild(newTbody);
+                    tbody = newTbody;
+                }
+            }
+            
+            return tbody;
+        }
+        
+        /**
+         * Ensures we have models to display, rebuilding from results if needed
+         * @param {Array} models - Array of model names
+         * @param {Object} results - Results object
+         * @returns {Array} Array of model names
+         */
+        function ensureModelsExist(models, results) {
+            if (models.length === 0 && Object.keys(results).length > 0) {
+                console.log('Models array is empty, rebuilding from results keys');
+                return Object.keys(results);
+            }
+            return models;
+        }
+        
+        /**
+         * Renders model rows in the table body
+         * @param {HTMLElement} tbody - Table body element
+         * @param {Array} models - Array of model names
+         * @param {Object} results - Results object
+         * @param {Object} totalScores - Total scores by model
+         * @param {Object} passPercentages - Pass percentages by model
+         * @param {string} modelFilter - Model filter string
+         */
+        function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter) {
+            console.log(`Rendering ${models.length} models to table`);
+            
             // Clear the table first
             tbody.innerHTML = '';
             
             // Create document fragment for batch DOM updates
             const fragment = document.createDocumentFragment();
-            let i = 0;
+            let rowCount = 0;
             
-            console.log('Rendering table with models:', models);
-
             models.forEach((model) => {
                 // Apply both filters
                 if ((modelFilter === "" || model === modelFilter) &&
                     (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
-                    i++;
-                    const row = document.createElement("tr");
-
-                    // Create cells
-                    const rankCell = document.createElement("td");
-                    rankCell.textContent = i;
-
-                    const actionsCell = document.createElement("td");
-                    actionsCell.className = "model-actions";
-                    actionsCell.innerHTML = `
-                      <div class="prompt-actions">
-                          <a class="action-button edit-button" href="/edit_model?model=${model}">✏️</a>
-                          <a class="action-button delete-button" href="/delete_model?model=${model}">🗑️</a>
-                      </div>
-                  `;
-
-                    const modelCell = document.createElement("td");
-                    modelCell.textContent = model;
-
-                    // Create score cells
-                    const scoreCells = [];
-                    // Ensure we check both uppercase and lowercase field names for compatibility
-                    const scores = results[model]?.Scores || results[model]?.scores || [];
-                    if (i === 1) console.log(`First model scores for ${model}:`, scores);
-                    const promptsCount = {{len .Prompts}} || 0;
-
-                // Ensure we have enough scores for all prompts
-                while (scores.length < promptsCount) {
-                    scores.push(0);
+                    rowCount++;
+                    
+                    // Create and append the row
+                    const row = createModelRow(
+                        model, 
+                        rowCount, 
+                        results[model], 
+                        totalScores[model] || 0,
+                        passPercentages[model] || 0
+                    );
+                    
+                    fragment.appendChild(row);
                 }
-
-                for (let index = 0; index < promptsCount; index++) {
-                    const score = scores[index] || 0;
-                    const scoreCell = document.createElement("td");
-                    
-                    // Set cell class based on score using a more maintainable approach
-                    const validScores = [0, 20, 40, 60, 80, 100];
-                    const scoreClass = validScores.includes(score) ? `score-${score}` : 'score-0';
-                    scoreCell.className = `score-cell ${scoreClass}`;
-                    
-                    // Set data attributes for styling and interactivity
-                    scoreCell.setAttribute('data-prompt-index', index.toString());
-                    scoreCell.setAttribute('data-score', `Score: ${score}`);
-                    scoreCell.setAttribute('tabindex', '0'); // Make cell focusable for keyboard navigation
-                    
-                    // Attach event listeners
-                    scoreCell.onclick = () => {
-                        window.location.href = `/evaluate?model=${model}&prompt=${index}`;
-                    };
-                    
-                    // Add keyboard navigation
-                    scoreCell.onkeydown = (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            window.location.href = `/evaluate?model=${model}&prompt=${index}`;
-                        }
-                    };
-                    
-                    scoreCells.push(scoreCell);
-                }
-
-                // Create total score cell
-                const totalCell = document.createElement("td");
-                totalCell.textContent = totalScores[model] || 0;
-                totalCell.className = "progress-bar-wrapper";
-                const progressDiv = document.createElement("div");
-                progressDiv.className = "progress-bar-container progress-bar-standard-width";
-                const progressBar = document.createElement("div");
-                progressBar.className = "progress-bar";
-                progressBar.style.setProperty('--progress-width', `${passPercentages[model] || 0}%`);
-                progressDiv.appendChild(progressBar);
-                totalCell.appendChild(progressDiv);
-
-                // Append all cells to row
-                row.appendChild(rankCell);
-                row.appendChild(actionsCell);
-                row.appendChild(modelCell);
-                scoreCells.forEach(cell => row.appendChild(cell));
-                row.appendChild(totalCell);
-
-                fragment.appendChild(row);
+            });
+            
+            // Batch update the DOM
+            tbody.appendChild(fragment);
+            
+            console.log(`Table updated with ${rowCount} rows`);
+            
+            // Force a redraw if needed
+            if (rowCount > 0 && tbody.children.length === 0) {
+                console.error("Rows not appearing in table despite being created. Forcing redraw...");
+                const temp = tbody.innerHTML;
+                tbody.innerHTML = '';
+                setTimeout(() => {
+                    tbody.innerHTML = temp;
+                }, 10);
             }
-          });
-
-        // Batch update the DOM
-        tbody.innerHTML = '';
-        tbody.appendChild(fragment);
-        
-        // Log the final number of rows created
-        console.log(`Table updated with ${i} rows`);
-        
-        // Force a redraw if needed
-        if (i > 0 && tbody.children.length === 0) {
-            console.error("Rows not appearing in table despite being created. Forcing redraw...");
-            const temp = tbody.innerHTML;
-            tbody.innerHTML = '';
-            setTimeout(() => {
-                tbody.innerHTML = temp;
-            }, 10);
         }
         
-        // Apply styling to data cells after they've been created
-        // Use a small timeout to ensure DOM is fully updated
-        setTimeout(() => {
-            applyDataCellStyling();
-        }, 50);
-      }
+        /**
+         * Creates a row for a model
+         * @param {string} model - Model name
+         * @param {number} rank - Rank number
+         * @param {Object} modelData - Model data object
+         * @param {number} totalScore - Total score
+         * @param {number} passPercentage - Pass percentage
+         * @returns {HTMLElement} The created row element
+         */
+        function createModelRow(model, rank, modelData, totalScore, passPercentage) {
+            const row = document.createElement("tr");
+            const promptsCount = {{len .Prompts}} || 0;
+            
+            // Create standard cells
+            const rankCell = document.createElement("td");
+            rankCell.textContent = rank;
+            
+            const actionsCell = document.createElement("td");
+            actionsCell.className = "model-actions";
+            actionsCell.innerHTML = `
+                <div class="prompt-actions">
+                    <a class="action-button edit-button" href="/edit_model?model=${model}">✏️</a>
+                    <a class="action-button delete-button" href="/delete_model?model=${model}">🗑️</a>
+                </div>
+            `;
+            
+            const modelCell = document.createElement("td");
+            modelCell.textContent = model;
+            
+            // Create score cells
+            const scores = modelData?.Scores || modelData?.scores || [];
+            while (scores.length < promptsCount) {
+                scores.push(0);
+            }
+            
+            const scoreCells = createScoreCells(model, scores, promptsCount);
+            
+            // Create total score cell with progress bar
+            const totalCell = createTotalScoreCell(totalScore, passPercentage);
+            
+            // Append all cells to row
+            row.appendChild(rankCell);
+            row.appendChild(actionsCell);
+            row.appendChild(modelCell);
+            scoreCells.forEach(cell => row.appendChild(cell));
+            row.appendChild(totalCell);
+            
+            return row;
+        }
+        
+        /**
+         * Creates score cells for a model
+         * @param {string} model - Model name
+         * @param {Array} scores - Array of scores
+         * @param {number} promptsCount - Total number of prompts
+         * @returns {Array} Array of score cell elements
+         */
+        function createScoreCells(model, scores, promptsCount) {
+            const cells = [];
+            
+            for (let index = 0; index < promptsCount; index++) {
+                const score = scores[index] || 0;
+                const scoreCell = document.createElement("td");
+                
+                // Set cell class based on score
+                const scoreClass = getScoreClass(score);
+                scoreCell.className = `score-cell ${scoreClass}`;
+                
+                // Set data attributes for styling and interactivity
+                scoreCell.setAttribute('data-prompt-index', index.toString());
+                scoreCell.setAttribute('data-score', `Score: ${score}`);
+                scoreCell.setAttribute('tabindex', '0'); // Make cell focusable
+                
+                // Attach event listeners
+                scoreCell.addEventListener('click', () => {
+                    window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                });
+                
+                // Add keyboard navigation
+                scoreCell.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                    }
+                });
+                
+                cells.push(scoreCell);
+            }
+            
+            return cells;
+        }
+        
+        /**
+         * Creates a total score cell with progress bar
+         * @param {number} totalScore - Total score
+         * @param {number} passPercentage - Pass percentage
+         * @returns {HTMLElement} The total score cell element
+         */
+        function createTotalScoreCell(totalScore, passPercentage) {
+            const totalCell = document.createElement("td");
+            totalCell.textContent = totalScore;
+            totalCell.className = "progress-bar-wrapper";
+            
+            const progressDiv = document.createElement("div");
+            progressDiv.className = "progress-bar-container progress-bar-standard-width";
+            
+            const progressBar = document.createElement("div");
+            progressBar.className = "progress-bar";
+            progressBar.style.setProperty('--progress-width', `${passPercentage}%`);
+            
+            progressDiv.appendChild(progressBar);
+            totalCell.appendChild(progressDiv);
+            
+            return totalCell;
+        }
           
       // Helper function to log the colors being used for debugging
       function logScoreColors() {
@@ -612,8 +670,11 @@
             console.log("DOM loaded, connecting to WebSocket...");
             connectWebSocket(); // Actually call the function
         });
+        /**
+         * Creates the profile header row
+         * @param {Array} profileGroups - Array of profile group data
+         */
         function createProfileHeaderRow(profileGroups) {
-            // Create the profile header row
             const thead = document.querySelector('.results-table thead');
             if (!thead) return;
             
@@ -627,33 +688,11 @@
             
             // Add profile group headers
             profileGroups.forEach((group, index) => {
-                if (group.StartCol !== -1) { // Only include groups with prompts
+                // Only include groups with prompts
+                if (group.StartCol !== -1) {
                     const span = group.EndCol - group.StartCol + 1;
-                    const header = document.createElement('th');
-                    header.className = 'profile-header profile-header-cell';
+                    const header = createProfileHeader(group, index, profileRow);
                     header.setAttribute('colspan', span);
-                    header.setAttribute('data-profile-id', group.ID);
-                    
-                    // Create inner text element
-                    const textDiv = document.createElement('div');
-                    textDiv.className = 'profile-header-text';
-                    textDiv.textContent = group.Name;
-                    header.appendChild(textDiv);
-                    
-                    // Apply profile-specific styling with CSS classes and variables
-                    header.classList.add('profile-header-styled');
-                    header.style.setProperty('--profile-color', group.Color);
-                    
-                    // Add divider classes between profile groups (except for the first one)
-                    if (index > 0) {
-                        header.classList.add('profile-divider-left');
-                    }
-                    
-                    // Add divider to the previous header if this isn't the first
-                    if (index > 0 && profileRow.lastChild && profileRow.lastChild.classList) {
-                        profileRow.lastChild.classList.add('profile-divider-right');
-                    }
-                    
                     profileRow.appendChild(header);
                 }
             });
@@ -667,11 +706,47 @@
             // Insert at the beginning of thead
             thead.insertBefore(profileRow, thead.firstChild);
         }
-
-        // Function to only style the header cells
-        function applyHeaderStyling(profileGroups) {
-            console.log("Applying profile styling to headers");
+        
+        /**
+         * Creates a profile header element
+         * @param {Object} group - Profile group data
+         * @param {number} index - Index of the group
+         * @param {HTMLElement} parentRow - Parent row element
+         * @returns {HTMLElement} The created header element
+         */
+        function createProfileHeader(group, index, parentRow) {
+            const header = document.createElement('th');
+            header.className = 'profile-header profile-header-cell';
+            header.setAttribute('data-profile-id', group.ID);
             
+            // Create inner text element
+            const textDiv = document.createElement('div');
+            textDiv.className = 'profile-header-text';
+            textDiv.textContent = group.Name;
+            header.appendChild(textDiv);
+            
+            // Apply profile-specific styling
+            header.classList.add('profile-header-styled');
+            header.style.setProperty('--profile-color', group.Color);
+            
+            // Add divider classes between profile groups
+            if (index > 0) {
+                header.classList.add('profile-divider-left');
+            }
+            
+            // Add divider to the previous header if this isn't the first
+            if (index > 0 && parentRow.lastChild && parentRow.lastChild.classList) {
+                parentRow.lastChild.classList.add('profile-divider-right');
+            }
+            
+            return header;
+        }
+
+        /**
+         * Applies styling to header cells for profile groups
+         * @param {Array} profileGroups - Array of profile group data
+         */
+        function applyHeaderStyling(profileGroups) {
             // Create a mapping from column index to profile boundary information
             const columnMap = {};
             
@@ -682,24 +757,12 @@
             profileGroups.forEach(group => {
                 const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
                 const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
-                const color = group.color || group.Color || '#333';
-                
-                console.log(`Processing group: name=${group.name || group.Name}, startCol=${startCol}, endCol=${endCol}`);
+                const color = group.color || group.Color || getComputedStyle(document.body).getPropertyValue('--border-color');
                 
                 if (startCol !== -1) {
-                    // Mark the start column
-                    columnMap[startCol] = { 
-                        isStart: true, 
-                        isEnd: false,
-                        color: color
-                    };
-                    
-                    // Mark the end column
-                    columnMap[endCol] = {
-                        isStart: false, 
-                        isEnd: true,
-                        color: color
-                    };
+                    // Store boundary information
+                    columnMap[startCol] = { isStart: true, isEnd: false, color: color };
+                    columnMap[endCol] = { isStart: false, isEnd: true, color: color };
                     
                     // Store in global map
                     window.profileColumnMap[startCol] = { isStart: true, color: color };
@@ -707,11 +770,8 @@
                 }
             });
             
-            console.log("Column boundary map:", columnMap);
-            
             // Apply to header columns
             const headerCells = document.querySelectorAll('.prompt-col');
-            console.log(`Found ${headerCells.length} header cells`);
             
             headerCells.forEach(cell => {
                 const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
@@ -723,23 +783,21 @@
                     
                     if (boundary.isStart) {
                         cell.classList.add('profile-group-start');
-                        cell.style.borderLeft = `5px solid ${boundary.color}`;
-                        console.log(`Applied start border to header cell at index ${promptIndex}`);
+                        cell.style.borderLeft = `var(--profile-border-width) solid ${boundary.color}`;
                     }
                     
                     if (boundary.isEnd) {
                         cell.classList.add('profile-group-end');
-                        cell.style.borderRight = `5px solid ${boundary.color}`;
-                        console.log(`Applied end border to header cell at index ${promptIndex}`);
+                        cell.style.borderRight = `var(--profile-border-width) solid ${boundary.color}`;
                     }
                 }
             });
         }
 
-        // Function to apply styling to data cells
+        /**
+         * Applies styling to data cells for profile groups
+         */
         function applyDataCellStyling() {
-            console.log("Applying profile styling to data cells");
-            
             if (!window.profileColumnMap) {
                 console.error("Profile column map not initialized");
                 return;
@@ -747,7 +805,7 @@
             
             const columnMap = window.profileColumnMap;
             
-            // Get the table and check if it exists
+            // Get the table
             const table = document.querySelector('.results-table');
             if (!table) {
                 console.error("Table not found");
@@ -756,10 +814,9 @@
             
             // Get all table rows
             const tableRows = table.querySelectorAll('tbody tr');
-            console.log(`Found ${tableRows.length} table rows to process`);
             
             // Process each row
-            tableRows.forEach((row, rowIndex) => {
+            tableRows.forEach(row => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 if (cells.length <= 3) return; // Skip rows with insufficient cells
                 
@@ -774,48 +831,22 @@
                         
                         if (boundary.isStart) {
                             cells[i].classList.add('profile-group-start');
-                            // Apply a strong border style that will override any existing styles
-                            cells[i].style.borderLeft = `5px solid ${boundary.color}`;
-                            // Force the border to be visible
-                            cells[i].style.borderLeftWidth = '5px';
-                            cells[i].style.borderLeftStyle = 'solid';
-                            cells[i].style.borderLeftColor = boundary.color;
-                            
-                            if (rowIndex === 0) {
-                                console.log(`Applied start border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
-                            }
+                            // Apply border using CSS variables
+                            cells[i].style.setProperty('--profile-color', boundary.color);
+                            cells[i].style.borderLeft = 
+                                `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
                         }
                         
                         if (boundary.isEnd) {
                             cells[i].classList.add('profile-group-end');
-                            // Apply a strong border style that will override any existing styles
-                            cells[i].style.borderRight = `5px solid ${boundary.color}`;
-                            // Force the border to be visible
-                            cells[i].style.borderRightWidth = '5px';
-                            cells[i].style.borderRightStyle = 'solid';
-                            cells[i].style.borderRightColor = boundary.color;
-                            
-                            if (rowIndex === 0) {
-                                console.log(`Applied end border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
-                            }
+                            // Apply border using CSS variables
+                            cells[i].style.setProperty('--profile-color', boundary.color);
+                            cells[i].style.borderRight = 
+                                `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
                         }
                     }
                 }
             });
-            
-            // Debug check - inspect the first row borders
-            const firstRow = tableRows[0];
-            if (firstRow) {
-                const cells = firstRow.querySelectorAll('td');
-                console.log(`First row has ${cells.length} cells`);
-                for (let i = 3; i < cells.length - 1; i++) {
-                    const columnIndex = i - 3;
-                    const boundary = columnMap[columnIndex];
-                    if (boundary) {
-                        console.log(`First row cell ${i} (col ${columnIndex}): ${cells[i].className} / ${cells[i].style.borderLeft || 'no left'} / ${cells[i].style.borderRight || 'no right'}`);
-                    }
-                }
-            }
         }
     </script>
 </head>
