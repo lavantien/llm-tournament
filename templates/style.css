@@ -754,21 +754,24 @@ body {
     .score-80 { background-color: var(--score-color-80); }
     .score-100 { background-color: var(--score-color-100); }
     
-    /* Profile group borders - base styling */
-    .profile-start, 
-    th.profile-start, 
-    td.profile-start { 
+    /* Profile borders - direct styling with high specificity */
+    .profile-group-start {
         border-left: 5px solid #333 !important;
-        border-left-width: 5px !important;
-        border-left-style: solid !important;
     }
     
-    .profile-end, 
-    th.profile-end, 
-    td.profile-end { 
+    .profile-group-end {
         border-right: 5px solid #333 !important;
-        border-right-width: 5px !important;
-        border-right-style: solid !important;
+    }
+    
+    /* Increase specificity for table cells */
+    table.results-table tbody tr td.profile-group-start,
+    table.results-table thead tr th.profile-group-start {
+        border-left: 5px solid #333 !important;
+    }
+    
+    table.results-table tbody tr td.profile-group-end,
+    table.results-table thead tr th.profile-group-end {
+        border-right: 5px solid #333 !important;
     }
     
     /* Force table cell styling */
@@ -825,6 +828,15 @@ body {
         border-top: 2px solid var(--profile-color, #333);
         border-bottom: 2px solid var(--profile-color, #333);
         box-shadow: 0 0 4px color-mix(in srgb, var(--profile-color, #333) 40%, transparent);
+    }
+    
+    /* Stronger profile group header styling */
+    th.profile-header-styled.profile-divider-left {
+        border-left: 5px solid var(--profile-color, #333) !important;
+    }
+    
+    th.profile-header-styled.profile-divider-right {
+        border-right: 5px solid var(--profile-color, #333) !important;
     }
 
     /* Profile divider - for separating profiles in the header row */

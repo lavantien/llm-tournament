@@ -525,7 +525,10 @@
                     const validScores = [0, 20, 40, 60, 80, 100];
                     const scoreClass = validScores.includes(score) ? `score-${score}` : 'score-0';
                     scoreCell.className = `score-cell ${scoreClass}`;
-
+                    
+                    // Set data attribute to help with profile boundary identification
+                    scoreCell.setAttribute('data-prompt-index', index.toString());
+                    
                     scoreCell.onclick = () => {
                         window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                     };
@@ -649,198 +652,123 @@
         }
 
         function applyProfileStyling(profileGroups, orderedPrompts) {
-            // First, apply styling to header columns and create a mapping of column styles
-            const promptCols = document.querySelectorAll('.prompt-col');
-            const columnStyles = {}; // Store styles for each column index
+            console.log("Applying profile styling with simplified approach");
             
-            console.log("Profile groups:", profileGroups);
+            // Create a mapping from column index to profile boundary information
+            const columnMap = {};
             
-            // First pass: create profile start/end maps by profile ID
-            const profileStartColumns = {};
-            const profileEndColumns = {};
-            
-            // Map profile boundaries by profile ID for easier lookup
+            // Process groups to identify start and end columns
             profileGroups.forEach(group => {
-                // Handle both lowercase and uppercase property names
-                const profileId = group.id || group.ID;
                 const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
                 const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
+                const color = group.color || group.Color || '#333';
                 
-                console.log(`Processing group: id=${profileId}, startCol=${startCol}, endCol=${endCol}`);
+                console.log(`Processing group: name=${group.name || group.Name}, startCol=${startCol}, endCol=${endCol}`);
                 
-                if (startCol !== -1 && profileId) {
-                    profileStartColumns[profileId] = startCol;
-                    profileEndColumns[profileId] = endCol;
-                }
-            });
-            
-            console.log("Profile start columns:", profileStartColumns);
-            console.log("Profile end columns:", profileEndColumns);
-            
-            // Apply to header columns and build style mapping
-            promptCols.forEach(col => {
-                const profileId = col.getAttribute('data-profile-id');
-                // Find profile group matching either lowercase or uppercase ID property
-                const profileGroup = profileGroups.find(g => 
-                    (g.id && g.id === profileId) || (g.ID && g.ID === profileId)
-                );
-                const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
-                
-                if (profileGroup) {
-                    // Apply base styling with CSS classes and variables
-                    col.classList.add('profile-column');
-                    col.style.setProperty('--profile-color', profileGroup.Color);
-                    
-                    // Get properties with case flexibility
-                    const profileColor = profileGroup.Color || profileGroup.color;
-                    const startCol = profileGroup.startCol !== undefined ? profileGroup.startCol : 
-                                    (profileGroup.StartCol !== undefined ? profileGroup.StartCol : -1);
-                    const endCol = profileGroup.endCol !== undefined ? profileGroup.endCol : 
-                                  (profileGroup.EndCol !== undefined ? profileGroup.EndCol : -1);
-                    
-                    // Store style information for this column
-                    columnStyles[promptIndex] = {
-                        color: profileColor,
-                        profileId: profileGroup.id || profileGroup.ID, // Handle both lowercase/uppercase
-                        isStart: startCol === promptIndex,
-                        isEnd: endCol === promptIndex
+                if (startCol !== -1) {
+                    // Mark the start column
+                    columnMap[startCol] = { 
+                        isStart: true, 
+                        isEnd: false,
+                        color: color
                     };
                     
-                    // Direct explicit styling for header columns
-                    if (startCol === promptIndex) {
-                        // Use setAttribute for style to ensure it overrides everything
-                        col.setAttribute('style', col.getAttribute('style') + 
-                            `; border-left: 5px solid ${profileColor || '#333'} !important;` +
-                            `border-left-width: 5px !important;` +
-                            `border-left-style: solid !important;` +
-                            `border-left-color: ${profileColor || '#333'} !important;`);
-                        
-                        // Also apply the border individually as a fallback
-                        col.style.borderLeft = `5px solid ${profileColor || '#333'}`;
-                        col.style.borderLeftWidth = '5px';
-                        col.style.borderLeftStyle = 'solid';
-                        col.style.borderLeftColor = profileColor || '#333';
-                        
-                        console.log(`Applied start border to header col ${promptIndex}`);
+                    // Mark the end column
+                    columnMap[endCol] = {
+                        isStart: false, 
+                        isEnd: true,
+                        color: color
+                    };
+                }
+            });
+            
+            console.log("Column boundary map:", columnMap);
+            
+            // Apply to header columns
+            const headerCells = document.querySelectorAll('.prompt-col');
+            console.log(`Found ${headerCells.length} header cells`);
+            
+            headerCells.forEach(cell => {
+                const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
+                const boundary = columnMap[promptIndex];
+                
+                if (boundary) {
+                    // Clear existing classes
+                    cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
+                    
+                    if (boundary.isStart) {
+                        cell.classList.add('profile-group-start');
+                        cell.style.borderLeft = `5px solid ${boundary.color}`;
+                        console.log(`Applied start border to header cell at index ${promptIndex}`);
                     }
                     
-                    if (endCol === promptIndex) {
-                        // Use setAttribute for style to ensure it overrides everything
-                        col.setAttribute('style', col.getAttribute('style') + 
-                            `; border-right: 5px solid ${profileColor || '#333'} !important;` +
-                            `border-right-width: 5px !important;` +
-                            `border-right-style: solid !important;` +
-                            `border-right-color: ${profileColor || '#333'} !important;`);
-                        
-                        // Also apply the border individually as a fallback
-                        col.style.borderRight = `5px solid ${profileColor || '#333'}`;
-                        col.style.borderRightWidth = '5px';
-                        col.style.borderRightStyle = 'solid';
-                        col.style.borderRightColor = profileColor || '#333';
-                        
-                        console.log(`Applied end border to header col ${promptIndex}`);
+                    if (boundary.isEnd) {
+                        cell.classList.add('profile-group-end');
+                        cell.style.borderRight = `5px solid ${boundary.color}`;
+                        console.log(`Applied end border to header cell at index ${promptIndex}`);
                     }
                 }
             });
             
-            // Now apply the same border styling to all data cells in the table
+            // Apply to data cells - process each row
             const table = document.querySelector('.results-table');
-            if (!table) return;
-            
-            // Get all profile IDs for tracking profile boundaries per row
-            const profileIds = [...new Set(profileGroups.map(g => g.id || g.ID))].filter(id => id); // Remove empty IDs
-            console.log("Profile IDs found:", profileIds);
+            if (!table) {
+                console.error("Table not found");
+                return;
+            }
             
             const tableRows = table.querySelectorAll('tbody tr');
-            tableRows.forEach(row => {
+            console.log(`Found ${tableRows.length} table rows to process`);
+            
+            tableRows.forEach((row, rowIndex) => {
                 const cells = Array.from(row.querySelectorAll('td'));
                 if (cells.length <= 3) return; // Skip rows with insufficient cells
                 
-                // Track the first cell of each profile group in this row
-                const profileFirstCells = {};
-                const profileLastCells = {};
-                
-                // First pass - identify first and last cells for each profile in this row
-                for (let i = 3; i < cells.length - 1; i++) { // Skip first 3 cells and total cell
-                    const columnIndex = i - 3; // Adjust index to match prompt indices
-                    const style = columnStyles[columnIndex];
-                    
-                    if (style && style.profileId) {
-                        // Track the first cell we see for each profile ID
-                        if (!profileFirstCells[style.profileId]) {
-                            profileFirstCells[style.profileId] = i;
-                            console.log(`First cell for profile ${style.profileId}: ${i}`);
-                        }
-                        // Always update the last cell we see for this profile ID
-                        profileLastCells[style.profileId] = i;
-                    }
-                }
-                
-                // Debug log the identified profile boundaries
-                console.log("Profile first cells in row:", profileFirstCells);
-                console.log("Profile last cells in row:", profileLastCells);
-                
-                // Reset all cell borders with direct styles
-                for (let i = 3; i < cells.length - 1; i++) {
-                    // Reset the complete style attribute to ensure clean slate
-                    cells[i].setAttribute('style', 'border: 1px solid #333;');
-                    // Also set individual border properties to be sure
-                    cells[i].style.border = '1px solid #333';
-                    cells[i].style.borderLeft = '1px solid #333';
-                    cells[i].style.borderRight = '1px solid #333';
-                    cells[i].style.borderTop = '1px solid #333';
-                    cells[i].style.borderBottom = '1px solid #333';
-                }
-                
-                // Now apply styling for all cells
+                // Process each content cell (skip first 3 cells: rank, actions, model)
                 for (let i = 3; i < cells.length - 1; i++) { // Exclude the last total column
                     const columnIndex = i - 3; // Adjust index to match prompt indices
+                    const boundary = columnMap[columnIndex];
                     
-                    // Find the style for this column
-                    const style = columnStyles[columnIndex];
-                    if (style) {
-                        // Apply basic column styling
-                        cells[i].classList.add('score-cell', 'profile-column');
-                        cells[i].style.setProperty('--profile-color', style.color);
+                    if (boundary) {
+                        // First reset any existing border styles
+                        cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
                         
-                        // Direct explicit styling for first cell of profile group
-                        if (profileFirstCells[style.profileId] === i) {
-                            // Use setAttribute for style to ensure it overrides everything
-                            cells[i].setAttribute('style', cells[i].getAttribute('style') + 
-                                `; border-left: 5px solid ${style.color || '#333'} !important;` +
-                                `border-left-width: 5px !important;` +
-                                `border-left-style: solid !important;` +
-                                `border-left-color: ${style.color || '#333'} !important;`);
+                        if (boundary.isStart) {
+                            cells[i].classList.add('profile-group-start');
+                            // Apply direct style for immediate visual effect
+                            cells[i].style.borderLeft = `5px solid ${boundary.color}`;
                             
-                            // Also apply the border individually as a fallback
-                            cells[i].style.borderLeft = `5px solid ${style.color || '#333'}`;
-                            cells[i].style.borderLeftWidth = '5px';
-                            cells[i].style.borderLeftStyle = 'solid';
-                            cells[i].style.borderLeftColor = style.color || '#333';
-                            
-                            console.log(`Applied start border to cell ${i} for profile ${style.profileId}`);
+                            if (rowIndex === 0) {
+                                console.log(`Applied start border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
+                            }
                         }
                         
-                        // Direct explicit styling for last cell of profile group
-                        if (profileLastCells[style.profileId] === i) {
-                            // Use setAttribute for style to ensure it overrides everything
-                            cells[i].setAttribute('style', cells[i].getAttribute('style') + 
-                                `; border-right: 5px solid ${style.color || '#333'} !important;` +
-                                `border-right-width: 5px !important;` +
-                                `border-right-style: solid !important;` +
-                                `border-right-color: ${style.color || '#333'} !important;`);
+                        if (boundary.isEnd) {
+                            cells[i].classList.add('profile-group-end');
+                            // Apply direct style for immediate visual effect
+                            cells[i].style.borderRight = `5px solid ${boundary.color}`;
                             
-                            // Also apply the border individually as a fallback
-                            cells[i].style.borderRight = `5px solid ${style.color || '#333'}`;
-                            cells[i].style.borderRightWidth = '5px';
-                            cells[i].style.borderRightStyle = 'solid';
-                            cells[i].style.borderRightColor = style.color || '#333';
-                            
-                            console.log(`Applied end border to cell ${i} for profile ${style.profileId}`);
+                            if (rowIndex === 0) {
+                                console.log(`Applied end border to data cell [${rowIndex},${i}] for column ${columnIndex}`);
+                            }
                         }
                     }
                 }
             });
+            
+            // Debug check - inspect the first row borders
+            const firstRow = tableRows[0];
+            if (firstRow) {
+                const cells = firstRow.querySelectorAll('td');
+                console.log(`First row has ${cells.length} cells`);
+                for (let i = 3; i < cells.length - 1; i++) {
+                    const columnIndex = i - 3;
+                    const boundary = columnMap[columnIndex];
+                    if (boundary) {
+                        console.log(`First row cell ${i} (col ${columnIndex}): ${cells[i].className} / ${cells[i].style.borderLeft || 'no left'} / ${cells[i].style.borderRight || 'no right'}`);
+                    }
+                }
+            }
         }
     </script>
 </head>
