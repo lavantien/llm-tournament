@@ -46,15 +46,6 @@ type GroupedPrompt struct {
 	ProfileName string
 }
 
-// ProfileGroup represents a group of prompts with the same profile
-type ProfileGroup struct {
-	ID       string
-	Name     string
-	StartCol int    // Column index where this profile starts
-	EndCol   int    // Column index where this profile ends
-	Color    string // Generated color for this profile
-}
-
 // Handle results page
 func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling results page")
@@ -81,7 +72,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Add a group for prompts with no profile only if needed
 	if hasUncategorized {
-		noProfileGroup := &ProfileGroup{
+		noProfileGroup := &middleware.ProfileGroup{
 			ID:    "none",
 			Name:  "Uncategorized",
 			Color: "hsl(0, 0%, 50%)",
@@ -97,7 +88,11 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 
 		group, exists := profileMap[profileName]
 		if !exists {
-			group = noProfileGroup
+			// Skip if group doesn't exist and we don't have uncategorized group
+			if _, hasUncategorized := profileMap[""]; !hasUncategorized {
+				continue
+			}
+			group = profileMap[""]
 		}
 
 		if group.StartCol == -1 {
@@ -230,7 +225,7 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores     map[string]int
 		PromptIndices   []int
 		SearchQuery     string
-		ProfileGroups   []*ProfileGroup
+		ProfileGroups   []*middleware.ProfileGroup
 		OrderedPrompts  []GroupedPrompt
 	}{
 		PageName:        pageName,
