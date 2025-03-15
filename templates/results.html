@@ -28,7 +28,7 @@
                 connectionRetries = 0; // Reset retries on successful connection
                 document.getElementById("connection-status").textContent =
                     "Connected";
-                document.getElementById("connection-status").style.color = "green";
+                document.getElementById("connection-status").className = "connection-status connection-status-connected";
             };
 
             // First load initial data
@@ -74,7 +74,7 @@
                 }
                 document.getElementById("connection-status").textContent =
                     "Disconnected";
-                document.getElementById("connection-status").style.color = "red";
+                document.getElementById("connection-status").className = "connection-status connection-status-disconnected";
                 if (connectionRetries < maxRetries) {
                     connectionRetries++;
                     console.log(
@@ -84,7 +84,7 @@
                 } else {
                     document.getElementById("connection-status").textContent =
                         "Connection failed";
-                    document.getElementById("connection-status").style.color = "red";
+                    document.getElementById("connection-status").className = "connection-status connection-status-failed";
                     console.log("Max retries reached. Connection failed.");
                 }
             };
@@ -92,7 +92,7 @@
             socket.onerror = function (error) {
                 console.log(`[error] ${error.message}`);
                 document.getElementById("connection-status").textContent = "Error";
-                document.getElementById("connection-status").style.color = "red";
+                document.getElementById("connection-status").className = "connection-status connection-status-error";
             };
         }
 
@@ -539,10 +539,11 @@
                 totalCell.className = "progress-bar-wrapper";
                 const progressDiv = document.createElement("div");
                 progressDiv.className = "progress-bar-container";
-                progressDiv.style.width = "21.2vw";
+                progressDiv.className = "progress-bar-container progress-bar-standard-width";
                 const progressBar = document.createElement("div");
                 progressBar.className = "progress-bar";
-                progressBar.style.width = `${passPercentages[model] || 0}%`;
+                progressBar.style.setProperty('--progress-width', `${passPercentages[model] || 0}%`);
+                progressBar.className = "progress-bar";
                 progressDiv.appendChild(progressBar);
                 totalCell.appendChild(progressDiv);
 

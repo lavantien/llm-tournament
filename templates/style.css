@@ -351,6 +351,7 @@ body {
                 height: 10px;
                 border-radius: 5px;
                 transition: width 0.3s ease;
+                width: var(--progress-width, 0%);
             }
         }
     }
@@ -767,6 +768,22 @@ body {
         border-top: 2px solid var(--profile-color, #333);
         border-bottom: 2px solid var(--profile-color, #333);
         box-shadow: 0 0 4px color-mix(in srgb, var(--profile-color, #333) 40%, transparent);
+    }
+    
+    /* Connection status colors */
+    .connection-status-connected {
+        color: green;
+    }
+    
+    .connection-status-disconnected, 
+    .connection-status-error, 
+    .connection-status-failed {
+        color: red;
+    }
+    
+    /* Progress bar styles */
+    .progress-bar-standard-width {
+        width: 21.2vw;
     }
 }
 
