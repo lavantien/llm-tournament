@@ -649,11 +649,16 @@
             
             // Map profile boundaries by profile ID for easier lookup
             profileGroups.forEach(group => {
-                // Handle both lowercase 'id' and uppercase 'ID' for compatibility
+                // Handle both lowercase and uppercase property names
                 const profileId = group.id || group.ID;
-                if (group.StartCol !== -1 && profileId) {
-                    profileStartColumns[profileId] = group.StartCol;
-                    profileEndColumns[profileId] = group.EndCol;
+                const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
+                const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
+                
+                console.log(`Processing group: id=${profileId}, startCol=${startCol}, endCol=${endCol}`);
+                
+                if (startCol !== -1 && profileId) {
+                    profileStartColumns[profileId] = startCol;
+                    profileEndColumns[profileId] = endCol;
                 }
             });
             
@@ -674,21 +679,30 @@
                     col.classList.add('profile-column');
                     col.style.setProperty('--profile-color', profileGroup.Color);
                     
+                    // Get properties with case flexibility
+                    const profileColor = profileGroup.Color || profileGroup.color;
+                    const startCol = profileGroup.startCol !== undefined ? profileGroup.startCol : 
+                                    (profileGroup.StartCol !== undefined ? profileGroup.StartCol : -1);
+                    const endCol = profileGroup.endCol !== undefined ? profileGroup.endCol : 
+                                  (profileGroup.EndCol !== undefined ? profileGroup.EndCol : -1);
+                    
                     // Store style information for this column
                     columnStyles[promptIndex] = {
-                        color: profileGroup.Color,
+                        color: profileColor,
                         profileId: profileGroup.id || profileGroup.ID, // Handle both lowercase/uppercase
-                        isStart: profileGroup.StartCol === promptIndex,
-                        isEnd: profileGroup.EndCol === promptIndex
+                        isStart: startCol === promptIndex,
+                        isEnd: endCol === promptIndex
                     };
                     
                     // Apply border styling to header columns
-                    if (profileGroup.StartCol === promptIndex) {
+                    if (startCol === promptIndex) {
                         col.classList.add('profile-start');
+                        col.style.borderLeft = `5px solid ${profileColor}`;
                     }
                     
-                    if (profileGroup.EndCol === promptIndex) {
+                    if (endCol === promptIndex) {
                         col.classList.add('profile-end');
+                        col.style.borderRight = `5px solid ${profileColor}`;
                     }
                 }
             });
