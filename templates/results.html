@@ -104,6 +104,8 @@
                 const modelsEl = document.getElementById('models-data');
                 const passPercentagesEl = document.getElementById('pass-percentages-data');
                 const totalScoresEl = document.getElementById('total-scores-data');
+                const profileGroupsEl = document.getElementById('profile-groups-data');
+                const orderedPromptsEl = document.getElementById('ordered-prompts-data');
                 
                 // Safely parse JSON with fallbacks
                 const results = resultsEl && resultsEl.textContent ? 
@@ -114,18 +116,25 @@
                     JSON.parse(passPercentagesEl.textContent) : {};
                 const totalScores = totalScoresEl && totalScoresEl.textContent ? 
                     JSON.parse(totalScoresEl.textContent) : {};
+                const profileGroups = profileGroupsEl && profileGroupsEl.textContent ? 
+                    JSON.parse(profileGroupsEl.textContent) : [];
+                const orderedPrompts = orderedPromptsEl && orderedPromptsEl.textContent ? 
+                    JSON.parse(orderedPromptsEl.textContent) : [];
                 
                 console.log('Data loaded from DOM elements:', { 
                     results, 
                     models_length: models ? models.length : 0,
-                    firstModelData: models && models.length > 0 ? results[models[0]] : null
+                    firstModelData: models && models.length > 0 ? results[models[0]] : null,
+                    profileGroups: profileGroups
                 });
                 
                 const payload = {
                     Results: results,
                     Models: models,
                     PassPercentages: passPercentages,
-                    TotalScores: totalScores
+                    TotalScores: totalScores,
+                    ProfileGroups: profileGroups,
+                    OrderedPrompts: orderedPrompts
                 };
                 
                 updateResults(payload);
@@ -394,9 +403,19 @@
             const models = payload.Models || [];
             const passPercentages = payload.PassPercentages || {};
             const totalScores = payload.TotalScores || {};
+            const profileGroups = payload.ProfileGroups || [];
+            const orderedPrompts = payload.OrderedPrompts || [];
             const modelFilter = document.getElementById("model_filter").value;
 
             console.log('Updating UI with models:', models, 'First model results:', models.length > 0 ? results[models[0]] : null);
+            
+            // Create header with profile spans if not already present
+            if (document.querySelector('.profile-row') === null && profileGroups.length > 0) {
+                createProfileHeaderRow(profileGroups);
+            }
+            
+            // Apply profile-specific styling to columns
+            applyProfileStyling(profileGroups, orderedPrompts);
             
             // Try different ways to get the tbody element
             let tbody = document.querySelector("table.results-table tbody");
@@ -572,6 +591,78 @@
             console.log("DOM loaded, connecting to WebSocket...");
             connectWebSocket(); // Actually call the function
         });
+        function createProfileHeaderRow(profileGroups) {
+            // Create the profile header row
+            const thead = document.querySelector('.results-table thead');
+            if (!thead) return;
+            
+            const profileRow = document.createElement('tr');
+            profileRow.className = 'profile-row';
+            
+            // Add empty cells for non-prompt columns
+            const emptyHeader = document.createElement('th');
+            emptyHeader.setAttribute('colspan', '3');
+            profileRow.appendChild(emptyHeader);
+            
+            // Add profile group headers
+            profileGroups.forEach(group => {
+                if (group.StartCol !== -1) { // Only include groups with prompts
+                    const span = group.EndCol - group.StartCol + 1;
+                    const header = document.createElement('th');
+                    header.className = 'profile-header';
+                    header.setAttribute('colspan', span);
+                    header.setAttribute('data-profile-id', group.ID);
+                    header.textContent = group.Name;
+                    
+                    // Apply profile-specific styling
+                    header.style.backgroundColor = `${group.Color}10`; // 10% opacity
+                    header.style.borderLeft = `4px solid ${group.Color}`;
+                    header.style.borderRight = `4px solid ${group.Color}`;
+                    
+                    profileRow.appendChild(header);
+                }
+            });
+            
+            // Add total header with rowspan
+            const totalHeader = document.createElement('th');
+            totalHeader.setAttribute('rowspan', '2');
+            totalHeader.textContent = 'Total';
+            profileRow.appendChild(totalHeader);
+            
+            // Insert at the beginning of thead
+            thead.insertBefore(profileRow, thead.firstChild);
+        }
+
+        function applyProfileStyling(profileGroups, orderedPrompts) {
+            // Apply styling to prompt columns based on their profile
+            const promptCols = document.querySelectorAll('.prompt-col');
+            promptCols.forEach(col => {
+                const profileId = col.getAttribute('data-profile-id');
+                const profileGroup = profileGroups.find(g => g.ID === profileId);
+                
+                if (profileGroup) {
+                    // Apply base styling
+                    col.style.backgroundColor = `${profileGroup.Color}05`; // 5% opacity
+                    
+                    // Find this column's position within its profile group
+                    const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
+                    const promptInfo = orderedPrompts.find(p => p.Index === promptIndex);
+                    
+                    if (promptInfo) {
+                        // Check if it's the first or last column in its group
+                        if (profileGroup.StartCol === promptIndex) {
+                            col.classList.add('profile-start');
+                            col.style.borderLeft = `4px solid ${profileGroup.Color}`;
+                        }
+                        
+                        if (profileGroup.EndCol === promptIndex) {
+                            col.classList.add('profile-end');
+                            col.style.borderRight = `4px solid ${profileGroup.Color}`;
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </head>
 
@@ -613,14 +704,34 @@
     </div>
     <table class="results-table">
         <thead>
+            <!-- Profile grouping row -->
+            <tr class="profile-row">
+                <th colspan="3"></th> <!-- For rank, actions, model columns -->
+                {{range .ProfileGroups}}
+                    {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
+                    <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
+                        class="profile-header" 
+                        data-profile-id="{{.ID}}"
+                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
+                        {{.Name}}
+                    </th>
+                    {{end}}
+                {{end}}
+                <th rowspan="2">Total</th>
+            </tr>
+            
+            <!-- Regular header row with numbers -->
             <tr>
                 <th>#</th>
                 <th>Actions</th>
                 <th>Model</th>
-                {{range $index := .PromptIndices}}
-                <th>{{$index}}</th>
+                {{range $prompt := .OrderedPrompts}}
+                    <th class="prompt-col" 
+                        data-profile-id="{{$prompt.ProfileID}}"
+                        data-prompt-index="{{$prompt.Index}}">
+                        {{inc $prompt.Index}}
+                    </th>
                 {{end}}
-                <th style="min-width: 20vw;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -668,11 +779,15 @@
         <span id="models-data">{{.Models | json}}</span>
         <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
         <span id="total-scores-data">{{.TotalScores | json}}</span>
+        <span id="profile-groups-data">{{.ProfileGroups | json}}</span>
+        <span id="ordered-prompts-data">{{.OrderedPrompts | json}}</span>
         <span id="debug-data">
             Results: {{.Results | json}}<br />
             Models: {{.Models | json}}<br />
             PassPercentages: {{.PassPercentages | json}}<br />
-            TotalScores: {{.TotalScores | json}}
+            TotalScores: {{.TotalScores | json}}<br />
+            ProfileGroups: {{.ProfileGroups | json}}<br />
+            OrderedPrompts: {{.OrderedPrompts | json}}
         </span>
     </div>
     <!-- Fallback data for debugging -->

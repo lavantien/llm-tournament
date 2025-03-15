@@ -18,6 +18,15 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// ProfileGroup represents a group of prompts with the same profile
+type ProfileGroup struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	StartCol int    `json:"startCol"` // Column index where this profile starts
+	EndCol   int    `json:"endCol"`   // Column index where this profile ends
+	Color    string `json:"color"`    // Generated color for this profile
+}
+
 var clients = make(map[*websocket.Conn]bool)
 var clientsMutex sync.Mutex
 
@@ -94,6 +103,73 @@ func BroadcastResults() {
 		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
 	})
 
+	// Group prompts by profile
+	profileMap := make(map[string]*ProfileGroup)
+	var profileGroups []*ProfileGroup
+	var orderedPrompts []struct {
+		Index       int    `json:"index"`
+		Text        string `json:"text"`
+		ProfileID   string `json:"profileId"`
+		ProfileName string `json:"profileName"`
+	}
+
+	// Get all profiles first (to include empty ones)
+	profiles := ReadProfiles()
+
+	// Create initial profile groups, including those with no prompts
+	for i, profile := range profiles {
+		colorHue := (i * 137) % 360 // Generate evenly distributed colors
+		color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
+
+		profileGroups = append(profileGroups, &ProfileGroup{
+			ID:       strconv.Itoa(i),
+			Name:     profile.Name,
+			Color:    color,
+			StartCol: -1, // Will be populated later
+			EndCol:   -1,
+		})
+		profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+	}
+
+	// Add a group for prompts with no profile
+	noProfileGroup := &ProfileGroup{
+		ID:    "none",
+		Name:  "Uncategorized",
+		Color: "hsl(0, 0%, 50%)",
+	}
+	profileGroups = append(profileGroups, noProfileGroup)
+	profileMap[""] = noProfileGroup
+
+	// Process prompts and assign them to profile groups
+	currentCol := 0
+	for i, prompt := range prompts {
+		profileName := prompt.Profile
+
+		group, exists := profileMap[profileName]
+		if !exists {
+			group = noProfileGroup
+		}
+
+		if group.StartCol == -1 {
+			group.StartCol = currentCol
+		}
+		group.EndCol = currentCol
+
+		orderedPrompts = append(orderedPrompts, struct {
+			Index       int    `json:"index"`
+			Text        string `json:"text"`
+			ProfileID   string `json:"profileId"`
+			ProfileName string `json:"profileName"`
+		}{
+			Index:       i,
+			Text:        prompt.Text,
+			ProfileID:   group.ID,
+			ProfileName: profileName,
+		})
+
+		currentCol++
+	}
+
 	// Log the data we're about to send
 	log.Printf("Broadcasting data - Models: %v", models)
 	
@@ -106,6 +182,8 @@ func BroadcastResults() {
 			PassPercentages map[string]float64 `json:"passPercentages"`
 			Prompts         []string          `json:"prompts"`
 			SuiteName       string            `json:"suiteName"`
+			ProfileGroups   []*ProfileGroup    `json:"profileGroups"`
+			OrderedPrompts  interface{}       `json:"orderedPrompts"`
 		} `json:"data"`
 	}{
 		Type: "results",
@@ -116,6 +194,8 @@ func BroadcastResults() {
 			PassPercentages map[string]float64 `json:"passPercentages"`
 			Prompts         []string          `json:"prompts"`
 			SuiteName       string            `json:"suiteName"`
+			ProfileGroups   []*ProfileGroup    `json:"profileGroups"`
+			OrderedPrompts  interface{}       `json:"orderedPrompts"`
 		}{
 			Results:         results,
 			Models:          models,
@@ -123,6 +203,8 @@ func BroadcastResults() {
 			PassPercentages: calculatePassPercentages(results, len(prompts)),
 			Prompts:         promptsToStringArray(prompts),
 			SuiteName:       suiteName,
+			ProfileGroups:   profileGroups,
+			OrderedPrompts:  orderedPrompts,
 		},
 	}
 

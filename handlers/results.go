@@ -38,11 +38,85 @@ func initRand() *rand.Rand {
 	return rand.New(source)
 }
 
+// GroupedPrompt represents a prompt with its profile information
+type GroupedPrompt struct {
+    Index       int
+    Text        string
+    ProfileID   string
+    ProfileName string
+}
+
+// ProfileGroup represents a group of prompts with the same profile
+type ProfileGroup struct {
+    ID       string
+    Name     string
+    StartCol int // Column index where this profile starts
+    EndCol   int // Column index where this profile ends
+    Color    string // Generated color for this profile
+}
+
 // Handle results page
 func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling results page")
 	prompts := middleware.ReadPrompts()
 	results := middleware.ReadResults()
+
+	// Group prompts by profile
+    profileMap := make(map[string]*ProfileGroup)
+    var profileGroups []*ProfileGroup
+    var orderedPrompts []GroupedPrompt
+    
+    // Get all profiles first (to include empty ones)
+    profiles := middleware.ReadProfiles()
+    
+    // Create initial profile groups, including those with no prompts
+    for i, profile := range profiles {
+        colorHue := (i * 137) % 360 // Generate evenly distributed colors
+        color := fmt.Sprintf("hsl(%d, 70%%, 50%%)", colorHue)
+        
+        profileGroups = append(profileGroups, &ProfileGroup{
+            ID:       strconv.Itoa(i),
+            Name:     profile.Name,
+            Color:    color,
+            StartCol: -1, // Will be populated later
+            EndCol:   -1,
+        })
+        profileMap[profile.Name] = profileGroups[len(profileGroups)-1]
+    }
+    
+    // Add a group for prompts with no profile
+    noProfileGroup := &ProfileGroup{
+        ID:    "none",
+        Name:  "Uncategorized",
+        Color: "hsl(0, 0%, 50%)",
+    }
+    profileGroups = append(profileGroups, noProfileGroup)
+    profileMap[""] = noProfileGroup
+    
+    // Process prompts and assign them to profile groups
+    currentCol := 0
+    for i, prompt := range prompts {
+        profileName := prompt.Profile
+        
+        group, exists := profileMap[profileName]
+        if !exists {
+            group = noProfileGroup
+        }
+        
+        if group.StartCol == -1 {
+            group.StartCol = currentCol
+        }
+        group.EndCol = currentCol
+        
+        orderedPrompts = append(orderedPrompts, GroupedPrompt{
+            Index:       i,
+            Text:        prompt.Text,
+            ProfileID:   group.ID,
+            ProfileName: profileName,
+        })
+        
+        currentCol++
+    }
 
 	log.Println("Calculating total scores for each model")
 	// Calculate total scores for each model
@@ -159,6 +233,8 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores     map[string]int
 		PromptIndices   []int
 		SearchQuery     string
+		ProfileGroups   []*ProfileGroup
+		OrderedPrompts  []GroupedPrompt
 	}{
 		PageName:        pageName,
 		Prompts:         promptTexts,
@@ -169,6 +245,8 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		TotalScores:     modelTotalScores,
 		PromptIndices:   promptIndices,
 		SearchQuery:     searchQuery,
+		ProfileGroups:   profileGroups,
+		OrderedPrompts:  orderedPrompts,
 	}
 
 	err = t.Execute(w, templateData)

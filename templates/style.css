@@ -221,6 +221,29 @@ body {
         color: white;
     }
 
+    /* Profile header styling */
+    .profile-header {
+        text-align: center;
+        padding: 8px;
+        font-weight: bold;
+        border-bottom: 2px solid #333;
+    }
+
+    /* Style for prompt columns */
+    .prompt-col[data-profile-id] {
+        position: relative;
+    }
+
+    /* First column in a profile group */
+    .prompt-col.profile-start {
+        border-left-width: 4px;
+    }
+
+    /* Last column in a profile group */
+    .prompt-col.profile-end {
+        border-right-width: 4px;
+    }
+
     .results-table tbody tr:nth-child(even) {
         background-color: #3a3a3a;
     }
