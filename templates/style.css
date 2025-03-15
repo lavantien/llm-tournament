@@ -19,11 +19,11 @@ body {
     
     /* Score colors */
     --score-color-0: #808080;
-    --score-color-20: rgba(255, 99, 132, 0.8);
-    --score-color-40: rgba(255, 159, 64, 0.8);
-    --score-color-60: rgba(255, 205, 86, 0.8);
-    --score-color-80: rgba(75, 192, 192, 0.8);
-    --score-color-100: rgba(54, 162, 235, 0.8);
+    --score-color-20: #ffa500;
+    --score-color-40: #ffcc00;
+    --score-color-60: #ffff00;
+    --score-color-80: #ccff00;
+    --score-color-100: #00ff00;
 
     h1 {
         color: #bb86fc;
