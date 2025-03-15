@@ -727,7 +727,7 @@
             
             // Apply profile-specific styling
             header.classList.add('profile-header-styled');
-            header.style.setProperty('--profile-color', group.Color);
+            header.style.setProperty('--profile-color', '#333');
             
             // Add divider classes between profile groups
             if (index > 0) {
@@ -757,7 +757,7 @@
             profileGroups.forEach(group => {
                 const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
                 const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
-                const color = group.color || group.Color || getComputedStyle(document.body).getPropertyValue('--border-color');
+                const color = '#333'; // Always use standard color
                 
                 if (startCol !== -1) {
                     // Store boundary information
@@ -832,7 +832,7 @@
                         if (boundary.isStart) {
                             cells[i].classList.add('profile-group-start');
                             // Apply border using CSS variables
-                            cells[i].style.setProperty('--profile-color', boundary.color);
+                            cells[i].style.setProperty('--profile-color', '#333');
                             cells[i].style.borderLeft = 
                                 `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
                         }
@@ -840,7 +840,7 @@
                         if (boundary.isEnd) {
                             cells[i].classList.add('profile-group-end');
                             // Apply border using CSS variables
-                            cells[i].style.setProperty('--profile-color', boundary.color);
+                            cells[i].style.setProperty('--profile-color', '#333');
                             cells[i].style.borderRight = 
                                 `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
                         }
@@ -898,7 +898,7 @@
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
                         class="profile-header profile-header-cell profile-header-styled {{if not $first}}profile-divider-left{{end}}" 
                         data-profile-id="{{.ID}}"
-                        style="--profile-color: {{.Color}};">
+                        style="--profile-color: #333;">
                         <div class="profile-header-text">{{.Name}}</div>
                     </th>
                     {{$first = false}}
