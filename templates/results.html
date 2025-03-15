@@ -538,12 +538,10 @@
                 totalCell.textContent = totalScores[model] || 0;
                 totalCell.className = "progress-bar-wrapper";
                 const progressDiv = document.createElement("div");
-                progressDiv.className = "progress-bar-container";
                 progressDiv.className = "progress-bar-container progress-bar-standard-width";
                 const progressBar = document.createElement("div");
                 progressBar.className = "progress-bar";
                 progressBar.style.setProperty('--progress-width', `${passPercentages[model] || 0}%`);
-                progressBar.className = "progress-bar";
                 progressDiv.appendChild(progressBar);
                 totalCell.appendChild(progressDiv);
 
