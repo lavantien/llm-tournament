@@ -706,17 +706,39 @@
                         isEnd: endCol === promptIndex
                     };
                     
-                    // Direct inline styling for header columns
+                    // Direct explicit styling for header columns
                     if (startCol === promptIndex) {
-                        // Apply direct border with inline style
-                        col.style.cssText += `border-left: 5px solid ${profileColor || '#333'} !important;`;
-                        console.log(`Applied start border to header col ${promptIndex} with direct style`);
+                        // Use setAttribute for style to ensure it overrides everything
+                        col.setAttribute('style', col.getAttribute('style') + 
+                            `; border-left: 5px solid ${profileColor || '#333'} !important;` +
+                            `border-left-width: 5px !important;` +
+                            `border-left-style: solid !important;` +
+                            `border-left-color: ${profileColor || '#333'} !important;`);
+                        
+                        // Also apply the border individually as a fallback
+                        col.style.borderLeft = `5px solid ${profileColor || '#333'}`;
+                        col.style.borderLeftWidth = '5px';
+                        col.style.borderLeftStyle = 'solid';
+                        col.style.borderLeftColor = profileColor || '#333';
+                        
+                        console.log(`Applied start border to header col ${promptIndex}`);
                     }
                     
                     if (endCol === promptIndex) {
-                        // Apply direct border with inline style
-                        col.style.cssText += `border-right: 5px solid ${profileColor || '#333'} !important;`;
-                        console.log(`Applied end border to header col ${promptIndex} with direct style`);
+                        // Use setAttribute for style to ensure it overrides everything
+                        col.setAttribute('style', col.getAttribute('style') + 
+                            `; border-right: 5px solid ${profileColor || '#333'} !important;` +
+                            `border-right-width: 5px !important;` +
+                            `border-right-style: solid !important;` +
+                            `border-right-color: ${profileColor || '#333'} !important;`);
+                        
+                        // Also apply the border individually as a fallback
+                        col.style.borderRight = `5px solid ${profileColor || '#333'}`;
+                        col.style.borderRightWidth = '5px';
+                        col.style.borderRightStyle = 'solid';
+                        col.style.borderRightColor = profileColor || '#333';
+                        
+                        console.log(`Applied end border to header col ${promptIndex}`);
                     }
                 }
             });
@@ -760,10 +782,14 @@
                 
                 // Reset all cell borders with direct styles
                 for (let i = 3; i < cells.length - 1; i++) {
-                    // Reset borders with direct inline styles
+                    // Reset the complete style attribute to ensure clean slate
+                    cells[i].setAttribute('style', 'border: 1px solid #333;');
+                    // Also set individual border properties to be sure
                     cells[i].style.border = '1px solid #333';
                     cells[i].style.borderLeft = '1px solid #333';
                     cells[i].style.borderRight = '1px solid #333';
+                    cells[i].style.borderTop = '1px solid #333';
+                    cells[i].style.borderBottom = '1px solid #333';
                 }
                 
                 // Now apply styling for all cells
@@ -777,18 +803,40 @@
                         cells[i].classList.add('score-cell', 'profile-column');
                         cells[i].style.setProperty('--profile-color', style.color);
                         
-                        // Direct inline styling for first cell of profile group
+                        // Direct explicit styling for first cell of profile group
                         if (profileFirstCells[style.profileId] === i) {
-                            // Apply direct inline style with !important
-                            cells[i].style.cssText += `border-left: 5px solid ${style.color || '#333'} !important;`;
-                            console.log(`Applied start border to cell ${i} for profile ${style.profileId} with direct style`);
+                            // Use setAttribute for style to ensure it overrides everything
+                            cells[i].setAttribute('style', cells[i].getAttribute('style') + 
+                                `; border-left: 5px solid ${style.color || '#333'} !important;` +
+                                `border-left-width: 5px !important;` +
+                                `border-left-style: solid !important;` +
+                                `border-left-color: ${style.color || '#333'} !important;`);
+                            
+                            // Also apply the border individually as a fallback
+                            cells[i].style.borderLeft = `5px solid ${style.color || '#333'}`;
+                            cells[i].style.borderLeftWidth = '5px';
+                            cells[i].style.borderLeftStyle = 'solid';
+                            cells[i].style.borderLeftColor = style.color || '#333';
+                            
+                            console.log(`Applied start border to cell ${i} for profile ${style.profileId}`);
                         }
                         
-                        // Direct inline styling for last cell of profile group
+                        // Direct explicit styling for last cell of profile group
                         if (profileLastCells[style.profileId] === i) {
-                            // Apply direct inline style with !important 
-                            cells[i].style.cssText += `border-right: 5px solid ${style.color || '#333'} !important;`;
-                            console.log(`Applied end border to cell ${i} for profile ${style.profileId} with direct style`);
+                            // Use setAttribute for style to ensure it overrides everything
+                            cells[i].setAttribute('style', cells[i].getAttribute('style') + 
+                                `; border-right: 5px solid ${style.color || '#333'} !important;` +
+                                `border-right-width: 5px !important;` +
+                                `border-right-style: solid !important;` +
+                                `border-right-color: ${style.color || '#333'} !important;`);
+                            
+                            // Also apply the border individually as a fallback
+                            cells[i].style.borderRight = `5px solid ${style.color || '#333'}`;
+                            cells[i].style.borderRightWidth = '5px';
+                            cells[i].style.borderRightStyle = 'solid';
+                            cells[i].style.borderRightColor = style.color || '#333';
+                            
+                            console.log(`Applied end border to cell ${i} for profile ${style.profileId}`);
                         }
                     }
                 }
