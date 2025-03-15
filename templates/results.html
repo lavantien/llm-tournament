@@ -649,9 +649,11 @@
             
             // Map profile boundaries by profile ID for easier lookup
             profileGroups.forEach(group => {
-                if (group.StartCol !== -1) {
-                    profileStartColumns[group.ID] = group.StartCol;
-                    profileEndColumns[group.ID] = group.EndCol;
+                // Handle both lowercase 'id' and uppercase 'ID' for compatibility
+                const profileId = group.id || group.ID;
+                if (group.StartCol !== -1 && profileId) {
+                    profileStartColumns[profileId] = group.StartCol;
+                    profileEndColumns[profileId] = group.EndCol;
                 }
             });
             
@@ -661,7 +663,10 @@
             // Apply to header columns and build style mapping
             promptCols.forEach(col => {
                 const profileId = col.getAttribute('data-profile-id');
-                const profileGroup = profileGroups.find(g => g.ID === profileId);
+                // Find profile group matching either lowercase or uppercase ID property
+                const profileGroup = profileGroups.find(g => 
+                    (g.id && g.id === profileId) || (g.ID && g.ID === profileId)
+                );
                 const promptIndex = parseInt(col.getAttribute('data-prompt-index'));
                 
                 if (profileGroup) {
@@ -672,7 +677,7 @@
                     // Store style information for this column
                     columnStyles[promptIndex] = {
                         color: profileGroup.Color,
-                        profileId: profileGroup.ID,
+                        profileId: profileGroup.id || profileGroup.ID, // Handle both lowercase/uppercase
                         isStart: profileGroup.StartCol === promptIndex,
                         isEnd: profileGroup.EndCol === promptIndex
                     };
@@ -693,7 +698,8 @@
             if (!table) return;
             
             // Get all profile IDs for tracking profile boundaries per row
-            const profileIds = [...new Set(profileGroups.map(g => g.ID))].filter(id => id); // Remove empty IDs
+            const profileIds = [...new Set(profileGroups.map(g => g.id || g.ID))].filter(id => id); // Remove empty IDs
+            console.log("Profile IDs found:", profileIds);
             
             const tableRows = table.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
@@ -713,11 +719,16 @@
                         // Track the first cell we see for each profile ID
                         if (!profileFirstCells[style.profileId]) {
                             profileFirstCells[style.profileId] = i;
+                            console.log(`First cell for profile ${style.profileId}: ${i}`);
                         }
                         // Always update the last cell we see for this profile ID
                         profileLastCells[style.profileId] = i;
                     }
                 }
+                
+                // Debug log the identified profile boundaries
+                console.log("Profile first cells in row:", profileFirstCells);
+                console.log("Profile last cells in row:", profileLastCells);
                 
                 // Now apply styling for all cells
                 for (let i = 3; i < cells.length - 1; i++) { // Exclude the last total column
