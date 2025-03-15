@@ -45,31 +45,31 @@
                     {
                         label: '1/5 (20 points)',
                         data: sortedCount20,
-                        backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-20').trim(),
                         borderWidth: 1
                     },
                     {
                         label: '2/5 (40 points)',
                         data: sortedCount40,
-                        backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-40').trim(),
                         borderWidth: 1
                     },
                     {
                         label: '3/5 (60 points)',
                         data: sortedCount60,
-                        backgroundColor: 'rgba(255, 205, 86, 0.8)',
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-60').trim(),
                         borderWidth: 1
                     },
                     {
                         label: '4/5 (80 points)',
                         data: sortedCount80,
-                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-80').trim(),
                         borderWidth: 1
                     },
                     {
                         label: '5/5 (100 points)',
                         data: sortedCount100,
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--score-color-100').trim(),
                         borderWidth: 1
                     }
                 ]

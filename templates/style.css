@@ -16,6 +16,14 @@ body {
     --border-color: #333;
     --text-color: #e0e0e0;
     --text-color-dark: #1a1a1a;
+    
+    /* Score colors */
+    --score-color-0: #808080;
+    --score-color-20: rgba(255, 99, 132, 0.8);
+    --score-color-40: rgba(255, 159, 64, 0.8);
+    --score-color-60: rgba(255, 205, 86, 0.8);
+    --score-color-80: rgba(75, 192, 192, 0.8);
+    --score-color-100: rgba(54, 162, 235, 0.8);
 
     h1 {
         color: #bb86fc;
@@ -740,12 +748,12 @@ body {
     }
     
     /* Score colors */
-    .score-0 { background-color: #808080; }
-    .score-20 { background-color: rgba(255, 99, 132, 0.8); }
-    .score-40 { background-color: rgba(255, 159, 64, 0.8); }
-    .score-60 { background-color: rgba(255, 205, 86, 0.8); }
-    .score-80 { background-color: rgba(75, 192, 192, 0.8); }
-    .score-100 { background-color: rgba(54, 162, 235, 0.8); }
+    .score-0 { background-color: var(--score-color-0); }
+    .score-20 { background-color: var(--score-color-20); }
+    .score-40 { background-color: var(--score-color-40); }
+    .score-60 { background-color: var(--score-color-60); }
+    .score-80 { background-color: var(--score-color-80); }
+    .score-100 { background-color: var(--score-color-100); }
     
     /* Profile styling */
     .profile-start { border-left-width: 4px; }
