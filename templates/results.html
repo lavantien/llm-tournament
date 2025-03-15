@@ -714,11 +714,11 @@
     {{template "nav" .}}
     <div class="sticky-header">
         <h2>Add Model</h2>
-        <form action="/add_model" method="post" style="display: flex; align-items: center">
-            <input type="text" name="model" placeholder="Enter new model name" style="margin-right: 5px" />
+        <form action="/add_model" method="post" class="flex-form">
+            <input type="text" name="model" placeholder="Enter new model name" class="margin-right-5" />
             <input type="submit" value="Add" />
         </form>
-        <span id="connection-status" style="margin-left: 5px"></span>
+        <span id="connection-status" class="connection-status"></span>
     </div>
     <div class="title-row">
         <div class="filter-container">
@@ -754,10 +754,10 @@
                 {{range .ProfileGroups}}
                     {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
-                        class="profile-header" 
+                        class="profile-header profile-header-cell" 
                         data-profile-id="{{.ID}}"
-                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50px; width: auto; box-sizing: border-box;">
-                        <div style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{.Name}}</div>
+                        style="background-color: {{.Color}}10; border-left: 4px solid {{.Color}}; border-right: 4px solid {{.Color}};">
+                        <div class="profile-header-text">{{.Name}}</div>
                     </th>
                     {{end}}
                 {{end}}
@@ -783,21 +783,21 @@
         </tbody>
     </table>
     <div class="sticky-footer">
-        <div style="display: flex; align-items: center">
+        <div class="results-management">
             <h2>Manage Results</h2>
             &nbsp;&nbsp;&nbsp;
-            <form action="/reset_results" method="get" style="margin-right: 5px">
+            <form action="/reset_results" method="get" class="margin-right-5">
                 <input type="submit" value="Reset Results" />
             </form>
-            <form action="/confirm_refresh_results" method="get" style="margin-right: 5px">
+            <form action="/confirm_refresh_results" method="get" class="margin-right-5">
                 <input type="submit" value="Refresh Results" />
             </form>
-            <form action="/export_results" method="post" style="margin-right: 5px">
+            <form action="/export_results" method="post" class="margin-right-5">
                 <input type="submit" value="Export Results" />
             </form>
             <form action="/import_results" method="post" enctype="multipart/form-data"
-                style="display: flex; align-items: center">
-                <input type="file" name="results_file" style="margin-right: 5px" />
+                class="file-import-form">
+                <input type="file" name="results_file" class="margin-right-5" />
                 <input type="submit" value="Import Results" />
             </form>
         </div>
@@ -818,7 +818,7 @@
             });
         }
     </script>
-    <div id="hidden-data" style="display: none">
+    <div id="hidden-data" class="hidden-data">
         <span id="results-data">{{.Results | json}}</span>
         <span id="models-data">{{.Models | json}}</span>
         <span id="pass-percentages-data">{{.PassPercentages | json}}</span>

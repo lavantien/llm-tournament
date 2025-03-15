@@ -655,7 +655,59 @@ body {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
     }
+    
+    /* Form layouts */
+    .flex-form {
+        display: flex;
+        align-items: center;
+    }
+    
+    .margin-right-5 {
+        margin-right: 5px;
+    }
+    
+    .margin-left-5 {
+        margin-left: 5px;
+    }
+    
+    /* Results page specific styles */
+    .connection-status {
+        margin-left: 5px;
+    }
+    
+    /* Hidden data container */
+    .hidden-data {
+        display: none;
+    }
+    
+    /* Profile header styling */
+    .profile-header-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 50px;
+        width: auto;
+        box-sizing: border-box;
+    }
 
+    .profile-header-text {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Results management section */
+    .results-management {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* File input form */
+    .file-import-form {
+        display: flex;
+        align-items: center;
+    }
 }
 
 .chart-container {
