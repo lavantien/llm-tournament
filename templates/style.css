@@ -913,7 +913,7 @@ body {
     
     /* Progress bar styles */
     .progress-bar-standard-width {
-        width: 21.2vw !important; /* Use !important to ensure this takes precedence */
+        width: 24vw !important; /* Use !important to ensure this takes precedence */
     }
     
     /* No models available message */
