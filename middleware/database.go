@@ -13,6 +13,11 @@ import (
 
 var db *sql.DB
 
+// GetDB returns the database connection
+func GetDB() *sql.DB {
+	return db
+}
+
 // InitDB initializes the SQLite database connection
 func InitDB(dbPath string) error {
 	// Ensure data directory exists
@@ -76,6 +81,7 @@ func createTables() error {
 		profile_id INTEGER,
 		suite_id INTEGER NOT NULL,
 		display_order INTEGER NOT NULL,
+		type TEXT NOT NULL DEFAULT 'objective',
 		FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL,
 		FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
 		UNIQUE(text, suite_id)
@@ -99,8 +105,91 @@ func createTables() error {
 		UNIQUE(model_id, prompt_id)
 	);
 
+	CREATE TABLE IF NOT EXISTS settings (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		key TEXT UNIQUE NOT NULL,
+		value TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS evaluation_jobs (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		suite_id INTEGER NOT NULL,
+		job_type TEXT NOT NULL,
+		target_id INTEGER,
+		status TEXT NOT NULL DEFAULT 'pending',
+		progress_current INTEGER DEFAULT 0,
+		progress_total INTEGER DEFAULT 0,
+		estimated_cost_usd REAL DEFAULT 0.0,
+		actual_cost_usd REAL DEFAULT 0.0,
+		error_message TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		started_at TIMESTAMP,
+		completed_at TIMESTAMP,
+		FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS model_responses (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		model_id INTEGER NOT NULL,
+		prompt_id INTEGER NOT NULL,
+		response_text TEXT,
+		response_source TEXT NOT NULL DEFAULT 'manual',
+		api_config TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE,
+		FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE,
+		UNIQUE(model_id, prompt_id)
+	);
+
+	CREATE TABLE IF NOT EXISTS evaluation_history (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		job_id INTEGER NOT NULL,
+		model_id INTEGER NOT NULL,
+		prompt_id INTEGER NOT NULL,
+		judge_name TEXT NOT NULL,
+		judge_score INTEGER,
+		judge_confidence REAL,
+		judge_reasoning TEXT,
+		cost_usd REAL DEFAULT 0.0,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (job_id) REFERENCES evaluation_jobs(id) ON DELETE CASCADE,
+		FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE,
+		FOREIGN KEY (prompt_id) REFERENCES prompts(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS cost_tracking (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		suite_id INTEGER NOT NULL,
+		date DATE NOT NULL,
+		total_cost_usd REAL DEFAULT 0.0,
+		evaluation_count INTEGER DEFAULT 0,
+		FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
+		UNIQUE(suite_id, date)
+	);
+
+	-- Create indexes
+	CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
+	CREATE INDEX IF NOT EXISTS idx_evaluation_jobs_status ON evaluation_jobs(status);
+	CREATE INDEX IF NOT EXISTS idx_evaluation_jobs_suite ON evaluation_jobs(suite_id);
+	CREATE INDEX IF NOT EXISTS idx_model_responses_lookup ON model_responses(model_id, prompt_id);
+	CREATE INDEX IF NOT EXISTS idx_evaluation_history_job ON evaluation_history(job_id);
+	CREATE INDEX IF NOT EXISTS idx_evaluation_history_lookup ON evaluation_history(model_id, prompt_id);
+	CREATE INDEX IF NOT EXISTS idx_cost_tracking_suite_date ON cost_tracking(suite_id, date);
+
 	-- Add the default suite if it doesn't exist
 	INSERT OR IGNORE INTO suites (name, is_current) VALUES ('default', 1);
+
+	-- Initialize default settings
+	INSERT OR IGNORE INTO settings (key, value) VALUES
+		('api_key_anthropic', ''),
+		('api_key_openai', ''),
+		('api_key_google', ''),
+		('cost_alert_threshold_usd', '100.0'),
+		('auto_evaluate_new_models', 'false'),
+		('python_service_url', 'http://localhost:8001');
 	`
 
 	_, err := db.Exec(schema)

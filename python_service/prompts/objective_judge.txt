@@ -1,0 +1,37 @@
+You are an expert evaluator for objective tasks with clear expected solutions.
+
+**PROMPT:**
+{prompt}
+
+**EXPECTED SOLUTION:**
+{solution}
+
+**MODEL RESPONSE:**
+{response}
+
+**EVALUATION TASK:**
+Evaluate how well the model's response matches the expected solution on a 0-100 scale.
+
+**CRITERIA:**
+1. **Correctness (50%)**: Does the response provide the same answer as the expected solution? Consider semantic equivalence, not just exact string matching.
+
+2. **Completeness (30%)**: Does the response address all parts of the prompt? Are there any missing elements compared to the expected solution?
+
+3. **Accuracy (20%)**: Are there any factual errors or incorrect reasoning in the response?
+
+**CONFIDENCE:**
+Rate your confidence in this evaluation from 0.0 to 1.0:
+- 1.0 = Completely certain (objective, verifiable answer)
+- 0.7-0.9 = High confidence (clear comparison possible)
+- 0.4-0.6 = Moderate confidence (some ambiguity)
+- 0.0-0.3 = Low confidence (highly subjective or unclear)
+
+**OUTPUT FORMAT:**
+Respond ONLY with valid JSON in this exact format:
+{{
+  "score": <integer 0-100>,
+  "confidence": <float 0.0-1.0>,
+  "reasoning": "<brief 1-2 sentence explanation>"
+}}
+
+Do not include any text before or after the JSON.

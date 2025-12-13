@@ -240,3 +240,94 @@ func calculatePassPercentages(results map[string]Result, promptCount int) map[st
 	}
 	return passPercentages
 }
+
+// BroadcastEvaluationProgress broadcasts evaluation progress to all clients
+func BroadcastEvaluationProgress(jobID, current, total int, cost float64) {
+	payload := struct {
+		Type string `json:"type"`
+		Data struct {
+			JobID   int     `json:"job_id"`
+			Current int     `json:"current"`
+			Total   int     `json:"total"`
+			Cost    float64 `json:"cost"`
+		} `json:"data"`
+	}{
+		Type: "evaluation_progress",
+	}
+	payload.Data.JobID = jobID
+	payload.Data.Current = current
+	payload.Data.Total = total
+	payload.Data.Cost = cost
+
+	broadcastMessage(payload)
+}
+
+// BroadcastEvaluationCompleted broadcasts evaluation completion
+func BroadcastEvaluationCompleted(jobID int, finalCost float64) {
+	payload := struct {
+		Type string `json:"type"`
+		Data struct {
+			JobID     int     `json:"job_id"`
+			FinalCost float64 `json:"final_cost"`
+		} `json:"data"`
+	}{
+		Type: "evaluation_completed",
+	}
+	payload.Data.JobID = jobID
+	payload.Data.FinalCost = finalCost
+
+	broadcastMessage(payload)
+	// Also refresh results
+	BroadcastResults()
+}
+
+// BroadcastEvaluationFailed broadcasts evaluation failure
+func BroadcastEvaluationFailed(jobID int, errorMsg string) {
+	payload := struct {
+		Type string `json:"type"`
+		Data struct {
+			JobID int    `json:"job_id"`
+			Error string `json:"error"`
+		} `json:"data"`
+	}{
+		Type: "evaluation_failed",
+	}
+	payload.Data.JobID = jobID
+	payload.Data.Error = errorMsg
+
+	broadcastMessage(payload)
+}
+
+// BroadcastCostAlert broadcasts cost threshold alert
+func BroadcastCostAlert(suiteID int, currentCost, threshold float64) {
+	payload := struct {
+		Type string `json:"type"`
+		Data struct {
+			SuiteID     int     `json:"suite_id"`
+			CurrentCost float64 `json:"current_cost"`
+			Threshold   float64 `json:"threshold"`
+		} `json:"data"`
+	}{
+		Type: "cost_alert",
+	}
+	payload.Data.SuiteID = suiteID
+	payload.Data.CurrentCost = currentCost
+	payload.Data.Threshold = threshold
+
+	broadcastMessage(payload)
+}
+
+// broadcastMessage sends a JSON message to all connected clients
+func broadcastMessage(payload interface{}) {
+	clientsMutex.Lock()
+	defer clientsMutex.Unlock()
+
+	for client := range clients {
+		err := client.WriteJSON(payload)
+		if err != nil {
+			log.Printf("Error broadcasting message: %v", err)
+			client.Close()
+			delete(clients, client)
+		}
+	}
+}

@@ -1,0 +1,38 @@
+You are an expert evaluator for creative and open-ended tasks.
+
+**PROMPT:**
+{prompt}
+
+**MODEL RESPONSE:**
+{response}
+
+**EVALUATION TASK:**
+Evaluate the quality of the model's response on a 0-100 scale.
+
+**CRITERIA:**
+1. **Relevance (30%)**: Does the response directly address the prompt? Is it on-topic?
+
+2. **Quality (40%)**: Is the response well-written, coherent, and demonstrates depth of thought?
+   - Grammar and clarity
+   - Logical flow and structure
+   - Originality and insight
+
+3. **Completeness (30%)**: Is the response thorough and comprehensive? Does it fully explore the topic?
+
+**CONFIDENCE:**
+Rate your confidence in this evaluation from 0.0 to 1.0:
+- 0.8-1.0 = High confidence (clear quality indicators)
+- 0.5-0.7 = Moderate confidence (some subjective elements)
+- 0.0-0.4 = Low confidence (highly subjective or ambiguous)
+
+Note: Creative evaluation is inherently more subjective, so confidence scores tend to be lower than objective tasks.
+
+**OUTPUT FORMAT:**
+Respond ONLY with valid JSON in this exact format:
+{{
+  "score": <integer 0-100>,
+  "confidence": <float 0.0-1.0>,
+  "reasoning": "<brief 1-2 sentence explanation>"
+}}
+
+Do not include any text before or after the JSON.

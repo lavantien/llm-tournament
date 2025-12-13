@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -26,4 +27,13 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
 func HandleFormError(w http.ResponseWriter, err error) {
 	log.Printf("Error parsing form: %v", err)
 	http.Error(w, "Error parsing form", http.StatusBadRequest)
+}
+
+// RespondJSON sends a JSON response
+func RespondJSON(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("Error encoding JSON: %v", err)
+		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+	}
 }
