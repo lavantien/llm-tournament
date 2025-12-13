@@ -46,6 +46,22 @@ Access at `http://localhost:8080`
 - 🔄 Instant propagation of score changes to all connected clients via WebSockets
 - 🔀 Random mock score generation using weighted tiers for prototyping
 
+### 🤖 **Automated LLM Evaluation** ✨ NEW!
+- 🧠 **Multi-Judge Consensus Scoring**: 3 AI judges evaluate responses in parallel
+  - Claude Opus 4.5 (extended thinking)
+  - GPT-5.2 (extended thinking)
+  - Gemini 3 Pro (extended thinking)
+- ⚖️ **Weighted Consensus Algorithm**: Scores aggregated by judge confidence levels
+- 🎭 **Dual Evaluation Modes**:
+  - **Objective**: Semantic matching against expected solutions
+  - **Creative**: Quality evaluation without predefined answers
+- 📊 **Real-Time Progress Tracking**: WebSocket broadcasts for job status, progress, and costs
+- 💰 **Cost Management**: Pre-execution estimates, real-time tracking, threshold alerts (~$0.05 per evaluation)
+- ⚡ **Async Job Queue**: 3 concurrent workers with job persistence across restarts
+- 🔐 **Secure API Key Storage**: AES-256-GCM encrypted credentials
+- 🎯 **Flexible Triggers**: Evaluate all, per-model, per-prompt, or auto-evaluate new models
+- 📈 **Evaluation History**: Complete audit trail with judge reasoning and confidence scores
+
 ### 📚 **Prompt Suite & Test Management**
 - 🗂️ Create, rename, select, and delete independent prompt suites
 - 🔗 Isolated profiles, prompts, and results per suite for organized evaluations
@@ -109,17 +125,20 @@ Access at `http://localhost:8080`
 
 ## 🛠️ Tech Stack
 
-**Backend**  
-`Go 1.21+` • `Gorilla WebSocket` • `Blackfriday` • `Bluemonday`
+**Backend**
+`Go 1.21+` • `Gorilla WebSocket` • `Blackfriday` • `Bluemonday` • `SQLite` • `AES-256-GCM Encryption`
 
-**Frontend**  
+**AI Evaluation Service**
+`Python 3.8+` • `FastAPI` • `LiteLLM` • `Anthropic SDK` • `OpenAI SDK` • `Google Generative AI`
+
+**Frontend**
 `HTML5` • `CSS3` • `JavaScript ES6+` • `Chart.js 4.x` • `Marked.js`
 
-**Data**  
-`SQLite Storage` • `Robust Data Migration (JSON import/export, duplicate cleanup)` • `State Versioning`
+**Data**
+`SQLite Storage` • `Robust Data Migration (JSON import/export, duplicate cleanup)` • `State Versioning` • `Encrypted Settings`
 
-**Security**  
-`XSS Sanitization` • `CORS Protection` • `Input Validation` • `Error Handling`
+**Security**
+`XSS Sanitization` • `CORS Protection` • `Input Validation` • `Error Handling` • `Encrypted API Keys`
 
 ## 🧰 Complementary Tools
 
@@ -139,6 +158,7 @@ Access at `http://localhost:8080`
 
 ### Prerequisites
 - Go 1.24+
+- Python 3.8+ (for automated evaluation)
 - Make
 - Git
 - SQLite
@@ -146,6 +166,7 @@ Access at `http://localhost:8080`
 
 ### Installation & Running
 
+#### Manual Evaluation (Traditional)
 ```bash
 # Development mode
 ./dev.sh
@@ -161,7 +182,32 @@ make build
 ./release/llm-tournament
 ```
 
+#### Automated Evaluation (NEW!)
+```bash
+# 1. Install Python dependencies
+cd python_service
+pip install -r requirements.txt
+
+# 2. Generate and set encryption key
+export ENCRYPTION_KEY=$(openssl rand -hex 32)  # Linux/Mac
+# OR
+set ENCRYPTION_KEY=<generated-key>             # Windows
+
+# 3. Start Python evaluation service
+python main.py  # Runs on :8001
+
+# 4. Start Go server (in new terminal)
+cd ..
+CGO_ENABLED=1 go run main.go  # Runs on :8080
+
+# 5. Configure API keys at http://localhost:8080/settings
+```
+
+**📖 Complete Setup Guide**: See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
+
 ## 📚 Usage Guide
+
+### Manual Evaluation Workflow
 
 1. **Set Up Test Suites**
    - Create a new suite for your evaluation task
@@ -174,10 +220,11 @@ make build
 
 3. **Prepare Prompts**
    - Write prompts with appropriate solutions
+   - Set prompt type: `objective` (with expected answer) or `creative` (open-ended)
    - Assign profiles for categorization
    - Arrange prompts in desired evaluation order
 
-4. **Run Evaluations**
+4. **Run Evaluations (Manual)**
    - Navigate through prompts and assess each model
    - Use the 0-5 scoring system (0, 20, 40, 60, 80, 100 points)
    - Copy prompts directly to your LLM for testing
@@ -188,8 +235,39 @@ make build
    - Compare performance across different prompt types
    - Export results for external analysis
 
+### Automated Evaluation Workflow ✨ NEW!
+
+1. **Configure API Keys**
+   - Navigate to `/settings`
+   - Enter API keys for Claude, GPT, and Gemini
+   - Set cost alert threshold (default: $100)
+   - Enable auto-evaluate for new models (optional)
+
+2. **Prepare Prompts**
+   - Set prompt type: `objective` or `creative`
+   - For objective prompts: Add expected solution for semantic matching
+   - For creative prompts: Judges evaluate quality without expected answer
+
+3. **Trigger Automated Evaluation**
+   - **Evaluate All**: Click "Evaluate All" button (all models × all prompts)
+   - **Per-Model**: Click "Evaluate" on model row (one model × all prompts)
+   - **Per-Prompt**: Click "Evaluate" on prompt column (all models × one prompt)
+   - **Auto**: Enable auto-evaluate in settings for new models
+
+4. **Monitor Progress**
+   - Real-time WebSocket updates show progress
+   - View current/total evaluations and running cost
+   - Cancel job anytime if needed
+
+5. **Review Results**
+   - Consensus scores automatically saved
+   - View evaluation history with judge reasoning
+   - Check cost tracking per suite
+   - Compare judge confidence levels
+
 ## 🔧 Advanced Features
 
+### Manual Evaluation
 - **Bulk Operations**: Select multiple prompts for deletion, export, or other actions
 - **Drag-and-Drop & Ordering**: Reorder prompts with an intuitive drag-and-drop interface
 - **State Management**: Backup and restore previous evaluation states with a "Previous" button
@@ -197,6 +275,16 @@ make build
 - **Advanced Search & Filtering**: Quickly find prompts, models, or profiles using multi-criteria filters
 - **Robust Data Migration**: Seamlessly migrate data from JSON files to SQLite with duplicate prompt cleanup
 - **Suite Management**: Easily switch, create, rename, and delete prompt suites
+
+### Automated Evaluation ✨
+- **Job Queue Management**: 3 concurrent workers with job persistence
+- **Cost Estimation**: Preview costs before running evaluations
+- **Re-evaluation**: Re-score existing prompts with confirmation
+- **Judge Selection**: Configure which AI judges to use
+- **Evaluation History**: Complete audit trail with reasoning and confidence
+- **Hybrid Mode**: Support both manual responses and API-based responses
+- **Cost Tracking**: Daily budget monitoring with threshold alerts
+- **Job Cancellation**: Stop long-running evaluations anytime
 
 ## 🤝 Contribution
 
@@ -217,17 +305,26 @@ We welcome contributions!
 
 ## 🗺 Roadmap
 
+### ✅ Completed (v2.2)
+- ✅ Multi-LLM consensus scoring (Claude, GPT, Gemini)
+- ✅ Automated evaluation with async job queue
+- ✅ Cost tracking and management
+- ✅ Encrypted API key storage
+- ✅ Real-time progress tracking via WebSocket
+
 ### Q2 2025
-- 🧠 Multi-LLM consensus scoring
 - 🌐 Distributed evaluation mode
 - 🔍 Advanced search syntax
 - 📱 Responsive mobile design
+- 🔌 API-based model response fetching
 
 ### Q3 2025
 - 📊 Custom metric definitions
-- 🤖 Auto-evaluation agents
+- 🤖 Custom judge configurations
 - 🔄 CI/CD integration
 - 🔐 User authentication
+- 📄 Evaluation report exports (PDF/HTML)
+- 📅 Scheduled evaluations
 
 ## 📜 License
 
