@@ -1,4 +1,4 @@
-# CLAUDE.md (Local)
+# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -259,7 +259,7 @@ LLM Tournament Arena is a Go-based web application for benchmarking and evaluati
 **Development:**
 ```bash
 ./dev.sh              # Quick start with auto-recompile (using aider)
-make run              # Run the application
+make run              # Run the application (Go server on :8080)
 go run .              # Alternative run command
 make build            # Build for Linux/Mac
 make buildwindows     # Build for Windows
@@ -267,8 +267,9 @@ make buildwindows     # Build for Windows
 
 **Testing:**
 ```bash
-make test             # Run all tests with race detection and coverage
-CGO_ENABLED=1 go test ./... -v -race -cover
+make test             # Run tests with TDD-guard, race detection, and coverage
+make test-verbose     # Run tests with verbose output (bypasses TDD-guard)
+CGO_ENABLED=1 go test ./... -v -race -cover  # Manual test run
 ```
 
 **Database Operations:**
@@ -280,11 +281,24 @@ go run main.go --remigrate-scores        # Remigrate only scores from JSON
 go run main.go --migrate-results         # Migrate old result format to new scoring system
 ```
 
+**Automated Evaluation (Python Service):**
+```bash
+# Terminal 1 - Start Python evaluation service
+cd python_service
+pip install -r requirements.txt
+python main.py                            # Runs on :8001
+
+# Terminal 2 - Start Go server (requires ENCRYPTION_KEY)
+export ENCRYPTION_KEY=$(openssl rand -hex 32)  # Linux/Mac
+set ENCRYPTION_KEY=<64-char-hex>               # Windows
+CGO_ENABLED=1 go run main.go                   # Runs on :8080
+```
+
 **CRITICAL:** Always prefix Go commands with `CGO_ENABLED=1` when race checks are needed, as this project uses SQLite (via go-sqlite3) which requires CGO.
 
 ### Architecture
 
-**3-Tier Structure:**
+**4-Tier Structure:**
 
 1. **Handlers** (`handlers/`): HTTP request handling and template rendering
    - `models.go`: Model CRUD operations (add, edit, delete models)
@@ -293,28 +307,51 @@ go run main.go --migrate-results         # Migrate old result format to new scor
    - `results.go`: Results display, score updates, mock data generation
    - `stats.go`: Analytics, tier classification, score breakdowns
    - `suites.go`: Test suite management (create, rename, delete, switch)
+   - `settings.go`: API key management, evaluation configuration
+   - `evaluation.go`: Automated evaluation triggers (all, per-model, per-prompt)
 
 2. **Middleware** (`middleware/`): Business logic and data operations
    - `database.go`: SQLite schema, CRUD operations, migration logic from JSON
    - `state.go`: Core data models (Prompt, Result, Profile), read/write functions
-   - `socket.go`: WebSocket handling, real-time broadcast of updates
+   - `socket.go`: WebSocket handling, real-time broadcast of updates (including evaluation progress)
    - `utils.go`: Profile grouping utilities, color generation
    - `handler_utils.go`: HTTP response helpers
    - `import_error.go`: Import error page handler
+   - `settings.go`: Settings CRUD operations
+   - `encryption.go`: AES-256-GCM encryption for API keys
 
-3. **Templates** (`templates/`): HTML templates, CSS, and JavaScript
+3. **Evaluator** (`evaluator/`): Automated LLM evaluation orchestration
+   - `types.go`: Data types (EvaluationJob, JudgeResult, EvaluationRequest/Response)
+   - `evaluator.go`: Main orchestrator, job processing logic
+   - `job_queue.go`: Async job queue with 3 concurrent workers
+   - `litellm_client.go`: HTTP client for Python evaluation service
+   - `consensus.go`: Score rounding and consensus logic
+
+4. **Templates** (`templates/`): HTML templates, CSS, and JavaScript
    - Server-side: Go templates with custom functions (markdown, inc, json, etc.)
    - Styling: `style.css` (centralized, no inline styles)
    - Client-side utilities:
      - `score-utils.js`: Centralized score color management
      - `utils.js`: Common JavaScript utilities
      - `constants.js`: Shared constants
-   - Pages: Separate HTML files for each route (prompts, results, stats, profiles, etc.)
+   - Pages: Separate HTML files for each route (prompts, results, stats, profiles, settings, etc.)
+
+5. **Python Service** (`python_service/`): AI Judge evaluation service
+   - `main.py`: FastAPI server with `/evaluate`, `/estimate_cost`, `/health` endpoints
+   - `config.py`: Service configuration
+   - `evaluators/`: Objective and creative evaluation strategies
+   - `judges/`: Claude, GPT, Gemini judge implementations
+   - `prompts/`: Judge prompt templates
 
 **Request Flow:**
 ```
 HTTP Request → Router (main.go) → Handler → Middleware → SQLite Database → Response
 WebSocket: Score Update → BroadcastResults() → All Connected Clients → UI Update
+
+Automated Evaluation Flow:
+HTTP POST /evaluate/* → Handler → Evaluator.Enqueue() → JobQueue Worker
+→ LiteLLMClient → Python Service (:8001) → AI Judges (Claude/GPT/Gemini)
+→ Consensus Score → Database Update → WebSocket Broadcast → UI Update
 ```
 
 **Suite Management:**
@@ -324,17 +361,27 @@ WebSocket: Score Update → BroadcastResults() → All Connected Clients → UI 
 - Default suite ("default") is always present and cannot be deleted
 
 **Database Schema (SQLite):**
+
+*Core Tables:*
 - `suites`: Test suite definitions (id, name, is_current)
 - `profiles`: Evaluation categories (id, name, description, suite_id)
-- `prompts`: Test prompts (id, text, solution, profile_id, suite_id, display_order)
+- `prompts`: Test prompts (id, text, solution, profile_id, suite_id, display_order, type)
 - `models`: LLM models being evaluated (id, name, suite_id)
 - `scores`: Individual prompt scores per model (id, model_id, prompt_id, score)
+
+*Automated Evaluation Tables:*
+- `settings`: Encrypted API keys and configuration (key, value, created_at, updated_at)
+- `evaluation_jobs`: Async job tracking (id, suite_id, job_type, status, progress_*, cost_*)
+- `model_responses`: Stored model outputs (model_id, prompt_id, response_text, response_source)
+- `evaluation_history`: Judge audit trail (job_id, model_id, prompt_id, judge_name, score, confidence, reasoning, cost_usd)
+- `cost_tracking`: Daily budget monitoring (suite_id, date, total_cost_usd, evaluation_count)
 
 **Key Relationships:**
 - Foreign keys with CASCADE DELETE maintain referential integrity
 - `display_order` (not ID) controls prompt ordering within suites
 - Profile assignment is optional for prompts (NULL profile_id = "Uncategorized")
 - UNIQUE constraints prevent duplicates: (text, suite_id) for prompts, (name, suite_id) for profiles/models
+- `prompts.type` field: 'objective' (semantic matching) or 'creative' (quality evaluation)
 
 ### Key Implementation Details
 
@@ -353,7 +400,13 @@ WebSocket: Score Update → BroadcastResults() → All Connected Clients → UI 
 - `BroadcastResults()` function pushes updates to all connected clients
 - Called after any data modification: prompts, models, profiles, scores, suite changes
 - Auto-reconnection with connection status monitoring on client side
-- Message types: `results` (data updates), `update_prompts_order` (drag-and-drop reordering)
+- Message types:
+  - `results`: Data updates (prompts, models, scores)
+  - `update_prompts_order`: Drag-and-drop reordering
+  - `evaluation_progress`: Job progress (current/total, cost)
+  - `evaluation_completed`: Job finished successfully
+  - `evaluation_failed`: Job error
+  - `cost_alert`: Cost threshold exceeded
 
 **Profile Groups:**
 - Dynamic grouping of prompts by assigned profile
@@ -484,7 +537,7 @@ WebSocket: Score Update → BroadcastResults() → All Connected Clients → UI 
 
 ### Testing Notes
 
-- **Current State:** No test files exist (`*_test.go`)
+- **TDD-Guard Integration:** Tests run through `tdd-guard-go` which enforces TDD workflow
 - **When Adding Tests:** Follow TDD approach from local instructions
   - Write failing test first (Red)
   - Implement minimal code to pass (Green)
@@ -493,35 +546,57 @@ WebSocket: Score Update → BroadcastResults() → All Connected Clients → UI 
 - **CGO Requirement:** Must enable CGO for tests involving SQLite: `CGO_ENABLED=1 go test ./...`
 - **Coverage:** Use `-cover` flag to track test coverage
 - **Test Structure:** Place tests in same package as code being tested (e.g., `handlers/models_test.go`)
+- **Verbose Mode:** Use `make test-verbose` to bypass TDD-guard for debugging
 
 ### Server Configuration
 
-- **Port:** `:8080`
+- **Go Server Port:** `:8080`
+- **Python Service Port:** `:8001` (automated evaluation)
 - **Access URL:** `http://localhost:8080`
 - **WebSocket Endpoint:** `/ws`
 - **Default Route:** All unmatched routes redirect to `/prompts`
 - **Static Assets:** Served from `templates/` and `assets/` directories
 - **Database Path:** `data/tournament.db` (default, configurable via `--db` flag)
+- **Environment Variables:**
+  - `ENCRYPTION_KEY`: 64-character hex string for API key encryption (required for automated evaluation)
+  - `CGO_ENABLED=1`: Required for SQLite operations
 
 ### File Structure Summary
 
 ```
 llm-tournament/
-├── main.go                    # Entry point, routing, server setup
+├── main.go                    # Entry point, routing, server setup, evaluator init
 ├── handlers/                  # HTTP request handlers
 │   ├── models.go             # Model CRUD
 │   ├── profiles.go           # Profile management
 │   ├── prompt.go             # Prompt operations
 │   ├── results.go            # Results display, scoring
 │   ├── stats.go              # Analytics, tier classification
-│   └── suites.go             # Suite management
+│   ├── suites.go             # Suite management
+│   ├── settings.go           # API key management
+│   └── evaluation.go         # Automated evaluation triggers
 ├── middleware/                # Business logic, data layer
 │   ├── database.go           # SQLite schema, migrations
 │   ├── state.go              # Data models, CRUD functions
 │   ├── socket.go             # WebSocket handling
 │   ├── utils.go              # Profile grouping utilities
 │   ├── handler_utils.go      # HTTP helpers
-│   └── import_error.go       # Error handling
+│   ├── import_error.go       # Error handling
+│   ├── settings.go           # Settings CRUD
+│   └── encryption.go         # AES-256-GCM for API keys
+├── evaluator/                 # Automated LLM evaluation
+│   ├── types.go              # Data types
+│   ├── evaluator.go          # Main orchestrator
+│   ├── job_queue.go          # Async job queue
+│   ├── litellm_client.go     # Python service client
+│   └── consensus.go          # Score consensus logic
+├── python_service/            # AI Judge evaluation service
+│   ├── main.py               # FastAPI server
+│   ├── config.py             # Configuration
+│   ├── requirements.txt      # Python dependencies
+│   ├── evaluators/           # Evaluation strategies
+│   ├── judges/               # Claude/GPT/Gemini implementations
+│   └── prompts/              # Judge prompt templates
 ├── templates/                 # HTML, CSS, JavaScript
 │   ├── *.html                # Page templates
 │   ├── style.css             # Centralized styles
@@ -553,6 +628,9 @@ llm-tournament/
 - **Cascade Deletes:** Deleting suite/model cascades to related data, ensure user confirmation prompts
 - **Markdown Rendering:** Always sanitize user input through Bluemonday before displaying as HTML
 - **Transaction Rollback:** Always defer rollback in transaction error paths to avoid locks
+- **ENCRYPTION_KEY Missing:** Automated evaluation fails without this environment variable set
+- **Python Service Not Running:** Evaluation requests fail if Python service on :8001 is down
+- **API Key Encryption:** Keys are encrypted at rest; decrypt using `middleware.DecryptAPIKey()`
 
 ### Recommended Development Sequence for New Features
 
