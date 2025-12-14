@@ -13,38 +13,30 @@
       "Bash(tdd-guard-go:*)",
       "Bash(CGO_ENABLED=1 go test:*)",
       "Bash(ls:*)",
-      "Bash(make test:*)"
+      "Bash(make test:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:cuong.io)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:zachwills.net)",
+      "WebFetch(domain:amitkoth.com)",
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(set CGO_ENABLED=1)",
+      "Bash(go test:*)",
+      "Bash(del C:Userslavantiendevllm-tournamentevaluatorconfig_test.go)",
+      "Bash(make test-verbose:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit|TodoWrite",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "tdd-guard"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "tdd-guard"
+            "command": "node .claude/hooks/tdd-guard-custom.js"
           }
         ]
       }
