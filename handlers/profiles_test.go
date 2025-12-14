@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +12,22 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// changeToProjectRoot changes to the project root directory for tests that need templates
+func changeToProjectRoot(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	// Go up one directory from handlers/ to project root
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
 
 // setupProfilesTestDB creates a test database for profile handler tests
 func setupProfilesTestDB(t *testing.T) func() {
@@ -302,5 +319,50 @@ func TestDeleteProfileHandler_POST_OutOfRange(t *testing.T) {
 	profiles := middleware.ReadProfiles()
 	if len(profiles) != 1 {
 		t.Errorf("expected profile to still exist, got %d profiles", len(profiles))
+	}
+}
+
+func TestProfilesHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add test data
+	err := middleware.WriteProfiles([]middleware.Profile{
+		{Name: "TestProfile", Description: "Test Description"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test profile: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/profiles", nil)
+	rr := httptest.NewRecorder()
+	ProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "TestProfile") {
+		t.Error("expected profile name in response body")
+	}
+}
+
+func TestResetProfilesHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/reset_profiles", nil)
+	rr := httptest.NewRecorder()
+	ResetProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }

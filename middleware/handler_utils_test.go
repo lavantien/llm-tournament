@@ -4,9 +4,25 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
+
+// changeToProjectRootMiddleware changes to the project root directory for tests that need templates
+func changeToProjectRootMiddleware(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
 
 func TestHandleFormError(t *testing.T) {
 	rr := httptest.NewRecorder()
@@ -131,5 +147,18 @@ func TestRenderTemplate_InvalidTemplate(t *testing.T) {
 	// Should return error since template file doesn't exist
 	if rr.Code != http.StatusInternalServerError {
 		t.Errorf("expected status %d for invalid template, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestImportErrorHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootMiddleware(t)
+	defer restoreDir()
+
+	req := httptest.NewRequest("GET", "/import_error", nil)
+	rr := httptest.NewRecorder()
+	ImportErrorHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }

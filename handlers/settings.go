@@ -32,11 +32,13 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
+		PageName      string
 		MaskedAPIKeys map[string]string
 		Threshold     float64
 		AutoEvaluate  bool
 		PythonURL     string
 	}{
+		PageName:      "Settings",
 		MaskedAPIKeys: maskedKeys,
 		Threshold:     thresholdFloat,
 		AutoEvaluate:  autoEval == "true",

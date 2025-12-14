@@ -529,11 +529,7 @@ func TestBroadcastEvaluationFailed(t *testing.T) {
 
 	go BroadcastEvaluationFailed(1, "test error")
 
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		t.Fatalf("failed to read message: %v", err)
-	}
-
+	// Read messages in a loop until we get the expected type (skip other broadcasts)
 	var payload struct {
 		Type string `json:"type"`
 		Data struct {
@@ -541,14 +537,24 @@ func TestBroadcastEvaluationFailed(t *testing.T) {
 			Error string `json:"error"`
 		} `json:"data"`
 	}
-	err = json.Unmarshal(msg, &payload)
-	if err != nil {
-		t.Fatalf("failed to unmarshal: %v", err)
+
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			t.Fatalf("failed to read message: %v", err)
+		}
+
+		err = json.Unmarshal(msg, &payload)
+		if err != nil {
+			t.Fatalf("failed to unmarshal: %v", err)
+		}
+
+		if payload.Type == "evaluation_failed" {
+			break
+		}
+		// Continue reading if we got a different message type (e.g., "results")
 	}
 
-	if payload.Type != "evaluation_failed" {
-		t.Errorf("expected type 'evaluation_failed', got %q", payload.Type)
-	}
 	if payload.Data.Error != "test error" {
 		t.Errorf("expected error 'test error', got %q", payload.Data.Error)
 	}

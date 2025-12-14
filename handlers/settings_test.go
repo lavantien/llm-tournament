@@ -235,3 +235,39 @@ func TestTestAPIKeyHandler_KeyConfigured(t *testing.T) {
 		t.Errorf("expected success:true in response, got %q", body)
 	}
 }
+
+// changeToProjectRootSettings changes to the project root directory for tests that need templates
+func changeToProjectRootSettings(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
+
+func TestSettingsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootSettings(t)
+	defer restoreDir()
+
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/settings", nil)
+	rr := httptest.NewRecorder()
+	SettingsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Settings") {
+		t.Error("expected 'Settings' in response body")
+	}
+}

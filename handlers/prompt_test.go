@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,6 +15,21 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// changeToProjectRootPrompts changes to project root for template tests
+func changeToProjectRootPrompts(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
 
 // setupPromptTestDB creates a test database for prompt handler tests
 func setupPromptTestDB(t *testing.T) func() {
@@ -728,5 +744,82 @@ func TestImportResultsHandler_POST_InvalidJSON(t *testing.T) {
 	location := rr.Header().Get("Location")
 	if !strings.Contains(location, "import_error") {
 		t.Errorf("expected redirect to import_error, got %q", location)
+	}
+}
+
+func TestPromptListHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add test profile and prompt
+	err := middleware.WriteProfiles([]middleware.Profile{
+		{Name: "TestProfile", Description: "Test"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	err = middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt", Profile: "TestProfile"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write prompt: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	PromptListHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Test Prompt") {
+		t.Error("expected prompt text in response body")
+	}
+}
+
+func TestResetPromptsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/reset_prompts", nil)
+	rr := httptest.NewRecorder()
+	ResetPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestBulkDeletePromptsPageHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add a prompt first
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write prompt: %v", err)
+	}
+
+	// Request with indices parameter
+	req := httptest.NewRequest("GET", "/bulk_delete_prompts?indices=[0]", nil)
+	rr := httptest.NewRecorder()
+	BulkDeletePromptsPageHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }

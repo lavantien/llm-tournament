@@ -2,10 +2,8 @@ package middleware
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 )
 
 type Prompt struct {
@@ -104,26 +102,6 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 	return tx.Commit()
 }
 
-// Read profile suite from JSON file (for migration)
-func ReadProfileSuiteFromJSON(suiteName string) ([]Profile, error) {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/profiles-default.json"
-	} else {
-		filename = "data/profiles-" + suiteName + ".json"
-	}
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	var profiles []Profile
-	err = json.Unmarshal(data, &profiles)
-	if err != nil {
-		return nil, err
-	}
-	return profiles, nil
-}
-
 // List all profile suites
 func ListProfileSuites() ([]string, error) {
 	return ListSuites()
@@ -217,26 +195,6 @@ func ReadResults() map[string]Result {
 	}
 
 	return results
-}
-
-// Read results from JSON file (for migration)
-func ReadResultsFromJSON(suiteName string) (map[string]Result, error) {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/results-default.json"
-	} else {
-		filename = "data/results-" + suiteName + ".json"
-	}
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	var results map[string]Result
-	err = json.Unmarshal(data, &results)
-	if err != nil {
-		return nil, err
-	}
-	return results, nil
 }
 
 // Read prompt suite from database
@@ -353,26 +311,6 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 	}
 
 	return tx.Commit()
-}
-
-// Read prompt suite from JSON file (for migration)
-func ReadPromptSuiteFromJSON(suiteName string) ([]Prompt, error) {
-	var filename string
-	if suiteName == "default" {
-		filename = "data/prompts-default.json"
-	} else {
-		filename = "data/prompts-" + suiteName + ".json"
-	}
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	var prompts []Prompt
-	err = json.Unmarshal(data, &prompts)
-	if err != nil {
-		return nil, err
-	}
-	return prompts, nil
 }
 
 // List all prompt suites

@@ -713,44 +713,6 @@ func TestGetProfileID_Found(t *testing.T) {
 	}
 }
 
-func TestCleanupDuplicatePrompts_NoDuplicates(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	suiteID, _ := GetCurrentSuiteID()
-
-	// Add unique prompts
-	_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('unique1', ?, 0)", suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert prompt: %v", err)
-	}
-	_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('unique2', ?, 1)", suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert prompt: %v", err)
-	}
-
-	// Should succeed with no duplicates
-	err = CleanupDuplicatePrompts()
-	if err != nil {
-		t.Fatalf("CleanupDuplicatePrompts failed: %v", err)
-	}
-
-	// Verify both prompts still exist
-	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = ?", suiteID).Scan(&count)
-	if err != nil {
-		t.Fatalf("failed to count prompts: %v", err)
-	}
-	if count != 2 {
-		t.Errorf("expected 2 prompts, got %d", count)
-	}
-}
-
 func TestGetCurrentSuiteID_NoCurrent(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()

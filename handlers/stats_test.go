@@ -1,8 +1,44 @@
 package handlers
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
+
+	"llm-tournament/middleware"
+
+	_ "github.com/mattn/go-sqlite3"
 )
+
+// changeToProjectRootStats changes to the project root directory for tests that need templates
+func changeToProjectRootStats(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
+
+// setupStatsTestDB creates a test database for stats handler tests
+func setupStatsTestDB(t *testing.T) func() {
+	t.Helper()
+	dbPath := t.TempDir() + "/test.db"
+	err := middleware.InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("Failed to initialize test database: %v", err)
+	}
+	return func() {
+		middleware.CloseDB()
+	}
+}
 
 func TestCalculateTiers_Empty(t *testing.T) {
 	tiers, tierRanges := calculateTiers(map[string]int{})
@@ -236,5 +272,43 @@ func TestCalculateTiers_AllTiersCovered(t *testing.T) {
 		if len(tiers[tier]) != 1 {
 			t.Errorf("expected 1 model in tier %q, got %d", tier, len(tiers[tier]))
 		}
+	}
+}
+
+func TestStatsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootStats(t)
+	defer restoreDir()
+
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	// Add test data
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt 1"},
+		{Text: "Test Prompt 2"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{80, 100}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Statistics") {
+		t.Error("expected 'Statistics' in response body")
 	}
 }

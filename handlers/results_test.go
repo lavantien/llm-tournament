@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -13,6 +14,21 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// changeToProjectRootResults changes to the project root directory for tests that need templates
+func changeToProjectRootResults(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
 
 // setupResultsTestDB creates a test database for results handler tests
 func setupResultsTestDB(t *testing.T) func() {
@@ -473,5 +489,110 @@ func TestEvaluateResult_GET_Request(t *testing.T) {
 	// GET request should fail (expects POST or template rendering)
 	if evalRR.Code == http.StatusMethodNotAllowed {
 		// That's fine, handler only supports POST
+	}
+}
+
+func TestResultsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add test prompts
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt 1"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	// Add a model
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	ResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "TestModel") {
+		t.Error("expected model name in response body")
+	}
+}
+
+func TestConfirmRefreshResultsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/confirm_refresh_results", nil)
+	rr := httptest.NewRecorder()
+	ConfirmRefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestResetResultsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/reset_results", nil)
+	rr := httptest.NewRecorder()
+	ResetResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestExportResultsHandler_GET(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add test prompts and results
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/export_results", nil)
+	rr := httptest.NewRecorder()
+	ExportResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify CSV content
+	body := rr.Body.String()
+	if !strings.Contains(body, "Model") {
+		t.Error("expected 'Model' header in CSV output")
 	}
 }

@@ -17,9 +17,6 @@ func main() {
 	
 	// Parse command line flags
 	migrateResults := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
-	migrateToSQLite := flag.Bool("migrate-to-sqlite", false, "Migrate data from JSON files to SQLite database")
-	remigrateScores := flag.Bool("remigrate-scores", false, "Remigrate just the scores from JSON to SQLite")
-	cleanupDuplicates := flag.Bool("cleanup-duplicates", false, "Remove duplicate prompts from the database")
 	dbPath := flag.String("db", "data/tournament.db", "SQLite database path")
 	flag.Parse()
 
@@ -29,36 +26,6 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer middleware.CloseDB()
-
-	// Handle migration from JSON to SQLite
-	if *migrateToSQLite {
-		log.Println("Migrating data from JSON files to SQLite database...")
-		if err := middleware.MigrateFromJSON(); err != nil {
-			log.Fatalf("Error migrating data to SQLite: %v", err)
-		}
-		log.Println("Migration to SQLite completed successfully")
-		return
-	}
-	
-	// Handle remigration of scores
-	if *remigrateScores {
-		log.Println("Remigrating scores from JSON files to SQLite database...")
-		if err := middleware.RemigrateScores(); err != nil {
-			log.Fatalf("Error remigrating scores to SQLite: %v", err)
-		}
-		log.Println("Score remigration completed successfully")
-		return
-	}
-	
-	// Handle cleanup of duplicate prompts
-	if *cleanupDuplicates {
-		log.Println("Cleaning up duplicate prompts in the database...")
-		if err := middleware.CleanupDuplicatePrompts(); err != nil {
-			log.Fatalf("Error cleaning up duplicate prompts: %v", err)
-		}
-		log.Println("Duplicate prompt cleanup completed successfully")
-		return
-	}
 
 	// Handle old result format migration
 	if *migrateResults {
