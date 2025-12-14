@@ -20,8 +20,6 @@ Before coding, define: Goal, Acceptance Criteria (testable), Non-goals, Constrai
 ### Verification Minimum
 ```bash
 CGO_ENABLED=1 go test ./... -v -race -cover  # All tests with race detection
-make test                                      # TDD-guard + race + coverage
-make test-verbose                              # Bypass TDD-guard for debugging
 ```
 
 ### When Stuck (3 Failed Attempts)
