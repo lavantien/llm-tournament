@@ -1,0 +1,54 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(CGO_ENABLED=1 go build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add automated LLM evaluation system with multi-judge consensus\n\nImplement comprehensive automated evaluation system supporting both\nobjective and creative prompts with real-time progress tracking.\n\nNew Features:\n- Multi-judge consensus scoring (Claude Opus 4.5, GPT-5.2, Gemini 3 Pro)\n- Objective vs creative evaluation modes with semantic matching\n- Async job queue with 3 concurrent workers\n- Real-time WebSocket progress updates\n- Encrypted API key management (AES-256-GCM)\n- Cost tracking and threshold alerts\n\nArchitecture:\n- Python LiteLLM service (FastAPI) with 3 AI judges\n- Go evaluation orchestrator with job queue\n- WebSocket broadcasts for progress/completion/alerts\n- SQLite schema extensions (5 new tables, 7 indexes)\n\nDatabase Changes:\n- Add ''type'' field to prompts (objective/creative)\n- New tables: settings, evaluation_jobs, model_responses,\n  evaluation_history, cost_tracking\n- Encrypted API key storage\n\nAPI Endpoints:\n- /settings - Configure API keys and thresholds\n- /evaluate/all - Evaluate all models × all prompts\n- /evaluate/model - Evaluate one model × all prompts\n- /evaluate/prompt - Evaluate all models × one prompt\n- /evaluation/progress - Get job status\n- /evaluation/cancel - Cancel running job\n\nFiles Created (26):\n- python_service/ (13 files: FastAPI server, judges, evaluators)\n- evaluator/ (5 files: orchestrator, job queue, consensus)\n- middleware/encryption.go, settings.go\n- handlers/evaluation.go, settings.go\n- templates/settings.html\n- AUTOMATED_EVALUATION_SETUP.md\n\nCost: ~$0.05 per evaluation (3 judges)\nExample: 10 models × 42 prompts = $21\nEOF\n)\")",
+      "Bash(git commit:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(tdd-guard:*)",
+      "Bash(where:*)",
+      "Bash(go install:*)",
+      "Bash(tdd-guard-go:*)",
+      "Bash(CGO_ENABLED=1 go test:*)",
+      "Bash(ls:*)",
+      "Bash(make test:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard"
+          }
+        ]
+      }
+    ]
+  }
+}

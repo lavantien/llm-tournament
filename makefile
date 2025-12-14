@@ -20,6 +20,8 @@ aiderinstallwindows:
 aiderupdate:
 	aider --install-main-branch
 test:
-	-go test ./... -v -race -cover
+	CGO_ENABLED=1 go test -json ./... -race -cover 2>&1 | tdd-guard-go -project-root "C:/Users/lavantien/dev/llm-tournament"
+test-verbose:
+	CGO_ENABLED=1 go test ./... -v -race -cover
 run:
 	go run .

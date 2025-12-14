@@ -29,5 +29,5 @@ tools/bg_batch_eraser/foreground.webm
 .aider*
 data/tournament.db-shm
 data/tournament.db-wal
-.claude/settings.local.json
 llm-tournament.exe
+.tdd-guard/
