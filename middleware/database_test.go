@@ -633,3 +633,155 @@ func TestCascadeDelete(t *testing.T) {
 		t.Error("models should be cascade deleted")
 	}
 }
+
+func TestGetProfileID_EmptyName(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	suiteID, _ := GetCurrentSuiteID()
+
+	// Empty profile name should return 0, false, nil
+	id, exists, err := GetProfileID("", suiteID)
+	if err != nil {
+		t.Fatalf("GetProfileID failed: %v", err)
+	}
+	if exists {
+		t.Error("expected exists to be false for empty profile name")
+	}
+	if id != 0 {
+		t.Errorf("expected id 0 for empty profile name, got %d", id)
+	}
+}
+
+func TestGetProfileID_NotFound(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	suiteID, _ := GetCurrentSuiteID()
+
+	// Non-existent profile should return 0, false, nil
+	id, exists, err := GetProfileID("non-existent-profile", suiteID)
+	if err != nil {
+		t.Fatalf("GetProfileID failed: %v", err)
+	}
+	if exists {
+		t.Error("expected exists to be false for non-existent profile")
+	}
+	if id != 0 {
+		t.Errorf("expected id 0 for non-existent profile, got %d", id)
+	}
+}
+
+func TestGetProfileID_Found(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	suiteID, _ := GetCurrentSuiteID()
+
+	// Create a profile
+	result, err := db.Exec("INSERT INTO profiles (name, suite_id) VALUES ('test-profile', ?)", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert profile: %v", err)
+	}
+	expectedID, _ := result.LastInsertId()
+
+	// Should find the profile
+	id, exists, err := GetProfileID("test-profile", suiteID)
+	if err != nil {
+		t.Fatalf("GetProfileID failed: %v", err)
+	}
+	if !exists {
+		t.Error("expected exists to be true for existing profile")
+	}
+	if id != int(expectedID) {
+		t.Errorf("expected id %d, got %d", expectedID, id)
+	}
+}
+
+func TestCleanupDuplicatePrompts_NoDuplicates(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	suiteID, _ := GetCurrentSuiteID()
+
+	// Add unique prompts
+	_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('unique1', ?, 0)", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('unique2', ?, 1)", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+
+	// Should succeed with no duplicates
+	err = CleanupDuplicatePrompts()
+	if err != nil {
+		t.Fatalf("CleanupDuplicatePrompts failed: %v", err)
+	}
+
+	// Verify both prompts still exist
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = ?", suiteID).Scan(&count)
+	if err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("expected 2 prompts, got %d", count)
+	}
+}
+
+func TestGetCurrentSuiteID_NoCurrent(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Clear all current flags
+	_, err = db.Exec("UPDATE suites SET is_current = 0")
+	if err != nil {
+		t.Fatalf("failed to clear current flags: %v", err)
+	}
+
+	// GetCurrentSuiteID should set default as current
+	id, err := GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("GetCurrentSuiteID failed: %v", err)
+	}
+	if id <= 0 {
+		t.Errorf("expected positive suite ID, got %d", id)
+	}
+
+	// Verify default is now current
+	var name string
+	err = db.QueryRow("SELECT name FROM suites WHERE is_current = 1").Scan(&name)
+	if err != nil {
+		t.Fatalf("failed to query current suite: %v", err)
+	}
+	if name != "default" {
+		t.Errorf("expected 'default' to be current, got %q", name)
+	}
+}

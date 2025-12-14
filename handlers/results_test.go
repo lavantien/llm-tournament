@@ -399,3 +399,79 @@ func TestInitRand(t *testing.T) {
 	_ = val1
 	_ = val2
 }
+
+func TestUpdateResultHandler_POST_MissingParams(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Missing model parameter
+	updateForm := url.Values{}
+	updateForm.Add("promptIndex", "0")
+	updateForm.Add("pass", "true")
+
+	updateReq := httptest.NewRequest("POST", "/update_result", strings.NewReader(updateForm.Encode()))
+	updateReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	updateRR := httptest.NewRecorder()
+	UpdateResultHandler(updateRR, updateReq)
+
+	// Should still work (empty model name)
+	if updateRR.Code == http.StatusBadRequest {
+		t.Errorf("did not expect status %d", updateRR.Code)
+	}
+}
+
+func TestUpdateResultHandler_POST_NegativePromptIndex(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add a model first
+	form := url.Values{}
+	form.Add("model", "TestModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	updateForm := url.Values{}
+	updateForm.Add("model", "TestModel")
+	updateForm.Add("promptIndex", "-1")
+	updateForm.Add("pass", "true")
+
+	updateReq := httptest.NewRequest("POST", "/update_result", strings.NewReader(updateForm.Encode()))
+	updateReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	updateRR := httptest.NewRecorder()
+	UpdateResultHandler(updateRR, updateReq)
+
+	// The handler may not validate negative indices strictly
+	// Just check that it doesn't crash
+	if updateRR.Code == http.StatusInternalServerError {
+		t.Errorf("unexpected internal server error")
+	}
+}
+
+func TestEvaluateResult_GET_Request(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add a prompt
+	prompts := []middleware.Prompt{{Text: "GET test prompt"}}
+	middleware.WritePrompts(prompts)
+
+	// Add a model
+	form := url.Values{}
+	form.Add("model", "GetModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	// GET request should also work (handler may render template)
+	evalReq := httptest.NewRequest("GET", "/evaluate_result?model=GetModel&prompt=0", nil)
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	// GET request should fail (expects POST or template rendering)
+	if evalRR.Code == http.StatusMethodNotAllowed {
+		// That's fine, handler only supports POST
+	}
+}

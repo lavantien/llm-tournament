@@ -178,3 +178,58 @@ func TestCancelEvaluationHandler_InvalidID(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
+
+func TestInitEvaluator(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Store original globalEvaluator
+	originalEvaluator := globalEvaluator
+	defer func() { globalEvaluator = originalEvaluator }()
+
+	// Test initialization
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	if globalEvaluator == nil {
+		t.Error("expected globalEvaluator to be initialized")
+	}
+}
+
+func TestInitEvaluator_WithCustomURL(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Store original globalEvaluator
+	originalEvaluator := globalEvaluator
+	defer func() { globalEvaluator = originalEvaluator }()
+
+	// Set custom python service URL
+	middleware.SetSetting("python_service_url", "http://custom:8001")
+
+	// Test initialization
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	if globalEvaluator == nil {
+		t.Error("expected globalEvaluator to be initialized")
+	}
+}
+
+func TestEvaluateAllHandler_WithEvaluator(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	req := httptest.NewRequest("POST", "/evaluate/all", nil)
+	rr := httptest.NewRecorder()
+	EvaluateAllHandler(rr, req)
+
+	// Should succeed (creates a job with 0 prompts/models)
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}

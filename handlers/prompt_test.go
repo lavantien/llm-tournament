@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -570,5 +571,162 @@ func TestPromptListHandler_InvalidOrderFilter(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+}
+
+// Helper to create multipart form with file
+func createMultipartFormFile(t *testing.T, fieldname, filename string, content []byte) (*bytes.Buffer, string) {
+	t.Helper()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile(fieldname, filename)
+	if err != nil {
+		t.Fatalf("failed to create form file: %v", err)
+	}
+	_, err = part.Write(content)
+	if err != nil {
+		t.Fatalf("failed to write file content: %v", err)
+	}
+	writer.Close()
+
+	return body, writer.FormDataContentType()
+}
+
+func TestImportPromptsHandler_POST_NoFile(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// POST without file should redirect to error
+	req := httptest.NewRequest("POST", "/import_prompts", nil)
+	req.Header.Set("Content-Type", "multipart/form-data")
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	// Should redirect to import_error
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestImportPromptsHandler_POST_ValidJSON(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	prompts := []middleware.Prompt{
+		{Text: "Imported Prompt 1", Solution: "Solution 1"},
+		{Text: "Imported Prompt 2", Solution: "Solution 2"},
+	}
+	jsonData, _ := json.Marshal(prompts)
+
+	body, contentType := createMultipartFormFile(t, "prompts_file", "prompts.json", jsonData)
+
+	req := httptest.NewRequest("POST", "/import_prompts", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify prompts were imported
+	importedPrompts := middleware.ReadPrompts()
+	if len(importedPrompts) != 2 {
+		t.Errorf("expected 2 imported prompts, got %d", len(importedPrompts))
+	}
+}
+
+func TestImportPromptsHandler_POST_InvalidJSON(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	invalidJSON := []byte("not valid json")
+	body, contentType := createMultipartFormFile(t, "prompts_file", "prompts.json", invalidJSON)
+
+	req := httptest.NewRequest("POST", "/import_prompts", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	// Should redirect to import_error
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for invalid JSON, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if !strings.Contains(location, "import_error") {
+		t.Errorf("expected redirect to import_error, got %q", location)
+	}
+}
+
+func TestImportResultsHandler_POST_NoFile(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("POST", "/import_results", nil)
+	req.Header.Set("Content-Type", "multipart/form-data")
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should redirect to import_error
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestImportResultsHandler_POST_ValidJSON(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// First create prompts so results have targets
+	prompts := []middleware.Prompt{
+		{Text: "Prompt 1", Solution: "Solution 1"},
+		{Text: "Prompt 2", Solution: "Solution 2"},
+	}
+	middleware.WritePrompts(prompts)
+
+	results := map[string]middleware.Result{
+		"Model A": {Scores: []int{80, 60}},
+		"Model B": {Scores: []int{100, 40}},
+	}
+	jsonData, _ := json.Marshal(results)
+
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestImportResultsHandler_POST_InvalidJSON(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	invalidJSON := []byte("not valid json")
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", invalidJSON)
+
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should redirect to import_error
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for invalid JSON, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if !strings.Contains(location, "import_error") {
+		t.Errorf("expected redirect to import_error, got %q", location)
 	}
 }

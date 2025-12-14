@@ -366,3 +366,129 @@ func TestJobQueue_MultipleJobs(t *testing.T) {
 		uniqueIDs[id] = true
 	}
 }
+
+func TestJobQueue_UpdateJob_StatusChange(t *testing.T) {
+	db := setupTestJobQueueDB(t)
+	defer db.Close()
+
+	jq := &JobQueue{
+		db:      db,
+		jobs:    make(chan *EvaluationJob, 100),
+		workers: 0,
+		running: make(map[int]bool),
+		cancel:  make(map[int]chan bool),
+	}
+
+	// Enqueue a job
+	job := &EvaluationJob{
+		SuiteID: 1,
+		JobType: "all",
+	}
+	err := jq.Enqueue(job)
+	if err != nil {
+		t.Fatalf("Enqueue failed: %v", err)
+	}
+
+	// Update job to running
+	job.Status = "running"
+	err = jq.updateJob(job)
+	if err != nil {
+		t.Fatalf("updateJob failed: %v", err)
+	}
+
+	// Verify status was updated
+	var status string
+	err = db.QueryRow("SELECT status FROM evaluation_jobs WHERE id = ?", job.ID).Scan(&status)
+	if err != nil {
+		t.Fatalf("failed to query job: %v", err)
+	}
+	if status != "running" {
+		t.Errorf("expected status 'running', got %q", status)
+	}
+}
+
+func TestJobQueue_UpdateJob_Completed(t *testing.T) {
+	db := setupTestJobQueueDB(t)
+	defer db.Close()
+
+	jq := &JobQueue{
+		db:      db,
+		jobs:    make(chan *EvaluationJob, 100),
+		workers: 0,
+		running: make(map[int]bool),
+		cancel:  make(map[int]chan bool),
+	}
+
+	// Enqueue a job
+	job := &EvaluationJob{
+		SuiteID: 1,
+		JobType: "all",
+	}
+	err := jq.Enqueue(job)
+	if err != nil {
+		t.Fatalf("Enqueue failed: %v", err)
+	}
+
+	// Update job to completed
+	job.Status = "completed"
+	job.ActualCost = 1.50
+	err = jq.updateJob(job)
+	if err != nil {
+		t.Fatalf("updateJob failed: %v", err)
+	}
+
+	// Verify updates
+	var status string
+	var cost float64
+	err = db.QueryRow("SELECT status, actual_cost_usd FROM evaluation_jobs WHERE id = ?", job.ID).Scan(&status, &cost)
+	if err != nil {
+		t.Fatalf("failed to query job: %v", err)
+	}
+	if status != "completed" {
+		t.Errorf("expected status 'completed', got %q", status)
+	}
+	if cost != 1.50 {
+		t.Errorf("expected cost 1.50, got %f", cost)
+	}
+}
+
+func TestJobQueue_UpdateJob_WithError(t *testing.T) {
+	db := setupTestJobQueueDB(t)
+	defer db.Close()
+
+	jq := &JobQueue{
+		db:      db,
+		jobs:    make(chan *EvaluationJob, 100),
+		workers: 0,
+		running: make(map[int]bool),
+		cancel:  make(map[int]chan bool),
+	}
+
+	// Enqueue a job
+	job := &EvaluationJob{
+		SuiteID: 1,
+		JobType: "all",
+	}
+	err := jq.Enqueue(job)
+	if err != nil {
+		t.Fatalf("Enqueue failed: %v", err)
+	}
+
+	// Update job to failed
+	job.Status = "failed"
+	job.ErrorMessage = "Test error message"
+	err = jq.updateJob(job)
+	if err != nil {
+		t.Fatalf("updateJob failed: %v", err)
+	}
+
+	// Verify error message was saved
+	var errorMsg string
+	err = db.QueryRow("SELECT error_message FROM evaluation_jobs WHERE id = ?", job.ID).Scan(&errorMsg)
+	if err != nil {
+		t.Fatalf("failed to query job: %v", err)
+	}
+	if errorMsg != "Test error message" {
+		t.Errorf("expected error message 'Test error message', got %q", errorMsg)
+	}
+}

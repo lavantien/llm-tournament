@@ -480,3 +480,357 @@ func TestCancelJob(t *testing.T) {
 		t.Error("expected error when cancelling non-running job")
 	}
 }
+
+func TestProcessJob_UnknownType(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		JobType: "unknown",
+	}
+
+	cancelChan := make(chan bool)
+	err := evaluator.processJob(job, cancelChan)
+	if err == nil {
+		t.Error("expected error for unknown job type")
+	}
+}
+
+func TestProcessAllJob_NoData(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:      1,
+		SuiteID: 1,
+		JobType: "all",
+	}
+
+	cancelChan := make(chan bool)
+	err := evaluator.processAllJob(job, cancelChan)
+	// Should succeed with no data (nothing to process)
+	if err != nil {
+		t.Errorf("processAllJob with no data failed: %v", err)
+	}
+}
+
+func TestProcessModelJob_NoPrompts(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add model
+	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:       1,
+		SuiteID:  1,
+		JobType:  "model",
+		TargetID: 1,
+	}
+
+	cancelChan := make(chan bool)
+	err = evaluator.processModelJob(job, cancelChan)
+	// Should succeed with no prompts
+	if err != nil {
+		t.Errorf("processModelJob with no prompts failed: %v", err)
+	}
+}
+
+func TestProcessPromptJob_NoModels(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add prompt
+	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:       1,
+		SuiteID:  1,
+		JobType:  "prompt",
+		TargetID: 1,
+	}
+
+	cancelChan := make(chan bool)
+	err = evaluator.processPromptJob(job, cancelChan)
+	// Should succeed with no models
+	if err != nil {
+		t.Errorf("processPromptJob with no models failed: %v", err)
+	}
+}
+
+func TestGetAPIKeys(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Update API keys
+	_, err := db.Exec("UPDATE settings SET value = 'sk-test-anthropic' WHERE key = 'api_key_anthropic'")
+	if err != nil {
+		t.Fatalf("failed to update setting: %v", err)
+	}
+	_, err = db.Exec("UPDATE settings SET value = 'sk-test-openai' WHERE key = 'api_key_openai'")
+	if err != nil {
+		t.Fatalf("failed to update setting: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db: db,
+	}
+
+	apiKeys, err := evaluator.getAPIKeys()
+	if err != nil {
+		t.Fatalf("getAPIKeys failed: %v", err)
+	}
+
+	if apiKeys["api_key_anthropic"] != "sk-test-anthropic" {
+		t.Errorf("expected 'sk-test-anthropic', got %q", apiKeys["api_key_anthropic"])
+	}
+	if apiKeys["api_key_openai"] != "sk-test-openai" {
+		t.Errorf("expected 'sk-test-openai', got %q", apiKeys["api_key_openai"])
+	}
+}
+
+func TestEvaluateModelPromptPair_NoResponse(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add model and prompt
+	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	// Without a model response, it should skip evaluation and return 0 cost
+	cost, err := evaluator.evaluateModelPromptPair(1, 1, 1)
+	if err != nil {
+		t.Errorf("expected no error for missing response, got: %v", err)
+	}
+	if cost != 0 {
+		t.Errorf("expected 0 cost for skipped evaluation, got: %f", cost)
+	}
+}
+
+func TestEvaluateModelPromptPair_PromptNotFound(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	// Non-existent prompt should return error
+	_, err := evaluator.evaluateModelPromptPair(1, 1, 999)
+	if err == nil {
+		t.Error("expected error for non-existent prompt")
+	}
+}
+
+func TestProcessAllJob_Cancellation(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add test data
+	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "all",
+		ProgressTotal: 1,
+	}
+
+	// Create a pre-closed cancel channel
+	cancelChan := make(chan bool, 1)
+	cancelChan <- true
+
+	err = evaluator.processAllJob(job, cancelChan)
+	if err == nil || err.Error() != "job cancelled" {
+		t.Errorf("expected 'job cancelled' error, got: %v", err)
+	}
+}
+
+func TestProcessModelJob_Cancellation(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add test data
+	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "model",
+		TargetID:      1,
+		ProgressTotal: 1,
+	}
+
+	// Create a pre-closed cancel channel
+	cancelChan := make(chan bool, 1)
+	cancelChan <- true
+
+	err = evaluator.processModelJob(job, cancelChan)
+	if err == nil || err.Error() != "job cancelled" {
+		t.Errorf("expected 'job cancelled' error, got: %v", err)
+	}
+}
+
+func TestProcessPromptJob_Cancellation(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Add test data
+	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "prompt",
+		TargetID:      1,
+		ProgressTotal: 1,
+	}
+
+	// Create a pre-closed cancel channel
+	cancelChan := make(chan bool, 1)
+	cancelChan <- true
+
+	err = evaluator.processPromptJob(job, cancelChan)
+	if err == nil || err.Error() != "job cancelled" {
+		t.Errorf("expected 'job cancelled' error, got: %v", err)
+	}
+}
