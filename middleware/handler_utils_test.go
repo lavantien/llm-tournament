@@ -162,3 +162,33 @@ func TestImportErrorHandler_GET(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
+
+func TestRenderTemplate_Success(t *testing.T) {
+	restoreDir := changeToProjectRootMiddleware(t)
+	defer restoreDir()
+
+	rr := httptest.NewRecorder()
+	data := map[string]interface{}{
+		"PageName": "Test Page",
+	}
+
+	// Render a simple template that exists
+	RenderTemplate(rr, "import_error.html", data)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestRespondJSON_Unmarshalable(t *testing.T) {
+	rr := httptest.NewRecorder()
+
+	// Create a channel which cannot be marshaled to JSON
+	ch := make(chan int)
+	RespondJSON(rr, ch)
+
+	// Should return error status
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for unmarshalable data, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

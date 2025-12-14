@@ -270,6 +270,28 @@ func TestGetCurrentSuiteName_AfterSwitch(t *testing.T) {
 	}
 }
 
+func TestGetCurrentSuiteName_NoCurrentSuite(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Clear all is_current flags
+	_, err = db.Exec("UPDATE suites SET is_current = 0")
+	if err != nil {
+		t.Fatalf("failed to clear current suite: %v", err)
+	}
+
+	// Function should fall back to default
+	name := GetCurrentSuiteName()
+	if name != "default" {
+		t.Errorf("expected 'default', got %q", name)
+	}
+}
+
 func TestSuiteExists(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()

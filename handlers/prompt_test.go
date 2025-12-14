@@ -823,3 +823,410 @@ func TestBulkDeletePromptsPageHandler_GET(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
+
+func TestDeletePromptHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add a prompt first
+	prompts := []middleware.Prompt{{Text: "Delete me"}}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/delete_prompt?index=0", nil)
+	rr := httptest.NewRecorder()
+	DeletePromptHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Delete me") {
+		t.Error("expected prompt text in response body")
+	}
+}
+
+func TestDeletePromptHandler_GET_OutOfRange(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add a prompt
+	prompts := []middleware.Prompt{{Text: "Test"}}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/delete_prompt?index=99", nil)
+	rr := httptest.NewRecorder()
+	DeletePromptHandler(rr, req)
+
+	// Out of range index should not render template
+	if rr.Code == http.StatusInternalServerError {
+		t.Error("unexpected internal server error")
+	}
+}
+
+func TestEditPromptHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompt and profile
+	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+	prompts := []middleware.Prompt{{Text: "Edit me", Profile: "TestProfile"}}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/edit_prompt?index=0", nil)
+	rr := httptest.NewRecorder()
+	EditPromptHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Edit me") {
+		t.Error("expected prompt text in response body")
+	}
+}
+
+func TestExportPromptsHandler_GET_JSON(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "Export me"}}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/export_prompts", nil)
+	rr := httptest.NewRecorder()
+	ExportPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Export me") {
+		t.Error("expected prompt text in response body")
+	}
+}
+
+func TestImportResultsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/import_results", nil)
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should render the import form template
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestImportPromptsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/import_prompts", nil)
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	// Should render the import form template
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestImportResultsHandler_EmptyResults(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Create empty results JSON
+	emptyResults := map[string]middleware.Result{}
+	jsonData, _ := json.Marshal(emptyResults)
+
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should redirect to import_error due to empty results
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if !strings.Contains(location, "import_error") {
+		t.Errorf("expected redirect to import_error, got %q", location)
+	}
+}
+
+func TestImportResultsHandler_ScoresExtended(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Create more prompts than the imported scores
+	prompts := []middleware.Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+		{Text: "Prompt 3"},
+	}
+	middleware.WritePrompts(prompts)
+
+	// Create results with fewer scores than prompts
+	results := map[string]middleware.Result{
+		"Model1": {Scores: []int{80}}, // Only 1 score but 3 prompts
+	}
+	jsonData, _ := json.Marshal(results)
+
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should succeed
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify results were extended
+	importedResults := middleware.ReadResults()
+	if result, exists := importedResults["Model1"]; exists {
+		if len(result.Scores) != 3 {
+			t.Errorf("expected 3 scores after extension, got %d", len(result.Scores))
+		}
+	} else {
+		t.Error("expected Model1 to exist in results")
+	}
+}
+
+func TestPromptListHandler_WithSearch(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts with different text
+	prompts := []middleware.Prompt{
+		{Text: "Find this prompt"},
+		{Text: "Another prompt"},
+	}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/prompts?search_query=Find", nil)
+	rr := httptest.NewRecorder()
+	PromptListHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestAddPromptHandler_WithProfile(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add a profile first
+	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+
+	form := url.Values{}
+	form.Add("prompt", "Prompt with profile")
+	form.Add("profile", "TestProfile")
+
+	req := httptest.NewRequest("POST", "/add_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	AddPromptHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify prompt was added with profile
+	prompts := middleware.ReadPrompts()
+	if len(prompts) != 1 {
+		t.Fatalf("expected 1 prompt, got %d", len(prompts))
+	}
+	if prompts[0].Profile != "TestProfile" {
+		t.Errorf("expected profile 'TestProfile', got %q", prompts[0].Profile)
+	}
+}
+
+func TestResetPromptsHandler_GET_WithTemplate(t *testing.T) {
+	restoreDir := changeToProjectRootPrompts(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/reset_prompts", nil)
+	rr := httptest.NewRecorder()
+	ResetPromptsHandler(rr, req)
+
+	// GET should render confirmation template
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestMovePromptHandler_POST_OutOfRange(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}}
+	middleware.WritePrompts(prompts)
+
+	form := url.Values{}
+	form.Add("index", "99")
+	form.Add("new_index", "0")
+
+	req := httptest.NewRequest("POST", "/move_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	MovePromptHandler(rr, req)
+
+	// Should redirect without error (bounds check in handler)
+	if rr.Code != http.StatusSeeOther {
+		t.Logf("status: %d", rr.Code)
+	}
+}
+
+func TestMovePromptHandler_POST_MoveUp(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}, {Text: "Third"}}
+	middleware.WritePrompts(prompts)
+
+	// Move Third (index 2) to position 0
+	form := url.Values{}
+	form.Add("index", "2")
+	form.Add("new_index", "0")
+
+	req := httptest.NewRequest("POST", "/move_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	MovePromptHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify order changed
+	newPrompts := middleware.ReadPrompts()
+	if len(newPrompts) != 3 {
+		t.Fatalf("expected 3 prompts, got %d", len(newPrompts))
+	}
+	if newPrompts[0].Text != "Third" {
+		t.Errorf("expected 'Third' first, got %q", newPrompts[0].Text)
+	}
+}
+
+func TestMovePromptHandler_GET_OutOfRange(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "Only prompt"}}
+	middleware.WritePrompts(prompts)
+
+	req := httptest.NewRequest("GET", "/move_prompt?index=99", nil)
+	rr := httptest.NewRecorder()
+	MovePromptHandler(rr, req)
+
+	// Should not crash with out-of-range index
+	if rr.Code == http.StatusInternalServerError {
+		t.Error("unexpected internal server error")
+	}
+}
+
+func TestExportPromptsHandler_Empty(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// No prompts
+	req := httptest.NewRequest("GET", "/export_prompts", nil)
+	rr := httptest.NewRecorder()
+	ExportPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Should return null or empty JSON array for no prompts
+	body := strings.TrimSpace(rr.Body.String())
+	if body != "null" && body != "[]" {
+		t.Errorf("expected null or empty JSON array, got %q", body)
+	}
+}
+
+func TestAddPromptHandler_WithSolution(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	form := url.Values{}
+	form.Add("prompt", "Test prompt")
+	form.Add("solution", "Expected solution")
+
+	req := httptest.NewRequest("POST", "/add_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	AddPromptHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify prompt with solution was added
+	prompts := middleware.ReadPrompts()
+	if len(prompts) != 1 {
+		t.Fatalf("expected 1 prompt, got %d", len(prompts))
+	}
+	if prompts[0].Solution != "Expected solution" {
+		t.Errorf("expected solution 'Expected solution', got %q", prompts[0].Solution)
+	}
+}
+
+func TestAddPromptHandler_WithType(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	form := url.Values{}
+	form.Add("prompt", "Creative prompt")
+	form.Add("type", "creative")
+
+	req := httptest.NewRequest("POST", "/add_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	AddPromptHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}

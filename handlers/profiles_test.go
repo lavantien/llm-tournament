@@ -366,3 +366,87 @@ func TestResetProfilesHandler_GET(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
+
+func TestEditProfileHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add a profile to edit
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "EditMe", Description: "Edit this profile"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/edit_profile?index=0", nil)
+	rr := httptest.NewRecorder()
+	EditProfileHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "EditMe") {
+		t.Error("expected profile name in response body")
+	}
+}
+
+func TestDeleteProfileHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add a profile to show delete confirmation
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "DeleteMe", Description: "Delete this profile"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/delete_profile?index=0", nil)
+	rr := httptest.NewRecorder()
+	DeleteProfileHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "DeleteMe") {
+		t.Error("expected profile name in response body")
+	}
+}
+
+func TestProfilesHandler_GET_WithSearch(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add test profiles
+	err := middleware.WriteProfiles([]middleware.Profile{
+		{Name: "FindMe", Description: "This is findable"},
+		{Name: "Other", Description: "This is other"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write profiles: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/profiles?search_query=FindMe", nil)
+	rr := httptest.NewRecorder()
+	ProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "FindMe") {
+		t.Error("expected search query profile in response body")
+	}
+}

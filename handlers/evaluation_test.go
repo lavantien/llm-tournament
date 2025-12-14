@@ -233,3 +233,49 @@ func TestEvaluateAllHandler_WithEvaluator(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
+
+func TestEvaluateModelHandler_WithEvaluator(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Add a model directly using SQL
+	suiteID, _ := middleware.GetSuiteID(middleware.GetCurrentSuiteName())
+	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/evaluate/model?id=1", nil)
+	rr := httptest.NewRecorder()
+	EvaluateModelHandler(rr, req)
+
+	// Should succeed
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestEvaluatePromptHandler_WithEvaluator(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Add a prompt first
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	req := httptest.NewRequest("POST", "/evaluate/prompt?id=1", nil)
+	rr := httptest.NewRecorder()
+	EvaluatePromptHandler(rr, req)
+
+	// Should succeed
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}

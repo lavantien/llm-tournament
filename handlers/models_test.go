@@ -269,3 +269,43 @@ func TestEditModelHandler_GET_MissingModelParam(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
+
+func TestDeleteModelHandler_POST_NonExistent(t *testing.T) {
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Try to delete a model that doesn't exist
+	form := url.Values{}
+	form.Add("model", "NonExistentModel")
+
+	req := httptest.NewRequest("POST", "/delete_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	DeleteModelHandler(rr, req)
+
+	// Should redirect even for non-existent model
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestEditModelHandler_POST_NonExistent(t *testing.T) {
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Try to edit a model that doesn't exist
+	form := url.Values{}
+	form.Add("new_model_name", "NewName")
+
+	req := httptest.NewRequest("POST", "/edit_model?model=NonExistent", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	EditModelHandler(rr, req)
+
+	// Should redirect even for non-existent model
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}

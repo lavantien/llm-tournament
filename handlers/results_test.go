@@ -596,3 +596,159 @@ func TestExportResultsHandler_GET(t *testing.T) {
 		t.Error("expected 'Model' header in CSV output")
 	}
 }
+
+func TestConfirmRefreshResultsHandler_POST(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add test prompts and results
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"RefreshModel": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	// POST request should refresh results
+	req := httptest.NewRequest("POST", "/confirm_refresh_results", nil)
+	rr := httptest.NewRecorder()
+	ConfirmRefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify scores were zeroed
+	results := middleware.ReadResults()
+	if result, exists := results["RefreshModel"]; exists {
+		for i, score := range result.Scores {
+			if score != 0 {
+				t.Errorf("expected score 0 at index %d, got %d", i, score)
+			}
+		}
+	}
+}
+
+func TestRefreshResultsHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/refresh_results", nil)
+	rr := httptest.NewRecorder()
+	RefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestEvaluateResult_GET_WithTemplate(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add a prompt
+	prompts := []middleware.Prompt{{Text: "Template test prompt"}}
+	middleware.WritePrompts(prompts)
+
+	// Add a model with results
+	form := url.Values{}
+	form.Add("model", "TemplateModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	// GET request should render template
+	evalReq := httptest.NewRequest("GET", "/evaluate_result?model=TemplateModel&prompt=0", nil)
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	if evalRR.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, evalRR.Code)
+	}
+
+	body := evalRR.Body.String()
+	if !strings.Contains(body, "TemplateModel") {
+		t.Error("expected model name in response body")
+	}
+}
+
+func TestEvaluateResult_POST_NewModel(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "New model test prompt"}}
+	middleware.WritePrompts(prompts)
+
+	// POST with model that doesn't have results yet
+	evalForm := url.Values{}
+	evalForm.Add("score", "60")
+
+	evalReq := httptest.NewRequest("POST", "/evaluate_result?model=NewModel&prompt=0", strings.NewReader(evalForm.Encode()))
+	evalReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	// Should initialize results for new model
+	if evalRR.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, evalRR.Code)
+	}
+
+	results := middleware.ReadResults()
+	if result, exists := results["NewModel"]; exists {
+		if len(result.Scores) > 0 && result.Scores[0] != 60 {
+			t.Errorf("expected score 60, got %d", result.Scores[0])
+		}
+	} else {
+		t.Error("expected results for NewModel to exist")
+	}
+}
+
+func TestEvaluateResult_POST_NegativeScore(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "Negative score test"}}
+	middleware.WritePrompts(prompts)
+
+	// Add model
+	form := url.Values{}
+	form.Add("model", "NegModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	// POST with negative score
+	evalForm := url.Values{}
+	evalForm.Add("score", "-10")
+
+	evalReq := httptest.NewRequest("POST", "/evaluate_result?model=NegModel&prompt=0", strings.NewReader(evalForm.Encode()))
+	evalReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	// Score should be clamped to 0
+	results := middleware.ReadResults()
+	if result, exists := results["NegModel"]; exists {
+		if len(result.Scores) > 0 && result.Scores[0] != 0 {
+			t.Errorf("expected score 0 (clamped from -10), got %d", result.Scores[0])
+		}
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +12,21 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// changeToProjectRootForSuites changes to the project root directory for tests
+func changeToProjectRootForSuites(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
 
 // setupSuitesTestDB creates a test database for suite handler tests
 func setupSuitesTestDB(t *testing.T) func() {
@@ -276,5 +292,170 @@ func TestNewPromptSuiteHandler_POST_DuplicateName(t *testing.T) {
 	// Should still redirect (idempotent)
 	if rr2.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d for duplicate suite, got %d", http.StatusSeeOther, rr2.Code)
+	}
+}
+
+func TestNewPromptSuiteHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootForSuites(t)
+	defer restoreDir()
+
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/new_prompt_suite", nil)
+	rr := httptest.NewRecorder()
+	NewPromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestEditPromptSuiteHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootForSuites(t)
+	defer restoreDir()
+
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Create a suite to edit
+	middleware.WritePromptSuite("test-suite", []middleware.Prompt{})
+
+	req := httptest.NewRequest("GET", "/edit_prompt_suite?suite_name=test-suite", nil)
+	rr := httptest.NewRecorder()
+	EditPromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "test-suite") {
+		t.Error("expected suite name in response body")
+	}
+}
+
+func TestDeletePromptSuiteHandler_GET(t *testing.T) {
+	restoreDir := changeToProjectRootForSuites(t)
+	defer restoreDir()
+
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/delete_prompt_suite?suite_name=test-suite", nil)
+	rr := httptest.NewRecorder()
+	DeletePromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "test-suite") {
+		t.Error("expected suite name in response body")
+	}
+}
+
+func TestSelectPromptSuiteHandler_WithDataDir(t *testing.T) {
+	restoreDir := changeToProjectRootForSuites(t)
+	defer restoreDir()
+
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Ensure data directory exists
+	if err := os.MkdirAll("data", 0755); err != nil {
+		t.Fatalf("failed to create data directory: %v", err)
+	}
+
+	// Create a suite to select
+	middleware.WritePromptSuite("selectable-suite", []middleware.Prompt{})
+
+	form := url.Values{}
+	form.Add("suite_name", "selectable-suite")
+
+	req := httptest.NewRequest("POST", "/select_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	SelectPromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify the current_suite.txt was written
+	content, err := os.ReadFile("data/current_suite.txt")
+	if err != nil {
+		t.Fatalf("failed to read current_suite.txt: %v", err)
+	}
+	if string(content) != "selectable-suite" {
+		t.Errorf("expected 'selectable-suite', got %q", string(content))
+	}
+}
+
+func TestDeletePromptSuiteHandler_POST_CurrentSuiteReset(t *testing.T) {
+	restoreDir := changeToProjectRootForSuites(t)
+	defer restoreDir()
+
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Ensure data directory exists
+	if err := os.MkdirAll("data", 0755); err != nil {
+		t.Fatalf("failed to create data directory: %v", err)
+	}
+
+	// Create a suite and set it as current via file
+	middleware.WritePromptSuite("current-suite", []middleware.Prompt{})
+	os.WriteFile("data/current_suite.txt", []byte("current-suite"), 0644)
+
+	// Delete the current suite - handler should reset current to default
+	form := url.Values{}
+	form.Add("suite_name", "current-suite")
+
+	req := httptest.NewRequest("POST", "/delete_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	DeletePromptSuiteHandler(rr, req)
+
+	// Should succeed with redirect
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify the suite was deleted
+	if middleware.SuiteExists("current-suite") {
+		t.Error("suite should be deleted")
+	}
+}
+
+func TestEditPromptSuiteHandler_POST_RenameToSameName(t *testing.T) {
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Create a suite first
+	middleware.WritePromptSuite("existing-suite", []middleware.Prompt{})
+
+	// Try to rename to same name (should return error since name already exists)
+	form := url.Values{}
+	form.Add("suite_name", "existing-suite")
+	form.Add("new_suite_name", "existing-suite")
+
+	req := httptest.NewRequest("POST", "/edit_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	EditPromptSuiteHandler(rr, req)
+
+	// Should return error for same name (suite already exists)
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+
+	// Suite should still exist
+	if !middleware.SuiteExists("existing-suite") {
+		t.Error("existing-suite should still exist")
 	}
 }
