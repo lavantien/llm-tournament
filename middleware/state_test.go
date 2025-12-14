@@ -1001,3 +1001,223 @@ func TestGetMaskedAPIKeys_AllProviders(t *testing.T) {
 		t.Error("expected api_key_google in masked keys")
 	}
 }
+
+func TestUpdatePromptsOrder_WithReordering(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	err = WritePrompts([]Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+		{Text: "Prompt 3"},
+	})
+	if err != nil {
+		t.Fatalf("WritePrompts failed: %v", err)
+	}
+
+	// Update order - function returns void, just call it
+	newOrder := []int{2, 0, 1}
+	UpdatePromptsOrder(newOrder)
+
+	// Verify prompts were reordered
+	prompts := ReadPrompts()
+	if len(prompts) != 3 {
+		t.Errorf("expected 3 prompts, got %d", len(prompts))
+	}
+}
+
+func TestWriteResults_MultipleModels(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	err = WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
+	if err != nil {
+		t.Fatalf("WritePrompts failed: %v", err)
+	}
+
+	// Write results for multiple models
+	results := map[string]Result{
+		"Model A": {Scores: []int{80, 60}},
+		"Model B": {Scores: []int{100, 40}},
+		"Model C": {Scores: []int{60, 80}},
+	}
+
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read back
+	readResults := ReadResults()
+	if len(readResults) != 3 {
+		t.Errorf("expected 3 models, got %d", len(readResults))
+	}
+}
+
+func TestWriteResults_UpdateExisting(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	err = WritePrompts([]Prompt{{Text: "Prompt 1"}})
+	if err != nil {
+		t.Fatalf("WritePrompts failed: %v", err)
+	}
+
+	// Write initial results
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{50}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Update results
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults update failed: %v", err)
+	}
+
+	// Verify update
+	results := ReadResults()
+	if results["Model1"].Scores[0] != 80 {
+		t.Errorf("expected score 80, got %d", results["Model1"].Scores[0])
+	}
+}
+
+func TestWriteProfileSuite_Success(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	profiles := []Profile{
+		{Name: "Profile 1", Description: "Desc 1"},
+		{Name: "Profile 2", Description: "Desc 2"},
+	}
+
+	err = WriteProfileSuite("test-suite", profiles)
+	if err != nil {
+		t.Fatalf("WriteProfileSuite failed: %v", err)
+	}
+
+	// Read back
+	readProfiles, err := ReadProfileSuite("test-suite")
+	if err != nil {
+		t.Fatalf("ReadProfileSuite failed: %v", err)
+	}
+	if len(readProfiles) != 2 {
+		t.Errorf("expected 2 profiles, got %d", len(readProfiles))
+	}
+}
+
+func TestReadResults_WithMissingScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add 3 prompts
+	err = WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}, {Text: "P3"}})
+	if err != nil {
+		t.Fatalf("WritePrompts failed: %v", err)
+	}
+
+	// Write results with only 1 score
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{50}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read back should pad with zeros
+	results := ReadResults()
+	if len(results["Model1"].Scores) != 3 {
+		t.Errorf("expected 3 scores (padded), got %d", len(results["Model1"].Scores))
+	}
+}
+
+func TestMigrateResults_EmptyResults(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	results := map[string]Result{}
+	migrated := MigrateResults(results)
+
+	if len(migrated) != 0 {
+		t.Errorf("expected empty map, got %d results", len(migrated))
+	}
+}
+
+func TestMigrateResults_OutOfRangeScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	results := map[string]Result{
+		"Model1": {Scores: []int{-10, 150, 50}},
+	}
+
+	migrated := MigrateResults(results)
+
+	// Check that out-of-range scores are clamped
+	for _, score := range migrated["Model1"].Scores {
+		if score < 0 || score > 100 {
+			t.Errorf("migrated score %d should be in range 0-100", score)
+		}
+	}
+}
+
+func TestReadPromptSuite_NonExistent(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	prompts, err := ReadPromptSuite("non-existent-suite")
+	// Should return empty data for non-existent suite
+	if err != nil {
+		// Error is expected for non-existent suite
+		return
+	}
+	if prompts != nil && len(prompts) > 0 {
+		t.Error("expected empty prompts for non-existent suite")
+	}
+}

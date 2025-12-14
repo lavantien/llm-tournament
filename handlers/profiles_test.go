@@ -450,3 +450,137 @@ func TestProfilesHandler_GET_WithSearch(t *testing.T) {
 		t.Error("expected search query profile in response body")
 	}
 }
+
+func TestEditProfileHandler_GET_OutOfRangeIndex(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add one profile
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "OnlyProfile", Description: "Only one"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	// Try to edit with out-of-range index
+	req := httptest.NewRequest("GET", "/edit_profile?index=99", nil)
+	rr := httptest.NewRecorder()
+	EditProfileHandler(rr, req)
+
+	// When index is out of range, the handler doesn't write anything (returns empty body)
+	// This is a valid code path we need to cover
+	if rr.Code == http.StatusInternalServerError {
+		t.Error("should not return internal server error for out-of-range index")
+	}
+}
+
+func TestEditProfileHandler_POST_WithPromptRename(t *testing.T) {
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add a profile
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "OldName", Description: "Test"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	// Edit the profile to rename it
+	editForm := url.Values{}
+	editForm.Add("index", "0")
+	editForm.Add("profile_name", "NewName")
+	editForm.Add("profile_description", "Updated")
+
+	editReq := httptest.NewRequest("POST", "/edit_profile", strings.NewReader(editForm.Encode()))
+	editReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	editRR := httptest.NewRecorder()
+	EditProfileHandler(editRR, editReq)
+
+	if editRR.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, editRR.Code)
+	}
+
+	// Verify profile was renamed
+	profiles := middleware.ReadProfiles()
+	if len(profiles) != 1 {
+		t.Fatalf("expected 1 profile, got %d", len(profiles))
+	}
+	if profiles[0].Name != "NewName" {
+		t.Errorf("expected profile name to be 'NewName', got %q", profiles[0].Name)
+	}
+}
+
+func TestEditProfileHandler_POST_OutOfRangeIndex(t *testing.T) {
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add one profile
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "OnlyProfile", Description: "Only one"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	// Try to edit with out-of-range index
+	editForm := url.Values{}
+	editForm.Add("index", "99")
+	editForm.Add("profile_name", "NewName")
+
+	editReq := httptest.NewRequest("POST", "/edit_profile", strings.NewReader(editForm.Encode()))
+	editReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	editRR := httptest.NewRecorder()
+	EditProfileHandler(editRR, editReq)
+
+	// Should redirect even with out-of-range (profile unchanged)
+	if editRR.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, editRR.Code)
+	}
+
+	// Verify original profile unchanged
+	profiles := middleware.ReadProfiles()
+	if len(profiles) != 1 || profiles[0].Name != "OnlyProfile" {
+		t.Error("profile should remain unchanged")
+	}
+}
+
+func TestDeleteProfileHandler_GET_OutOfRangeIndex(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Add one profile
+	err := middleware.WriteProfiles([]middleware.Profile{{Name: "OnlyProfile", Description: "Only one"}})
+	if err != nil {
+		t.Fatalf("failed to write profile: %v", err)
+	}
+
+	// Try to get delete confirmation for out-of-range index
+	req := httptest.NewRequest("GET", "/delete_profile?index=99", nil)
+	rr := httptest.NewRecorder()
+	DeleteProfileHandler(rr, req)
+
+	// When index is out of range, handler returns without writing
+	if rr.Code == http.StatusInternalServerError {
+		t.Error("should not return internal server error for out-of-range index")
+	}
+}
+
+func TestProfilesHandler_GET_EmptyProfiles(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/profiles", nil)
+	rr := httptest.NewRecorder()
+	ProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}

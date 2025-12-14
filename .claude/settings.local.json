@@ -33,7 +33,8 @@
       "Bash(sort:*)",
       "Bash(go clean:*)",
       "Bash(make:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(git push:*)"
     ]
   },
   "hooks": {

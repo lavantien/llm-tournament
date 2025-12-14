@@ -919,5 +919,192 @@ func TestUpdateMockResultsHandler_ValidatesInvalidScores(t *testing.T) {
 	}
 }
 
+func TestExportResultsHandler_GET_WithData(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
 
+	// Add test data
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	middleware.WriteResults("default", map[string]middleware.Result{
+		"Model1": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("GET", "/export_results", nil)
+	rr := httptest.NewRecorder()
+	ExportResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Check content type
+	contentType := rr.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("expected Content-Type application/json, got %q", contentType)
+	}
+
+	// Verify JSON is valid
+	var data map[string]interface{}
+	err := json.Unmarshal(rr.Body.Bytes(), &data)
+	if err != nil {
+		t.Errorf("expected valid JSON, got error: %v", err)
+	}
+}
+
+func TestExportResultsHandler_EmptyResults(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/export_results", nil)
+	rr := httptest.NewRecorder()
+	ExportResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestResetResultsHandler_POST_AndVerify(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add test data
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	middleware.WriteResults("default", map[string]middleware.Result{
+		"Model1": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("POST", "/reset_results", nil)
+	rr := httptest.NewRecorder()
+	ResetResultsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify results were reset
+	results := middleware.ReadResults()
+	for _, result := range results {
+		for _, score := range result.Scores {
+			if score != 0 {
+				t.Error("expected all scores to be reset to 0")
+			}
+		}
+	}
+}
+
+func TestConfirmRefreshResultsHandler_WithSearchQuery(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	middleware.WriteResults("default", map[string]middleware.Result{
+		"Model1": {Scores: []int{80}},
+		"Model2": {Scores: []int{60}},
+	})
+
+	req := httptest.NewRequest("GET", "/confirm_refresh_results?search_query=Model1", nil)
+	rr := httptest.NewRecorder()
+	ConfirmRefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts and models
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	middleware.WriteResults("default", map[string]middleware.Result{
+		"Model1": {Scores: []int{80}},
+	})
+
+	form := url.Values{}
+	form.Add("selected_models", "Model1")
+
+	req := httptest.NewRequest("POST", "/refresh_results", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	RefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestRefreshResultsHandler_POST_NoModels(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("POST", "/refresh_results", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	RefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestUpdateResultHandler_CreatesNewModel(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
+
+	form := url.Values{}
+	form.Add("model", "NewModel")
+	form.Add("promptIndex", "0")
+	form.Add("pass", "true")
+
+	req := httptest.NewRequest("POST", "/update_result", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	UpdateResultHandler(rr, req)
+
+	// Handler should succeed and create the new model
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify model was created
+	results := middleware.ReadResults()
+	if _, exists := results["NewModel"]; !exists {
+		t.Error("expected NewModel to be created")
+	}
+}
+
+func TestUpdateResultHandler_WithScoreValue(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
+	middleware.WriteResults("default", map[string]middleware.Result{
+		"Model1": {Scores: []int{50}},
+	})
+
+	form := url.Values{}
+	form.Add("model", "Model1")
+	form.Add("promptIndex", "0")
+	form.Add("pass", "true")
+	form.Add("score", "80")
+
+	req := httptest.NewRequest("POST", "/update_result", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	UpdateResultHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
 

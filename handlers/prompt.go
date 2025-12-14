@@ -275,8 +275,16 @@ func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		middleware.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	} else {
-		t, _ := template.ParseFiles("templates/import_prompts.html")
-		t.Execute(w, nil)
+		t, err := template.ParseFiles("templates/import_prompts.html")
+		if err != nil {
+			log.Printf("Error parsing template: %v", err)
+			http.Error(w, "Error parsing template", http.StatusInternalServerError)
+			return
+		}
+		if err := t.Execute(w, nil); err != nil {
+			log.Printf("Error executing template: %v", err)
+			http.Error(w, "Error executing template", http.StatusInternalServerError)
+		}
 	}
 }
 
