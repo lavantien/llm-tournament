@@ -753,3 +753,171 @@ func TestEvaluateResult_POST_NegativeScore(t *testing.T) {
 	}
 }
 
+func TestResultsHandler_GET_WithUncategorizedPrompts(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts with empty profile (uncategorized)
+	err := middleware.WritePrompts([]middleware.Prompt{
+		{Text: "Categorized Prompt", Profile: "TestProfile"},
+		{Text: "Uncategorized Prompt", Profile: ""},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	// Add a profile
+	err = middleware.WriteProfiles([]middleware.Profile{
+		{Name: "TestProfile", Description: "Test"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write profiles: %v", err)
+	}
+
+	// Add results
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{80, 60}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	ResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Uncategorized") {
+		t.Error("expected 'Uncategorized' group in response body for prompts without profile")
+	}
+}
+
+func TestResultsHandler_GET_WithMultipleProfiles(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add multiple profiles
+	err := middleware.WriteProfiles([]middleware.Profile{
+		{Name: "Profile1", Description: "First profile"},
+		{Name: "Profile2", Description: "Second profile"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write profiles: %v", err)
+	}
+
+	// Add prompts across profiles
+	err = middleware.WritePrompts([]middleware.Prompt{
+		{Text: "Prompt 1", Profile: "Profile1"},
+		{Text: "Prompt 2", Profile: "Profile1"},
+		{Text: "Prompt 3", Profile: "Profile2"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write prompts: %v", err)
+	}
+
+	// Add results
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"Model1": {Scores: []int{100, 80, 60}},
+		"Model2": {Scores: []int{60, 40, 20}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	ResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Profile1") {
+		t.Error("expected Profile1 in response body")
+	}
+	if !strings.Contains(body, "Profile2") {
+		t.Error("expected Profile2 in response body")
+	}
+}
+
+func TestUpdateMockResultsHandler_WithEmptyModels(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts first
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Send request with results but no explicit models array
+	mockData := `{
+		"results": {
+			"ModelFromResults": {"scores": [80]}
+		},
+		"models": [],
+		"passPercentages": {},
+		"totalScores": {}
+	}`
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	UpdateMockResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+}
+
+func TestUpdateMockResultsHandler_ValidatesInvalidScores(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts first
+	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Send request with invalid scores (should be corrected to 0)
+	mockData := `{
+		"results": {
+			"TestModel": {"scores": [15, 25, 35]}
+		},
+		"models": ["TestModel"],
+		"passPercentages": {},
+		"totalScores": {}
+	}`
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	UpdateMockResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify invalid scores were corrected
+	results := middleware.ReadResults()
+	if result, exists := results["TestModel"]; exists {
+		for i, score := range result.Scores {
+			if score != 0 {
+				t.Errorf("expected invalid score at index %d to be corrected to 0, got %d", i, score)
+			}
+		}
+	}
+}
+
+
+

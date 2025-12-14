@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -307,5 +308,106 @@ func TestEditModelHandler_POST_NonExistent(t *testing.T) {
 	// Should redirect even for non-existent model
 	if rr.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestAddModelHandler_WithPrompts(t *testing.T) {
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Add some prompts first to test that new model gets correct number of score slots
+	middleware.WritePrompts([]middleware.Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+		{Text: "Prompt 3"},
+	})
+
+	form := url.Values{}
+	form.Add("model", "ModelWithScores")
+
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	AddModelHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Verify model was added with correct number of score slots
+	results := middleware.ReadResults()
+	if result, exists := results["ModelWithScores"]; !exists {
+		t.Error("ModelWithScores should exist in results")
+	} else if len(result.Scores) != 3 {
+		t.Errorf("expected 3 score slots, got %d", len(result.Scores))
+	}
+}
+
+func changeToProjectRootModels(t *testing.T) func() {
+	t.Helper()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if err := os.Chdir(".."); err != nil {
+		t.Fatalf("failed to change to project root: %v", err)
+	}
+	return func() {
+		os.Chdir(originalDir)
+	}
+}
+
+func TestDeleteModelHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRootModels(t)
+	defer restoreDir()
+
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Add a model first
+	suiteName := middleware.GetCurrentSuiteName()
+	middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"ModelToDelete": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("GET", "/delete_model?model=ModelToDelete", nil)
+	rr := httptest.NewRecorder()
+	DeleteModelHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "ModelToDelete") {
+		t.Error("expected model name in response body")
+	}
+}
+
+func TestEditModelHandler_GET_Success(t *testing.T) {
+	restoreDir := changeToProjectRootModels(t)
+	defer restoreDir()
+
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Add a model first
+	suiteName := middleware.GetCurrentSuiteName()
+	middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"ModelToEdit": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("GET", "/edit_model?model=ModelToEdit", nil)
+	rr := httptest.NewRecorder()
+	EditModelHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "ModelToEdit") {
+		t.Error("expected model name in response body")
 	}
 }

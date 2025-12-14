@@ -1261,3 +1261,103 @@ func TestMovePromptHandler_POST_SamePosition(t *testing.T) {
 	}
 }
 
+func TestImportPromptsHandler_POST_EmptyArray(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Import an empty array - should redirect to import_error
+	emptyJSON := []byte("[]")
+	body, contentType := createMultipartFormFile(t, "prompts_file", "prompts.json", emptyJSON)
+
+	req := httptest.NewRequest("POST", "/import_prompts", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	// Should redirect to import_error because no prompts found
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for empty array, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if !strings.Contains(location, "import_error") {
+		t.Errorf("expected redirect to import_error for empty array, got %q", location)
+	}
+}
+
+func TestImportResultsHandler_POST_EmptyResults(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Import an empty results object - should redirect to import_error
+	emptyJSON := []byte("{}")
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", emptyJSON)
+
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
+
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	// Should redirect to import_error because no results found
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for empty results, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if !strings.Contains(location, "import_error") {
+		t.Errorf("expected redirect to import_error for empty results, got %q", location)
+	}
+}
+
+func TestPromptListHandler_WithOrderFilter(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	middleware.WritePrompts([]middleware.Prompt{
+		{Text: "First Prompt"},
+		{Text: "Second Prompt"},
+	})
+
+	req := httptest.NewRequest("GET", "/prompts?order_filter=1", nil)
+	rr := httptest.NewRecorder()
+	PromptListHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestPromptListHandler_WithProfileFilter(t *testing.T) {
+	restoreDir := changeToProjectRoot(t)
+	defer restoreDir()
+
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts with profiles
+	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+	middleware.WritePrompts([]middleware.Prompt{
+		{Text: "Filtered Prompt", Profile: "TestProfile"},
+		{Text: "Other Prompt", Profile: "Other"},
+	})
+
+	req := httptest.NewRequest("GET", "/prompts?profile_filter=TestProfile", nil)
+	rr := httptest.NewRecorder()
+	PromptListHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Filtered Prompt") {
+		t.Error("expected 'Filtered Prompt' in response body")
+	}
+}
+
