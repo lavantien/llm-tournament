@@ -31,7 +31,9 @@
       "Bash(grep:*)",
       "Bash(go tool cover:*)",
       "Bash(sort:*)",
-      "Bash(go clean:*)"
+      "Bash(go clean:*)",
+      "Bash(make:*)",
+      "Bash(chmod:*)"
     ]
   },
   "hooks": {

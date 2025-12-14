@@ -1,4 +1,4 @@
-.PHONY: test run clean all build buildwindows setenv migrate aiderupdate aiderinstalllinux aiderinstallwindows
+.PHONY: test run clean all build buildwindows setenv migrate aiderupdate aiderinstalllinux aiderinstallwindows update-coverage
 all:
 	test
 clean:
@@ -25,3 +25,7 @@ test-verbose:
 	CGO_ENABLED=1 go test ./... -v -race -cover
 run:
 	go run .
+update-coverage:
+	@CGO_ENABLED=1 go test ./... -coverprofile=coverage.out
+	@go tool cover -func=coverage.out | grep total
+	@./scripts/update-badge.sh
