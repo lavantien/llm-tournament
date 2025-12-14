@@ -210,6 +210,9 @@ func TestHandleWebSocket_Connection(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusSwitchingProtocols, resp.StatusCode)
 	}
 
+	// Wait for client registration to complete
+	time.Sleep(50 * time.Millisecond)
+
 	// Verify client was registered
 	clientsMutex.Lock()
 	clientCount := len(clients)

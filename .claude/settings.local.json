@@ -34,17 +34,41 @@
       "Bash(go clean:*)",
       "Bash(make:*)",
       "Bash(chmod:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(CGO_ENABLED=1 go tool cover:*)",
+      "Bash(CGO_ENABLED=1 go clean:*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|TodoWrite",
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/tdd-guard-custom.js"
+            "command": "tdd-guard"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tdd-guard"
           }
         ]
       }

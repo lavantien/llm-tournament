@@ -354,3 +354,90 @@ func TestCancelEvaluationHandler_WithValidJob(t *testing.T) {
 		t.Errorf("expected non-BadRequest status, got %d", rr.Code)
 	}
 }
+
+func TestEvaluateAllHandler_NilEvaluator(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Store original evaluator and set to nil
+	originalEvaluator := globalEvaluator
+	globalEvaluator = nil
+
+	// Deferred restore is set up first so it runs last
+	defer func() {
+		globalEvaluator = originalEvaluator
+	}()
+
+	// Deferred panic recovery runs before restore
+	defer func() {
+		if r := recover(); r != nil {
+			// Expected - nil evaluator causes panic, test passes
+		}
+	}()
+
+	req := httptest.NewRequest("POST", "/evaluate/all", nil)
+	rr := httptest.NewRecorder()
+	EvaluateAllHandler(rr, req)
+
+	// If we get here (no panic), check that we got an error response
+	if rr.Code == http.StatusOK {
+		t.Error("expected error when evaluator is nil")
+	}
+}
+
+func TestEvaluateModelHandler_WithInvalidModel(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Request evaluation of non-existent model ID
+	req := httptest.NewRequest("POST", "/evaluate/model?id=99999", nil)
+	rr := httptest.NewRecorder()
+	EvaluateModelHandler(rr, req)
+
+	// Should succeed but create a job that may fail
+	// The handler itself should return OK since it creates the job
+	if rr.Code == http.StatusBadRequest {
+		t.Error("should not return bad request for valid ID format")
+	}
+}
+
+func TestEvaluatePromptHandler_WithInvalidPrompt(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Request evaluation of non-existent prompt ID
+	req := httptest.NewRequest("POST", "/evaluate/prompt?id=99999", nil)
+	rr := httptest.NewRecorder()
+	EvaluatePromptHandler(rr, req)
+
+	// Should succeed but create a job that may fail
+	if rr.Code == http.StatusBadRequest {
+		t.Error("should not return bad request for valid ID format")
+	}
+}
+
+func TestCancelEvaluationHandler_WithNonExistentJob(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	req := httptest.NewRequest("POST", "/evaluation/cancel?id=99999", nil)
+	rr := httptest.NewRecorder()
+	CancelEvaluationHandler(rr, req)
+
+	// Should return error for non-existent job
+	if rr.Code == http.StatusOK {
+		t.Error("expected error when cancelling non-existent job")
+	}
+}

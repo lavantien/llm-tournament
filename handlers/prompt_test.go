@@ -1361,3 +1361,43 @@ func TestPromptListHandler_WithProfileFilter(t *testing.T) {
 	}
 }
 
+func TestExportPromptsHandler_WithPrompts(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add some prompts with all fields
+	middleware.WritePrompts([]middleware.Prompt{
+		{Text: "Prompt 1", Solution: "Solution 1", Profile: "Profile1"},
+		{Text: "Prompt 2", Solution: "Solution 2", Profile: "Profile2"},
+	})
+
+	req := httptest.NewRequest("GET", "/export_prompts", nil)
+	rr := httptest.NewRecorder()
+	ExportPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	contentType := rr.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("expected Content-Type 'application/json', got %q", contentType)
+	}
+
+	// Verify JSON is valid and contains prompts
+	var prompts []middleware.Prompt
+	err := json.Unmarshal(rr.Body.Bytes(), &prompts)
+	if err != nil {
+		t.Errorf("expected valid JSON, got error: %v", err)
+	}
+	if len(prompts) != 2 {
+		t.Errorf("expected 2 prompts, got %d", len(prompts))
+	}
+
+	// Verify Content-Disposition header for download
+	disposition := rr.Header().Get("Content-Disposition")
+	if !strings.Contains(disposition, "attachment") {
+		t.Errorf("expected attachment disposition, got %q", disposition)
+	}
+}
+
