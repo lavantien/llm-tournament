@@ -26,7 +26,10 @@
       "Bash(del C:Userslavantiendevllm-tournamentevaluatorconfig_test.go)",
       "Bash(make test-verbose:*)",
       "Bash(cat:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(go tool cover:*)"
     ]
   },
   "hooks": {
