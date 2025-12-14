@@ -1,0 +1,135 @@
+package middleware
+
+import (
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+func TestHandleFormError(t *testing.T) {
+	rr := httptest.NewRecorder()
+	testErr := errors.New("test form parsing error")
+
+	HandleFormError(rr, testErr)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Errorf("expected body to contain 'Error parsing form', got %q", rr.Body.String())
+	}
+}
+
+func TestRespondJSON_Success(t *testing.T) {
+	rr := httptest.NewRecorder()
+	data := map[string]interface{}{
+		"success": true,
+		"message": "test message",
+	}
+
+	RespondJSON(rr, data)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	contentType := rr.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("expected Content-Type 'application/json', got %q", contentType)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "success") {
+		t.Errorf("expected body to contain 'success', got %q", body)
+	}
+	if !strings.Contains(body, "test message") {
+		t.Errorf("expected body to contain 'test message', got %q", body)
+	}
+}
+
+func TestRespondJSON_Array(t *testing.T) {
+	rr := httptest.NewRecorder()
+	data := []string{"item1", "item2", "item3"}
+
+	RespondJSON(rr, data)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "item1") {
+		t.Errorf("expected body to contain 'item1', got %q", body)
+	}
+}
+
+func TestRespondJSON_EmptyObject(t *testing.T) {
+	rr := httptest.NewRecorder()
+	data := map[string]interface{}{}
+
+	RespondJSON(rr, data)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := strings.TrimSpace(rr.Body.String())
+	if body != "{}" {
+		t.Errorf("expected body '{}', got %q", body)
+	}
+}
+
+func TestRespondJSON_Null(t *testing.T) {
+	rr := httptest.NewRecorder()
+
+	RespondJSON(rr, nil)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := strings.TrimSpace(rr.Body.String())
+	if body != "null" {
+		t.Errorf("expected body 'null', got %q", body)
+	}
+}
+
+func TestRespondJSON_Struct(t *testing.T) {
+	rr := httptest.NewRecorder()
+	data := struct {
+		Name  string `json:"name"`
+		Value int    `json:"value"`
+	}{
+		Name:  "test",
+		Value: 42,
+	}
+
+	RespondJSON(rr, data)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, `"name":"test"`) {
+		t.Errorf("expected body to contain '\"name\":\"test\"', got %q", body)
+	}
+	if !strings.Contains(body, `"value":42`) {
+		t.Errorf("expected body to contain '\"value\":42', got %q", body)
+	}
+}
+
+func TestRenderTemplate_InvalidTemplate(t *testing.T) {
+	rr := httptest.NewRecorder()
+
+	// Try to render a non-existent template
+	RenderTemplate(rr, "nonexistent.html", nil)
+
+	// Should return error since template file doesn't exist
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for invalid template, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
