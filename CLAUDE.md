@@ -254,6 +254,15 @@ LLM Tournament Arena is a Go-based web application for benchmarking and evaluati
 - Server-side rendering with Go templates, Markdown support (Blackfriday), and XSS protection (Bluemonday)
 - Client-side vanilla JavaScript with Chart.js for visualizations
 
+### Prerequisites
+
+- Go 1.24+
+- Python 3.8+ (for automated evaluation)
+- Make
+- Git
+- SQLite
+- GCC (required for CGO/SQLite)
+
 ### Common Commands
 
 **Development:**
@@ -353,6 +362,22 @@ HTTP POST /evaluate/* → Handler → Evaluator.Enqueue() → JobQueue Worker
 → LiteLLMClient → Python Service (:8001) → AI Judges (Claude/GPT/Gemini)
 → Consensus Score → Database Update → WebSocket Broadcast → UI Update
 ```
+
+**Evaluation API Endpoints:**
+- `POST /evaluate/all` - Evaluate all models × all prompts in current suite
+- `POST /evaluate/model?id={id}` - Evaluate one model × all prompts
+- `POST /evaluate/prompt?id={id}` - Evaluate all models × one prompt
+- `GET /evaluation/progress?id={job_id}` - Get job status
+- `POST /evaluation/cancel?id={job_id}` - Cancel running job
+- `GET /settings` - API key management page
+- `POST /settings/update` - Update settings
+- `POST /settings/test_key` - Test API key validity
+
+**AI Judges (3-judge consensus):**
+- Claude Opus 4.5 (extended thinking)
+- GPT-5.2 (extended thinking)
+- Gemini 3 Pro (extended thinking)
+- Cost: ~$0.05 per evaluation (3 judges combined)
 
 **Suite Management:**
 - All data (prompts, profiles, models, scores) is scoped to test suites
@@ -618,6 +643,9 @@ llm-tournament/
 - **Score Calculation Issues:** Verify `display_order` values are consecutive and start at 0
 - **Profile Grouping Issues:** Check `GetProfileGroups()` logic, verify profile names match exactly (case-sensitive)
 - **Migration Failures:** Check transaction rollback logs, verify source JSON format matches expected structure
+- **Python Service Issues:** Check `curl http://localhost:8001/health`, verify Python dependencies installed
+- **Evaluation Failures:** Check API keys in `/settings`, verify Python service logs for detailed errors
+- **Encryption Errors:** Ensure `ENCRYPTION_KEY` is exactly 64 hex characters (32 bytes)
 
 ### Common Gotchas
 

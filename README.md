@@ -1,9 +1,34 @@
 # 🏆 LLM Tournament Arena
 
-**A comprehensive benchmarking platform for evaluating and comparing Large Language Models**  
-*Real-time scoring • Test suite management • Collaborative evaluation • Advanced analytics*
+[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
 
-📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards**
+**A comprehensive benchmarking platform for evaluating and comparing Large Language Models**
+
+📦 **Single Binary Deployment** • ⚡ **WebSocket Real-Time Updates** • 📊 **Interactive Dashboards** • 🤖 **AI-Powered Evaluation**
+
+---
+
+## 📑 Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Key Features](#-key-features)
+- [Architecture](#️-architecture)
+- [Tech Stack](#️-tech-stack)
+- [Complementary Tools](#-complementary-tools)
+- [Getting Started](#-getting-started)
+- [Testing](#-testing)
+- [API Reference](#-api-reference)
+- [Project Structure](#-project-structure)
+- [Environment Variables](#-environment-variables)
+- [Usage Guide](#-usage-guide)
+- [Advanced Features](#-advanced-features)
+- [Contributing](#-contributing)
+- [Roadmap](#-roadmap)
+- [License](#-license)
+- [Contact](#-contact)
 
 <details>
     <summary>Program Screenshots (expand)</summary>
@@ -123,36 +148,52 @@ Access at `http://localhost:8080`
 - 📡 Connection status monitoring
 - 🔄 Automatic reconnection handling
 
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Go Web Server (:8080)                    │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │  Handlers   │→ │  Middleware  │→ │  SQLite Database │   │
+│  └─────────────┘  └──────────────┘  └──────────────────┘   │
+│         │              │                                    │
+│         ▼              ▼                                    │
+│  ┌─────────────┐  ┌──────────────┐                         │
+│  │  WebSocket  │  │  Evaluator   │                         │
+│  │  (Real-time)│  │  (Job Queue) │                         │
+│  └─────────────┘  └──────┬───────┘                         │
+└──────────────────────────┼──────────────────────────────────┘
+                           │ HTTP
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Python LiteLLM Service (:8001)                 │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  AI Judges (Parallel Execution)                      │  │
+│  │  • Claude Opus 4.5  • GPT-5.2  • Gemini 3 Pro       │  │
+│  │  → Weighted consensus scoring (~$0.05/evaluation)    │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## 🛠️ Tech Stack
 
-**Backend**
-`Go 1.21+` • `Gorilla WebSocket` • `Blackfriday` • `Bluemonday` • `SQLite` • `AES-256-GCM Encryption`
-
-**AI Evaluation Service**
-`Python 3.8+` • `FastAPI` • `LiteLLM` • `Anthropic SDK` • `OpenAI SDK` • `Google Generative AI`
-
-**Frontend**
-`HTML5` • `CSS3` • `JavaScript ES6+` • `Chart.js 4.x` • `Marked.js`
-
-**Data**
-`SQLite Storage` • `Robust Data Migration (JSON import/export, duplicate cleanup)` • `State Versioning` • `Encrypted Settings`
-
-**Security**
-`XSS Sanitization` • `CORS Protection` • `Input Validation` • `Error Handling` • `Encrypted API Keys`
+| Layer | Technologies |
+|-------|-------------|
+| **Backend** | Go 1.24+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite, AES-256-GCM |
+| **AI Service** | Python 3.8+, FastAPI, LiteLLM, Anthropic/OpenAI/Google SDKs |
+| **Frontend** | HTML5, CSS3, JavaScript ES6+, Chart.js 4.x, Marked.js |
+| **Data** | SQLite, JSON import/export, State versioning, Encrypted settings |
+| **Security** | XSS sanitization, CORS protection, Input validation, Encrypted API keys |
 
 ## 🧰 Complementary Tools
 
-**Text-to-Speech**  
-`tools/tts/podcast.py` - Generate podcast audio from text scripts using Kokoro ONNX models
-
-**Background Removal**  
-`tools/bg_batch_eraser/main.py` - Remove backgrounds from images using BEN2 model  
-`tools/bg_batch_eraser/vidseg.py` - Extract foreground from videos with alpha channel support  
-`tools/bg_batch_eraser/BEN2.py` - Core background eraser neural network implementation
-
-**LLM Integration**  
-`tools/openwebui/pipes/anthropic_claude_thinking_96k.py` - OpenWebUI pipe for Claude with thinking mode (96k context)  
-`tools/ragweb_agent` - RAG capabilities for web-based content
+| Tool | Path | Description |
+|------|------|-------------|
+| **TTS** | `tools/tts/podcast.py` | Generate podcast audio using Kokoro ONNX models |
+| **Image BG Removal** | `tools/bg_batch_eraser/main.py` | Remove backgrounds using BEN2 model |
+| **Video BG Removal** | `tools/bg_batch_eraser/vidseg.py` | Extract foreground with alpha channel |
+| **Claude Pipe** | `tools/openwebui/pipes/anthropic_claude_thinking_96k.py` | OpenWebUI pipe for Claude (96k context) |
+| **RAG Agent** | `tools/ragweb_agent/` | RAG capabilities for web content |
 
 ## 🏁 Getting Started
 
@@ -204,6 +245,106 @@ CGO_ENABLED=1 go run main.go  # Runs on :8080
 ```
 
 **📖 Complete Setup Guide**: See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
+
+## 🧪 Testing
+
+```bash
+# Run all tests with TDD-guard, race detection, and coverage
+make test
+
+# Run tests with verbose output (bypasses TDD-guard)
+make test-verbose
+
+# Manual test run
+CGO_ENABLED=1 go test ./... -v -race -cover
+
+# Run specific package tests
+CGO_ENABLED=1 go test ./handlers/... -v
+
+# Test Python service health
+curl http://localhost:8001/health
+```
+
+## 📡 API Reference
+
+### Evaluation Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/evaluate/all` | Evaluate all models × all prompts |
+| `POST` | `/evaluate/model?id={id}` | Evaluate one model × all prompts |
+| `POST` | `/evaluate/prompt?id={id}` | Evaluate all models × one prompt |
+| `GET` | `/evaluation/progress?id={job_id}` | Get job status |
+| `POST` | `/evaluation/cancel?id={job_id}` | Cancel running job |
+
+### Settings Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/settings` | Settings page |
+| `POST` | `/settings/update` | Update settings |
+| `POST` | `/settings/test_key` | Test API key validity |
+
+### Core Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/prompts` | Prompts list (default route) |
+| `GET` | `/results` | Results and scoring |
+| `GET` | `/stats` | Analytics and tier insights |
+| `GET` | `/profiles` | Profile management |
+| `WS` | `/ws` | WebSocket connection |
+
+## 📁 Project Structure
+
+```
+llm-tournament/
+├── main.go                 # Entry point, routing, server setup
+├── handlers/               # HTTP request handlers
+│   ├── evaluation.go       # Automated evaluation triggers
+│   ├── settings.go         # API key management
+│   ├── models.go           # Model CRUD
+│   ├── prompt.go           # Prompt operations
+│   ├── results.go          # Results display, scoring
+│   ├── stats.go            # Analytics, tier classification
+│   ├── profiles.go         # Profile management
+│   └── suites.go           # Suite management
+├── middleware/             # Business logic, data layer
+│   ├── database.go         # SQLite schema, migrations
+│   ├── socket.go           # WebSocket handling
+│   ├── encryption.go       # AES-256-GCM for API keys
+│   ├── settings.go         # Settings CRUD
+│   └── state.go            # Data models
+├── evaluator/              # Automated LLM evaluation
+│   ├── evaluator.go        # Main orchestrator
+│   ├── job_queue.go        # Async job queue (3 workers)
+│   ├── litellm_client.go   # Python service client
+│   ├── consensus.go        # Score consensus logic
+│   └── types.go            # Data types
+├── python_service/         # AI Judge service
+│   ├── main.py             # FastAPI server
+│   ├── evaluators/         # Evaluation strategies
+│   ├── judges/             # Claude/GPT/Gemini implementations
+│   └── prompts/            # Judge prompt templates
+├── templates/              # HTML, CSS, JavaScript
+└── data/                   # SQLite database
+```
+
+## 🔐 Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CGO_ENABLED` | Yes | Must be `1` for SQLite support |
+| `ENCRYPTION_KEY` | For eval | 64-char hex string for API key encryption |
+
+**Generate encryption key:**
+```bash
+# Linux/Mac
+export ENCRYPTION_KEY=$(openssl rand -hex 32)
+
+# Windows PowerShell
+$key = -join ((0..31) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) }); echo $key
+```
 
 ## 📚 Usage Guide
 
@@ -267,64 +408,52 @@ CGO_ENABLED=1 go run main.go  # Runs on :8080
 
 ## 🔧 Advanced Features
 
-### Manual Evaluation
-- **Bulk Operations**: Select multiple prompts for deletion, export, or other actions
-- **Drag-and-Drop & Ordering**: Reorder prompts with an intuitive drag-and-drop interface
-- **State Management**: Backup and restore previous evaluation states with a "Previous" button
-- **Mock Data Generation**: Generate random mock scores with weighted distributions for testing
-- **Advanced Search & Filtering**: Quickly find prompts, models, or profiles using multi-criteria filters
-- **Robust Data Migration**: Seamlessly migrate data from JSON files to SQLite with duplicate prompt cleanup
-- **Suite Management**: Easily switch, create, rename, and delete prompt suites
+<details>
+<summary><b>Manual Evaluation</b> (click to expand)</summary>
 
-### Automated Evaluation ✨
-- **Job Queue Management**: 3 concurrent workers with job persistence
-- **Cost Estimation**: Preview costs before running evaluations
-- **Re-evaluation**: Re-score existing prompts with confirmation
-- **Judge Selection**: Configure which AI judges to use
-- **Evaluation History**: Complete audit trail with reasoning and confidence
-- **Hybrid Mode**: Support both manual responses and API-based responses
-- **Cost Tracking**: Daily budget monitoring with threshold alerts
-- **Job Cancellation**: Stop long-running evaluations anytime
+- Bulk operations (select, delete, export)
+- Drag-and-drop prompt reordering
+- State backup/restore ("Previous" button)
+- Mock score generation for testing
+- Advanced search and filtering
+- JSON migration with duplicate cleanup
+</details>
 
-## 🤝 Contribution
+<details>
+<summary><b>Automated Evaluation</b> (click to expand)</summary>
 
-We welcome contributions!  
-📌 First time? Try `good first issue` labeled tickets  
-🔧 Core areas needing help:
-- Evaluation workflow enhancements
-- Additional storage backends
-- Advanced visualization
-- CI/CD pipeline improvements
+- 3 concurrent workers with job persistence
+- Pre-execution cost estimation
+- Re-evaluation with confirmation
+- Configurable AI judges
+- Complete evaluation history with reasoning
+- Daily budget monitoring and alerts
+- Job cancellation support
+</details>
 
-**Contribution Process**:
-1. Fork repository
-2. Create feature branch
-3. Submit PR with description
-4. Address review comments
-5. Merge after approval
+## 🤝 Contributing
+
+We welcome contributions! First time? Try issues labeled `good first issue`.
+
+```bash
+# Fork, clone, and create feature branch
+git checkout -b feature/your-feature
+
+# Make changes, run tests
+make test
+
+# Submit PR with description
+```
+
+**Areas needing help:** Evaluation workflows, storage backends, visualization, CI/CD
 
 ## 🗺 Roadmap
 
-### ✅ Completed (v2.2)
-- ✅ Multi-LLM consensus scoring (Claude, GPT, Gemini)
-- ✅ Automated evaluation with async job queue
-- ✅ Cost tracking and management
-- ✅ Encrypted API key storage
-- ✅ Real-time progress tracking via WebSocket
-
-### Q2 2025
-- 🌐 Distributed evaluation mode
-- 🔍 Advanced search syntax
-- 📱 Responsive mobile design
-- 🔌 API-based model response fetching
-
-### Q3 2025
-- 📊 Custom metric definitions
-- 🤖 Custom judge configurations
-- 🔄 CI/CD integration
-- 🔐 User authentication
-- 📄 Evaluation report exports (PDF/HTML)
-- 📅 Scheduled evaluations
+| Version | Features |
+|---------|----------|
+| **v2.2** ✅ | Multi-LLM consensus scoring, Async job queue, Cost tracking, Encrypted API keys, Real-time WebSocket progress |
+| **Q2 2025** | Distributed evaluation, Advanced search syntax, Mobile design, API-based model responses |
+| **Q3 2025** | Custom metrics/judges, CI/CD integration, User authentication, Report exports (PDF/HTML), Scheduled evaluations |
 
 ## 📜 License
 
@@ -332,4 +461,4 @@ MIT License - See [LICENSE](LICENSE) for details
 
 ## 📬 Contact
 
-My work email: [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com)
+Email: [cariyaputta@gmail.com](mailto:cariyaputta@gmail.com)
