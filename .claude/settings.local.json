@@ -29,7 +29,9 @@
       "Bash(echo:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",
-      "Bash(go tool cover:*)"
+      "Bash(go tool cover:*)",
+      "Bash(sort:*)",
+      "Bash(go clean:*)"
     ]
   },
   "hooks": {

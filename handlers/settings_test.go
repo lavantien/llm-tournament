@@ -271,3 +271,100 @@ func TestSettingsHandler_GET(t *testing.T) {
 		t.Error("expected 'Settings' in response body")
 	}
 }
+
+func TestSettingsHandler_GET_WithExistingSettings(t *testing.T) {
+	restoreDir := changeToProjectRootSettings(t)
+	defer restoreDir()
+
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	// Set some existing settings
+	middleware.SetSetting("cost_alert_threshold_usd", "75.50")
+	middleware.SetSetting("auto_evaluate_new_models", "true")
+	middleware.SetSetting("python_service_url", "http://custom:9000")
+	middleware.SetAPIKey("anthropic", "test-key-123")
+
+	req := httptest.NewRequest("GET", "/settings", nil)
+	rr := httptest.NewRecorder()
+	SettingsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "Settings") {
+		t.Error("expected 'Settings' in response body")
+	}
+}
+
+func TestSettingsHandler_GET_WithZeroThreshold(t *testing.T) {
+	restoreDir := changeToProjectRootSettings(t)
+	defer restoreDir()
+
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	// Set threshold to zero (should default to 100.0)
+	middleware.SetSetting("cost_alert_threshold_usd", "0")
+
+	req := httptest.NewRequest("GET", "/settings", nil)
+	rr := httptest.NewRecorder()
+	SettingsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestUpdateSettingsHandler_POST_EmptyPythonURL(t *testing.T) {
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	// Set initial python URL
+	middleware.SetSetting("python_service_url", "http://initial:8001")
+
+	// Update with empty Python URL (should not change existing)
+	form := url.Values{}
+	form.Add("cost_alert_threshold_usd", "50.00")
+	form.Add("python_service_url", "")
+
+	req := httptest.NewRequest("POST", "/settings/update", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	UpdateSettingsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Python URL should NOT be updated when empty
+	pythonURL, _ := middleware.GetSetting("python_service_url")
+	if pythonURL != "http://initial:8001" {
+		t.Errorf("python URL should remain unchanged, got %q", pythonURL)
+	}
+}
+
+func TestUpdateSettingsHandler_POST_EmptyThreshold(t *testing.T) {
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	// Set initial threshold
+	middleware.SetSetting("cost_alert_threshold_usd", "100")
+
+	// Update with empty threshold (should not change)
+	form := url.Values{}
+	form.Add("cost_alert_threshold_usd", "")
+
+	req := httptest.NewRequest("POST", "/settings/update", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	UpdateSettingsHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}

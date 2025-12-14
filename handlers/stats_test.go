@@ -312,3 +312,99 @@ func TestStatsHandler_GET(t *testing.T) {
 		t.Error("expected 'Statistics' in response body")
 	}
 }
+
+func TestStatsHandler_GET_WithScoreBreakdowns(t *testing.T) {
+	restoreDir := changeToProjectRootStats(t)
+	defer restoreDir()
+
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	// Add test data with various scores to cover all score buckets
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+		{Text: "Prompt 3"},
+		{Text: "Prompt 4"},
+		{Text: "Prompt 5"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{20, 40, 60, 80, 100}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "TestModel") {
+		t.Error("expected model name in response body")
+	}
+}
+
+func TestStatsHandler_GET_EmptyResults(t *testing.T) {
+	restoreDir := changeToProjectRootStats(t)
+	defer restoreDir()
+
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestStatsHandler_GET_MultipleModels(t *testing.T) {
+	restoreDir := changeToProjectRootStats(t)
+	defer restoreDir()
+
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	// Add test data with multiple models
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Prompt 1"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"GPT-4":   {Scores: []int{100}},
+		"Claude":  {Scores: []int{80}},
+		"Gemini":  {Scores: []int{60}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	body := rr.Body.String()
+	if !strings.Contains(body, "GPT-4") {
+		t.Error("expected GPT-4 in response body")
+	}
+}

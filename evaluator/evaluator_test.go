@@ -1497,3 +1497,365 @@ func TestLiteLLMClient_EstimateCost_Error(t *testing.T) {
 		t.Error("expected error for bad request")
 	}
 }
+
+func TestResumePendingJobs_NoPendingJobs(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	// Create job queue with 0 delay for instant testing
+	jq := NewJobQueueWithDelay(db, 0, evaluator, 0)
+
+	// Give a brief moment for resumePendingJobs to complete
+	time.Sleep(50 * time.Millisecond)
+
+	// Should complete without panic
+	_ = jq
+}
+
+func TestResumePendingJobs_WithPendingJobs(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Insert pending jobs directly into database
+	_, err := db.Exec(`
+		INSERT INTO evaluation_jobs (suite_id, job_type, target_id, status, progress_total, estimated_cost_usd)
+		VALUES (1, 'all', 0, 'pending', 10, 0.5)
+	`)
+	if err != nil {
+		t.Fatalf("failed to insert pending job: %v", err)
+	}
+
+	_, err = db.Exec(`
+		INSERT INTO evaluation_jobs (suite_id, job_type, target_id, status, progress_total, estimated_cost_usd)
+		VALUES (1, 'model', 1, 'running', 5, 0.25)
+	`)
+	if err != nil {
+		t.Fatalf("failed to insert running job: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	// Create job queue with 0 delay for instant testing and 0 workers so jobs stay in channel
+	jq := &JobQueue{
+		db:          db,
+		jobs:        make(chan *EvaluationJob, 100),
+		workers:     0,
+		running:     make(map[int]bool),
+		cancel:      make(map[int]chan bool),
+		evaluator:   evaluator,
+		resumeDelay: 0,
+	}
+
+	// Call resumePendingJobs directly
+	jq.resumePendingJobs()
+
+	// Check that jobs were enqueued
+	select {
+	case job := <-jq.jobs:
+		if job.JobType != "all" {
+			t.Errorf("expected first job type 'all', got %q", job.JobType)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Error("expected job in channel")
+	}
+
+	select {
+	case job := <-jq.jobs:
+		if job.JobType != "model" {
+			t.Errorf("expected second job type 'model', got %q", job.JobType)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Error("expected second job in channel")
+	}
+}
+
+func TestResumePendingJobs_ScanError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Insert a job with NULL values that will cause scan issues
+	_, err := db.Exec(`
+		INSERT INTO evaluation_jobs (suite_id, job_type, target_id, status, progress_total)
+		VALUES (1, 'all', NULL, 'pending', 10)
+	`)
+	if err != nil {
+		t.Fatalf("failed to insert job: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	jq := &JobQueue{
+		db:          db,
+		jobs:        make(chan *EvaluationJob, 100),
+		workers:     0,
+		running:     make(map[int]bool),
+		cancel:      make(map[int]chan bool),
+		evaluator:   evaluator,
+		resumeDelay: 0,
+	}
+
+	// Should not panic on scan error
+	jq.resumePendingJobs()
+}
+
+func TestNewJobQueueWithDelay(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	// Test with custom delay
+	jq := NewJobQueueWithDelay(db, 1, evaluator, 100*time.Millisecond)
+	if jq.resumeDelay != 100*time.Millisecond {
+		t.Errorf("expected resumeDelay 100ms, got %v", jq.resumeDelay)
+	}
+	if jq.workers != 1 {
+		t.Errorf("expected workers 1, got %d", jq.workers)
+	}
+}
+
+func TestJobQueue_GetJob_NotFound_WithSetup(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	jq := &JobQueue{
+		db: db,
+	}
+
+	_, err := jq.GetJob(999)
+	if err == nil {
+		t.Error("expected error for non-existent job")
+	}
+}
+
+func TestJobQueue_Enqueue_DBError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	db.Close() // Close DB to cause error
+
+	jq := &JobQueue{
+		db:   db,
+		jobs: make(chan *EvaluationJob, 100),
+	}
+
+	job := &EvaluationJob{
+		SuiteID: 1,
+		JobType: "all",
+	}
+
+	err := jq.Enqueue(job)
+	if err == nil {
+		t.Error("expected error for closed database")
+	}
+}
+
+func TestWorker_UpdateJobError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+	}
+
+	jq := &JobQueue{
+		db:          db,
+		jobs:        make(chan *EvaluationJob, 100),
+		workers:     0,
+		running:     make(map[int]bool),
+		cancel:      make(map[int]chan bool),
+		evaluator:   evaluator,
+		resumeDelay: 0,
+	}
+	evaluator.jobQueue = jq
+
+	// Start a single worker manually
+	go jq.worker(0)
+
+	// Send a job with invalid ID (will fail update but shouldn't crash)
+	job := &EvaluationJob{
+		ID:       -1, // Invalid ID
+		SuiteID:  1,
+		JobType:  "all",
+		Status:   "pending",
+	}
+
+	jq.jobs <- job
+
+	// Wait for worker to process
+	time.Sleep(100 * time.Millisecond)
+
+	// Worker should continue running (not crash)
+	close(jq.jobs)
+}
+
+func TestProcessJob_UnknownJobType(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:       1,
+		SuiteID:  1,
+		JobType:  "unknown_type",
+	}
+
+	cancelChan := make(chan bool)
+	err := evaluator.processJob(job, cancelChan)
+	if err == nil {
+		t.Error("expected error for unknown job type")
+	}
+	if err != nil && err.Error() != "unknown job type: unknown_type" {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestProcessJob_AllType(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Insert a suite
+	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)
+	if err != nil {
+		t.Fatalf("failed to insert suite: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "all",
+		ProgressTotal: 0,
+	}
+
+	cancelChan := make(chan bool)
+	err = evaluator.processJob(job, cancelChan)
+	// With no models/prompts, should complete without error
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestProcessJob_ModelType(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Insert a suite
+	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)
+	if err != nil {
+		t.Fatalf("failed to insert suite: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "model",
+		TargetID:      1,
+		ProgressTotal: 0,
+	}
+
+	cancelChan := make(chan bool)
+	err = evaluator.processJob(job, cancelChan)
+	// With no prompts, should complete without error
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestProcessJob_PromptType(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Insert a suite
+	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)
+	if err != nil {
+		t.Fatalf("failed to insert suite: %v", err)
+	}
+
+	evaluator := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	evaluator.jobQueue.evaluator = evaluator
+
+	job := &EvaluationJob{
+		ID:            1,
+		SuiteID:       1,
+		JobType:       "prompt",
+		TargetID:      1,
+		ProgressTotal: 0,
+	}
+
+	cancelChan := make(chan bool)
+	err = evaluator.processJob(job, cancelChan)
+	// With no models, should complete without error
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+}

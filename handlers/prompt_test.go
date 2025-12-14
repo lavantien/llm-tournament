@@ -1230,3 +1230,34 @@ func TestAddPromptHandler_WithType(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
 	}
 }
+
+func TestMovePromptHandler_POST_SamePosition(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}, {Text: "Third"}}
+	middleware.WritePrompts(prompts)
+
+	// Move to same position
+	form := url.Values{}
+	form.Add("index", "1")
+	form.Add("new_index", "1")
+
+	req := httptest.NewRequest("POST", "/move_prompt", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	MovePromptHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	// Order should remain unchanged
+	newPrompts := middleware.ReadPrompts()
+	if newPrompts[1].Text != "Second" {
+		t.Errorf("expected 'Second' to remain at index 1, got %q", newPrompts[1].Text)
+	}
+}
+

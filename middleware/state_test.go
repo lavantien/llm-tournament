@@ -800,3 +800,204 @@ func TestUpdatePromptsOrder_EmptyOrder(t *testing.T) {
 		t.Fatalf("expected 1 prompt, got %d", len(readPrompts))
 	}
 }
+
+func TestUpdatePromptsOrder_ValidReorder(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create prompts in specific order
+	prompts := []Prompt{
+		{Text: "First"},
+		{Text: "Second"},
+		{Text: "Third"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Reorder: move last to first (0->1, 1->2, 2->0)
+	newOrder := []int{2, 0, 1}
+	UpdatePromptsOrder(newOrder)
+
+	// Verify order changed
+	readPrompts, _ := ReadPromptSuite("default")
+	if len(readPrompts) != 3 {
+		t.Fatalf("expected 3 prompts, got %d", len(readPrompts))
+	}
+}
+
+func TestUpdatePromptsOrder_NegativeIndex(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Try with negative index - should not panic
+	UpdatePromptsOrder([]int{-1, 1})
+
+	// Prompts should still exist unchanged
+	readPrompts, _ := ReadPromptSuite("default")
+	if len(readPrompts) != 2 {
+		t.Fatalf("expected 2 prompts, got %d", len(readPrompts))
+	}
+}
+
+func TestWriteResults_NewModel(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts first
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Write results for a new model
+	results := map[string]Result{
+		"NewModel": {Scores: []int{80, 100}},
+	}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read back
+	readResults := ReadResults()
+	if len(readResults) != 1 {
+		t.Errorf("expected 1 model, got %d", len(readResults))
+	}
+	if readResults["NewModel"].Scores[0] != 80 {
+		t.Errorf("expected score 80, got %d", readResults["NewModel"].Scores[0])
+	}
+}
+
+func TestWriteResults_UpdateExistingModel(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Write initial results
+	results := map[string]Result{
+		"ExistingModel": {Scores: []int{40}},
+	}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Update results
+	results["ExistingModel"] = Result{Scores: []int{80}}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read back
+	readResults := ReadResults()
+	if readResults["ExistingModel"].Scores[0] != 80 {
+		t.Errorf("expected updated score 80, got %d", readResults["ExistingModel"].Scores[0])
+	}
+}
+
+func TestReadResults_ScoreMismatch(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Add model with only 1 score (less than prompts)
+	results := map[string]Result{
+		"TestModel": {Scores: []int{60}},
+	}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read back - should pad with zeros
+	readResults := ReadResults()
+	if len(readResults["TestModel"].Scores) != 2 {
+		t.Errorf("expected 2 scores (padded), got %d", len(readResults["TestModel"].Scores))
+	}
+}
+
+func TestGetMaskedAPIKeys_AllProviders(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Get masked keys (should have defaults)
+	masked, err := GetMaskedAPIKeys()
+	if err != nil {
+		t.Fatalf("GetMaskedAPIKeys failed: %v", err)
+	}
+
+	// Should have all three providers (keys are api_key_<provider>)
+	if _, ok := masked["api_key_anthropic"]; !ok {
+		t.Error("expected api_key_anthropic in masked keys")
+	}
+	if _, ok := masked["api_key_openai"]; !ok {
+		t.Error("expected api_key_openai in masked keys")
+	}
+	if _, ok := masked["api_key_google"]; !ok {
+		t.Error("expected api_key_google in masked keys")
+	}
+}

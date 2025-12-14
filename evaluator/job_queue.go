@@ -10,24 +10,31 @@ import (
 
 // JobQueue manages evaluation jobs with concurrent workers
 type JobQueue struct {
-	db       *sql.DB
-	jobs     chan *EvaluationJob
-	workers  int
-	mu       sync.Mutex
-	running  map[int]bool // Track running jobs
-	cancel   map[int]chan bool
-	evaluator *Evaluator
+	db          *sql.DB
+	jobs        chan *EvaluationJob
+	workers     int
+	mu          sync.Mutex
+	running     map[int]bool // Track running jobs
+	cancel      map[int]chan bool
+	evaluator   *Evaluator
+	resumeDelay time.Duration // Delay before resuming pending jobs (configurable for testing)
 }
 
 // NewJobQueue creates a new job queue with the specified number of workers
 func NewJobQueue(db *sql.DB, workers int, evaluator *Evaluator) *JobQueue {
+	return NewJobQueueWithDelay(db, workers, evaluator, 5*time.Second)
+}
+
+// NewJobQueueWithDelay creates a new job queue with a configurable resume delay (for testing)
+func NewJobQueueWithDelay(db *sql.DB, workers int, evaluator *Evaluator, resumeDelay time.Duration) *JobQueue {
 	jq := &JobQueue{
-		db:        db,
-		jobs:      make(chan *EvaluationJob, 100),
-		workers:   workers,
-		running:   make(map[int]bool),
-		cancel:    make(map[int]chan bool),
-		evaluator: evaluator,
+		db:          db,
+		jobs:        make(chan *EvaluationJob, 100),
+		workers:     workers,
+		running:     make(map[int]bool),
+		cancel:      make(map[int]chan bool),
+		evaluator:   evaluator,
+		resumeDelay: resumeDelay,
 	}
 
 	// Start worker goroutines
@@ -189,7 +196,9 @@ func (jq *JobQueue) updateJob(job *EvaluationJob) error {
 
 // resumePendingJobs resumes jobs that were interrupted
 func (jq *JobQueue) resumePendingJobs() {
-	time.Sleep(5 * time.Second) // Wait for initialization
+	if jq.resumeDelay > 0 {
+		time.Sleep(jq.resumeDelay) // Wait for initialization
+	}
 
 	rows, err := jq.db.Query(`
 		SELECT id, suite_id, job_type, target_id, progress_total, estimated_cost_usd
