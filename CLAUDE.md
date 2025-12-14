@@ -1,53 +1,245 @@
-# CLAUDE.md
+# CLAUDE.md (Local)
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Local Development Instructions
+---
 
-Use this file instead of the shared CLAUDE.md.
+## 0) Core Goal
 
-For coding (sub)tasks:
-- Follow test-driven development strictly.
-- Always write failing tests before implementing code.
-- TDD-Guard hooks will block edits if tests fail.
-- Use the linter for additional correctness checks.
+Deliver **end-to-end working software** with **high confidence** via:
+- **Dialectical autocoding** (Coach ↔ Player loop; adversarial cooperation).
+- **MDAP/MAKER reliability principles** (maximal decomposition, step-level error correction, red-flagging).
+- **Strict TDD** (red → green → refactor), enforced by repository hooks.
 
-For complex tasks:
-- Use Web Search and Context7 MCP (from MCP_DOCKER) to get up-to-date information and documentation,
-- Use Opus with high/ultrathink reasoning capability for planning and overseering,
-- Use Sonnet for code editing and command execution,
-- Use swarm voting (MAKER/DAP Protocol) with Haiku subagents on separate git worktrees,
-- Use Playwright MCP (from MCP_DOCKER) to doing tasks that need browser use.
+The default mindset is: **do not trust self-reported completion**. Only trust **independent verification**.
 
-When stuck after three failed attempts:
-- Use /rewind to return to a working state.
-- Consider designing a council and executue swarm voting (MAKER/DAP Protocol) to try resolve it.
+---
 
-Other constraints:
-- With race checks in a Go project, prefix commands with `CGO_ENABLED=1` first.
-- Never edit generated code in any gen/ directories. Run go generate to regenerate from OpenAPI specs.
-- No Claude Code watermarks or Co-Authored-By lines in commits.
+## 1) Non-Negotiables (Repository Constraints)
 
-About MAKER/DAP Protocol Instructions:
-- Trigger: When you face a complex task, get stuck, or encounter repeated errors.
-- Core Principle: Do not attempt to solve the whole problem at once. Replace "smart" reasoning with "extreme" decomposition and verification.
-- The Protocol:
-1. Extreme Decomposition (MAKER Phase):
-    - Stop coding.
-    - Break the current problem down into the smallest possible atomic subtasks.
-    - Each subtask must be so simple that it cannot be misunderstood (e.g., "Create file X," "Define struct Y," "Write function signature Z").
-    - List these subtasks explicitly.
-2. Micro-Agent Execution (DAP/TDD Phase):
-    - Pick the first subtask.
-    - Test First (Red): Write only the specific test case needed for this tiny subtask. Run it to confirm it fails.
-    - Minimal Implementation (Green): Write only the code necessary to pass that specific test. Do not implement future features.
-    - Verify & Vote: Check if the output matches the subtask goal exactly. If not, discard and retry immediately.
-    - Refactor: Linting, clean up the code if needed, ensuring tests still pass.
-3. Iterate:
-    - Mark the subtask as done.
-    - Move to the next subtask.
-    - If a subtask becomes difficult, recurse: break it down further until it is trivial.
-- Rule of Thumb: If you are guessing or writing more than 10 lines of logic without a test, you have broken the protocol. Decompose, Test, Implement, Verify.
+- **TDD is mandatory**
+  - Always write a failing test first.
+  - TDD-Guard hooks will block edits if tests fail.
+  - Refactor only after tests are green and linters passed.
+- **Run the linter** for correctness and style.
+- **Go race checks**
+  - Prefix commands with `CGO_ENABLED=1` when running race checks.
+- **Generated code**
+  - Never edit generated code in any `gen/` directory.
+  - Run `go generate` to regenerate from OpenAPI specs.
+- **Commits**
+  - No Claude Code watermarks.
+  - No `Co-Authored-By` lines in commits.
+
+---
+
+## 2) The Requirements Contract (Prevents “Vibe Coding Drift”)
+
+For any non-trivial task, create a **requirements contract** before touching code. This is the anchor for the Coach.
+
+**Contract must include:**
+- **Goal** (what success looks like)
+- **Acceptance criteria** (observable + testable)
+- **Non-goals** (explicit out-of-scope)
+- **Constraints** (language, APIs, performance, security, repo rules)
+- **Verification plan** (exact commands/tests you will run)
+
+**Rule:** If you cannot write acceptance criteria, you do not understand the task yet—pause and clarify.
+
+---
+
+## 3) Dialectical Autocoding Loop (Adversarial Cooperation)
+
+Use a bounded Coach/Player loop to avoid premature “done” claims and to systematically close gaps.
+
+### Roles
+
+**PLAYER (Implementation)**
+- Implements, writes tests/harnesses, runs commands.
+- Focuses on minimal correct changes.
+- Responds only to specific Coach feedback.
+
+**COACH (Independent Review)**
+- Validates against requirements contract (not Player claims).
+- Runs/requests concrete checks (tests, lint, build, manual repro).
+- Produces crisp, actionable deltas.
+
+### Turn Structure (Bounded Loop)
+
+Default bounds:
+- **Max turns:** 6 (increase to 10 only for large tasks)
+- **Each turn ends with a verifiable artifact:** tests run, diff, or reproducible command results.
+
+#### Player Turn Output Format (mandatory)
+
+1. **Plan for this turn** (≤ 8 bullet points)
+2. **Changes made** (files + what/why)
+3. **Commands run + results**
+4. **What remains** (if anything)
+
+#### Coach Turn Output Format (mandatory)
+
+1. **Requirements compliance matrix**
+   - ✅ satisfied / ❌ missing / ⚠️ partial / ? unknown
+2. **Verification evidence**
+   - What was run, what failed, what is unverified
+3. **Defects / gaps**
+   - Prioritized list, with concrete pointers
+4. **Next actions (atomic)**
+   - “Do X in file Y”, “Add test Z”, “Run command Q”, etc.
+5. **Approval gate**
+   - Only say **COACH APPROVED** if all acceptance criteria are met and verified.
+
+**Rule:** The loop ends only with **COACH APPROVED** or with an explicit “Blocked / needs human input”.
+
+---
+
+## 4) MDAP / MAKER Protocol (Reliability at Scale)
+
+When tasks become complex, long-horizon, or error-prone, switch from “smart monolith” to **massively decomposed agentic process**:
+
+### 4.1 Maximal Decomposition (MAD)
+Break work into the **smallest atomic steps** that cannot be misunderstood, e.g.:
+- “Create file X”
+- “Add struct Y with fields …”
+- “Add failing test for scenario Z”
+- “Implement minimal code to pass only that test”
+
+**Rule of thumb:** If you are guessing or writing >10 lines of logic without a test, you broke MAD/TDD. Stop and decompose.
+
+### 4.2 Step-Level Error Correction (Voting)
+For uncertain design/implementation decisions, use **multi-agent voting** rather than single-agent confidence.
+
+**Default voting rule (practical “first-to-ahead-by-k” analogue):**
+- Get **N = 2k − 1** independent proposals (or runs), with **k = 2 or 3** depending on risk.
+- Choose the option that is:
+  1) most consistent with the requirements contract, and  
+  2) easiest to verify with tests, and  
+  3) minimal in surface area.
+
+Examples of what to vote on:
+- API shape, edge-case behavior, error semantics
+- Parsing/validation rules
+- Concurrency approach
+- Test strategy for hard-to-reproduce bugs
+
+**Important:** Voting is only useful if samples are independent:
+- Use separate git worktrees + Haiku subagents when possible.
+- Paraphrase the subtask prompt slightly per agent to reduce correlated mistakes.
+
+### 4.3 Red-Flagging (Discard Risky Samples)
+Do not “repair” questionable outputs. Discard and resample when you hit red flags.
+
+**Red flags in coding workflows include:**
+- Claims of success without commands/test output.
+- Leaving `TODO`, commented-out tests, or “should work” statements.
+- Suggestions that violate repo rules (editing `gen/`, skipping TDD, etc.).
+- Massive diffs that exceed the declared scope.
+- Unbounded refactors before a failing test exists.
+- Adding dependencies without justification + lockfile updates + security review.
+- Any ambiguity about requirements or acceptance tests.
+
+When a red flag occurs:
+1) Stop
+2) Narrow the step
+3) Resample (or spawn subagent)
+4) Verify with a minimal test
+
+---
+
+## 5) Tool / Model Utilization (Mapped to Coach/Player)
+
+Use tools/models intentionally (this mirrors the coach/player paradigm and reduces context pollution).
+
+- **Opus (Coach / Overseer)**
+  - Planning, requirements contract creation, risk review, acceptance criteria, test strategy.
+  - Reviews Player output and produces delta-focused feedback.
+- **Sonnet (Player)**
+  - Code edits, running commands, iterative TDD cycles, mechanical refactors.
+- **Haiku subagents (Microagents)**
+  - Parallel exploration on separate worktrees.
+  - Used for voting, alternative test approaches, or competing implementations.
+- **Web Search + Context7 MCP (from MCP_DOCKER)**
+  - Only when you need up-to-date docs, APIs, behaviors, or niche info.
+- **Playwright MCP (from MCP_DOCKER)**
+  - Browser-driven verification tasks.
+
+---
+
+## 6) Testing & Verification Discipline (No “Trust Me”)
+
+### Always prefer executable verification:
+- Unit tests for pure logic
+- Integration tests for I/O boundaries
+- End-to-end tests for user-visible behavior (when feasible)
+
+### Minimum verification set for most changes:
+- `go test ./...`
+- Add `-race` when appropriate: `CGO_ENABLED=1 go test -race ./...`
+- Lint command(s) used by the repo
+- Any golden-file or snapshot tests updated intentionally (with explanation)
+
+**Rule:** Never declare “done” unless you can list:
+- tests run,
+- commands run,
+- and the evidence that acceptance criteria are met.
+
+---
+
+## 7) “Stuck” Protocol (After 3 Failed Attempts)
+
+If you hit three failed attempts (same class of failure):
+1. Use `/rewind` to return to a known-good state.
+2. Re-read the requirements contract.
+3. Switch to MAD: decompose further until steps are trivial.
+4. Spawn a **council** (swarm voting):
+   - At least 3 Haiku microagents on separate worktrees.
+   - Vote on: root cause hypothesis + smallest fix + minimal test that proves it.
+
+---
+
+## 8) MAKER/DAP Protocol (Local Variant)
+
+**Trigger:** complex task, repeated errors, uncertain correctness, or long horizon.
+
+**Principle:** Replace “cleverness” with **extreme decomposition + verification + error correction**.
+
+### MAKER Phase (Decompose)
+- Stop coding.
+- Break into atomic subtasks.
+- Each subtask must have a crisp expected outcome.
+- Sequence subtasks so each produces evidence for the next.
+
+### DAP/TDD Phase (Execute)
+For each subtask:
+1. **Red:** write the smallest failing test.
+2. **Green:** minimal code to pass that test.
+3. **Verify:** run tests + lint.
+4. **Vote (when uncertain):** gather independent solutions.
+5. **Refactor:** only when green.
+6. Mark done; move on.
+
+---
+
+## 9) Design Hygiene (Keep It Maintainable)
+
+- Prefer small, composable functions.
+- Avoid deep nesting; refactor into helpers.
+- Don’t over-engineer for hypothetical futures.
+- Keep dependencies minimal; justify additions.
+- When refactoring, preserve behavior with tests first.
+
+---
+
+## 10) Definition of Done (Coach Approval Criteria)
+
+A task is done only when:
+- All requirements contract acceptance criteria are ✅
+- Tests are green and reported with commands
+- Lint is clean (or exceptions are documented)
+- No repo rules were violated
+- No critical TODOs remain
+- The Coach explicitly outputs: **COACH APPROVED**
 
 ---
 
