@@ -152,29 +152,17 @@ Access at `http://localhost:8080`
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Go Web Server (:8080)                    │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │  Handlers   │→ │  Middleware  │→ │  SQLite Database │   │
-│  └─────────────┘  └──────────────┘  └──────────────────┘   │
-│         │              │                                    │
-│         ▼              ▼                                    │
-│  ┌─────────────┐  ┌──────────────┐                         │
-│  │  WebSocket  │  │  Evaluator   │                         │
-│  │  (Real-time)│  │  (Job Queue) │                         │
-│  └─────────────┘  └──────┬───────┘                         │
-└──────────────────────────┼──────────────────────────────────┘
-                           │ HTTP
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Python LiteLLM Service (:8001)                 │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │  AI Judges (Parallel Execution)                      │  │
-│  │  • Claude Opus 4.5  • GPT-5.2  • Gemini 3 Pro       │  │
-│  │  → Weighted consensus scoring (~$0.05/evaluation)    │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+Go Server (:8080)                Python Service (:8001)
+─────────────────                ───────────────────────
+│ HTTP Handlers │                │  AI Judge Service   │
+│ WebSocket Hub │ ──── HTTP ───→ │  (3 LLM judges)     │
+│ Job Queue     │                │  Consensus scoring  │
+│ SQLite DB     │                └─────────────────────
+└───────────────
 ```
+
+**Request Flow**: User → Handlers → Middleware → SQLite → WebSocket Broadcast
+**Evaluation**: Job Queue → Python Service → AI Judges → Consensus → Score Update
 
 ## 🛠️ Tech Stack
 
@@ -309,19 +297,22 @@ llm-tournament/
 │   ├── results.go          # Results display, scoring
 │   ├── stats.go            # Analytics, tier classification
 │   ├── profiles.go         # Profile management
-│   └── suites.go           # Suite management
+│   ├── suites.go           # Suite management
+│   └── *_test.go           # 8 test files (9,060 lines)
 ├── middleware/             # Business logic, data layer
 │   ├── database.go         # SQLite schema, migrations
 │   ├── socket.go           # WebSocket handling
 │   ├── encryption.go       # AES-256-GCM for API keys
 │   ├── settings.go         # Settings CRUD
-│   └── state.go            # Data models
+│   ├── state.go            # Data models
+│   └── *_test.go           # 9 test files (5,453 lines)
 ├── evaluator/              # Automated LLM evaluation
 │   ├── evaluator.go        # Main orchestrator
 │   ├── job_queue.go        # Async job queue (3 workers)
 │   ├── litellm_client.go   # Python service client
 │   ├── consensus.go        # Score consensus logic
-│   └── types.go            # Data types
+│   ├── types.go            # Data types
+│   └── *_test.go           # 4 test files (2,904 lines)
 ├── python_service/         # AI Judge service
 │   ├── main.py             # FastAPI server
 │   ├── evaluators/         # Evaluation strategies
@@ -329,23 +320,18 @@ llm-tournament/
 │   └── prompts/            # Judge prompt templates
 ├── templates/              # HTML, CSS, JavaScript
 └── data/                   # SQLite database
+
+Test Coverage: 79.1% (17,417 lines of tests)
 ```
 
 ## 🔐 Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `CGO_ENABLED` | Yes | Must be `1` for SQLite support |
-| `ENCRYPTION_KEY` | For eval | 64-char hex string for API key encryption |
+| `CGO_ENABLED` | Yes | Set to `1` (required for SQLite) |
+| `ENCRYPTION_KEY` | For evaluation | 64-char hex for API key encryption: `openssl rand -hex 32` |
 
-**Generate encryption key:**
-```bash
-# Linux/Mac
-export ENCRYPTION_KEY=$(openssl rand -hex 32)
-
-# Windows PowerShell
-$key = -join ((0..31) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) }); echo $key
-```
+See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md) for detailed configuration.
 
 ## 📚 Usage Guide
 
@@ -447,14 +433,6 @@ make test
 ```
 
 **Areas needing help:** Evaluation workflows, storage backends, visualization, CI/CD
-
-## 🗺 Roadmap
-
-| Version | Features |
-|---------|----------|
-| **v2.2** ✅ | Multi-LLM consensus scoring, Async job queue, Cost tracking, Encrypted API keys, Real-time WebSocket progress |
-| **Q2 2025** | Distributed evaluation, Advanced search syntax, Mobile design, API-based model responses |
-| **Q3 2025** | Custom metrics/judges, CI/CD integration, User authentication, Report exports (PDF/HTML), Scheduled evaluations |
 
 ## 📜 License
 

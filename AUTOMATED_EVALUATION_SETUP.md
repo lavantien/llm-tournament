@@ -1,21 +1,19 @@
-# Automated LLM Evaluation System - Setup Guide
+# Automated LLM Evaluation - Setup Guide
 
-## 🎉 Implementation Complete!
+## Overview
 
-All 8 phases of the automated evaluation system have been successfully implemented:
+The LLM Tournament Arena includes automated evaluation powered by AI judges (Claude Opus 4.5, GPT-5.2, Gemini 3 Pro). This guide covers installation, configuration, and usage.
 
-✅ **Phase 1**: Database Foundation - New tables for jobs, settings, responses, evaluation history
-✅ **Phase 2**: Python LiteLLM Service - FastAPI with 3 AI judges
-✅ **Phase 3**: Go Evaluation Orchestrator - Job queue, consensus logic, HTTP client
-✅ **Phase 4**: API Key Management & Security - AES-256-GCM encryption
-✅ **Phase 5**: Evaluation Handlers - HTTP endpoints for all trigger types
-✅ **Phase 6**: WebSocket Progress Updates - Real-time progress tracking
-✅ **Phase 7**: UI Integration - Routes wired, components connected
-✅ **Phase 8**: Complete System - Ready for testing
+## Prerequisites
 
----
+- Python 3.8+ (for AI judge service)
+- Go 1.24+ with CGO_ENABLED=1 (for main server)
+- API keys for at least one AI provider:
+  - Anthropic (Claude)
+  - OpenAI (GPT)
+  - Google (Gemini)
 
-## 🚀 Quick Start
+## 🚀 Installation
 
 ### 1. Install Python Dependencies
 
@@ -89,21 +87,12 @@ Server is listening on :8080
 
 ## 📋 Usage Guide
 
-### Adding Models with API Configuration
-
-Models can be evaluated in two ways:
-
-1. **Manual Mode** (current workflow):
-   - User runs prompts through external models
-   - Pastes responses manually
-   - Triggers automated scoring
-
-2. **API Mode** (new, requires model_responses table):
-   - System calls models directly via API
-   - Gets responses automatically
-   - Judges evaluate responses
-
 ### Triggering Evaluations
+
+The evaluation system uses AI judges to score model responses. Before triggering an evaluation, ensure you have:
+1. Added models to your suite
+2. Created prompts with the appropriate type (`objective` or `creative`)
+3. Configured API keys in settings
 
 #### 1. Evaluate All
 - **Button**: "Evaluate All" (top-right of Results page)
@@ -155,86 +144,6 @@ ws.onmessage = (event) => {
   }
 };
 ```
-
----
-
-## 🏗️ Architecture Overview
-
-```
-┌─────────────────────────────────────────────────┐
-│           Go Web Server (:8080)                  │
-│                                                   │
-│  ┌─────────────┐  ┌──────────────┐              │
-│  │  Handlers   │→ │  Evaluator   │              │
-│  └─────────────┘  └──────┬───────┘              │
-│                           │                       │
-│  ┌─────────────┐  ┌──────▼───────┐              │
-│  │  WebSocket  │  │  Job Queue   │              │
-│  └─────────────┘  └──────┬───────┘              │
-│                           │                       │
-│  ┌─────────────────────┬─▼───────────────┐      │
-│  │   SQLite Database   │  LiteLLM Client │      │
-│  └─────────────────────┴─────────┬───────┘      │
-└────────────────────────────────────┼──────────────┘
-                                     │ HTTP
-                                     ▼
-┌────────────────────────────────────────────────────┐
-│      Python LiteLLM Service (:8001)                │
-│                                                     │
-│  ┌──────────────────────────────────────────────┐ │
-│  │  FastAPI Endpoints                            │ │
-│  │  - /evaluate                                  │ │
-│  │  - /estimate_cost                             │ │
-│  │  - /health                                    │ │
-│  └───────────────────┬──────────────────────────┘ │
-│                      │                             │
-│  ┌──────────────────▼──────────────────────────┐ │
-│  │  Evaluators (Objective / Creative)          │ │
-│  └──────────────────┬──────────────────────────┘ │
-│                     │                             │
-│  ┌──────────────────▼──────────────────────────┐ │
-│  │  Judges (Parallel Execution)                │ │
-│  │  - Claude Opus 4.5 (high think)             │ │
-│  │  - GPT-5.2 (high think)                     │ │
-│  │  - Gemini 3 Pro (high think)                │ │
-│  │  Each returns: {score, confidence, reasoning}│ │
-│  └──────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## 💾 Database Schema
-
-### New Tables
-
-#### `settings`
-- Stores encrypted API keys and configuration
-- Fields: `key`, `value` (encrypted), `created_at`, `updated_at`
-
-#### `evaluation_jobs`
-- Tracks async evaluation jobs
-- Fields: `id`, `suite_id`, `job_type`, `status`, `progress_current`, `progress_total`, `estimated_cost_usd`, `actual_cost_usd`
-- Status values: `pending`, `running`, `completed`, `failed`, `cancelled`
-
-#### `model_responses`
-- Stores model outputs (manual or API-generated)
-- Fields: `model_id`, `prompt_id`, `response_text`, `response_source`, `api_config`
-- Source values: `manual`, `api`
-
-#### `evaluation_history`
-- Audit trail of all judge evaluations
-- Fields: `job_id`, `model_id`, `prompt_id`, `judge_name`, `judge_score`, `judge_confidence`, `judge_reasoning`, `cost_usd`
-
-#### `cost_tracking`
-- Daily budget monitoring
-- Fields: `suite_id`, `date`, `total_cost_usd`, `evaluation_count`
-
-### Modified Tables
-
-#### `prompts`
-- **New field**: `type` TEXT NOT NULL DEFAULT 'objective'
-- Values: `objective` (semantic matching), `creative` (judge evaluation)
 
 ---
 
@@ -308,32 +217,9 @@ curl -X POST http://localhost:8001/evaluate \
 2. **Rotate keys** periodically (requires re-encrypting all stored keys)
 3. **Use HTTPS** in production
 4. **Set restrictive CORS** in production (currently allows all origins for dev)
-5. **Monitor costs** via cost_tracking table
+5. **Monitor costs** via the cost tracking dashboard
 
----
-
-## 💰 Cost Estimates
-
-### Per Evaluation (~500 input + 200 output tokens per judge)
-
-| Judge | Input Cost | Output Cost | Total |
-|-------|------------|-------------|-------|
-| Claude Opus 4.5 | $0.0075 | $0.0150 | **$0.0225** |
-| GPT-5.2 | $0.0050 | $0.0060 | **$0.0110** |
-| Gemini 3 Pro | $0.0063 | $0.0100 | **$0.0163** |
-| **3 Judges** | | | **~$0.05** |
-
-### Example Scenarios
-- **10 models × 42 prompts**: 420 evaluations × $0.05 = **$21**
-- **50 models × 100 prompts**: 5,000 evaluations × $0.05 = **$250**
-- **100 models × 200 prompts**: 20,000 evaluations × $0.05 = **$1,000**
-
-### Cost Controls
-- ✅ Estimate before execution (shown in confirmation dialog)
-- ✅ Track actual cost per API call
-- ✅ Alert via WebSocket if threshold exceeded
-- ✅ Allow job cancellation mid-execution
-- ✅ Daily cost tracking per suite
+**Cost Note**: Each evaluation costs approximately $0.05 (using 3 AI judges). Cost estimates are shown before execution, and you can set alert thresholds in settings.
 
 ---
 
@@ -398,132 +284,10 @@ Error: WebSocket connection closed unexpectedly
 
 ---
 
-## 📊 API Endpoints Reference
+## 📚 Additional Resources
 
-### Settings
-- `GET /settings` - Display settings page
-- `POST /settings/update` - Update settings
-- `POST /settings/test_key` - Test API key validity
+- **Main Documentation**: [README.md](README.md) - Complete feature list and architecture
+- **Developer Reference**: [CLAUDE.md](CLAUDE.md) - Development patterns, database schema, testing
+- **API Endpoints**: See README.md for complete endpoint reference
 
-### Evaluation
-- `POST /evaluate/all` - Evaluate all models × all prompts
-- `POST /evaluate/model?id={id}` - Evaluate one model × all prompts
-- `POST /evaluate/prompt?id={id}` - Evaluate all models × one prompt
-- `GET /evaluation/progress?id={job_id}` - Get job status
-- `POST /evaluation/cancel?id={job_id}` - Cancel running job
-
-### Python Service
-- `GET /health` - Health check
-- `POST /evaluate` - Single evaluation
-- `POST /evaluate_batch` - Batch evaluation
-- `POST /estimate_cost` - Cost estimation
-
----
-
-## 🎯 Next Steps
-
-### Immediate
-1. ✅ Test with real API keys
-2. ✅ Run a small evaluation (1-2 models, 5-10 prompts)
-3. ✅ Monitor costs and progress via WebSocket
-4. ✅ Verify scores are correctly stored
-
-### Short-term Enhancements
-- [ ] Add model response auto-fetching (currently manual)
-- [ ] Implement prompt type selector in UI
-- [ ] Add evaluation history viewer
-- [ ] Create cost analytics dashboard
-- [ ] Add judge selection per evaluation
-
-### Long-term Features
-- [ ] Support for custom judges
-- [ ] Batch import of model responses
-- [ ] Scheduled evaluations
-- [ ] Multi-suite comparison
-- [ ] Export evaluation reports (PDF/HTML)
-
----
-
-## 📝 Implementation Summary
-
-### Files Created (23 new files)
-**Python Service (11 files):**
-- `python_service/main.py` - FastAPI server
-- `python_service/config.py` - Configuration
-- `python_service/requirements.txt` - Dependencies
-- `python_service/evaluators/__init__.py`
-- `python_service/evaluators/base.py`
-- `python_service/evaluators/objective.py`
-- `python_service/evaluators/creative.py`
-- `python_service/judges/__init__.py`
-- `python_service/judges/claude.py`
-- `python_service/judges/gpt.py`
-- `python_service/judges/gemini.py`
-- `python_service/prompts/objective_judge.txt`
-- `python_service/prompts/creative_judge.txt`
-
-**Go Evaluator (5 files):**
-- `evaluator/types.go`
-- `evaluator/consensus.go`
-- `evaluator/litellm_client.go`
-- `evaluator/job_queue.go`
-- `evaluator/evaluator.go`
-
-**Go Middleware (2 files):**
-- `middleware/encryption.go`
-- `middleware/settings.go`
-
-**Go Handlers (2 files):**
-- `handlers/settings.go`
-- `handlers/evaluation.go`
-
-**Templates (1 file):**
-- `templates/settings.html`
-
-### Files Modified (3 files)
-- `middleware/database.go` - Added 5 new tables, 7 indexes
-- `middleware/socket.go` - Added 5 broadcast functions
-- `main.go` - Added 8 new routes, evaluator initialization
-
----
-
-## ✨ Key Features Implemented
-
-1. **3-Judge Consensus Scoring**
-   - Claude Opus 4.5 (high think)
-   - GPT-5.2 (high think)
-   - Gemini 3 Pro (high think)
-   - Weighted average by confidence
-
-2. **Dual Evaluation Modes**
-   - Objective: Semantic matching against solution
-   - Creative: Quality evaluation without expected answer
-
-3. **Async Job Queue**
-   - 3 concurrent workers (configurable)
-   - Job persistence across restarts
-   - Cancellation support
-
-4. **Real-time Progress**
-   - WebSocket broadcasts
-   - Progress bars in UI
-   - Cost tracking
-
-5. **Security**
-   - AES-256-GCM encryption for API keys
-   - Masked display in UI
-   - Environment-based key management
-
-6. **Cost Control**
-   - Pre-execution estimates
-   - Real-time tracking
-   - Threshold alerts
-   - Daily cost monitoring
-
----
-
-## 🎉 Ready to Use!
-
-Your automated LLM evaluation system is now fully operational. Start the services, configure your API keys, and begin automated evaluations!
-
-**Support**: For issues, refer to the plan file at `~/.claude/plans/expressive-painting-meadow.md`
+For issues or questions, please refer to the troubleshooting section above or check the main documentation.
