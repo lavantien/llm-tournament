@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -683,5 +685,166 @@ func TestEditProfileHandler_POST_NegativeIndex(t *testing.T) {
 	profiles := middleware.ReadProfiles()
 	if len(profiles) != 1 || profiles[0].Name != "TestProfile" {
 		t.Error("profile should remain unchanged")
+	}
+}
+
+func TestProfilesHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/profiles", nil)
+	rr := httptest.NewRecorder()
+	ProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestResetProfilesHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupProfilesTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/reset_profiles", nil)
+	rr := httptest.NewRecorder()
+	ResetProfilesHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestAddProfile_WriteProfilesError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{},
+	}
+	mockDS.WriteProfilesFunc = func(profiles []middleware.Profile) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("profile_name", "TestProfile")
+
+	req := httptest.NewRequest("POST", "/add_profile", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.AddProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEditProfile_WriteProfilesError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{{Name: "OldProfile"}},
+	}
+	mockDS.WriteProfilesFunc = func(profiles []middleware.Profile) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("index", "0")
+	form.Add("profile_name", "NewProfile")
+
+	req := httptest.NewRequest("POST", "/edit_profile", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.EditProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEditProfile_WritePromptsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{{Name: "OldProfile"}},
+		Prompts:  []middleware.Prompt{{Text: "Test", Profile: "OldProfile"}},
+	}
+	mockDS.WritePromptsFunc = func(prompts []middleware.Prompt) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("index", "0")
+	form.Add("profile_name", "NewProfile")
+
+	req := httptest.NewRequest("POST", "/edit_profile", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.EditProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestDeleteProfile_WriteProfilesError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{{Name: "ProfileToDelete"}},
+	}
+	mockDS.WriteProfilesFunc = func(profiles []middleware.Profile) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("index", "0")
+
+	req := httptest.NewRequest("POST", "/delete_profile", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.DeleteProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestResetProfiles_WriteProfilesError(t *testing.T) {
+	mockDS := &MockDataStore{}
+	mockDS.WriteProfilesFunc = func(profiles []middleware.Profile) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	req := httptest.NewRequest("POST", "/reset_profiles", nil)
+	rr := httptest.NewRecorder()
+	handler.ResetProfiles(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

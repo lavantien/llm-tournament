@@ -441,3 +441,4 @@ func TestCancelEvaluationHandler_WithNonExistentJob(t *testing.T) {
 		t.Error("expected error when cancelling non-existent job")
 	}
 }
+

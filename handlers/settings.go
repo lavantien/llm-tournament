@@ -1,19 +1,33 @@
 package handlers
 
 import (
-	"html/template"
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-// SettingsHandler displays the settings page
+// SettingsHandler displays the settings page (backward compatible wrapper)
 func SettingsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.Settings(w, r)
+}
+
+// UpdateSettingsHandler updates settings from form submission (backward compatible wrapper)
+func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.UpdateSettings(w, r)
+}
+
+// TestAPIKeyHandler tests an API key (backward compatible wrapper)
+func TestAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.TestAPIKey(w, r)
+}
+
+// Settings displays the settings page
+func (h *Handler) Settings(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling settings page")
 
 	// Get masked API keys for display
-	maskedKeys, err := middleware.GetMaskedAPIKeys()
+	maskedKeys, err := h.DataStore.GetMaskedAPIKeys()
 	if err != nil {
 		log.Printf("Error getting masked API keys: %v", err)
 		http.Error(w, "Failed to load settings", http.StatusInternalServerError)
@@ -21,9 +35,9 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get other settings
-	threshold, _ := middleware.GetSetting("cost_alert_threshold_usd")
-	autoEval, _ := middleware.GetSetting("auto_evaluate_new_models")
-	pythonURL, _ := middleware.GetSetting("python_service_url")
+	threshold, _ := h.DataStore.GetSetting("cost_alert_threshold_usd")
+	autoEval, _ := h.DataStore.GetSetting("auto_evaluate_new_models")
+	pythonURL, _ := h.DataStore.GetSetting("python_service_url")
 
 	// Parse threshold as float
 	thresholdFloat, _ := strconv.ParseFloat(threshold, 64)
@@ -45,15 +59,11 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 		PythonURL:     pythonURL,
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/settings.html", "templates/nav.html"))
-	if err := tmpl.Execute(w, data); err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Failed to render settings", http.StatusInternalServerError)
-	}
+	middleware.RenderTemplate(w, "settings.html", data)
 }
 
-// UpdateSettingsHandler updates settings from form submission
-func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
+// UpdateSettings updates settings from form submission
+func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -77,7 +87,7 @@ func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for provider, key := range apiKeys {
 		if key != "" && key != "********" { // Don't update if placeholder
-			if err := middleware.SetAPIKey(provider, key); err != nil {
+			if err := h.DataStore.SetAPIKey(provider, key); err != nil {
 				log.Printf("Error setting API key for %s: %v", provider, err)
 				http.Error(w, "Failed to save API key", http.StatusInternalServerError)
 				return
@@ -88,7 +98,7 @@ func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	// Update other settings
 	threshold := r.FormValue("cost_alert_threshold_usd")
 	if threshold != "" {
-		if err := middleware.SetSetting("cost_alert_threshold_usd", threshold); err != nil {
+		if err := h.DataStore.SetSetting("cost_alert_threshold_usd", threshold); err != nil {
 			log.Printf("Error setting threshold: %v", err)
 		}
 	}
@@ -98,13 +108,13 @@ func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	if autoEval == "on" {
 		autoEvalValue = "true"
 	}
-	if err := middleware.SetSetting("auto_evaluate_new_models", autoEvalValue); err != nil {
+	if err := h.DataStore.SetSetting("auto_evaluate_new_models", autoEvalValue); err != nil {
 		log.Printf("Error setting auto_evaluate: %v", err)
 	}
 
 	pythonURL := r.FormValue("python_service_url")
 	if pythonURL != "" {
-		if err := middleware.SetSetting("python_service_url", pythonURL); err != nil {
+		if err := h.DataStore.SetSetting("python_service_url", pythonURL); err != nil {
 			log.Printf("Error setting Python URL: %v", err)
 		}
 	}
@@ -115,8 +125,8 @@ func UpdateSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/settings", http.StatusSeeOther)
 }
 
-// TestAPIKeyHandler tests an API key by making a health check to Python service
-func TestAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
+// TestAPIKey tests an API key by making a health check to Python service
+func (h *Handler) TestAPIKey(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -129,7 +139,7 @@ func TestAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get API key
-	apiKey, err := middleware.GetAPIKey(provider)
+	apiKey, err := h.DataStore.GetAPIKey(provider)
 	if err != nil || apiKey == "" {
 		middleware.RespondJSON(w, map[string]interface{}{
 			"success": false,

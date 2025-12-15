@@ -14,8 +14,33 @@ import (
 	"llm-tournament/middleware"
 )
 
-// Handle profiles page
+// ProfilesHandler handles the profiles page (backward compatible wrapper)
 func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.Profiles(w, r)
+}
+
+// AddProfileHandler handles adding a profile (backward compatible wrapper)
+func AddProfileHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.AddProfile(w, r)
+}
+
+// EditProfileHandler handles editing a profile (backward compatible wrapper)
+func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.EditProfile(w, r)
+}
+
+// DeleteProfileHandler handles deleting a profile (backward compatible wrapper)
+func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.DeleteProfile(w, r)
+}
+
+// ResetProfilesHandler handles resetting profiles (backward compatible wrapper)
+func ResetProfilesHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ResetProfiles(w, r)
+}
+
+// Profiles handles the profiles page
+func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling profiles page")
 	searchQuery := r.FormValue("search_query")
 
@@ -32,20 +57,9 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageName := "Profiles"
-	t, err := template.New("profiles.html").Funcs(funcMap).ParseFiles("templates/profiles.html", "templates/nav.html")
-	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
-	}
-	if t == nil {
-		log.Println("Error parsing template")
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
-	}
+	profiles := h.DataStore.ReadProfiles()
 
-	profiles := middleware.ReadProfiles()
-	err = t.Execute(w, struct {
+	err := h.Renderer.Render(w, "profiles.html", funcMap, struct {
 		PageName    string
 		Profiles    []middleware.Profile
 		SearchQuery string
@@ -53,17 +67,17 @@ func ProfilesHandler(w http.ResponseWriter, r *http.Request) {
 		PageName:    pageName,
 		Profiles:    profiles,
 		SearchQuery: searchQuery,
-	})
+	}, "templates/profiles.html", "templates/nav.html")
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
 	log.Println("Profiles page rendered successfully")
 }
 
-// Handle add profile
-func AddProfileHandler(w http.ResponseWriter, r *http.Request) {
+// AddProfile handles adding a profile
+func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling add profile")
 	err := r.ParseForm()
 	if err != nil {
@@ -79,9 +93,9 @@ func AddProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles := middleware.ReadProfiles()
+	profiles := h.DataStore.ReadProfiles()
 	profiles = append(profiles, middleware.Profile{Name: profileName, Description: profileDescription})
-	err = middleware.WriteProfiles(profiles)
+	err = h.DataStore.WriteProfiles(profiles)
 	if err != nil {
 		log.Printf("Error writing profiles: %v", err)
 		http.Error(w, "Error writing profiles", http.StatusInternalServerError)
@@ -91,8 +105,8 @@ func AddProfileHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/profiles", http.StatusSeeOther)
 }
 
-// Handle edit profile
-func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
+// EditProfile handles editing a profile
+func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit profile")
 	if r.Method == "GET" {
 		err := r.ParseForm()
@@ -108,7 +122,7 @@ func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		profiles := middleware.ReadProfiles()
+		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
 			funcMap := template.FuncMap{
 				"markdown": func(text string) template.HTML {
@@ -117,22 +131,16 @@ func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
-			t, err := template.New("edit_profile.html").Funcs(funcMap).ParseFiles("templates/edit_profile.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
+			err := h.Renderer.Render(w, "edit_profile.html", funcMap, struct {
 				Index   int
 				Profile middleware.Profile
 			}{
 				Index:   index,
 				Profile: profiles[index],
-			})
+			}, "templates/edit_profile.html")
 			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				log.Printf("Error rendering template: %v", err)
+				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -157,27 +165,27 @@ func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Profile name cannot be empty", http.StatusBadRequest)
 			return
 		}
-		profiles := middleware.ReadProfiles()
+		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
 			oldProfileName := profiles[index].Name
 			profiles[index].Name = editedProfileName
 			profiles[index].Description = editedProfileDescription
-			
+
 			// Update prompts that reference this profile
-			prompts := middleware.ReadPrompts()
+			prompts := h.DataStore.ReadPrompts()
 			for i := range prompts {
 				if prompts[i].Profile == oldProfileName {
 					prompts[i].Profile = editedProfileName
 				}
 			}
-			err = middleware.WritePrompts(prompts)
+			err = h.DataStore.WritePrompts(prompts)
 			if err != nil {
 				log.Printf("Error updating prompts: %v", err)
 				http.Error(w, "Error updating prompts", http.StatusInternalServerError)
 				return
 			}
 		}
-		err = middleware.WriteProfiles(profiles)
+		err = h.DataStore.WriteProfiles(profiles)
 		if err != nil {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
@@ -188,8 +196,8 @@ func EditProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handle delete profile
-func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
+// DeleteProfile handles deleting a profile
+func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete profile")
 	if r.Method == "GET" {
 		err := r.ParseForm()
@@ -205,7 +213,7 @@ func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		profiles := middleware.ReadProfiles()
+		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
 			funcMap := template.FuncMap{
 				"markdown": func(text string) template.HTML {
@@ -214,22 +222,16 @@ func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
-			t, err := template.New("delete_profile.html").Funcs(funcMap).ParseFiles("templates/delete_profile.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
+			err := h.Renderer.Render(w, "delete_profile.html", funcMap, struct {
 				Index   int
 				Profile middleware.Profile
 			}{
 				Index:   index,
 				Profile: profiles[index],
-			})
+			}, "templates/delete_profile.html")
 			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				log.Printf("Error rendering template: %v", err)
+				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -247,11 +249,11 @@ func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		profiles := middleware.ReadProfiles()
+		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
 			profiles = append(profiles[:index], profiles[index+1:]...)
 		}
-		err = middleware.WriteProfiles(profiles)
+		err = h.DataStore.WriteProfiles(profiles)
 		if err != nil {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
@@ -262,22 +264,16 @@ func DeleteProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handle reset profiles
-func ResetProfilesHandler(w http.ResponseWriter, r *http.Request) {
+// ResetProfiles handles resetting profiles
+func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset profiles")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/reset_profiles.html")
-		if err != nil {
-			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	} else if r.Method == "POST" {
-		err := middleware.WriteProfiles([]middleware.Profile{})
+		err := h.DataStore.WriteProfiles([]middleware.Profile{})
 		if err != nil {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)

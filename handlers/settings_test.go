@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -366,5 +368,25 @@ func TestUpdateSettingsHandler_POST_EmptyThreshold(t *testing.T) {
 
 	if rr.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestSettingsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupSettingsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/settings", nil)
+	rr := httptest.NewRecorder()
+	SettingsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

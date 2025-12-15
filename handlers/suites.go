@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -10,21 +9,34 @@ import (
 	"llm-tournament/middleware"
 )
 
-// Handle delete prompt suite page
+// DeletePromptSuiteHandler handles delete prompt suite (backward compatible wrapper)
 func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.DeletePromptSuite(w, r)
+}
+
+// SelectPromptSuiteHandler handles select prompt suite (backward compatible wrapper)
+func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.SelectPromptSuite(w, r)
+}
+
+// NewPromptSuiteHandler handles new prompt suite (backward compatible wrapper)
+func NewPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.NewPromptSuite(w, r)
+}
+
+// EditPromptSuiteHandler handles edit prompt suite (backward compatible wrapper)
+func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.EditPromptSuite(w, r)
+}
+
+// DeletePromptSuite handles delete prompt suite page
+func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt suite page")
 	if r.Method == "GET" {
 		suiteName := r.URL.Query().Get("suite_name")
-		t, err := template.ParseFiles("templates/delete_prompt_suite.html", "templates/nav.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, map[string]string{"SuiteName": suiteName})
-		if err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
+		if err := h.Renderer.Render(w, "delete_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/delete_prompt_suite.html"); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Delete prompt suite page rendered successfully")
@@ -35,7 +47,7 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		currentSuite := middleware.GetCurrentSuiteName()
+		currentSuite := h.DataStore.GetCurrentSuiteName()
 		if suiteName == currentSuite {
 			err := os.WriteFile("data/current_suite.txt", []byte("default"), 0644)
 			if err != nil {
@@ -53,13 +65,13 @@ func DeletePromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Printf("Prompt suite '%s' deleted successfully", suiteName)
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
-// Handle select prompt suite
-func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+// SelectPromptSuite handles select prompt suite
+func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling select prompt suite")
 	err := r.ParseForm()
 	if err != nil {
@@ -82,24 +94,17 @@ func SelectPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
-	middleware.BroadcastResults()
+	h.DataStore.BroadcastResults()
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
-// Handle new prompt suite
-func NewPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+// NewPromptSuite handles new prompt suite
+func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling new prompt suite")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/new_prompt_suite.html", "templates/nav.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
+		if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, nil, "templates/new_prompt_suite.html"); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
 		}
 		log.Println("New prompt suite page rendered successfully")
@@ -116,33 +121,26 @@ func NewPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Suite name cannot be empty", http.StatusBadRequest)
 			return
 		}
-		err = middleware.WritePromptSuite(suiteName, []middleware.Prompt{})
+		err = h.DataStore.WritePromptSuite(suiteName, []middleware.Prompt{})
 		if err != nil {
 			log.Printf("Error creating prompt suite: %v", err)
 			http.Error(w, "Error creating prompt suite", http.StatusInternalServerError)
 			return
 		}
 		log.Printf("Prompt suite '%s' created successfully", suiteName)
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
-// Handle edit prompt suite
-func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
+// EditPromptSuite handles edit prompt suite
+func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit prompt suite")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/edit_prompt_suite.html", "templates/nav.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
 		suiteName := r.URL.Query().Get("suite_name")
-		err = t.Execute(w, map[string]string{"SuiteName": suiteName})
-		if err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
+		if err := h.Renderer.Render(w, "edit_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/edit_prompt_suite.html"); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Edit prompt suite page rendered successfully")
@@ -168,7 +166,7 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }

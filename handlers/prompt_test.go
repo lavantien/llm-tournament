@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -1401,3 +1403,62 @@ func TestExportPromptsHandler_WithPrompts(t *testing.T) {
 	}
 }
 
+func TestResetPromptsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/reset_prompts", nil)
+	rr := httptest.NewRecorder()
+	ResetPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestImportPromptsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/import_prompts", nil)
+	rr := httptest.NewRecorder()
+	ImportPromptsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestImportResultsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/import_results", nil)
+	rr := httptest.NewRecorder()
+	ImportResultsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

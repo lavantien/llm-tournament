@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -385,6 +387,85 @@ func TestDeleteModelHandler_GET_Success(t *testing.T) {
 	}
 }
 
+func TestAddModel_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Results: map[string]middleware.Result{},
+	}
+	mockDS.WriteResultsFunc = func(suiteName string, results map[string]middleware.Result) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("model", "TestModel")
+
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.AddModel(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEditModel_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Results: map[string]middleware.Result{
+			"OldModel": {Scores: []int{80}},
+		},
+	}
+	mockDS.WriteResultsFunc = func(suiteName string, results map[string]middleware.Result) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("new_model_name", "NewModel")
+
+	req := httptest.NewRequest("POST", "/edit_model?model=OldModel", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.EditModel(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestDeleteModel_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Results: map[string]middleware.Result{
+			"ModelToDelete": {Scores: []int{80}},
+		},
+	}
+	mockDS.WriteResultsFunc = func(suiteName string, results map[string]middleware.Result) error {
+		return errors.New("database write error")
+	}
+	mockRenderer := &MockRenderer{}
+
+	handler := NewHandlerWithDeps(mockDS, mockRenderer)
+
+	form := url.Values{}
+	form.Add("model", "ModelToDelete")
+
+	req := httptest.NewRequest("POST", "/delete_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.DeleteModel(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
 func TestEditModelHandler_GET_Success(t *testing.T) {
 	restoreDir := changeToProjectRootModels(t)
 	defer restoreDir()
@@ -409,5 +490,57 @@ func TestEditModelHandler_GET_Success(t *testing.T) {
 	body := rr.Body.String()
 	if !strings.Contains(body, "ModelToEdit") {
 		t.Error("expected model name in response body")
+	}
+}
+
+func TestEditModelHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	// Add a model first
+	suiteName := middleware.GetCurrentSuiteName()
+	middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"ModelToEdit": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("GET", "/edit_model?model=ModelToEdit", nil)
+	rr := httptest.NewRecorder()
+	EditModelHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestDeleteModelHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupModelsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	// Add a model first
+	suiteName := middleware.GetCurrentSuiteName()
+	middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"ModelToDelete": {Scores: []int{80}},
+	})
+
+	req := httptest.NewRequest("GET", "/delete_model?model=ModelToDelete", nil)
+	rr := httptest.NewRecorder()
+	DeleteModelHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

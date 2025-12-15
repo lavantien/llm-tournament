@@ -2,11 +2,33 @@ package testutil
 
 import (
 	"database/sql"
+	"html/template"
+	"net/http"
 	"os"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// Prompt is a local type matching middleware.Prompt for testing
+type Prompt struct {
+	Text         string
+	Solution     string
+	Profile      string
+	DisplayOrder int
+	Type         string
+}
+
+// Profile is a local type matching middleware.Profile for testing
+type Profile struct {
+	Name        string
+	Description string
+}
+
+// Result is a local type matching middleware.Result for testing
+type Result struct {
+	Scores []int
+}
 
 // ValidEncryptionKey returns a valid 64-char hex key for testing
 func ValidEncryptionKey() string {
@@ -310,5 +332,295 @@ func CreateTestModelResponse(t *testing.T, db *sql.DB, modelID, promptID int, re
 		modelID, promptID, responseText)
 	if err != nil {
 		t.Fatalf("failed to create test model response: %v", err)
+	}
+}
+
+// MockRenderer implements TemplateRenderer for testing with error injection
+type MockRenderer struct {
+	RenderError error
+	RenderCalls []MockRenderCall
+}
+
+// MockRenderCall records a call to Render
+type MockRenderCall struct {
+	Name  string
+	Data  interface{}
+	Files []string
+}
+
+// Render records the call and returns any configured error
+func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap template.FuncMap, data interface{}, files ...string) error {
+	m.RenderCalls = append(m.RenderCalls, MockRenderCall{
+		Name:  name,
+		Data:  data,
+		Files: files,
+	})
+	if m.RenderError != nil {
+		return m.RenderError
+	}
+	// Write minimal content to satisfy tests expecting output
+	w.Write([]byte("mock rendered"))
+	return nil
+}
+
+// RenderTemplateSimple records the call and returns any configured error
+func (m *MockRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl string, data interface{}) error {
+	return m.Render(w, tmpl, nil, data, "templates/"+tmpl)
+}
+
+// MockDataStore implements DataStore interface for testing with error injection
+// Note: This uses local types (Prompt, Profile, Result) that mirror middleware types
+// The handlers tests must use type assertions or conversion when using this mock
+type MockDataStore struct {
+	// Function hooks for custom behavior
+	GetCurrentSuiteIDFunc   func() (int, error)
+	GetCurrentSuiteNameFunc func() string
+	ListSuitesFunc          func() ([]string, error)
+	SetCurrentSuiteFunc     func(name string) error
+	SuiteExistsFunc         func(name string) bool
+	ReadPromptsFunc         func() []Prompt
+	WritePromptsFunc        func(prompts []Prompt) error
+	ReadPromptSuiteFunc     func(suiteName string) ([]Prompt, error)
+	WritePromptSuiteFunc    func(suiteName string, prompts []Prompt) error
+	ListPromptSuitesFunc    func() ([]string, error)
+	UpdatePromptsOrderFunc  func(order []int)
+	ReadProfilesFunc        func() []Profile
+	WriteProfilesFunc       func(profiles []Profile) error
+	ReadResultsFunc         func() map[string]Result
+	WriteResultsFunc        func(suiteName string, results map[string]Result) error
+	GetSettingFunc          func(key string) (string, error)
+	SetSettingFunc          func(key, value string) error
+	GetAPIKeyFunc           func(provider string) (string, error)
+	SetAPIKeyFunc           func(provider, key string) error
+	GetMaskedAPIKeysFunc    func() (map[string]string, error)
+	BroadcastResultsFunc    func()
+
+	// Default error to return
+	Err error
+
+	// Mock data
+	Prompts      []Prompt
+	Profiles     []Profile
+	Results      map[string]Result
+	Settings     map[string]string
+	CurrentSuite string
+}
+
+// GetCurrentSuiteID returns mock suite ID or error
+func (m *MockDataStore) GetCurrentSuiteID() (int, error) {
+	if m.GetCurrentSuiteIDFunc != nil {
+		return m.GetCurrentSuiteIDFunc()
+	}
+	if m.Err != nil {
+		return 0, m.Err
+	}
+	return 1, nil
+}
+
+// GetCurrentSuiteName returns mock suite name
+func (m *MockDataStore) GetCurrentSuiteName() string {
+	if m.GetCurrentSuiteNameFunc != nil {
+		return m.GetCurrentSuiteNameFunc()
+	}
+	if m.CurrentSuite != "" {
+		return m.CurrentSuite
+	}
+	return "default"
+}
+
+// ListSuites returns mock suites or error
+func (m *MockDataStore) ListSuites() ([]string, error) {
+	if m.ListSuitesFunc != nil {
+		return m.ListSuitesFunc()
+	}
+	if m.Err != nil {
+		return nil, m.Err
+	}
+	return []string{"default"}, nil
+}
+
+// SetCurrentSuite returns mock error
+func (m *MockDataStore) SetCurrentSuite(name string) error {
+	if m.SetCurrentSuiteFunc != nil {
+		return m.SetCurrentSuiteFunc(name)
+	}
+	return m.Err
+}
+
+// SuiteExists returns mock result
+func (m *MockDataStore) SuiteExists(name string) bool {
+	if m.SuiteExistsFunc != nil {
+		return m.SuiteExistsFunc(name)
+	}
+	return true
+}
+
+// ReadPrompts returns mock prompts
+func (m *MockDataStore) ReadPrompts() []Prompt {
+	if m.ReadPromptsFunc != nil {
+		return m.ReadPromptsFunc()
+	}
+	return m.Prompts
+}
+
+// WritePrompts stores prompts or returns error
+func (m *MockDataStore) WritePrompts(prompts []Prompt) error {
+	if m.WritePromptsFunc != nil {
+		return m.WritePromptsFunc(prompts)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
+	m.Prompts = prompts
+	return nil
+}
+
+// ReadPromptSuite returns mock prompts for a suite
+func (m *MockDataStore) ReadPromptSuite(suiteName string) ([]Prompt, error) {
+	if m.ReadPromptSuiteFunc != nil {
+		return m.ReadPromptSuiteFunc(suiteName)
+	}
+	if m.Err != nil {
+		return nil, m.Err
+	}
+	return m.Prompts, nil
+}
+
+// WritePromptSuite stores prompts for a suite
+func (m *MockDataStore) WritePromptSuite(suiteName string, prompts []Prompt) error {
+	if m.WritePromptSuiteFunc != nil {
+		return m.WritePromptSuiteFunc(suiteName, prompts)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
+	m.Prompts = prompts
+	return nil
+}
+
+// ListPromptSuites returns mock suite list
+func (m *MockDataStore) ListPromptSuites() ([]string, error) {
+	if m.ListPromptSuitesFunc != nil {
+		return m.ListPromptSuitesFunc()
+	}
+	if m.Err != nil {
+		return nil, m.Err
+	}
+	return []string{"default"}, nil
+}
+
+// UpdatePromptsOrder updates prompts order
+func (m *MockDataStore) UpdatePromptsOrder(order []int) {
+	if m.UpdatePromptsOrderFunc != nil {
+		m.UpdatePromptsOrderFunc(order)
+	}
+}
+
+// ReadProfiles returns mock profiles
+func (m *MockDataStore) ReadProfiles() []Profile {
+	if m.ReadProfilesFunc != nil {
+		return m.ReadProfilesFunc()
+	}
+	return m.Profiles
+}
+
+// WriteProfiles stores profiles or returns error
+func (m *MockDataStore) WriteProfiles(profiles []Profile) error {
+	if m.WriteProfilesFunc != nil {
+		return m.WriteProfilesFunc(profiles)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
+	m.Profiles = profiles
+	return nil
+}
+
+// ReadResults returns mock results
+func (m *MockDataStore) ReadResults() map[string]Result {
+	if m.ReadResultsFunc != nil {
+		return m.ReadResultsFunc()
+	}
+	if m.Results == nil {
+		return make(map[string]Result)
+	}
+	return m.Results
+}
+
+// WriteResults stores results or returns error
+func (m *MockDataStore) WriteResults(suiteName string, results map[string]Result) error {
+	if m.WriteResultsFunc != nil {
+		return m.WriteResultsFunc(suiteName, results)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
+	m.Results = results
+	return nil
+}
+
+// GetSetting returns mock setting or error
+func (m *MockDataStore) GetSetting(key string) (string, error) {
+	if m.GetSettingFunc != nil {
+		return m.GetSettingFunc(key)
+	}
+	if m.Err != nil {
+		return "", m.Err
+	}
+	if m.Settings != nil {
+		return m.Settings[key], nil
+	}
+	return "", nil
+}
+
+// SetSetting stores setting or returns error
+func (m *MockDataStore) SetSetting(key, value string) error {
+	if m.SetSettingFunc != nil {
+		return m.SetSettingFunc(key, value)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
+	if m.Settings == nil {
+		m.Settings = make(map[string]string)
+	}
+	m.Settings[key] = value
+	return nil
+}
+
+// GetAPIKey returns mock API key or error
+func (m *MockDataStore) GetAPIKey(provider string) (string, error) {
+	if m.GetAPIKeyFunc != nil {
+		return m.GetAPIKeyFunc(provider)
+	}
+	if m.Err != nil {
+		return "", m.Err
+	}
+	return "", nil
+}
+
+// SetAPIKey stores API key or returns error
+func (m *MockDataStore) SetAPIKey(provider, key string) error {
+	if m.SetAPIKeyFunc != nil {
+		return m.SetAPIKeyFunc(provider, key)
+	}
+	return m.Err
+}
+
+// GetMaskedAPIKeys returns mock masked API keys
+func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) {
+	if m.GetMaskedAPIKeysFunc != nil {
+		return m.GetMaskedAPIKeysFunc()
+	}
+	if m.Err != nil {
+		return nil, m.Err
+	}
+	return map[string]string{}, nil
+}
+
+// BroadcastResults does nothing in mock
+func (m *MockDataStore) BroadcastResults() {
+	if m.BroadcastResultsFunc != nil {
+		m.BroadcastResultsFunc()
 	}
 }

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 
@@ -10,18 +9,21 @@ import (
 )
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {
-	t, err := template.New(tmpl).Funcs(templates.FuncMap).ParseFiles("templates/"+tmpl, "templates/nav.html")
+	err := DefaultRenderer.Render(w, tmpl, templates.FuncMap, data, "templates/"+tmpl, "templates/nav.html")
 	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 	}
+}
 
-	err = t.Execute(w, data)
+// RenderTemplateSimple renders a single template without nav.html
+func RenderTemplateSimple(w http.ResponseWriter, tmpl string, data interface{}) error {
+	err := DefaultRenderer.Render(w, tmpl, nil, data, "templates/"+tmpl)
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 	}
+	return err
 }
 
 func HandleFormError(w http.ResponseWriter, err error) {

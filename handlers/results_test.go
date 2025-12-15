@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -1108,3 +1110,62 @@ func TestUpdateResultHandler_WithScoreValue(t *testing.T) {
 	}
 }
 
+func TestResultsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	ResultsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestResetResultsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/reset_results", nil)
+	rr := httptest.NewRecorder()
+	ResetResultsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestConfirmRefreshResultsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/confirm_refresh_results", nil)
+	rr := httptest.NewRecorder()
+	ConfirmRefreshResultsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

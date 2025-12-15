@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"html/template"
 	"io"
 	"log"
 	"math/rand"
@@ -46,17 +45,57 @@ type GroupedPrompt struct {
 	ProfileName string
 }
 
-// Handle results page
+// ResultsHandler handles the results page (backward compatible wrapper)
 func ResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.Results(w, r)
+}
+
+// UpdateResultHandler handles updating results (backward compatible wrapper)
+func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.UpdateResult(w, r)
+}
+
+// ResetResultsHandler handles resetting results (backward compatible wrapper)
+func ResetResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ResetResults(w, r)
+}
+
+// ConfirmRefreshResultsHandler handles confirm refresh results (backward compatible wrapper)
+func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ConfirmRefreshResults(w, r)
+}
+
+// RefreshResultsHandler handles refresh results (backward compatible wrapper)
+func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.RefreshResults(w, r)
+}
+
+// EvaluateResult handles evaluating individual results (backward compatible wrapper)
+func EvaluateResult(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.EvaluateResultHandler(w, r)
+}
+
+// ExportResultsHandler handles exporting results (backward compatible wrapper)
+func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ExportResults(w, r)
+}
+
+// UpdateMockResultsHandler handles updating mock results (backward compatible wrapper)
+func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.UpdateMockResults(w, r)
+}
+
+// Results handles the results page
+func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling results page")
-	prompts := middleware.ReadPrompts()
-	results := middleware.ReadResults()
+	prompts := h.DataStore.ReadPrompts()
+	results := h.DataStore.ReadResults()
 
 	// Group prompts by profile
 	var orderedPrompts []GroupedPrompt
 
 	// Get all profiles first (to include empty ones)
-	profiles := middleware.ReadProfiles()
+	profiles := h.DataStore.ReadProfiles()
 
 	// Get profile groups using the utility function
 	profileGroups, profileMap := middleware.GetProfileGroups(prompts, profiles)
@@ -154,17 +193,6 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageName := templates.PageNameResults
-	t, err := template.New("results.html").Funcs(templates.FuncMap).ParseFiles("templates/results.html", "templates/nav.html")
-	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if t == nil {
-		log.Println("Error parsing template")
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
-	}
 	promptTexts := make([]string, len(prompts))
 	for i, prompt := range prompts {
 		promptTexts[i] = prompt.Text
@@ -241,17 +269,17 @@ func ResultsHandler(w http.ResponseWriter, r *http.Request) {
 		OrderedPrompts:  orderedPrompts,
 	}
 
-	err = t.Execute(w, templateData)
+	err := h.Renderer.Render(w, "results.html", templates.FuncMap, templateData, "templates/results.html", "templates/nav.html")
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
 	log.Println("Results page rendered successfully")
 }
 
-// Handle AJAX requests to update results
-func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
+// UpdateResult handles AJAX requests to update results
+func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update result")
 	r.ParseForm()
 	model := r.Form.Get("model")
@@ -265,18 +293,18 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	suiteName := middleware.GetCurrentSuiteName()
-	results := middleware.ReadResults()
+	suiteName := h.DataStore.GetCurrentSuiteName()
+	results := h.DataStore.ReadResults()
 	if results == nil {
 		results = make(map[string]middleware.Result)
 	}
 	if _, ok := results[model]; !ok {
 		results[model] = middleware.Result{
-			Scores: make([]int, len(middleware.ReadPrompts())),
+			Scores: make([]int, len(h.DataStore.ReadPrompts())),
 		}
 	}
 
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 	result := results[model]
 	if len(result.Scores) < len(prompts) {
 		result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
@@ -289,14 +317,14 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	results[model] = result
-	err = middleware.WriteResults(suiteName, results)
+	err = h.DataStore.WriteResults(suiteName, results)
 	if err != nil {
 		log.Printf("Error writing results: %v", err)
 		http.Error(w, "Error writing results", http.StatusInternalServerError)
 		return
 	}
 
-	middleware.BroadcastResults()
+	h.DataStore.BroadcastResults()
 
 	_, err = w.Write([]byte("OK"))
 	if err != nil {
@@ -307,103 +335,85 @@ func UpdateResultHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("protocols.Result updated successfully")
 }
 
-// Handle reset results
-func ResetResultsHandler(w http.ResponseWriter, r *http.Request) {
+// ResetResults handles resetting results
+func (h *Handler) ResetResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset results")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/reset_results.html")
-		if err != nil {
-			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "reset_results.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	} else if r.Method == "POST" {
 		emptyResults := make(map[string]middleware.Result)
-		suiteName := middleware.GetCurrentSuiteName()
-		err := middleware.WriteResults(suiteName, emptyResults)
+		suiteName := h.DataStore.GetCurrentSuiteName()
+		err := h.DataStore.WriteResults(suiteName, emptyResults)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Results reset successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
 }
 
-// Handle confirm refresh results
-func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
+// ConfirmRefreshResults handles confirm refresh results
+func (h *Handler) ConfirmRefreshResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling confirm refresh results")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/confirm_refresh_results.html")
-		if err != nil {
-			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	} else if r.Method == "POST" {
-		results := middleware.ReadResults()
+		results := h.DataStore.ReadResults()
 		for model := range results {
 			results[model] = middleware.Result{
-				Scores: make([]int, len(middleware.ReadPrompts())),
+				Scores: make([]int, len(h.DataStore.ReadPrompts())),
 			}
 		}
-		suiteName := middleware.GetCurrentSuiteName()
-		err := middleware.WriteResults(suiteName, results)
+		suiteName := h.DataStore.GetCurrentSuiteName()
+		err := h.DataStore.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Results refreshed successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
 }
 
-// Handle refresh results
-func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
+// RefreshResults handles refresh results
+func (h *Handler) RefreshResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling refresh results")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/confirm_refresh_results.html")
-		if err != nil {
-			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	} else if r.Method == "POST" {
-		results := middleware.ReadResults()
+		results := h.DataStore.ReadResults()
 		for model := range results {
-			results[model] = middleware.Result{Scores: make([]int, len(middleware.ReadPrompts()))}
+			results[model] = middleware.Result{Scores: make([]int, len(h.DataStore.ReadPrompts()))}
 		}
-		suiteName := middleware.GetCurrentSuiteName()
-		err := middleware.WriteResults(suiteName, results)
+		suiteName := h.DataStore.GetCurrentSuiteName()
+		err := h.DataStore.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Results refreshed successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	}
 }
 
-// Handle evaluation of individual results
-func EvaluateResult(w http.ResponseWriter, r *http.Request) {
+// EvaluateResultHandler handles evaluation of individual results
+func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) {
 	model := r.URL.Query().Get("model")
 	promptIndexStr := r.URL.Query().Get("prompt")
 
@@ -415,7 +425,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		results := middleware.ReadResults()
+		results := h.DataStore.ReadResults()
 		if results == nil {
 			results = make(map[string]middleware.Result)
 		}
@@ -423,7 +433,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		result, exists := results[model]
 		if !exists {
 			// Initialize new result with scores array matching prompts length
-			prompts := middleware.ReadPrompts()
+			prompts := h.DataStore.ReadPrompts()
 			result = middleware.Result{
 				Scores: make([]int, len(prompts)),
 			}
@@ -445,14 +455,14 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		results[model] = result
 
 		// Write updated results
-		err = middleware.WriteResults(middleware.GetCurrentSuiteName(), results)
+		err = h.DataStore.WriteResults(h.DataStore.GetCurrentSuiteName(), results)
 		if err != nil {
 			http.Error(w, "Failed to save results", http.StatusInternalServerError)
 			return
 		}
 
 		// Broadcast updated results to all clients
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 
 		// Add debug logging
 		log.Printf("Updated score for model %s, prompt %d: %d", model, index, score)
@@ -464,7 +474,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get current score for this model/prompt
-	results := middleware.ReadResults()
+	results := h.DataStore.ReadResults()
 	currentScore := 0
 	if result, exists := results[model]; exists {
 		if index, err := strconv.Atoi(promptIndexStr); err == nil && index < len(result.Scores) {
@@ -473,7 +483,7 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the prompt text and solution for display
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 	var promptText, solution string
 	promptIndex, err := strconv.Atoi(promptIndexStr)
 	if err == nil && promptIndex >= 0 && promptIndex < len(prompts) {
@@ -501,25 +511,18 @@ func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 		TotalPrompts: len(prompts),
 	}
 
-	t, err := template.New("evaluate.html").Funcs(templates.FuncMap).ParseFiles("templates/evaluate.html", "templates/nav.html")
+	err = h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html")
 	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = t.Execute(w, data)
-	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
 }
 
-// Handle export results
-func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
+// ExportResults handles export results
+func (h *Handler) ExportResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export results")
-	results := middleware.ReadResults()
+	results := h.DataStore.ReadResults()
 
 	// Convert results to JSON
 	jsonData, err := json.MarshalIndent(results, "", "  ")
@@ -543,9 +546,9 @@ func ExportResultsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Results exported successfully as JSON")
 }
 
-// UpdateMockResultsHandler handles updating results with randomly generated mock data
+// UpdateMockResults handles updating results with randomly generated mock data
 // that ensures even distribution across all tier levels
-func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update mock results")
 
 	if r.Method != "POST" {
@@ -580,7 +583,7 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	// Use client-provided scores instead of generating new ones
 	log.Println("Using client-provided scores for mock data")
 
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 
 	// Get all model names
 	models := mockData.Models
@@ -613,8 +616,8 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	// Skip the evenly distributed tier generation since we're using client scores
 
 	// Save the evenly distributed mock results
-	suiteName := middleware.GetCurrentSuiteName()
-	err = middleware.WriteResults(suiteName, results)
+	suiteName := h.DataStore.GetCurrentSuiteName()
+	err = h.DataStore.WriteResults(suiteName, results)
 	if err != nil {
 		log.Printf("Error writing mock results: %v", err)
 		http.Error(w, "Error saving mock results", http.StatusInternalServerError)
@@ -622,7 +625,7 @@ func UpdateMockResultsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Broadcast the updated results to all connected clients
-	middleware.BroadcastResults()
+	h.DataStore.BroadcastResults()
 
 	// Calculate totalScores and passPercentages for the response
 	totalScores := make(map[string]int)

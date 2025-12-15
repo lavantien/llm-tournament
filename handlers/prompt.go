@@ -15,8 +15,68 @@ import (
 	"llm-tournament/middleware"
 )
 
-// Handle prompt list page
+// PromptListHandler handles the prompt list page (backward compatible wrapper)
 func PromptListHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.PromptList(w, r)
+}
+
+// UpdatePromptsOrderHandler handles updating prompts order (backward compatible wrapper)
+func UpdatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.UpdatePromptsOrder(w, r)
+}
+
+// AddPromptHandler handles adding a prompt (backward compatible wrapper)
+func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.AddPrompt(w, r)
+}
+
+// ExportPromptsHandler handles exporting prompts (backward compatible wrapper)
+func ExportPromptsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ExportPrompts(w, r)
+}
+
+// ImportPromptsHandler handles importing prompts (backward compatible wrapper)
+func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ImportPrompts(w, r)
+}
+
+// ImportResultsHandler handles importing results (backward compatible wrapper)
+func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ImportResults(w, r)
+}
+
+// EditPromptHandler handles editing a prompt (backward compatible wrapper)
+func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.EditPrompt(w, r)
+}
+
+// BulkDeletePromptsPageHandler handles bulk delete prompts page (backward compatible wrapper)
+func BulkDeletePromptsPageHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.BulkDeletePromptsPage(w, r)
+}
+
+// BulkDeletePromptsHandler handles bulk delete prompts (backward compatible wrapper)
+func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.BulkDeletePrompts(w, r)
+}
+
+// DeletePromptHandler handles deleting a prompt (backward compatible wrapper)
+func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.DeletePrompt(w, r)
+}
+
+// MovePromptHandler handles moving a prompt (backward compatible wrapper)
+func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.MovePrompt(w, r)
+}
+
+// ResetPromptsHandler handles resetting prompts (backward compatible wrapper)
+func ResetPromptsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.ResetPrompts(w, r)
+}
+
+// PromptList handles the prompt list page
+func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling prompt list page")
 	orderFilter := r.FormValue("order_filter")
 	profileFilter := r.FormValue("profile_filter")
@@ -52,38 +112,27 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		b, err := json.Marshal(v)
 		return string(b), err
 	}
-	pageName := "Prompts"
-	t, err := template.New("prompt_list.html").Funcs(funcMap).ParseFiles("templates/prompt_list.html", "templates/nav.html")
-	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		return
-	}
-	if t == nil {
-		log.Println("Error parsing template")
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
-	}
 
-	suites, err := middleware.ListPromptSuites()
+	suites, err := h.DataStore.ListPromptSuites()
 	if err != nil {
 		log.Printf("Error listing prompt suites: %v", err)
 		http.Error(w, "Error listing prompt suites", http.StatusInternalServerError)
 		return
 	}
 
-	currentSuite := middleware.GetCurrentSuiteName()
+	currentSuite := h.DataStore.GetCurrentSuiteName()
 	var prompts []middleware.Prompt
 	if currentSuite == "" {
 		currentSuite = "default"
 	}
-	prompts, err = middleware.ReadPromptSuite(currentSuite)
+	prompts, err = h.DataStore.ReadPromptSuite(currentSuite)
 	if err != nil {
 		log.Printf("Error reading prompt suite: %v", err)
 		http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
 		return
 	}
 	if len(prompts) == 0 && currentSuite == "default" {
-		prompts, err = middleware.ReadPromptSuite("default")
+		prompts, err = h.DataStore.ReadPromptSuite("default")
 		if err != nil {
 			log.Printf("Error reading default prompt suite: %v", err)
 			http.Error(w, "Error reading default prompt suite", http.StatusInternalServerError)
@@ -97,8 +146,10 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		promptIndices[i] = i + 1
 	}
 
-	profiles := middleware.ReadProfiles()
-	err = t.Execute(w, struct {
+	profiles := h.DataStore.ReadProfiles()
+	pageName := "Prompts"
+
+	err = h.Renderer.Render(w, "prompt_list.html", funcMap, struct {
 		PageName      string
 		Prompts       []middleware.Prompt
 		PromptIndices []int
@@ -118,16 +169,17 @@ func PromptListHandler(w http.ResponseWriter, r *http.Request) {
 		SearchQuery:   searchQuery,
 		Suites:        suites,
 		CurrentSuite:  currentSuite,
-	})
+	}, "templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompt list page rendered successfully")
 }
 
-// Handle update prompts order
-func UpdatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
+// UpdatePromptsOrder handles updating prompts order
+func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update prompts order")
 	err := r.ParseForm()
 	if err != nil {
@@ -148,12 +200,12 @@ func UpdatePromptsOrderHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing order", http.StatusBadRequest)
 		return
 	}
-	middleware.UpdatePromptsOrder(order)
+	h.DataStore.UpdatePromptsOrder(order)
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
-// Handle add prompt
-func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
+// AddPrompt handles adding a prompt
+func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling add prompt")
 	err := r.ParseForm()
 	if err != nil {
@@ -170,12 +222,12 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 	solutionText := r.Form.Get("solution")
 	profile := r.Form.Get("profile")
 
-	currentSuite := middleware.GetCurrentSuiteName()
+	currentSuite := h.DataStore.GetCurrentSuiteName()
 	if currentSuite == "" {
 		currentSuite = "default"
 	}
 
-	prompts, err := middleware.ReadPromptSuite(currentSuite)
+	prompts, err := h.DataStore.ReadPromptSuite(currentSuite)
 	if err != nil {
 		log.Printf("Error reading prompt suite: %v", err)
 		http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
@@ -183,21 +235,21 @@ func AddPromptHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prompts = append(prompts, middleware.Prompt{Text: promptText, Solution: solutionText, Profile: profile})
-	err = middleware.WritePromptSuite(currentSuite, prompts)
+	err = h.DataStore.WritePromptSuite(currentSuite, prompts)
 	if err != nil {
 		log.Printf("Error writing prompts: %v", err)
 		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 		return
 	}
 	log.Println("Prompt added successfully")
-	middleware.BroadcastResults()
+	h.DataStore.BroadcastResults()
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
 
-// Handle export prompts
-func ExportPromptsHandler(w http.ResponseWriter, r *http.Request) {
+// ExportPrompts handles exporting prompts
+func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling export prompts")
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 
 	// Convert prompts to JSON
 	jsonData, err := json.MarshalIndent(prompts, "", "  ")
@@ -221,8 +273,8 @@ func ExportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Prompts exported successfully as JSON")
 }
 
-// Handle import prompts
-func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
+// ImportPrompts handles importing prompts
+func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling import prompts")
 	if r.Method == "POST" {
 		file, _, err := r.FormFile("prompts_file")
@@ -264,7 +316,7 @@ func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Write the imported prompts
-		err = middleware.WritePrompts(prompts)
+		err = h.DataStore.WritePrompts(prompts)
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
@@ -272,24 +324,18 @@ func ImportPromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println("Prompts imported successfully from JSON")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	} else {
-		t, err := template.ParseFiles("templates/import_prompts.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
-		if err := t.Execute(w, nil); err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
+		if err := h.Renderer.RenderTemplateSimple(w, "import_prompts.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	}
 }
 
-// Handle import results
-func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
+// ImportResults handles importing results
+func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling import results")
 	if r.Method == "POST" {
 		file, _, err := r.FormFile("results_file")
@@ -331,7 +377,7 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Ensure scores arrays match prompts length
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		for model, result := range results {
 			if len(result.Scores) < len(prompts) {
 				newScores := make([]int, len(prompts))
@@ -342,8 +388,8 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Write the imported results
-		suiteName := middleware.GetCurrentSuiteName()
-		err = middleware.WriteResults(suiteName, results)
+		suiteName := h.DataStore.GetCurrentSuiteName()
+		err = h.DataStore.WriteResults(suiteName, results)
 		if err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
@@ -351,26 +397,18 @@ func ImportResultsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println("Results imported successfully from JSON")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	} else {
-		t, err := template.ParseFiles("templates/import_results.html")
-		if err != nil {
-			log.Printf("Error parsing template: %v", err)
-			http.Error(w, "Error parsing template", http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			log.Printf("Error executing template: %v", err)
-			http.Error(w, "Error executing template", http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	}
 }
 
-// Handle edit prompt
-func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
+// EditPrompt handles editing a prompt
+func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit prompt")
 	if r.Method == "GET" {
 		err := r.ParseForm()
@@ -386,7 +424,7 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			funcMap := template.FuncMap{
 				"markdown": func(text string) template.HTML {
@@ -395,14 +433,8 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
-			profiles := middleware.ReadProfiles()
-			t, err := template.New("edit_prompt.html").Funcs(funcMap).ParseFiles("templates/edit_prompt.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
+			profiles := h.DataStore.ReadProfiles()
+			err := h.Renderer.Render(w, "edit_prompt.html", funcMap, struct {
 				Index    int
 				Prompt   middleware.Prompt
 				Profiles []middleware.Profile
@@ -410,10 +442,10 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 				Index:    index,
 				Prompt:   prompts[index],
 				Profiles: profiles,
-			})
+			}, "templates/edit_prompt.html")
 			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				log.Printf("Error rendering template: %v", err)
+				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -439,26 +471,26 @@ func EditPromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Prompt text cannot be empty", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts[index].Text = editedPrompt
 			prompts[index].Solution = editedSolution
 			prompts[index].Profile = editedProfile
 		}
-		err = middleware.WritePrompts(prompts)
+		err = h.DataStore.WritePrompts(prompts)
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Prompt edited successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
-// Handle bulk delete prompts page
-func BulkDeletePromptsPageHandler(w http.ResponseWriter, r *http.Request) {
+// BulkDeletePromptsPage handles bulk delete prompts page
+func (h *Handler) BulkDeletePromptsPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling bulk delete prompts page")
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -480,7 +512,7 @@ func BulkDeletePromptsPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 	var selectedPrompts []middleware.Prompt
 	for _, index := range indices {
 		if index >= 0 && index < len(prompts) {
@@ -496,29 +528,22 @@ func BulkDeletePromptsPageHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	t, err := template.New("bulk_delete_prompts.html").Funcs(funcMap).ParseFiles("templates/bulk_delete_prompts.html")
-	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Error parsing template", http.StatusInternalServerError)
-		return
-	}
-
-	err = t.Execute(w, struct {
+	err = h.Renderer.Render(w, "bulk_delete_prompts.html", funcMap, struct {
 		Indices string
 		Prompts []middleware.Prompt
 	}{
 		Indices: indicesStr,
 		Prompts: selectedPrompts,
-	})
+	}, "templates/bulk_delete_prompts.html")
 	if err != nil {
-		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Error executing template", http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
 	}
 }
 
-// Handle bulk delete prompts
-func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
+// BulkDeletePrompts handles bulk delete prompts
+func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling bulk delete prompts")
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -538,7 +563,7 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 
 	indices := request.Indices
 
-	prompts := middleware.ReadPrompts()
+	prompts := h.DataStore.ReadPrompts()
 	if len(prompts) == 0 {
 		log.Println("No prompts to delete")
 		http.Error(w, "No prompts to delete", http.StatusBadRequest)
@@ -565,7 +590,7 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = middleware.WritePrompts(filteredPrompts)
+	err = h.DataStore.WritePrompts(filteredPrompts)
 	if err != nil {
 		log.Printf("Error writing prompts: %v", err)
 		http.Error(w, "Error writing prompts", http.StatusInternalServerError)
@@ -573,12 +598,12 @@ func BulkDeletePromptsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Prompts deleted successfully")
-	middleware.BroadcastResults()
+	h.DataStore.BroadcastResults()
 	w.WriteHeader(http.StatusOK)
 }
 
-// Handle delete prompt
-func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
+// DeletePrompt handles deleting a prompt
+func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt")
 	if r.Method == "GET" {
 		err := r.ParseForm()
@@ -594,7 +619,7 @@ func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			funcMap := template.FuncMap{
 				"markdown": func(text string) template.HTML {
@@ -603,22 +628,16 @@ func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
-			t, err := template.New("delete_prompt.html").Funcs(funcMap).ParseFiles("templates/delete_prompt.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
+			err := h.Renderer.Render(w, "delete_prompt.html", funcMap, struct {
 				Index  int
 				Prompt middleware.Prompt
 			}{
 				Index:  index,
 				Prompt: prompts[index],
-			})
+			}, "templates/delete_prompt.html")
 			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				log.Printf("Error rendering template: %v", err)
+				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -636,24 +655,24 @@ func DeletePromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			prompts = append(prompts[:index], prompts[index+1:]...)
 		}
-		err = middleware.WritePrompts(prompts)
+		err = h.DataStore.WritePrompts(prompts)
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Prompt deleted successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
-// Handle move prompt
-func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
+// MovePrompt handles moving a prompt
+func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling move prompt")
 	if r.Method == "GET" {
 		err := r.ParseForm()
@@ -669,7 +688,7 @@ func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid index", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) {
 			funcMap := template.FuncMap{
 				"inc": func(i int) int {
@@ -681,13 +700,7 @@ func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
 					return template.HTML(html)
 				},
 			}
-			t, err := template.New("move_prompt.html").Funcs(funcMap).ParseFiles("templates/move_prompt.html")
-			if err != nil {
-				log.Printf("Error parsing template: %v", err)
-				http.Error(w, "Error parsing template", http.StatusInternalServerError)
-				return
-			}
-			err = t.Execute(w, struct {
+			err := h.Renderer.Render(w, "move_prompt.html", funcMap, struct {
 				Index   int
 				Prompt  string
 				Prompts []middleware.Prompt
@@ -695,10 +708,10 @@ func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
 				Index:   index,
 				Prompt:  prompts[index].Text,
 				Prompts: prompts,
-			})
+			}, "templates/move_prompt.html")
 			if err != nil {
-				log.Printf("Error executing template: %v", err)
-				http.Error(w, "Error executing template", http.StatusInternalServerError)
+				log.Printf("Error rendering template: %v", err)
+				http.Error(w, "Error rendering template", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -723,7 +736,7 @@ func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid new index", http.StatusBadRequest)
 			return
 		}
-		prompts := middleware.ReadPrompts()
+		prompts := h.DataStore.ReadPrompts()
 		if index >= 0 && index < len(prompts) && newIndex >= 0 && newIndex <= len(prompts) {
 			prompt := prompts[index]
 			prompts = append(prompts[:index], prompts[index+1:]...)
@@ -732,41 +745,35 @@ func MovePromptHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			prompts = append(prompts[:newIndex], append([]middleware.Prompt{prompt}, prompts[newIndex:]...)...)
 		}
-		err = middleware.WritePrompts(prompts)
+		err = h.DataStore.WritePrompts(prompts)
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Prompt moved successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }
 
-// Handle reset prompts
-func ResetPromptsHandler(w http.ResponseWriter, r *http.Request) {
+// ResetPrompts handles resetting prompts
+func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset prompts")
 	if r.Method == "GET" {
-		t, err := template.ParseFiles("templates/reset_prompts.html")
-		if err != nil {
-			http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = t.Execute(w, nil)
-		if err != nil {
-			http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
-			return
+		if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
 	} else if r.Method == "POST" {
-		err := middleware.WritePrompts([]middleware.Prompt{})
+		err := h.DataStore.WritePrompts([]middleware.Prompt{})
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
 		log.Println("Prompts reset successfully")
-		middleware.BroadcastResults()
+		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 	}
 }

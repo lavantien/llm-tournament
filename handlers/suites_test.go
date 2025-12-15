@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -457,5 +459,71 @@ func TestEditPromptSuiteHandler_POST_RenameToSameName(t *testing.T) {
 	// Suite should still exist
 	if !middleware.SuiteExists("existing-suite") {
 		t.Error("existing-suite should still exist")
+	}
+}
+
+func TestDeletePromptSuiteHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Create a suite to delete
+	middleware.WritePromptSuite("test-to-delete", []middleware.Prompt{})
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/delete_prompt_suite?suite_name=test-to-delete", nil)
+	rr := httptest.NewRecorder()
+	DeletePromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestNewPromptSuiteHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/new_prompt_suite", nil)
+	rr := httptest.NewRecorder()
+	NewPromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEditPromptSuiteHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Create a suite to edit
+	middleware.WritePromptSuite("test-to-edit", []middleware.Prompt{})
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/edit_prompt_suite?suite_name=test-to-edit", nil)
+	rr := httptest.NewRecorder()
+	EditPromptSuiteHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

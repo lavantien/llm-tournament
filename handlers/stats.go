@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
 	"strings"
-
-	"llm-tournament/middleware"
 )
 
 // Calculate tiers based on total scores
@@ -75,10 +72,15 @@ func calculateTiers(totalScores map[string]int) (map[string][]string, map[string
 	return tiers, tierRanges
 }
 
-// Handle stats page
+// StatsHandler handles the stats page (backward compatible wrapper)
 func StatsHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.Stats(w, r)
+}
+
+// Stats handles the stats page
+func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling stats page")
-	results := middleware.ReadResults()
+	results := h.DataStore.ReadResults()
 
 	// Calculate score breakdowns
 	type ScoreStats struct {
@@ -156,9 +158,8 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	// Parse and execute template
-	t, err := template.New("stats.html").Funcs(template.FuncMap{
-		"json": func(v interface{}) template.JS { // Updated to return template.JS
+	funcMap := template.FuncMap{
+		"json": func(v interface{}) template.JS {
 			a, _ := json.Marshal(v)
 			return template.JS(a)
 		},
@@ -169,24 +170,12 @@ func StatsHandler(w http.ResponseWriter, r *http.Request) {
 			return strings.Title(strings.ReplaceAll(tier, "-", " "))
 		},
 		"join": strings.Join,
-	}).ParseFiles("templates/stats.html", "templates/nav.html")
-
-	if err != nil {
-		http.Error(w, "Error parsing template: "+err.Error(), http.StatusInternalServerError)
-		return
 	}
 
-	buf := new(bytes.Buffer)
-	err = t.Execute(buf, templateData)
+	err := h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
 	if err != nil {
-		log.Printf("Template execution error: %v", err)
-		http.Error(w, "Error executing template: "+err.Error(), http.StatusInternalServerError)
+		log.Printf("Error rendering template: %v", err)
+		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return
-	}
-
-	// Write the buffered template output to response
-	_, err = buf.WriteTo(w)
-	if err != nil {
-		log.Printf("Error writing response: %v", err)
 	}
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -406,5 +408,25 @@ func TestStatsHandler_GET_MultipleModels(t *testing.T) {
 	body := rr.Body.String()
 	if !strings.Contains(body, "GPT-4") {
 		t.Error("expected GPT-4 in response body")
+	}
+}
+
+func TestStatsHandler_GET_RenderError(t *testing.T) {
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	// Save original renderer and restore after test
+	original := middleware.DefaultRenderer
+	defer func() { middleware.DefaultRenderer = original }()
+
+	// Swap in mock that returns error
+	middleware.DefaultRenderer = &testutil.MockRenderer{RenderError: errors.New("mock render error")}
+
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
