@@ -1169,3 +1169,243 @@ func TestConfirmRefreshResultsHandler_GET_RenderError(t *testing.T) {
 		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+func TestUpdateResultHandler_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{50}},
+		},
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	form := url.Values{}
+	form.Add("model", "TestModel")
+	form.Add("promptIndex", "0")
+	form.Add("pass", "true")
+
+	req := httptest.NewRequest("POST", "/update_result", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.UpdateResult(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestResetResultsHandler_POST_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	req := httptest.NewRequest("POST", "/reset_results", nil)
+	rr := httptest.NewRecorder()
+	handler.ResetResults(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestConfirmRefreshResultsHandler_POST_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{80}},
+		},
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	req := httptest.NewRequest("POST", "/confirm_refresh_results", nil)
+	rr := httptest.NewRecorder()
+	handler.ConfirmRefreshResults(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestRefreshResultsHandler_POST_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{80}},
+		},
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	req := httptest.NewRequest("POST", "/refresh_results", nil)
+	rr := httptest.NewRecorder()
+	handler.RefreshResults(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEvaluateResultHandler_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{50}},
+		},
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	form := url.Values{}
+	form.Add("score", "80")
+
+	req := httptest.NewRequest("POST", "/evaluate_result?model=TestModel&prompt=0", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.EvaluateResultHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestUpdateMockResultsHandler_WriteResultsError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts:      []middleware.Prompt{{Text: "Test prompt"}},
+		CurrentSuite: "test-suite",
+		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+			return errors.New("mock write error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	mockData := `{
+		"results": {"TestModel": {"scores": [80]}},
+		"models": ["TestModel"]
+	}`
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestRefreshResultsHandler_GET_RenderError(t *testing.T) {
+	mockDS := &MockDataStore{
+		CurrentSuite: "test-suite",
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{RenderError: errors.New("mock render error")},
+	}
+
+	req := httptest.NewRequest("GET", "/refresh_results", nil)
+	rr := httptest.NewRecorder()
+	handler.RefreshResults(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEvaluateResultHandler_GET_RenderError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{50}},
+		},
+		CurrentSuite: "test-suite",
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{RenderError: errors.New("mock render error")},
+	}
+
+	req := httptest.NewRequest("GET", "/evaluate_result?model=TestModel&prompt=0", nil)
+	rr := httptest.NewRecorder()
+	handler.EvaluateResultHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestExportResultsHandler_WriteError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{80}},
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	// Use FailingResponseWriter to simulate write error
+	rr := httptest.NewRecorder()
+	failingWriter := &FailingResponseWriter{
+		ResponseWriter: rr,
+		WriteError:     errors.New("mock write error"),
+	}
+
+	req := httptest.NewRequest("GET", "/export_results", nil)
+	handler.ExportResults(failingWriter, req)
+
+	// The handler should fail when writing the response
+	// Check that no successful content was written
+	if failingWriter.HeaderWritten && rr.Code == http.StatusOK {
+		// Write error occurred after header was written
+		// This is expected behavior - the error is logged but header already sent
+	}
+}

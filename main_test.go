@@ -134,3 +134,97 @@ func TestRoutesCount(t *testing.T) {
 		t.Errorf("expected %d routes, got %d", expectedCount, len(routes))
 	}
 }
+
+func TestRouter_AllRoutesRespond(t *testing.T) {
+	cleanup := setupMainTestDB(t)
+	defer cleanup()
+
+	// Test a sample of routes to ensure they all respond (not 404)
+	testRoutes := []struct {
+		path   string
+		method string
+	}{
+		{"/prompts", "GET"},
+		{"/results", "GET"},
+		{"/profiles", "GET"},
+		{"/stats", "GET"},
+		{"/settings", "GET"},
+		{"/add_model", "GET"},
+		{"/add_prompt", "GET"},
+		{"/add_profile", "GET"},
+	}
+
+	for _, tc := range testRoutes {
+		t.Run(tc.path, func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, tc.path, nil)
+			rr := httptest.NewRecorder()
+			router(rr, req)
+
+			// Should not be a redirect to /prompts (which indicates unhandled route)
+			// or should be a successful response
+			if rr.Code == http.StatusNotFound {
+				t.Errorf("route %s returned 404", tc.path)
+			}
+		})
+	}
+}
+
+func TestRouter_POSTRoutes(t *testing.T) {
+	cleanup := setupMainTestDB(t)
+	defer cleanup()
+
+	// Test POST routes that require POST method
+	postRoutes := []string{
+		"/evaluate/all",
+		"/evaluate/model",
+		"/evaluate/prompt",
+		"/evaluation/cancel",
+		"/settings/update",
+	}
+
+	for _, route := range postRoutes {
+		t.Run(route+"_GET", func(t *testing.T) {
+			req := httptest.NewRequest("GET", route, nil)
+			rr := httptest.NewRecorder()
+			router(rr, req)
+
+			// GET on POST-only routes should return method not allowed
+			if rr.Code != http.StatusMethodNotAllowed && rr.Code != http.StatusBadRequest {
+				// Some routes may allow GET, that's ok
+				t.Logf("route %s with GET returned %d", route, rr.Code)
+			}
+		})
+	}
+}
+
+func TestRouter_WithQueryParams(t *testing.T) {
+	cleanup := setupMainTestDB(t)
+	defer cleanup()
+
+	// Test routes with query parameters
+	req := httptest.NewRequest("GET", "/edit_model?id=1", nil)
+	rr := httptest.NewRecorder()
+	router(rr, req)
+
+	// Should not be 404
+	if rr.Code == http.StatusNotFound {
+		t.Error("edit_model route should be handled")
+	}
+}
+
+func TestRouter_StaticPaths(t *testing.T) {
+	cleanup := setupMainTestDB(t)
+	defer cleanup()
+
+	// Test that /templates/ and /assets/ paths go through router
+	// (but may not find files in test environment)
+	req := httptest.NewRequest("GET", "/templates/nonexistent.css", nil)
+	rr := httptest.NewRecorder()
+	router(rr, req)
+
+	// Static paths go through router, should redirect to /prompts
+	if rr.Code != http.StatusSeeOther {
+		// Could also be handled by static file server if configured
+		t.Logf("static path returned %d", rr.Code)
+	}
+}

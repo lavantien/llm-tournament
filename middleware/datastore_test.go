@@ -304,3 +304,337 @@ func TestMockDataStore_DefaultValues(t *testing.T) {
 		t.Error("expected non-nil results map")
 	}
 }
+
+// Tests for SQLiteDataStore wrapper methods
+func TestSQLiteDataStore_GetCurrentSuiteID(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	id, err := ds.GetCurrentSuiteID()
+	if err != nil {
+		t.Errorf("GetCurrentSuiteID failed: %v", err)
+	}
+	if id <= 0 {
+		t.Errorf("expected positive suite ID, got %d", id)
+	}
+}
+
+func TestSQLiteDataStore_GetCurrentSuiteName(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	name := ds.GetCurrentSuiteName()
+	if name == "" {
+		t.Error("expected non-empty suite name")
+	}
+}
+
+func TestSQLiteDataStore_ListSuites(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	suites, err := ds.ListSuites()
+	if err != nil {
+		t.Errorf("ListSuites failed: %v", err)
+	}
+	if len(suites) == 0 {
+		t.Error("expected at least one suite")
+	}
+}
+
+func TestSQLiteDataStore_SetCurrentSuite(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	err = ds.SetCurrentSuite("test-suite")
+	if err != nil {
+		t.Errorf("SetCurrentSuite failed: %v", err)
+	}
+}
+
+func TestSQLiteDataStore_SuiteExists(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	if !ds.SuiteExists("default") {
+		t.Error("expected default suite to exist")
+	}
+	if ds.SuiteExists("nonexistent-suite-xyz") {
+		t.Error("expected nonexistent suite to not exist")
+	}
+}
+
+func TestSQLiteDataStore_ReadWritePrompts(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Initially empty
+	prompts := ds.ReadPrompts()
+	if len(prompts) != 0 {
+		t.Errorf("expected 0 prompts, got %d", len(prompts))
+	}
+
+	// Write prompts
+	err = ds.WritePrompts([]Prompt{{Text: "Test prompt", Solution: "Test solution"}})
+	if err != nil {
+		t.Errorf("WritePrompts failed: %v", err)
+	}
+
+	// Read back
+	prompts = ds.ReadPrompts()
+	if len(prompts) != 1 {
+		t.Errorf("expected 1 prompt, got %d", len(prompts))
+	}
+}
+
+func TestSQLiteDataStore_ReadWritePromptSuite(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Write to suite
+	err = ds.WritePromptSuite("test-suite", []Prompt{{Text: "Suite prompt"}})
+	if err != nil {
+		t.Errorf("WritePromptSuite failed: %v", err)
+	}
+
+	// Read back
+	prompts, err := ds.ReadPromptSuite("test-suite")
+	if err != nil {
+		t.Errorf("ReadPromptSuite failed: %v", err)
+	}
+	if len(prompts) != 1 {
+		t.Errorf("expected 1 prompt, got %d", len(prompts))
+	}
+}
+
+func TestSQLiteDataStore_ListPromptSuites(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+	suites, err := ds.ListPromptSuites()
+	if err != nil {
+		t.Errorf("ListPromptSuites failed: %v", err)
+	}
+	if len(suites) == 0 {
+		t.Error("expected at least one suite")
+	}
+}
+
+func TestSQLiteDataStore_UpdatePromptsOrder(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Write some prompts first
+	ds.WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}})
+
+	// Update order - should not panic
+	ds.UpdatePromptsOrder([]int{1, 0})
+}
+
+func TestSQLiteDataStore_ReadWriteProfiles(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Initially empty
+	profiles := ds.ReadProfiles()
+	if len(profiles) != 0 {
+		t.Errorf("expected 0 profiles, got %d", len(profiles))
+	}
+
+	// Write profiles
+	err = ds.WriteProfiles([]Profile{{Name: "Test", Description: "Test profile"}})
+	if err != nil {
+		t.Errorf("WriteProfiles failed: %v", err)
+	}
+
+	// Read back
+	profiles = ds.ReadProfiles()
+	if len(profiles) != 1 {
+		t.Errorf("expected 1 profile, got %d", len(profiles))
+	}
+}
+
+func TestSQLiteDataStore_ReadWriteResults(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Write prompts first (needed for results)
+	ds.WritePrompts([]Prompt{{Text: "P1"}})
+
+	// Write results
+	err = ds.WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Errorf("WriteResults failed: %v", err)
+	}
+
+	// Read back
+	results := ds.ReadResults()
+	if len(results) != 1 {
+		t.Errorf("expected 1 result, got %d", len(results))
+	}
+}
+
+func TestSQLiteDataStore_GetSetSetting(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Set a setting
+	err = ds.SetSetting("test_key", "test_value")
+	if err != nil {
+		t.Errorf("SetSetting failed: %v", err)
+	}
+
+	// Get it back
+	val, err := ds.GetSetting("test_key")
+	if err != nil {
+		t.Errorf("GetSetting failed: %v", err)
+	}
+	if val != "test_value" {
+		t.Errorf("expected 'test_value', got %q", val)
+	}
+}
+
+func TestSQLiteDataStore_GetSetAPIKey(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Set encryption key for this test
+	t.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+
+	ds := &SQLiteDataStore{}
+
+	// Set API key
+	err = ds.SetAPIKey("openai", "sk-test-key")
+	if err != nil {
+		t.Errorf("SetAPIKey failed: %v", err)
+	}
+
+	// Get it back
+	key, err := ds.GetAPIKey("openai")
+	if err != nil {
+		t.Errorf("GetAPIKey failed: %v", err)
+	}
+	if key != "sk-test-key" {
+		t.Errorf("expected 'sk-test-key', got %q", key)
+	}
+}
+
+func TestSQLiteDataStore_GetMaskedAPIKeys(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	masked, err := ds.GetMaskedAPIKeys()
+	if err != nil {
+		t.Errorf("GetMaskedAPIKeys failed: %v", err)
+	}
+	if masked == nil {
+		t.Error("expected non-nil masked keys map")
+	}
+}
+
+func TestSQLiteDataStore_BroadcastResults(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	ds := &SQLiteDataStore{}
+
+	// Should not panic
+	ds.BroadcastResults()
+}

@@ -747,3 +747,70 @@ func TestGetCurrentSuiteID_NoCurrent(t *testing.T) {
 		t.Errorf("expected 'default' to be current, got %q", name)
 	}
 }
+
+func TestDeleteSuite_CurrentSuite(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create and set a non-default suite as current
+	_, err = db.Exec("INSERT INTO suites (name, is_current) VALUES ('test-suite', 1)")
+	if err != nil {
+		t.Fatalf("failed to create test suite: %v", err)
+	}
+	_, err = db.Exec("UPDATE suites SET is_current = 0 WHERE name = 'default'")
+	if err != nil {
+		t.Fatalf("failed to clear default current flag: %v", err)
+	}
+
+	// Delete the current suite
+	err = DeleteSuite("test-suite")
+	if err != nil {
+		t.Fatalf("DeleteSuite failed: %v", err)
+	}
+
+	// Verify default is now current
+	var name string
+	err = db.QueryRow("SELECT name FROM suites WHERE is_current = 1").Scan(&name)
+	if err != nil {
+		t.Fatalf("failed to query current suite: %v", err)
+	}
+	if name != "default" {
+		t.Errorf("expected 'default' to be current after deletion, got %q", name)
+	}
+}
+
+func TestListSuites_Multiple(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add more suites
+	_, err = db.Exec("INSERT INTO suites (name) VALUES ('alpha'), ('zebra')")
+	if err != nil {
+		t.Fatalf("failed to create suites: %v", err)
+	}
+
+	suites, err := ListSuites()
+	if err != nil {
+		t.Fatalf("ListSuites failed: %v", err)
+	}
+
+	// Should include default, alpha, zebra (sorted)
+	if len(suites) != 3 {
+		t.Errorf("expected 3 suites, got %d", len(suites))
+	}
+
+	// Verify sorted order
+	if suites[0] != "alpha" || suites[1] != "default" || suites[2] != "zebra" {
+		t.Errorf("expected sorted order [alpha, default, zebra], got %v", suites)
+	}
+}

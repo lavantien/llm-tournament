@@ -280,3 +280,46 @@ func TestRespondJSON_Unmarshalable(t *testing.T) {
 		t.Errorf("expected status %d for unmarshalable data, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+// TestFileRenderer_RenderTemplateSimple tests the FileRenderer.RenderTemplateSimple method directly
+func TestFileRenderer_RenderTemplateSimple(t *testing.T) {
+	restoreDir := changeToProjectRootMiddleware(t)
+	defer restoreDir()
+
+	renderer := &FileRenderer{}
+	rr := httptest.NewRecorder()
+	data := map[string]string{"Model": "test-model"}
+
+	err := renderer.RenderTemplateSimple(rr, "edit_model.html", data)
+
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+// TestFileRenderer_RenderTemplateSimple_Error tests the FileRenderer.RenderTemplateSimple error path
+func TestFileRenderer_RenderTemplateSimple_Error(t *testing.T) {
+	renderer := &FileRenderer{}
+	rr := httptest.NewRecorder()
+
+	err := renderer.RenderTemplateSimple(rr, "nonexistent.html", nil)
+
+	if err == nil {
+		t.Error("expected error for nonexistent template")
+	}
+}
+
+// TestImportErrorHandler_TemplateParseError tests ImportErrorHandler when template doesn't exist
+func TestImportErrorHandler_TemplateParseError(t *testing.T) {
+	// Don't change to project root so template won't be found
+	req := httptest.NewRequest("GET", "/import_error", nil)
+	rr := httptest.NewRecorder()
+	ImportErrorHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for template parse error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

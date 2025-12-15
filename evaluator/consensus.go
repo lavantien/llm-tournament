@@ -21,21 +21,13 @@ func CalculateConsensusScore(results []JudgeResult) int {
 	}
 
 	// Calculate weighted average
+	// Note: totalWeight is always > 0 since validResults only contains items with Confidence > 0
 	weightedSum := 0.0
 	totalWeight := 0.0
 
 	for _, result := range validResults {
 		weightedSum += float64(result.Score) * result.Confidence
 		totalWeight += result.Confidence
-	}
-
-	if totalWeight == 0 {
-		// Fallback to simple average
-		sum := 0
-		for _, result := range validResults {
-			sum += result.Score
-		}
-		return sum / len(validResults)
 	}
 
 	return int(math.Round(weightedSum / totalWeight))

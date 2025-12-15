@@ -390,3 +390,50 @@ func TestSettingsHandler_GET_RenderError(t *testing.T) {
 		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+func TestSettingsHandler_GetMaskedAPIKeysError(t *testing.T) {
+	mockDS := &MockDataStore{
+		GetMaskedAPIKeysFunc: func() (map[string]string, error) {
+			return nil, errors.New("mock get masked keys error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	req := httptest.NewRequest("GET", "/settings", nil)
+	rr := httptest.NewRecorder()
+	handler.Settings(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on GetMaskedAPIKeys error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestUpdateSettingsHandler_SetAPIKeyError(t *testing.T) {
+	mockDS := &MockDataStore{
+		SetAPIKeyFunc: func(provider, key string) error {
+			return errors.New("mock set API key error")
+		},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	form := url.Values{}
+	form.Add("api_key_anthropic", "sk-test-key-123")
+
+	req := httptest.NewRequest("POST", "/settings/update", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.UpdateSettings(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on SetAPIKey error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

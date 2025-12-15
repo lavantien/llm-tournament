@@ -1221,3 +1221,317 @@ func TestReadPromptSuite_NonExistent(t *testing.T) {
 		t.Error("expected empty prompts for non-existent suite")
 	}
 }
+
+func TestGetCurrentSuiteName_DefaultFallback(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Clear is_current flag from all suites
+	_, err = db.Exec("UPDATE suites SET is_current = 0")
+	if err != nil {
+		t.Fatalf("Failed to clear is_current: %v", err)
+	}
+
+	// GetCurrentSuiteName should set default as current and return it
+	name := GetCurrentSuiteName()
+	if name != "default" {
+		t.Errorf("expected 'default', got %q", name)
+	}
+
+	// Verify is_current was set (is_current is a boolean stored as bool in SQLite)
+	var isCurrent bool
+	err = db.QueryRow("SELECT is_current FROM suites WHERE name = 'default'").Scan(&isCurrent)
+	if err != nil {
+		t.Fatalf("Query failed: %v", err)
+	}
+	if !isCurrent {
+		t.Error("expected is_current to be set to true")
+	}
+}
+
+func TestReadResults_EmptySuite(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Reading results from fresh suite should return empty map
+	results := ReadResults()
+	if results == nil {
+		t.Error("expected non-nil results map")
+	}
+	if len(results) != 0 {
+		t.Errorf("expected empty results, got %d entries", len(results))
+	}
+}
+
+func TestReadResults_WithPromptsNoScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	WritePrompts([]Prompt{{Text: "Test prompt"}})
+
+	// Results should still be empty (no models/scores)
+	results := ReadResults()
+	if len(results) != 0 {
+		t.Errorf("expected empty results, got %d entries", len(results))
+	}
+}
+
+func TestWriteResults_WithMultipleModels(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts first
+	WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
+
+	// Write results for multiple models
+	results := map[string]Result{
+		"Model1": {Scores: []int{80, 60}},
+		"Model2": {Scores: []int{100, 40}},
+		"Model3": {Scores: []int{20, 0}},
+	}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Verify all models have results
+	readResults := ReadResults()
+	if len(readResults) != 3 {
+		t.Errorf("expected 3 models, got %d", len(readResults))
+	}
+}
+
+func TestWritePromptSuite_UpdatesExisting(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Write initial prompts
+	WritePromptSuite("default", []Prompt{
+		{Text: "Original prompt"},
+	})
+
+	// Update prompts
+	WritePromptSuite("default", []Prompt{
+		{Text: "Updated prompt 1"},
+		{Text: "Updated prompt 2"},
+	})
+
+	// Verify update worked
+	prompts, _ := ReadPromptSuite("default")
+	if len(prompts) != 2 {
+		t.Errorf("expected 2 prompts, got %d", len(prompts))
+	}
+	if prompts[0].Text != "Updated prompt 1" {
+		t.Errorf("expected 'Updated prompt 1', got %q", prompts[0].Text)
+	}
+}
+
+func TestReadResults_AfterWriteResults(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	WritePrompts([]Prompt{{Text: "Test prompt"}})
+
+	// Write results
+	err = WriteResults("default", map[string]Result{
+		"TestModel": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Read results
+	results := ReadResults()
+	if len(results) != 1 {
+		t.Errorf("expected 1 model, got %d", len(results))
+	}
+	if _, exists := results["TestModel"]; !exists {
+		t.Error("expected TestModel to exist")
+	}
+}
+
+func TestWriteResults_DeleteModel(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	WritePrompts([]Prompt{{Text: "Prompt 1"}})
+
+	// Write initial results with two models
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{80}},
+		"Model2": {Scores: []int{60}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Verify both models exist
+	results := ReadResults()
+	if len(results) != 2 {
+		t.Errorf("expected 2 models initially, got %d", len(results))
+	}
+
+	// Write results with only one model (should delete Model2)
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{100}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Verify Model2 was deleted
+	results = ReadResults()
+	if len(results) != 1 {
+		t.Errorf("expected 1 model after deletion, got %d", len(results))
+	}
+	if _, exists := results["Model2"]; exists {
+		t.Error("Model2 should have been deleted")
+	}
+}
+
+func TestMigrateResults_NilScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts so we know the expected length
+	WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
+
+	results := map[string]Result{
+		"Model1": {Scores: nil}, // Nil scores should be initialized
+	}
+
+	migrated := MigrateResults(results)
+
+	// Scores should be initialized to array of zeros
+	if migrated["Model1"].Scores == nil {
+		t.Error("expected scores to be initialized, not nil")
+	}
+}
+
+func TestMigrateResults_ShorterScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add 3 prompts
+	WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}, {Text: "P3"}})
+
+	results := map[string]Result{
+		"Model1": {Scores: []int{80}}, // Only 1 score for 3 prompts
+	}
+
+	migrated := MigrateResults(results)
+
+	// Scores should be padded to length 3
+	if len(migrated["Model1"].Scores) != 3 {
+		t.Errorf("expected 3 scores, got %d", len(migrated["Model1"].Scores))
+	}
+	// First score should be preserved
+	if migrated["Model1"].Scores[0] != 80 {
+		t.Errorf("expected first score 80, got %d", migrated["Model1"].Scores[0])
+	}
+}
+
+func TestWriteResults_EmptyScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	WritePrompts([]Prompt{{Text: "P1"}})
+
+	// Write results with empty scores
+	err = WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Should succeed without panic
+	results := ReadResults()
+	if _, exists := results["Model1"]; !exists {
+		t.Error("Model1 should exist even with empty scores")
+	}
+}
+
+func TestWriteResults_CreateNewModel(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Add prompts
+	WritePrompts([]Prompt{{Text: "P1"}})
+
+	// Write results with a new model (should create it)
+	err = WriteResults("default", map[string]Result{
+		"NewModel": {Scores: []int{75}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	// Verify model was created
+	results := ReadResults()
+	if _, exists := results["NewModel"]; !exists {
+		t.Error("NewModel should have been created")
+	}
+	if results["NewModel"].Scores[0] != 75 {
+		t.Errorf("expected score 75, got %d", results["NewModel"].Scores[0])
+	}
+}

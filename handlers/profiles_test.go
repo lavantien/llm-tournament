@@ -848,3 +848,69 @@ func TestResetProfiles_WriteProfilesError(t *testing.T) {
 		t.Errorf("expected status %d for write error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+func TestDeleteProfileHandler_GET_RenderError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{{Name: "Test Profile"}},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{RenderError: errors.New("mock render error")},
+	}
+
+	req := httptest.NewRequest("GET", "/delete_profile?index=0", nil)
+	rr := httptest.NewRecorder()
+	handler.DeleteProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEditProfileHandler_GET_RenderError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{{Name: "Test Profile"}},
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{RenderError: errors.New("mock render error")},
+	}
+
+	req := httptest.NewRequest("GET", "/edit_profile?index=0", nil)
+	rr := httptest.NewRecorder()
+	handler.EditProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestAddProfileHandler_WriteProfilesError(t *testing.T) {
+	mockDS := &MockDataStore{
+		Profiles: []middleware.Profile{},
+	}
+	mockDS.WriteProfilesFunc = func(profiles []middleware.Profile) error {
+		return errors.New("mock write error")
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	form := url.Values{}
+	form.Add("profile_name", "New Profile")
+	form.Add("profile_description", "Description")
+
+	req := httptest.NewRequest("POST", "/add_profile", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.AddProfile(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}

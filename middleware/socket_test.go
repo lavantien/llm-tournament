@@ -484,12 +484,8 @@ func TestBroadcastEvaluationCompleted(t *testing.T) {
 
 	go BroadcastEvaluationCompleted(1, 1.50)
 
-	// Read the completion message
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		t.Fatalf("failed to read message: %v", err)
-	}
-
+	// BroadcastEvaluationCompleted sends both evaluation_completed and results messages
+	// Read messages until we find evaluation_completed
 	var payload struct {
 		Type string `json:"type"`
 		Data struct {
@@ -497,14 +493,24 @@ func TestBroadcastEvaluationCompleted(t *testing.T) {
 			FinalCost float64 `json:"final_cost"`
 		} `json:"data"`
 	}
-	err = json.Unmarshal(msg, &payload)
-	if err != nil {
-		t.Fatalf("failed to unmarshal: %v", err)
+
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			t.Fatalf("failed to read message: %v", err)
+		}
+
+		err = json.Unmarshal(msg, &payload)
+		if err != nil {
+			t.Fatalf("failed to unmarshal: %v", err)
+		}
+
+		if payload.Type == "evaluation_completed" {
+			break
+		}
+		// Continue reading if we got a different message type (e.g., "results")
 	}
 
-	if payload.Type != "evaluation_completed" {
-		t.Errorf("expected type 'evaluation_completed', got %q", payload.Type)
-	}
 	if payload.Data.JobID != 1 {
 		t.Errorf("expected job_id 1, got %d", payload.Data.JobID)
 	}

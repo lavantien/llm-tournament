@@ -343,3 +343,185 @@ func findProjectRoot() string {
 		dir = parent
 	}
 }
+
+func TestSetupRoutes_WithMux(t *testing.T) {
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test.db")
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	defer CloseDB()
+
+	mux := http.NewServeMux()
+	SetupRoutes(mux)
+
+	// Test various routes through the mux
+	testCases := []struct {
+		path   string
+		method string
+	}{
+		{"/", "GET"},
+		{"/prompts", "GET"},
+		{"/results", "GET"},
+		{"/unknown-route", "GET"},
+	}
+
+	for _, tc := range testCases {
+		req := httptest.NewRequest(tc.method, tc.path, nil)
+		rr := httptest.NewRecorder()
+		mux.ServeHTTP(rr, req)
+		// Just ensure it doesn't panic
+		t.Logf("%s %s -> %d", tc.method, tc.path, rr.Code)
+	}
+}
+
+func TestRoutes_ReturnsMap(t *testing.T) {
+	routes := Routes()
+
+	// Verify routes map has expected structure
+	if routes == nil {
+		t.Fatal("Routes() returned nil")
+	}
+
+	// Check some specific routes exist
+	expectedRoutes := []string{
+		"/prompts",
+		"/results",
+		"/profiles",
+		"/stats",
+		"/settings",
+		"/evaluate/all",
+		"/evaluate/model",
+		"/evaluate/prompt",
+	}
+
+	for _, route := range expectedRoutes {
+		if _, ok := routes[route]; !ok {
+			t.Errorf("expected route %q not found", route)
+		}
+	}
+}
+
+func TestNewServeMux_AllRoutesRegistered(t *testing.T) {
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test.db")
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	defer CloseDB()
+
+	mux := NewServeMux()
+
+	// Test that known routes are registered
+	knownRoutes := []string{
+		"/prompts",
+		"/results",
+		"/settings",
+	}
+
+	for _, route := range knownRoutes {
+		req := httptest.NewRequest("GET", route, nil)
+		rr := httptest.NewRecorder()
+		mux.ServeHTTP(rr, req)
+
+		// Route should be found (not 404 for pattern mismatch)
+		// Note: 500 errors are acceptable in test environment without templates
+		if rr.Code == http.StatusNotFound {
+			t.Errorf("route %s returned 404 - not registered", route)
+		}
+	}
+}
+
+func TestRunMigration_EmptyDB(t *testing.T) {
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test.db")
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	defer CloseDB()
+
+	// RunMigration on empty DB should succeed
+	err = RunMigration()
+	if err != nil {
+		t.Errorf("RunMigration on empty DB failed: %v", err)
+	}
+}
+
+func TestConfig_DefaultValues(t *testing.T) {
+	cfg := DefaultConfig()
+
+	if cfg.DBPath != "data/tournament.db" {
+		t.Errorf("expected default DBPath 'data/tournament.db', got %q", cfg.DBPath)
+	}
+
+	if cfg.Port != ":8080" {
+		t.Errorf("expected default Port ':8080', got %q", cfg.Port)
+	}
+
+	if cfg.MigrateResults {
+		t.Error("expected MigrateResults to default to false")
+	}
+}
+
+func TestParseFlags_EmptyArgs(t *testing.T) {
+	cfg, err := ParseFlags([]string{})
+	if err != nil {
+		t.Fatalf("ParseFlags with empty args failed: %v", err)
+	}
+
+	// Should have default values
+	if cfg.DBPath != "data/tournament.db" {
+		t.Errorf("expected default DBPath, got %q", cfg.DBPath)
+	}
+}
+
+func TestParseFlags_UnknownFlag(t *testing.T) {
+	_, err := ParseFlags([]string{"-unknown-flag-xyz"})
+	if err == nil {
+		t.Error("expected error for unknown flag")
+	}
+}
+
+func TestParseFlags_CombinedFlags(t *testing.T) {
+	cfg, err := ParseFlags([]string{"-db=/tmp/test.db", "-migrate-results"})
+	if err != nil {
+		t.Fatalf("ParseFlags failed: %v", err)
+	}
+
+	if cfg.DBPath != "/tmp/test.db" {
+		t.Errorf("expected DBPath '/tmp/test.db', got %q", cfg.DBPath)
+	}
+
+	if !cfg.MigrateResults {
+		t.Error("expected MigrateResults to be true")
+	}
+}
+
+func TestInitDB_AndGetDB(t *testing.T) {
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "test.db")
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	db := GetDB()
+	if db == nil {
+		t.Error("GetDB returned nil")
+	}
+
+	// Test DB is functional
+	err = db.Ping()
+	if err != nil {
+		t.Errorf("DB ping failed: %v", err)
+	}
+
+	CloseDB()
+}

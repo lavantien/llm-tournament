@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/base64"
 	"os"
 	"strings"
 	"testing"
@@ -335,5 +336,37 @@ func TestMaskAPIKey(t *testing.T) {
 				t.Errorf("MaskAPIKey(%q) = %q, want %q", tt.apiKey, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestDecryptAPIKey_CorruptedCiphertext(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	// First encrypt something
+	encrypted, err := EncryptAPIKey("test-key")
+	if err != nil {
+		t.Fatalf("encrypt error: %v", err)
+	}
+
+	// Corrupt the ciphertext by modifying some bytes
+	// The ciphertext is base64 encoded, so we need to decode, modify, and re-encode
+	data, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		t.Fatalf("base64 decode error: %v", err)
+	}
+
+	// Flip bits in the ciphertext portion (after the nonce)
+	if len(data) > 20 {
+		data[15] ^= 0xFF
+		data[16] ^= 0xFF
+	}
+
+	corrupted := base64.StdEncoding.EncodeToString(data)
+
+	// Decryption should fail with authentication error
+	_, err = DecryptAPIKey(corrupted)
+	if err == nil {
+		t.Error("expected decryption to fail with corrupted ciphertext")
 	}
 }

@@ -527,3 +527,30 @@ func TestEditPromptSuiteHandler_GET_RenderError(t *testing.T) {
 		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+func TestNewPromptSuiteHandler_POST_WritePromptSuiteError(t *testing.T) {
+	mockDS := &MockDataStoreWithError{
+		MockDataStore: MockDataStore{
+			CurrentSuite: "default",
+		},
+		WritePromptSuiteErr: errors.New("mock write error"),
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	form := url.Values{}
+	form.Add("suite_name", "new-suite")
+
+	req := httptest.NewRequest("POST", "/new_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.NewPromptSuite(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on WritePromptSuite error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
