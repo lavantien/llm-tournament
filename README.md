@@ -4,7 +4,7 @@
 [![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Coverage](https://img.shields.io/badge/coverage-79.7%-green)]()
+[![Coverage](./coverage-badge.svg)]()
 
 **A comprehensive benchmarking platform for evaluating and comparing Large Language Models**
 

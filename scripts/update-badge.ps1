@@ -91,9 +91,7 @@ function Update-ReadmeBadge {
         return
     }
 
-    $color = Get-CoverageColor -coverage $coverage
-    $coverageText = "{0:N1}%" -f $coverage
-    $badgeMarkdown = "![Coverage](https://img.shields.io/badge/coverage-$coverageText-$color)"
+    $badgeMarkdown = "[![Coverage](./coverage-badge.svg)]()"
 
     $readme = Get-Content $readmePath -Raw
 
@@ -101,7 +99,7 @@ function Update-ReadmeBadge {
     if ($readme -match '!\[Coverage\]\([^)]+\)') {
         $readme = $readme -replace '!\[Coverage\]\([^)]+\)', $badgeMarkdown
         Set-Content -Path $readmePath -Value $readme -NoNewline
-        Write-Host "Updated coverage badge in README.md" -ForegroundColor Green
+        Write-Host "Updated coverage badge in README.md to reference local SVG" -ForegroundColor Green
     }
     else {
         Write-Host "No existing coverage badge found in README.md" -ForegroundColor Yellow

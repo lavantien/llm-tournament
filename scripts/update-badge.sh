@@ -109,16 +109,7 @@ update_readme_badge() {
         return 0
     fi
 
-    local color
-    color=$(get_coverage_color "$coverage")
-
-    local coverage_text
-    coverage_text=$(printf "%.1f%%" "$coverage")
-
-    # URL encode for markdown
-    coverage_text="${coverage_text//%/%25}"
-
-    local badge_markdown="![Coverage](https://img.shields.io/badge/coverage-${coverage_text}-${color})"
+    local badge_markdown="[![Coverage](./coverage-badge.svg)]()"
 
     # Try to replace existing coverage badge
     if grep -q '!\[Coverage\]' "$readme_path"; then
@@ -130,7 +121,7 @@ update_readme_badge() {
             # BSD sed (macOS)
             sed -i '' "s|!\[Coverage\]([^)]*)|${badge_markdown}|g" "$readme_path"
         fi
-        echo -e "${GREEN}Updated coverage badge in README.md${NC}"
+        echo -e "${GREEN}Updated coverage badge in README.md to reference local SVG${NC}"
     else
         echo -e "${YELLOW}No existing coverage badge found in README.md${NC}"
         echo -e "${CYAN}Add this line to your README.md:${NC}"
