@@ -33,3 +33,4 @@ llm-tournament.exe
 .claude/settings.local.json
 .claude/tdd-guard/*
 *.out
+coverage.*
