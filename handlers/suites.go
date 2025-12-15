@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"llm-tournament/middleware"
 )
@@ -49,8 +48,7 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 
 		currentSuite := h.DataStore.GetCurrentSuiteName()
 		if suiteName == currentSuite {
-			err := os.WriteFile("data/current_suite.txt", []byte("default"), 0644)
-			if err != nil {
+			if err := h.DataStore.SetCurrentSuite("default"); err != nil {
 				log.Printf("Error updating current suite: %v", err)
 				http.Error(w, "Error updating current suite", http.StatusInternalServerError)
 				return
@@ -86,10 +84,9 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile("data/current_suite.txt", []byte(suiteName), 0644)
-	if err != nil {
-		log.Printf("Error writing current suite: %v", err)
-		http.Error(w, "Error writing current suite", http.StatusInternalServerError)
+	if err = h.DataStore.SetCurrentSuite(suiteName); err != nil {
+		log.Printf("Error setting current suite: %v", err)
+		http.Error(w, "Error setting current suite", http.StatusInternalServerError)
 		return
 	}
 

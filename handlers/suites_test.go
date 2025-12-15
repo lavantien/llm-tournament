@@ -386,13 +386,10 @@ func TestSelectPromptSuiteHandler_WithDataDir(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
 	}
 
-	// Verify the current_suite.txt was written
-	content, err := os.ReadFile("data/current_suite.txt")
-	if err != nil {
-		t.Fatalf("failed to read current_suite.txt: %v", err)
-	}
-	if string(content) != "selectable-suite" {
-		t.Errorf("expected 'selectable-suite', got %q", string(content))
+	// Verify the current suite was updated in the database
+	currentSuite := middleware.GetCurrentSuiteName()
+	if currentSuite != "selectable-suite" {
+		t.Errorf("expected 'selectable-suite', got %q", currentSuite)
 	}
 }
 
@@ -408,9 +405,9 @@ func TestDeletePromptSuiteHandler_POST_CurrentSuiteReset(t *testing.T) {
 		t.Fatalf("failed to create data directory: %v", err)
 	}
 
-	// Create a suite and set it as current via file
+	// Create a suite and set it as current via database
 	middleware.WritePromptSuite("current-suite", []middleware.Prompt{})
-	os.WriteFile("data/current_suite.txt", []byte("current-suite"), 0644)
+	middleware.SetCurrentSuite("current-suite")
 
 	// Delete the current suite - handler should reset current to default
 	form := url.Values{}
