@@ -125,6 +125,28 @@ func TestSelectPromptSuiteHandler_EmptyName(t *testing.T) {
 	}
 }
 
+func TestSelectPromptSuiteHandler_SetCurrentSuiteError(t *testing.T) {
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
+
+	// Close the database to trigger SetCurrentSuite error
+	middleware.CloseDB()
+
+	form := url.Values{}
+	form.Add("suite_name", "test-suite")
+
+	req := httptest.NewRequest("POST", "/select_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	SelectPromptSuiteHandler(rr, req)
+
+	// Should return internal server error when SetCurrentSuite fails
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
 func TestDeletePromptSuiteHandler_POST_EmptyName(t *testing.T) {
 	cleanup := setupSuitesTestDB(t)
 	defer cleanup()

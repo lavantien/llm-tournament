@@ -616,3 +616,110 @@ func TestBroadcastCostAlert(t *testing.T) {
 		t.Errorf("expected current_cost 95.0, got %f", payload.Data.CurrentCost)
 	}
 }
+
+func TestBroadcastMessage_WriteJSONError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+
+	// Wait for client registration
+	time.Sleep(50 * time.Millisecond)
+
+	// Verify client was registered
+	clientsMutex.Lock()
+	initialCount := len(clients)
+	clientsMutex.Unlock()
+
+	if initialCount != 1 {
+		t.Fatalf("expected 1 client before close, got %d", initialCount)
+	}
+
+	// Close connection to trigger WriteJSON error
+	conn.Close()
+
+	// Wait for close to take effect
+	time.Sleep(50 * time.Millisecond)
+
+	// Trigger broadcast - should handle closed connection gracefully
+	BroadcastEvaluationProgress(1, 5, 10, 0.5)
+
+	// Wait for broadcast processing and cleanup
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify client was cleaned up after WriteJSON error
+	clientsMutex.Lock()
+	finalCount := len(clients)
+	clientsMutex.Unlock()
+
+	if finalCount != 0 {
+		t.Errorf("expected 0 clients after WriteJSON error, got %d", finalCount)
+	}
+}
+
+func TestBroadcastMessage_ClientCleanupOnError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	// Connect two clients
+	conn1, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect client 1: %v", err)
+	}
+	defer conn1.Close()
+
+	conn2, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect client 2: %v", err)
+	}
+
+	// Wait for registration
+	time.Sleep(50 * time.Millisecond)
+
+	// Verify both clients registered
+	clientsMutex.Lock()
+	initialCount := len(clients)
+	clientsMutex.Unlock()
+
+	if initialCount != 2 {
+		t.Fatalf("expected 2 clients, got %d", initialCount)
+	}
+
+	// Close one connection
+	conn2.Close()
+	time.Sleep(50 * time.Millisecond)
+
+	// Trigger broadcast - should clean up the closed client
+	BroadcastResults()
+
+	// Wait for cleanup
+	time.Sleep(100 * time.Millisecond)
+
+	// Verify only the failed client was removed
+	clientsMutex.Lock()
+	finalCount := len(clients)
+	clientsMutex.Unlock()
+
+	if finalCount != 1 {
+		t.Errorf("expected 1 client after cleanup, got %d", finalCount)
+	}
+}

@@ -247,3 +247,76 @@ func TestGetProfileGroups_ProfileMapPointsToGroups(t *testing.T) {
 		t.Error("profileMap entry should point to same struct as in groups slice")
 	}
 }
+
+func TestGetProfileGroups_SpecialCharacters(t *testing.T) {
+	// Test with special characters in profile names
+	prompts := []Prompt{
+		{Text: "Prompt 1", Profile: "Math & Science"},
+		{Text: "Prompt 2", Profile: "Code <HTML>"},
+		{Text: "Prompt 3", Profile: "Quotes \"test\""},
+		{Text: "Prompt 4", Profile: "Apostrophe's"},
+	}
+	profiles := []Profile{
+		{Name: "Math & Science"},
+		{Name: "Code <HTML>"},
+		{Name: "Quotes \"test\""},
+		{Name: "Apostrophe's"},
+	}
+
+	groups, profileMap := GetProfileGroups(prompts, profiles)
+
+	if len(groups) != 4 {
+		t.Errorf("expected 4 groups, got %d", len(groups))
+	}
+
+	// Verify all special character profile names are preserved
+	expectedNames := []string{"Math & Science", "Code <HTML>", "Quotes \"test\"", "Apostrophe's"}
+	for i, expected := range expectedNames {
+		if groups[i].Name != expected {
+			t.Errorf("expected groups[%d].Name = %q, got %q", i, expected, groups[i].Name)
+		}
+		if _, exists := profileMap[expected]; !exists {
+			t.Errorf("expected %q in profileMap", expected)
+		}
+	}
+
+	// Verify all groups have valid colors
+	for i, group := range groups {
+		if !strings.Contains(group.Color, "hsl(") {
+			t.Errorf("group %d should have HSL color, got %q", i, group.Color)
+		}
+	}
+}
+
+func TestGetProfileGroups_UnicodeProfiles(t *testing.T) {
+	// Test with unicode characters in profile names
+	prompts := []Prompt{
+		{Text: "Prompt 1", Profile: "日本語"},
+		{Text: "Prompt 2", Profile: "Español 🇪🇸"},
+		{Text: "Prompt 3", Profile: "Русский"},
+		{Text: "Prompt 4", Profile: "中文 🐉"},
+	}
+	profiles := []Profile{
+		{Name: "日本語"},
+		{Name: "Español 🇪🇸"},
+		{Name: "Русский"},
+		{Name: "中文 🐉"},
+	}
+
+	groups, profileMap := GetProfileGroups(prompts, profiles)
+
+	if len(groups) != 4 {
+		t.Errorf("expected 4 groups, got %d", len(groups))
+	}
+
+	// Verify unicode profile names are preserved
+	for _, group := range groups {
+		if _, exists := profileMap[group.Name]; !exists {
+			t.Errorf("expected %q in profileMap", group.Name)
+		}
+		// Should have valid colors
+		if !strings.Contains(group.Color, "hsl(") {
+			t.Errorf("profile %q should have HSL color, got %q", group.Name, group.Color)
+		}
+	}
+}

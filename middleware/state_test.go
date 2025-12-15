@@ -292,6 +292,28 @@ func TestGetCurrentSuiteName_NoCurrentSuite(t *testing.T) {
 	}
 }
 
+func TestGetCurrentSuiteName_QueryError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Drop suites table to trigger query error
+	_, err = db.Exec("DROP TABLE suites")
+	if err != nil {
+		t.Fatalf("failed to drop suites table: %v", err)
+	}
+
+	// Function should return empty string on query error
+	name := GetCurrentSuiteName()
+	if name != "" {
+		t.Errorf("expected empty string on query error, got %q", name)
+	}
+}
+
 func TestSuiteExists(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -859,6 +881,90 @@ func TestUpdatePromptsOrder_NegativeIndex(t *testing.T) {
 	if len(readPrompts) != 2 {
 		t.Fatalf("expected 2 prompts, got %d", len(readPrompts))
 	}
+}
+
+func TestUpdatePromptsOrder_GetSuiteIDError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Drop suites table to trigger GetCurrentSuiteID error
+	_, err = db.Exec("DROP TABLE suites")
+	if err != nil {
+		t.Fatalf("failed to drop suites table: %v", err)
+	}
+
+	// Should not panic when GetCurrentSuiteID fails
+	UpdatePromptsOrder([]int{1, 0})
+}
+
+func TestUpdatePromptsOrder_TransactionBeginError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Close database to trigger transaction begin error
+	CloseDB()
+
+	// Should not panic when transaction begin fails
+	UpdatePromptsOrder([]int{1, 0})
+}
+
+func TestUpdatePromptsOrder_QueryError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	// Create prompts
+	prompts := []Prompt{
+		{Text: "Prompt 1"},
+		{Text: "Prompt 2"},
+	}
+	err = WritePromptSuite("default", prompts)
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Drop prompts table to trigger query error
+	_, err = db.Exec("DROP TABLE prompts")
+	if err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	// Should not panic when query fails
+	UpdatePromptsOrder([]int{1, 0})
 }
 
 func TestWriteResults_NewModel(t *testing.T) {

@@ -442,3 +442,51 @@ func TestCancelEvaluationHandler_WithNonExistentJob(t *testing.T) {
 	}
 }
 
+func TestEvaluateAllHandler_GetCurrentSuiteIDError(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Drop suites table to trigger GetCurrentSuiteID error
+	_, err := db.Exec("DROP TABLE suites")
+	if err != nil {
+		t.Fatalf("failed to drop suites table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/evaluate/all", nil)
+	rr := httptest.NewRecorder()
+	EvaluateAllHandler(rr, req)
+
+	// Should return internal server error when GetCurrentSuiteID fails
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestEvaluateAllHandler_EvaluateAllError(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	// Initialize evaluator
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	// Drop evaluation_jobs table to trigger EvaluateAll error
+	_, err := db.Exec("DROP TABLE evaluation_jobs")
+	if err != nil {
+		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/evaluate/all", nil)
+	rr := httptest.NewRecorder()
+	EvaluateAllHandler(rr, req)
+
+	// Should return internal server error when EvaluateAll fails
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+

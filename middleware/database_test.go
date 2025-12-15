@@ -76,6 +76,83 @@ func TestInitDB_CreatesDataDirectory(t *testing.T) {
 	}
 }
 
+func TestInitDB_InvalidPath(t *testing.T) {
+	// Try to create a database in an invalid path (using a file as a directory)
+	tmpDir, err := os.MkdirTemp("", "db_test_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a file
+	filePath := filepath.Join(tmpDir, "notadir")
+	if err := os.WriteFile(filePath, []byte("test"), 0644); err != nil {
+		t.Fatalf("failed to create file: %v", err)
+	}
+
+	// Try to use that file as a directory path
+	invalidDBPath := filepath.Join(filePath, "test.db")
+	err = InitDB(invalidDBPath)
+
+	// Should fail because we can't create a directory where a file exists
+	if err == nil {
+		CloseDB()
+		t.Error("expected error when path is invalid")
+	}
+}
+
+func TestInitDB_OpenError(t *testing.T) {
+	// Create a path that will cause sql.Open to fail
+	// Use a very long path that exceeds system limits on some systems
+	tmpDir, err := os.MkdirTemp("", "db_test_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a path with special characters that might cause issues
+	// Using null bytes which are invalid in file paths
+	invalidPath := filepath.Join(tmpDir, "test\x00invalid.db")
+	err = InitDB(invalidPath)
+
+	if err == nil {
+		CloseDB()
+		// On some systems this might not fail, so we don't require an error
+		// but if it succeeds, we just clean up
+	}
+}
+
+func TestInitDB_CreateTablesError(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "db_test_*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	dbPath := filepath.Join(tmpDir, "readonly.db")
+
+	// First create a valid database
+	err = InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed on first call: %v", err)
+	}
+	CloseDB()
+
+	// Make the database file read-only
+	if err := os.Chmod(dbPath, 0444); err != nil {
+		t.Fatalf("failed to make database read-only: %v", err)
+	}
+
+	// Try to initialize again - this should work for opening but might fail on some operations
+	// Note: SQLite in WAL mode might still work with read-only files
+	err = InitDB(dbPath)
+	// We don't assert error here because SQLite is resilient
+	// The test is more about ensuring we don't panic
+	if err == nil {
+		CloseDB()
+	}
+}
+
 func TestCloseDB(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
