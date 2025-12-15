@@ -34,3 +34,6 @@ llm-tournament.exe
 .claude/tdd-guard/*
 *.out
 coverage.*
+node_modules/
+package.json
+package-lock.json
