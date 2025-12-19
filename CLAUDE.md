@@ -16,6 +16,8 @@
 
 Before coding, define: Goal, Acceptance Criteria (testable), Non-goals, Constraints, Verification Plan.
 
+Use Repomix to explore code/structure and Context7 to acquire up-to-date documentations.
+
 **Rule**: If you cannot write acceptance criteria, pause and clarify.
 
 ### Verification Minimum
