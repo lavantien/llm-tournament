@@ -47,11 +47,23 @@ async function shutdownServer(url) {
   }
 }
 
-async function capturePage(page, url, destPath, { waitForSelector }) {
+async function ensureStableRendering(page) {
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+      #hidden-data { display: none !important; }
+    `,
+  });
+}
+
+async function capturePage(page, url, destPath, { waitForSelector, waitForFunction, beforeScreenshot } = {}) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await ensureStableRendering(page);
   if (waitForSelector) await page.waitForSelector(waitForSelector, { timeout: 30_000 });
+  if (waitForFunction) await page.waitForFunction(waitForFunction, { timeout: 30_000 });
+  if (beforeScreenshot) await beforeScreenshot(page);
   await page.waitForTimeout(350); // allow charts/websocket status to paint
-  await page.screenshot({ path: destPath, fullPage: true });
+  await page.screenshot({ path: destPath, fullPage: false });
 }
 
 async function main() {
@@ -77,15 +89,28 @@ async function main() {
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
-    viewport: { width: 2400, height: 1350 },
-    deviceScaleFactor: 2,
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 1,
   });
   const page = await context.newPage();
 
   try {
     await capturePage(page, `${url}/results`, path.join(assetsDir, "ui-results.png"), {
       waitForSelector: ".arena-shell",
+      waitForFunction: () => {
+        const cell =
+          document.querySelector(".score-cell.score-100") ||
+          document.querySelector(".score-cell.score-80") ||
+          document.querySelector(".score-cell.score-60") ||
+          document.querySelector(".score-cell.score-40") ||
+          document.querySelector(".score-cell.score-20") ||
+          document.querySelector(".score-cell.score-0");
+        if (!cell) return false;
+        const bg = getComputedStyle(cell).backgroundColor;
+        return bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
+      },
     });
+
     await capturePage(page, `${url}/prompts`, path.join(assetsDir, "ui-prompts.png"), {
       waitForSelector: ".arena-shell",
     });
@@ -104,11 +129,19 @@ async function main() {
       page,
       `${url}/evaluate?model=${encodeURIComponent("gpt-5.2")}&prompt=0`,
       path.join(assetsDir, "ui-evaluate.png"),
-      { waitForSelector: ".evaluation-form" }
+      {
+        waitForSelector: ".evaluation-form",
+        beforeScreenshot: async (p) => {
+          await p.click(".score-button.score-80", { timeout: 30_000 });
+          await p.waitForTimeout(150);
+        },
+      }
     );
-    await capturePage(page, `${url}/edit_prompt?index=0`, path.join(assetsDir, "ui-edit-prompt.png"), {
-      waitForSelector: "textarea",
-    });
+
+    await page.goto(`${url}/edit_prompt?index=0`, { waitUntil: "domcontentloaded" });
+    await ensureStableRendering(page);
+    await page.waitForSelector(".container", { timeout: 30_000 });
+    await page.locator(".container").screenshot({ path: path.join(assetsDir, "ui-edit-prompt.png") });
   } finally {
     await context.close();
     await browser.close();

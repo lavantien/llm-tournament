@@ -80,11 +80,12 @@
         
         // Set initial border for the currently selected score button
         const currentScore = document.getElementById('selectedScore').value;
-        document.querySelectorAll('.score-button').forEach(function(button) {
-          if (button.onclick.toString().includes(`'${currentScore}'`)) {
-            button.style.border = '10px solid #000';
-          }
-        });
+        const currentButton = document.querySelector(
+          `.score-button[data-score="${currentScore}"]`,
+        );
+        if (currentButton) {
+          currentButton.style.border = '10px solid #000';
+        }
       });
       
       function copyPromptText() {

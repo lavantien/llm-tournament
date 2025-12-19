@@ -31,7 +31,7 @@ func TestSeedDemoData_CreatesCoreRecords(t *testing.T) {
 	if err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount); err != nil {
 		t.Fatalf("count prompts: %v", err)
 	}
-	if promptCount < 3 {
+	if promptCount < 12 {
 		t.Fatalf("expected prompts seeded, got %d", promptCount)
 	}
 

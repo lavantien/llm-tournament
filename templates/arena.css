@@ -47,6 +47,96 @@
   --score-color-100: rgba(124, 255, 107, 0.72);
 }
 
+/* Hide debug/transport data containers used by some pages */
+.hidden-data {
+  display: none !important;
+}
+
+/* Score colors */
+.score-0 {
+  background-color: var(--score-color-0);
+}
+.score-20 {
+  background-color: var(--score-color-20);
+}
+.score-40 {
+  background-color: var(--score-color-40);
+}
+.score-60 {
+  background-color: var(--score-color-60);
+}
+.score-80 {
+  background-color: var(--score-color-80);
+}
+.score-100 {
+  background-color: var(--score-color-100);
+}
+
+/* Results grid score cells */
+.score-cell {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  box-sizing: border-box;
+}
+
+/* Make score cells feel interactive */
+.score-cell:hover {
+  outline: 2px solid rgba(25, 247, 255, 0.22);
+  outline-offset: -2px;
+}
+
+/* Evaluate page score buttons */
+.score-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.score-button {
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(244, 248, 255, 0.92);
+  font-weight: 700;
+}
+
+.score-button.score-0,
+.score-button.score-20,
+.score-button.score-40,
+.score-button.score-60,
+.score-button.score-80,
+.score-button.score-100 {
+  color: rgba(8, 12, 20, 0.92);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+.score-button.score-0 {
+  background-color: var(--score-color-0);
+}
+.score-button.score-20 {
+  background-color: var(--score-color-20);
+}
+.score-button.score-40 {
+  background-color: var(--score-color-40);
+}
+.score-button.score-60 {
+  background-color: var(--score-color-60);
+}
+.score-button.score-80 {
+  background-color: var(--score-color-80);
+}
+.score-button.score-100 {
+  background-color: var(--score-color-100);
+}
+
 * {
   box-sizing: border-box;
 }
