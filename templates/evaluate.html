@@ -3,14 +3,16 @@
 
 <head>
     <title>Evaluate</title>
-    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="stylesheet" href="/templates/arena.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="/templates/score-utils.js"></script>
 </head>
 
 <body>
-    {{template "nav" .}}
-    <div class="evaluation-form">
+    <div class="arena-shell">
+        {{template "nav" .}}
+        <main class="arena-main">
+            <div class="evaluation-form">
         <h2 style="text-align: center;">{{.Model}}</h2>
         <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}} of {{.TotalPrompts}}</h3>
 
@@ -105,6 +107,8 @@
           });
       }
     </script>
+</main>
+</div>
 </body>
 
 </html>

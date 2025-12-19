@@ -3,7 +3,7 @@
 
 <head>
     <title>Model Statistics</title>
-    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="stylesheet" href="/templates/arena.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="/templates/score-utils.js"></script>
@@ -149,8 +149,10 @@
 </head>
 
 <body>
-    {{template "nav" .}}
-    <div class="container">
+    <div class="arena-shell">
+        {{template "nav" .}}
+        <main class="arena-main">
+            <div class="container">
         <h1>Model Performance Statistics</h1>
 
         <div class="tier-list">
@@ -181,6 +183,8 @@
                 <canvas id="totalScoresChart"></canvas>
             </div>
         </div>
+            </div>
+        </main>
     </div>
 </body>
 

@@ -2,10 +2,13 @@
 <html>
 <head>
     <title>Delete Prompt Suite</title>
-    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="stylesheet" href="/templates/arena.css">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
+    <div class="arena-shell arena-shell-solo">
+        <main class="arena-main arena-main-solo">
+            <div class="container">
     <h1>Delete Prompt Suite</h1>
     <form action="/prompts/suites/delete" method="post" style="text-align: center;">
         <input type="hidden" name="suite_name" value="{{.SuiteName}}">
@@ -27,5 +30,8 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
     </script>
+            </div>
+        </main>
+    </div>
 </body>
 </html>

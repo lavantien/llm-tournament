@@ -2,10 +2,13 @@
 <html>
 <head>
     <title>Import Results</title>
-    <link rel="stylesheet" href="/templates/style.css">
+    <link rel="stylesheet" href="/templates/arena.css">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
+    <div class="arena-shell arena-shell-solo">
+        <main class="arena-main arena-main-solo">
+            <div class="container">
     <h1>Import Results</h1>
     <form action="/import_results" method="post" enctype="multipart/form-data" style="text-align: center;">
         <p>Select a JSON file containing results to import.</p>
@@ -30,5 +33,8 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
     </script>
+            </div>
+        </main>
+    </div>
 </body>
 </html>

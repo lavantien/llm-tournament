@@ -3,7 +3,7 @@
 
 <head>
     <title>Results</title>
-    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="stylesheet" href="/templates/arena.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="/templates/constants.js"></script>
     <script src="/templates/utils.js"></script>
@@ -852,7 +852,9 @@
 </head>
 
 <body>
-    {{template "nav" .}}
+    <div class="arena-shell">
+        {{template "nav" .}}
+        <main class="arena-main">
     <div class="sticky-header">
         <h2>Add Model</h2>
         <form action="/add_model" method="post" class="flex-form">
@@ -1020,6 +1022,8 @@
             TotalScores: {}
         };
     </script>
+        </main>
+    </div>
 </body>
 
 </html>

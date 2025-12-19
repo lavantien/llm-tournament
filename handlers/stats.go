@@ -159,13 +159,16 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	funcMap := template.FuncMap{
-		"json": func(v interface{}) template.JS {
-			a, _ := json.Marshal(v)
-			return template.JS(a)
-		},
-		"tierClass": func(tier string) string {
-			return tier
-		},
+                "json": func(v interface{}) template.JS {
+                        a, _ := json.Marshal(v)
+                        return template.JS(a)
+                },
+                "eqs": func(a, b string) bool {
+                        return a == b
+                },
+                "tierClass": func(tier string) string {
+                        return tier
+                },
 		"formatTierName": func(tier string) string {
 			return strings.Title(strings.ReplaceAll(tier, "-", " "))
 		},

@@ -49,8 +49,11 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 			return i + 1
 		},
 		"tolower":  strings.ToLower,
-		"contains": strings.Contains,
-	}
+                "contains": strings.Contains,
+                "eqs": func(a, b string) bool {
+                        return a == b
+                },
+        }
 	funcMap["json"] = func(v interface{}) (string, error) {
 		b, err := json.Marshal(v)
 		return string(b), err

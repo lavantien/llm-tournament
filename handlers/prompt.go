@@ -106,8 +106,11 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 			return strconv.Itoa(i)
 		},
 		"tolower":  strings.ToLower,
-		"contains": strings.Contains,
-	}
+                "contains": strings.Contains,
+                "eqs": func(a, b string) bool {
+                        return a == b
+                },
+        }
 	funcMap["json"] = func(v interface{}) (string, error) {
 		b, err := json.Marshal(v)
 		return string(b), err

@@ -2,13 +2,15 @@
 <html>
   <head>
     <title>Prompt List</title>
-    <link rel="stylesheet" href="/templates/style.css" />
+    <link rel="stylesheet" href="/templates/arena.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
 
   <body>
-    {{template "nav" .}}
+    <div class="arena-shell">
+      {{template "nav" .}}
+      <main class="arena-main">
     <div class="sticky-header">
       <div
         style="
@@ -401,6 +403,8 @@
     </script>
     <div style="display: none">
       <span id="prompts-data">{{.Prompts | json}}</span>
+    </div>
+      </main>
     </div>
   </body>
 </html>

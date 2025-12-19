@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LLM Tournament Arena — Design Preview</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Chart.js (already used in the app) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <style>
+      :root {
+        --bg0: #070a12;
+        --bg1: #0b1020;
+        --panel: rgba(16, 24, 38, 0.72);
+        --panel2: rgba(10, 15, 26, 0.7);
+        --stroke: rgba(255, 255, 255, 0.14);
+        --stroke2: rgba(255, 255, 255, 0.22);
+        --text: rgba(244, 248, 255, 0.92);
+        --muted: rgba(244, 248, 255, 0.64);
+        --faint: rgba(244, 248, 255, 0.46);
+
+        --cyan: #19f7ff;
+        --magenta: #ff2bd6;
+        --violet: #a77bff;
+        --green: #7cff6b;
+        --amber: #ffc857;
+        --red: #ff4d4d;
+
+        --r-lg: 18px;
+        --r: 14px;
+        --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+        --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo,
+          monospace;
+        --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        min-width: 1320px;
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background: radial-gradient(
+            1200px 800px at 15% 10%,
+            rgba(25, 247, 255, 0.12),
+            transparent 55%
+          ),
+          radial-gradient(
+            900px 700px at 80% 20%,
+            rgba(255, 43, 214, 0.1),
+            transparent 50%
+          ),
+          radial-gradient(
+            700px 520px at 70% 85%,
+            rgba(167, 123, 255, 0.12),
+            transparent 55%
+          ),
+          linear-gradient(180deg, var(--bg1), var(--bg0));
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.35;
+        mix-blend-mode: overlay;
+        background-image: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.05) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px
+          ),
+          repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.03),
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 6px
+          );
+        background-size: 48px 48px, 48px 48px, 100% 7px;
+      }
+
+      .arena-shell {
+        height: 100%;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-rows: 78px 1fr;
+        gap: 14px;
+        padding: 14px;
+      }
+
+      .glass-panel {
+        background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            transparent 22%
+          ),
+          linear-gradient(180deg, var(--panel), rgba(14, 20, 33, 0.62));
+        border: 1px solid var(--stroke);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glass-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.8;
+        background: radial-gradient(
+            900px 140px at 20% 0%,
+            rgba(25, 247, 255, 0.12),
+            transparent 55%
+          ),
+          radial-gradient(
+            800px 120px at 80% 0%,
+            rgba(255, 43, 214, 0.11),
+            transparent 55%
+          );
+      }
+
+      .glass-inset {
+        background: linear-gradient(
+          180deg,
+          rgba(10, 15, 26, 0.78),
+          rgba(10, 15, 26, 0.55)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--r);
+      }
+
+      .mono {
+        font-family: var(--mono);
+      }
+
+      .arena-topbar {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+      }
+      .brand img {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+      .brand .name {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      .brand .meta {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        min-width: 420px;
+        border-radius: 14px;
+        position: relative;
+        z-index: 1;
+      }
+      .field input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--text);
+        font-size: 13px;
+      }
+      .field input::placeholder {
+        color: var(--faint);
+      }
+      .kbd {
+        font-family: var(--mono);
+        color: var(--muted);
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.25);
+        white-space: nowrap;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.24);
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--amber);
+      }
+      .dot.is-on {
+        background: var(--green);
+        animation: ping 1.6s ease-in-out infinite;
+      }
+      @keyframes ping {
+        0% {
+          box-shadow: 0 0 0 0 rgba(124, 255, 107, 0.22);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(124, 255, 107, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(124, 255, 107, 0);
+        }
+      }
+
+      .neon-button {
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 10px 12px;
+        color: var(--text);
+        background: linear-gradient(
+            180deg,
+            rgba(8, 12, 20, 0.78),
+            rgba(8, 12, 20, 0.45)
+          )
+          padding-box,
+          linear-gradient(
+              90deg,
+              rgba(25, 247, 255, 0.95),
+              rgba(255, 43, 214, 0.95),
+              rgba(167, 123, 255, 0.95)
+            )
+            border-box;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07) inset,
+          0 14px 44px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
+        user-select: none;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+      .neon-button:hover {
+        transform: translateY(-1px);
+        filter: saturate(1.05);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+          0 16px 58px rgba(0, 0, 0, 0.45), 0 0 22px rgba(25, 247, 255, 0.14);
+      }
+      .neon-button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+          0 0 0 3px rgba(25, 247, 255, 0.22), 0 0 30px rgba(25, 247, 255, 0.18);
+      }
+      .neon-button.ghost {
+        background: linear-gradient(
+            180deg,
+            rgba(8, 12, 20, 0.6),
+            rgba(8, 12, 20, 0.25)
+          )
+          padding-box,
+          linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0.14),
+              rgba(255, 255, 255, 0.07)
+            )
+            border-box;
+        color: var(--muted);
+      }
+      .neon-button.danger {
+        background: linear-gradient(
+            180deg,
+            rgba(20, 8, 10, 0.75),
+            rgba(20, 8, 10, 0.35)
+          )
+          padding-box,
+          linear-gradient(
+              90deg,
+              rgba(255, 77, 77, 0.95),
+              rgba(255, 43, 214, 0.65)
+            )
+            border-box;
+      }
+
+      .arena-sidebar {
+        grid-row: 2 / -1;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .nav-title {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--faint);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin: 2px 8px 10px 8px;
+        position: relative;
+        z-index: 1;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 10px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--muted);
+        text-decoration: none;
+        margin: 8px 6px;
+        background: rgba(0, 0, 0, 0.14);
+        transition: transform 120ms ease, border-color 140ms ease, background 140ms ease,
+          color 140ms ease;
+        position: relative;
+        z-index: 1;
+      }
+      .nav-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(25, 247, 255, 0.22);
+        color: var(--text);
+        background: rgba(25, 247, 255, 0.06);
+      }
+      .nav-item.is-active {
+        border-color: rgba(25, 247, 255, 0.35);
+        background: linear-gradient(
+          90deg,
+          rgba(25, 247, 255, 0.14),
+          rgba(255, 43, 214, 0.05)
+        );
+        color: var(--text);
+      }
+
+      .arena-main {
+        grid-column: 2 / -1;
+        grid-row: 2 / -1;
+        display: grid;
+        grid-template-columns: 1.35fr 0.95fr;
+        grid-auto-rows: min-content;
+        gap: 14px;
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 14px 10px 14px;
+        position: relative;
+        z-index: 1;
+      }
+      .panel-head h2 {
+        margin: 0;
+        font-size: 14px;
+        letter-spacing: 0.02em;
+      }
+      .sub {
+        margin: 2px 0 0 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .panel-body {
+        padding: 0 14px 14px 14px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .stat {
+        padding: 10px 12px;
+      }
+      .stat .k {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--faint);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .stat .v {
+        margin-top: 8px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .stat .v strong {
+        font-size: 18px;
+        letter-spacing: 0.02em;
+      }
+      .stat .v span {
+        font-family: var(--mono);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.22);
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .chip b {
+        color: var(--text);
+        font-weight: 700;
+      }
+      .chip.tier {
+        border-color: rgba(167, 123, 255, 0.25);
+        box-shadow: 0 0 0 1px rgba(167, 123, 255, 0.12) inset;
+      }
+      .chip.pass {
+        border-color: rgba(124, 255, 107, 0.28);
+      }
+      .chip.warn {
+        border-color: rgba(255, 200, 87, 0.28);
+      }
+      .chip.fail {
+        border-color: rgba(255, 77, 77, 0.28);
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: var(--r);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.18);
+      }
+      .data-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.55),
+          rgba(0, 0, 0, 0.25)
+        );
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 10px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .data-table tbody td {
+        padding: 10px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        font-size: 13px;
+      }
+      .data-table tbody tr:hover {
+        background: rgba(25, 247, 255, 0.06);
+      }
+      .right {
+        text-align: right;
+      }
+
+      .progress {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .progress > i {
+        display: block;
+        height: 100%;
+        width: var(--w, 50%);
+        background: linear-gradient(
+          90deg,
+          rgba(25, 247, 255, 0.9),
+          rgba(167, 123, 255, 0.9)
+        );
+        box-shadow: 0 0 18px rgba(25, 247, 255, 0.18);
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .log {
+        padding: 10px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .log .line {
+        display: flex;
+        gap: 10px;
+        padding: 4px 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+      }
+      .log .t {
+        color: rgba(244, 248, 255, 0.5);
+        white-space: nowrap;
+      }
+      .log strong {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .chart-wrap {
+        height: 260px;
+        padding: 10px 10px 14px 10px;
+      }
+
+      .footer-note {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+        color: var(--faint);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="arena-shell">
+      <header class="arena-topbar glass-panel">
+        <div class="brand">
+          <img src="/assets/logo.webp" alt="LLM Tournament Logo" />
+          <div>
+            <div class="name">LLM Tournament Arena</div>
+            <div class="meta">offline • high-density • ssr</div>
+          </div>
+        </div>
+
+        <div class="field glass-inset" aria-label="Search">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            style="opacity: 0.8"
+          >
+            <path
+              fill="currentColor"
+              d="M10 18a8 8 0 1 1 5.293-14.293A8 8 0 0 1 10 18m0-2a6 6 0 1 0-4.243-10.243A6 6 0 0 0 10 16m9.707 4.293L15.4 16l1.4-1.4l4.307 4.307z"
+            />
+          </svg>
+          <input placeholder="Search models, prompts, suites, job IDs…" value="" />
+          <span class="kbd">CTRL K</span>
+        </div>
+
+        <div class="topbar-right">
+          <div class="pill" title="WebSocket status (mock)">
+            <span class="dot is-on"></span>
+            <span>WS: CONNECTED</span>
+          </div>
+          <button class="neon-button">Run Evaluation</button>
+          <button class="neon-button ghost">Export</button>
+          <button class="neon-button danger">Reset</button>
+        </div>
+      </header>
+
+      <aside class="arena-sidebar glass-panel">
+        <div class="nav-title">Navigation</div>
+        <a class="nav-item is-active" href="#" aria-current="page"
+          ><span>Results</span><span class="mono" style="opacity: 0.6">LIVE</span></a
+        >
+        <a class="nav-item" href="#"
+          ><span>Stats</span><span class="mono" style="opacity: 0.6">CHART</span></a
+        >
+        <a class="nav-item" href="#"
+          ><span>Prompts</span><span class="mono" style="opacity: 0.6">CRUD</span></a
+        >
+        <a class="nav-item" href="#"
+          ><span>Profiles</span><span class="mono" style="opacity: 0.6">WS</span></a
+        >
+
+        <div class="nav-title" style="margin-top: 18px">Hotkeys</div>
+        <div class="glass-inset log">
+          <div class="line">
+            <span class="t">CTRL</span><span>+ <strong>K</strong></span>
+            <span style="margin-left: auto; opacity: 0.65">Command Palette</span>
+          </div>
+          <div class="line">
+            <span class="t">CTRL</span><span>+ <strong>ENTER</strong></span>
+            <span style="margin-left: auto; opacity: 0.65">Run Evaluation</span>
+          </div>
+          <div class="line" style="border-bottom: none">
+            <span class="t">ALT</span><span>+ <strong>1…4</strong></span>
+            <span style="margin-left: auto; opacity: 0.65">Switch Tabs</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="arena-main">
+        <section class="glass-panel" style="grid-column: 1 / -1">
+          <div class="panel-head">
+            <div>
+              <h2>Tournament Telemetry</h2>
+              <p class="sub">suite: "arena-v1" • judges: 3 • queue: 2 jobs</p>
+            </div>
+            <div style="display: flex; gap: 10px">
+              <span class="chip warn"><b>IN PROGRESS</b> • 63%</span>
+              <span class="chip"><b>$0.05</b> • last run</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="stats-grid">
+              <div class="stat glass-inset">
+                <div class="k">Models</div>
+                <div class="v"><strong class="mono">12</strong><span>active</span></div>
+              </div>
+              <div class="stat glass-inset">
+                <div class="k">Prompts</div>
+                <div class="v"><strong class="mono">48</strong><span>in suite</span></div>
+              </div>
+              <div class="stat glass-inset">
+                <div class="k">Pass Rate</div>
+                <div class="v"><strong class="mono">71%</strong><span>rolling</span></div>
+              </div>
+              <div class="stat glass-inset">
+                <div class="k">WS Clients</div>
+                <div class="v"><strong class="mono">1</strong><span>connected</span></div>
+              </div>
+            </div>
+            <div class="footer-note">
+              <span>Last broadcast: 00:00:03 ago</span>
+              <span>Density mode: ultra</span>
+              <span>Open at <span class="mono">/templates/design_preview.html</span></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Leaderboard (Dense Table)</h2>
+              <p class="sub">sorted by total score • hover rows</p>
+            </div>
+            <button class="neon-button ghost">Filter</button>
+          </div>
+          <div class="panel-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="text-align: left">Model</th>
+                  <th>Tier</th>
+                  <th class="right">Total</th>
+                  <th class="right">Pass%</th>
+                  <th style="text-align: left">Consensus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="text-align: left">
+                    <span class="mono">GPT-5.2</span>
+                    <span style="color: var(--faint)">•</span>
+                    <span style="color: var(--muted)">local</span>
+                  </td>
+                  <td><span class="chip tier"><b>DIVINE</b></span></td>
+                  <td class="right mono">2870</td>
+                  <td class="right mono">78%</td>
+                  <td style="text-align: left">
+                    <div class="progress"><i style="--w: 82%"></i></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <span class="mono">Claude Opus 4.5</span>
+                    <span style="color: var(--faint)">•</span>
+                    <span style="color: var(--muted)">judge</span>
+                  </td>
+                  <td><span class="chip tier"><b>CELESTIAL</b></span></td>
+                  <td class="right mono">2450</td>
+                  <td class="right mono">73%</td>
+                  <td style="text-align: left">
+                    <div class="progress"><i style="--w: 74%"></i></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <span class="mono">Gemini 3 Pro</span>
+                    <span style="color: var(--faint)">•</span>
+                    <span style="color: var(--muted)">judge</span>
+                  </td>
+                  <td><span class="chip tier"><b>ASCENDANT</b></span></td>
+                  <td class="right mono">2190</td>
+                  <td class="right mono">69%</td>
+                  <td style="text-align: left">
+                    <div class="progress"><i style="--w: 66%"></i></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <span class="mono">Local-7B</span>
+                    <span style="color: var(--faint)">•</span>
+                    <span style="color: var(--muted)">cpu</span>
+                  </td>
+                  <td><span class="chip warn"><b>MORTAL</b></span></td>
+                  <td class="right mono">480</td>
+                  <td class="right mono">41%</td>
+                  <td style="text-align: left">
+                    <div class="progress"><i style="--w: 38%"></i></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: left">
+                    <span class="mono">Experimental-X</span>
+                    <span style="color: var(--faint)">•</span>
+                    <span style="color: var(--muted)">sandbox</span>
+                  </td>
+                  <td><span class="chip fail"><b>PRIMORDIAL</b></span></td>
+                  <td class="right mono">210</td>
+                  <td class="right mono">12%</td>
+                  <td style="text-align: left">
+                    <div class="progress"><i style="--w: 10%"></i></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Charts (Dark Neon)</h2>
+              <p class="sub">Chart.js themed for glass surfaces</p>
+            </div>
+            <span class="chip"><b>48</b> prompts</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap glass-inset">
+              <canvas id="previewChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Consensus Matrix</h2>
+              <p class="sub">judge verdicts + confidence • expandable reasoning</p>
+            </div>
+            <button class="neon-button" id="toggleLog">Toggle Log</button>
+          </div>
+          <div class="panel-body">
+            <div class="two-col">
+              <div class="glass-inset" style="padding: 10px 12px">
+                <div style="display: grid; gap: 10px">
+                  <div style="display: grid; gap: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                      <span class="mono">Claude</span>
+                      <span class="chip pass"><b>PASS</b> • 0.86</span>
+                    </div>
+                    <div class="progress"><i style="--w: 86%"></i></div>
+                  </div>
+                  <div style="display: grid; gap: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                      <span class="mono">GPT</span>
+                      <span class="chip pass"><b>PASS</b> • 0.79</span>
+                    </div>
+                    <div class="progress"><i style="--w: 79%"></i></div>
+                  </div>
+                  <div style="display: grid; gap: 8px">
+                    <div style="display: flex; justify-content: space-between">
+                      <span class="mono">Gemini</span>
+                      <span class="chip warn"><b>EDGE</b> • 0.61</span>
+                    </div>
+                    <div class="progress"><i style="--w: 61%"></i></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="glass-inset" style="padding: 10px 12px">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span class="chip tier"><b>CONSENSUS</b> • weighted median</span>
+                  <span class="chip"><b class="mono">80</b> / 100</span>
+                </div>
+                <div style="margin-top: 10px" class="progress">
+                  <i style="--w: 80%"></i>
+                </div>
+                <div style="margin-top: 10px; color: var(--muted); font-size: 13px">
+                  Industrial glass surfaces + neon edges keep the data readable while
+                  making state changes feel alive.
+                </div>
+              </div>
+            </div>
+
+            <div
+              id="previewLog"
+              class="log glass-inset"
+              style="margin-top: 10px; display: none"
+            >
+              <div class="line">
+                <span class="t">00:00:01</span>
+                <span>Job <strong>#EVAL-1042</strong> started (suite arena-v1)</span>
+              </div>
+              <div class="line">
+                <span class="t">00:00:02</span>
+                <span>Judge <strong>Claude</strong> verdict PASS (0.86)</span>
+              </div>
+              <div class="line">
+                <span class="t">00:00:02</span>
+                <span>Judge <strong>GPT</strong> verdict PASS (0.79)</span>
+              </div>
+              <div class="line" style="border-bottom: none">
+                <span class="t">00:00:03</span>
+                <span>Consensus computed → <strong>80</strong> (Pass)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const ctx = document.getElementById("previewChart");
+      const grid = "rgba(255,255,255,0.08)";
+      const tick = "rgba(244,248,255,0.55)";
+      const title = "rgba(244,248,255,0.8)";
+
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["0", "20", "40", "60", "80", "100"],
+          datasets: [
+            {
+              label: "Score Distribution (mock)",
+              data: [2, 9, 14, 22, 31, 18],
+              backgroundColor: [
+                "rgba(244,248,255,0.18)",
+                "rgba(255,200,87,0.55)",
+                "rgba(255,200,87,0.72)",
+                "rgba(25,247,255,0.45)",
+                "rgba(167,123,255,0.55)",
+                "rgba(124,255,107,0.55)",
+              ],
+              borderColor: "rgba(255,255,255,0.16)",
+              borderWidth: 1,
+              borderRadius: 8,
+              barThickness: 26,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: tick,
+                font: { family: "'JetBrains Mono', monospace" },
+              },
+            },
+            title: { display: true, text: "Score Distribution", color: title },
+            tooltip: {
+              backgroundColor: "rgba(0,0,0,0.75)",
+              borderColor: "rgba(255,255,255,0.14)",
+              borderWidth: 1,
+              titleColor: "rgba(244,248,255,0.92)",
+              bodyColor: "rgba(244,248,255,0.82)",
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: grid },
+              ticks: { color: tick, font: { family: "'JetBrains Mono', monospace" } },
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: grid },
+              ticks: { color: tick, font: { family: "'JetBrains Mono', monospace" } },
+            },
+          },
+        },
+      });
+
+      document.getElementById("toggleLog").addEventListener("click", () => {
+        const el = document.getElementById("previewLog");
+        el.style.display = el.style.display === "none" ? "block" : "none";
+      });
+    </script>
+  </body>
+</html>

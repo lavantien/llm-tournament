@@ -26,13 +26,16 @@ var FuncMap = map[string]interface{}{
 	"lt": func(a, b int) bool {
 		return a < b
 	},
-	"eq": func(a, b int) bool {
-		return a == b
-	},
-	"atoi": func(s string) int {
-		i, _ := strconv.Atoi(s)
-		return i
-	},
+        "eq": func(a, b int) bool {
+                return a == b
+        },
+        "eqs": func(a, b string) bool {
+                return a == b
+        },
+        "atoi": func(s string) int {
+                i, _ := strconv.Atoi(s)
+                return i
+        },
 	"markdown": func(text string) template.HTML {
 		unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
 		html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
