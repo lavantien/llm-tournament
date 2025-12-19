@@ -1,0 +1,120 @@
+package main
+
+import (
+	"fmt"
+	"llm-tournament/middleware"
+	"math/rand"
+	"os"
+	"time"
+)
+
+func ensureDemoEncryptionKey() {
+	if os.Getenv("ENCRYPTION_KEY") != "" {
+		return
+	}
+
+	// Deterministic key for screenshot generation only.
+	_ = os.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+}
+
+func seedDemoData() error {
+	suiteName := "default"
+	if err := middleware.SetCurrentSuite(suiteName); err != nil {
+		return fmt.Errorf("set current suite: %w", err)
+	}
+
+	profiles := []middleware.Profile{
+		{Name: "general", Description: "General reasoning and knowledge"},
+		{Name: "programming", Description: "Coding, debugging, and systems design"},
+		{Name: "writing", Description: "Clarity, tone, and composition"},
+	}
+	if err := middleware.WriteProfileSuite(suiteName, profiles); err != nil {
+		return fmt.Errorf("write profiles: %w", err)
+	}
+
+	prompts := []middleware.Prompt{
+		{
+			Profile:  "general",
+			Text:     "Explain the difference between correlation and causation in 2-3 sentences.",
+			Solution: "Correlation is association; causation is when one factor directly produces an effect.",
+		},
+		{
+			Profile:  "general",
+			Text:     "Give a one-paragraph summary of the water cycle.",
+			Solution: "Evaporation → condensation → precipitation → collection, driven by solar energy and gravity.",
+		},
+		{
+			Profile:  "programming",
+			Text:     "Write a Go function that returns the max of two ints.",
+			Solution: "func Max(a, b int) int { if a > b { return a }; return b }",
+		},
+		{
+			Profile:  "programming",
+			Text:     "What does SQL 'FOREIGN KEY ... ON DELETE CASCADE' do?",
+			Solution: "Deleting the parent row automatically deletes related child rows referencing it.",
+		},
+		{
+			Profile:  "writing",
+			Text:     "Rewrite this sentence to be more concise: 'Due to the fact that it was raining, we decided to stay inside.'",
+			Solution: "Because it was raining, we stayed inside.",
+		},
+		{
+			Profile:  "writing",
+			Text:     "Draft a two-sentence product description for a futuristic desktop dashboard UI.",
+			Solution: "A sleek, high-density dashboard that turns model evaluation into a control-room experience. Neon-glass panels, fast navigation, and real-time insights—without sacrificing clarity.",
+		},
+	}
+	if err := middleware.WritePromptSuite(suiteName, prompts); err != nil {
+		return fmt.Errorf("write prompts: %w", err)
+	}
+
+	rng := rand.New(rand.NewSource(42))
+	results := map[string]middleware.Result{
+		"gpt-5.2":         {Scores: randomScores(rng, len(prompts))},
+		"claude-opus-4.5": {Scores: randomScores(rng, len(prompts))},
+		"gemini-3-pro":    {Scores: randomScores(rng, len(prompts))},
+		"deepseek-r1":     {Scores: randomScores(rng, len(prompts))},
+		"mixtral-8x22b":   {Scores: randomScores(rng, len(prompts))},
+		"llama-3.1-405b":  {Scores: randomScores(rng, len(prompts))},
+	}
+	if err := middleware.WriteResults(suiteName, results); err != nil {
+		return fmt.Errorf("write results: %w", err)
+	}
+
+	// Populate masked API keys for a more representative Settings screenshot.
+	_ = middleware.SetAPIKey("openai", "sk-demo-openai-1234")
+	_ = middleware.SetAPIKey("anthropic", "sk-demo-anthropic-5678")
+	_ = middleware.SetAPIKey("google", "sk-demo-google-9012")
+	_ = middleware.SetSetting("auto_evaluate_new_models", "true")
+	_ = middleware.SetSetting("cost_alert_threshold_usd", "25.0")
+	_ = middleware.SetSetting("python_service_url", "http://localhost:8001")
+
+	// Make timestamps slightly more realistic in UI components that show recent times.
+	_ = middleware.SetSetting("demo_seeded_at", time.Now().UTC().Format(time.RFC3339))
+
+	return nil
+}
+
+func randomScores(rng *rand.Rand, n int) []int {
+	choices := []int{0, 20, 40, 60, 80, 100}
+	scores := make([]int, n)
+	for i := 0; i < n; i++ {
+		// bias toward mid/high scores so the grid looks interesting
+		roll := rng.Intn(100)
+		switch {
+		case roll < 5:
+			scores[i] = choices[0]
+		case roll < 15:
+			scores[i] = choices[1]
+		case roll < 35:
+			scores[i] = choices[2]
+		case roll < 60:
+			scores[i] = choices[3]
+		case roll < 85:
+			scores[i] = choices[4]
+		default:
+			scores[i] = choices[5]
+		}
+	}
+	return scores
+}

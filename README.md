@@ -11,6 +11,7 @@ A benchmarking platform for evaluating and comparing Large Language Models with 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [UI Tour](#ui-tour)
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
@@ -33,6 +34,44 @@ make run
 ```
 
 Access at http://localhost:8080
+
+## UI Tour
+
+Screenshots are auto-generated from a seeded demo database (Playwright + headless Chromium):
+
+```bash
+npm install
+npm run screenshots:install
+npm run screenshots
+```
+
+### Results (Arena Grid)
+
+![Results](assets/ui-results.png)
+
+### Prompts (List + Editor)
+
+![Prompts](assets/ui-prompts.png)
+
+### Edit Prompt (Markdown + Metadata)
+
+![Edit Prompt](assets/ui-edit-prompt.png)
+
+### Profiles
+
+![Profiles](assets/ui-profiles.png)
+
+### Evaluate (Manual Scoring)
+
+![Evaluate](assets/ui-evaluate.png)
+
+### Stats (Analytics)
+
+![Stats](assets/ui-stats.png)
+
+### Settings (Encrypted Keys + Automation)
+
+![Settings](assets/ui-settings.png)
 
 ## Features
 

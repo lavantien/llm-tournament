@@ -35,7 +35,5 @@ llm-tournament.exe
 *.out
 coverage.*
 node_modules/
-package.json
-package-lock.json
 nul
 $coverageFile

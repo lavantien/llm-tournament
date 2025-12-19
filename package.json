@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "playwright": "1.57.0",
+    "tdd-guard-jest": "^0.1.4",
+    "tdd-guard-vitest": "^0.1.6"
+  },
+  "scripts": {
+    "screenshots:install": "npx playwright install chromium",
+    "screenshots": "node tools/screenshots/capture.mjs"
+  }
+}
