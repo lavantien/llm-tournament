@@ -23,6 +23,12 @@
   --radius: 14px;
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
 
+  --shell-pad: 12px;
+  --shell-gap: 12px;
+  --topbar-height: 66px;
+  --sidebar-width: 220px;
+  --content-max-width: 1320px;
+
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo,
     monospace;
   --sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
@@ -210,10 +216,10 @@ a:hover {
 .arena-shell {
   min-height: 100%;
   display: grid;
-  grid-template-columns: 280px 1fr;
-  grid-template-rows: 78px 1fr;
-  gap: 14px;
-  padding: 14px;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+  gap: var(--shell-gap);
+  padding: var(--shell-pad);
 }
 
 .arena-shell-solo {
@@ -240,15 +246,16 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  min-height: var(--topbar-height);
+  padding: 10px 12px;
 }
 
 .arena-sidebar {
   grid-row: 2 / -1;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .nav-item {
@@ -290,6 +297,9 @@ a:hover {
   grid-row: 2 / -1;
   overflow: auto;
   padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* ---- Surfaces ---- */
@@ -428,6 +438,8 @@ input[type="text"],
 input[type="password"],
 input[type="number"],
 textarea,
+select,
+input[type="file"],
 .form-control,
 .search-input {
   width: 100%;
@@ -438,6 +450,31 @@ textarea,
   padding: 10px 12px;
   outline: none;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 36px;
+  background-image: linear-gradient(
+      45deg,
+      transparent 50%,
+      rgba(244, 248, 255, 0.55) 50%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(244, 248, 255, 0.55) 50%,
+      transparent 50%
+    );
+  background-position: calc(100% - 16px) calc(50% + 1px),
+    calc(100% - 11px) calc(50% + 1px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+input[type="file"] {
+  padding: 8px 10px;
 }
 
 textarea {
@@ -452,10 +489,107 @@ textarea::placeholder {
 
 input:focus,
 textarea:focus,
+select:focus,
+input[type="file"]:focus,
 .form-control:focus,
 .search-input:focus {
   border-color: rgba(25, 247, 255, 0.25);
   box-shadow: 0 0 0 3px rgba(25, 247, 255, 0.16);
+}
+
+/* ---- Utility layout helpers used by templates ---- */
+.margin-right-5 {
+  margin-right: 5px;
+}
+
+.flex-form,
+.filter-form,
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flex-form input[type="text"] {
+  width: 300px;
+  max-width: 100%;
+}
+
+.search-form .search-input {
+  width: 320px;
+  max-width: 100%;
+}
+
+.filter-form select {
+  width: 240px;
+  max-width: 100%;
+}
+
+.filter-container form,
+.file-import-form,
+.results-management {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-container select,
+.sticky-header select,
+.sticky-footer select {
+  width: 240px;
+  max-width: 100%;
+}
+
+.file-import-form input[type="file"] {
+  width: 340px;
+  max-width: 100%;
+}
+
+.sticky-header,
+.sticky-footer,
+.title-row {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sticky-header textarea,
+.sticky-footer textarea {
+  width: 320px;
+  max-width: 100%;
+}
+
+.title-row .filter-container,
+.title-row .search-container {
+  display: flex;
+  flex: 1 1 340px;
+}
+
+.title-row .title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 1 auto;
+}
+
+.title-row .search-container {
+  justify-content: flex-end;
+}
+
+.arena-main > .sticky-header,
+.arena-main > .title-row,
+.arena-main > .sticky-footer,
+.arena-main > .evaluation-form,
+.arena-main > .container,
+.arena-main > ul {
+  width: min(var(--content-max-width), 100%);
+  margin: 0 auto;
 }
 
 /* ---- Tables ---- */
@@ -524,11 +658,16 @@ tbody tr:hover {
 /* ---- Scroll buttons ---- */
 .scroll-buttons {
   position: fixed;
-  right: 16px;
+  left: 26px;
   bottom: 16px;
   display: grid;
   gap: 8px;
   z-index: 1000;
+}
+
+.arena-shell-solo .scroll-buttons {
+  left: auto;
+  right: 16px;
 }
 
 .scroll-button {

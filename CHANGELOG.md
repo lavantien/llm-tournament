@@ -2,6 +2,18 @@
 
 All notable changes are documented in this file.
 
+## [v3.1] - 2025-12-19
+
+### Added
+- **Arena UI CSS regression tests:** Basic tests to prevent layout regressions (sidebar width variable, toolbar flex layouts, dropdown + file input styling, and scroll button anchoring).
+- **UI Tour screenshot automation:** A Playwright-based capture script (`npm run screenshots`) to regenerate the README UI Tour screenshots deterministically.
+
+### Changed
+- **More compact Arena layout:** Thinner left navigation rail and tighter top bar spacing to prioritize content.
+- **Toolbar layout fixes:** Sticky headers/footers and title/tool rows now compact into flex rows and only wrap when needed.
+- **Styled dropdowns and file inputs:** `<select>` and `input[type="file"]` now match the Arena theme instead of rendering unstyled defaults.
+- **Scroll buttons repositioned:** “↑/↓” buttons use the left sidebar space on shell pages (and stay bottom-right on solo pages).
+
 ## [v3.0] - 2025-12-19
 
 ### Added
