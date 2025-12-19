@@ -79,9 +79,95 @@ Go Server (:8080)              Python Service (:8001)
 └── SQLite DB
 ```
 
+**High-Level System Context**
+```mermaid
+graph LR
+    subgraph Client Side
+        Browser["User Browser\n(HTML/JS/Templates)"]
+    end
+
+    subgraph Server Side
+        subgraph Go Monolith
+            HTTP_WS["Go HTTP & WebSocket Server"]
+        end
+        SQLite[("SQLite DB\n(Single Source of Truth)")]
+        PythonService["Python FastAPI\n(Judge Service)"]
+    end
+
+    Browser -- "HTTP Requests / WebSocket" --> HTTP_WS
+    HTTP_WS -- "Reads/Writes Data" --> SQLite
+    HTTP_WS -- "HTTP Requests (Scoring)" --> PythonService
+    PythonService -- "Returns Scores" --> HTTP_WS
+
+    style SQLite fill:#f9f,stroke:#333,stroke-width:2px
+    style PythonService fill:#ff9,stroke:#333,stroke-width:2px
+    style HTTP_WS fill:#ccf,stroke:#333,stroke-width:2px
+```
+
+**Layered Architecture Flow**
+```mermaid
+graph TD
+    subgraph "Go Monolith Layers"
+        Surface["1. Surface Layer\n(Templates: *.html, *.js)"]
+        Handlers["2. HTTP Handlers\n(handlers/*.go)"]
+        Middleware["3. Middleware Layer\n(DB, State, Auth, Encryption)\n(middleware/*.go)"]
+        Evaluator["4. Evaluator Layer\n(Async Jobs, Python Client)\n(evaluator/*.go)"]
+    end
+
+    DB[("SQLite Database")]
+    ExternalJudge["Python FastAPI Judge Service\n(python_service/)"]
+
+    %% Main Flow based on text description
+    Surface --> Handlers
+    Handlers --> Middleware
+    Middleware --> Evaluator
+
+    %% Data Access
+    Middleware <-->|"Read/Write Schema"| DB
+    Evaluator -..->|"Updates Job Status/Results"| Middleware
+
+    %% External Call
+    Evaluator -- "HTTP Calls for Scoring" --> ExternalJudge
+```
+
 Request Flow: User → Handlers → Middleware → SQLite → WebSocket Broadcast
 
 Evaluation Flow: Job Queue → Python Service → AI Judges → Consensus → Score Update
+
+Based on the image provided, here is the content transcribed into Markdown format.
+
+### Bird’s-Eye
+
+* This is a Go monolith (HTTP + WebSocket) with SQLite as the single source of truth, plus an optional Python FastAPI “judge service” for automated scoring.
+* The repo is organized by “layer”: surface (templates)  HTTP handlers  middleware (DB/state/render/ws/encryption)  evaluator (async jobs + Python client)  `python_service` (judge logic).
+* The fastest “index” is the URL  handler map in `main.go:60`, and the DB schema is centralized in `middleware/database.go:58`.
+
+### Where To Look In 5 Seconds
+
+* **HTTP routes / feature entrypoint:** `main.go:60` (every user-visible feature starts as a path here).
+* **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
+* **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `settings`, `evaluation_jobs`, `evaluation_history`, etc.).
+* **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/settings/suites/evaluation).
+* **WebSocket messages:** `middleware/socket.go:33` (server-side `/ws`, broadcasting and client tracking).
+* **Automated evaluation pipeline:** `handlers/evaluation.go:25`  `evaluator/job_queue.go:11` (workers/jobs)  `evaluator/litellm_client.go:12` (HTTP to Python)  `python_service/main.py:87` (FastAPI endpoints).
+* **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `evaluator/*_test.go`, `integration/prompts_integration_test.go`.
+
+### Common Feature Map
+
+* **Prompt suites:** `main.go:76`  `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
+* **Prompts CRUD/order:** `main.go:62`/`main.go:66`/`main.go:73`  `handlers/prompt.go:1` (+ reorder over WS in `middleware/socket.go:71`)
+* **Models CRUD:** `main.go:63`  `handlers/models.go`
+* **Manual scoring/results UI:** `main.go:80`/`main.go:81`  `handlers/results.go` (+ `templates/results.html`)
+* **Stats/analytics:** `main.go:93`  `handlers/stats.go` (+ `templates/stats.html`)
+* **Settings + encrypted keys:** `main.go:95`  `handlers/settings.go` (+ crypto in `middleware/encryption.go:13`)
+* **Automated evaluation:** `main.go:98`  `handlers/evaluation.go:25` (jobs stored in `evaluation_jobs` in `middleware/database.go:115`)
+
+### Search Cheats (copy/paste)
+
+* Find a feature by URL: `rg -n '"/evaluate/all"|"/results"|"/settings"' main.go`
+* Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
+* Find everything touching a table: `rg -n "evaluation_jobs|evaluation_history|model_responses" -S .`
+* Find a websocket message type: `rg -n "update_prompts_order|results" middleware/templates -S`
 
 ## Tech Stack
 
