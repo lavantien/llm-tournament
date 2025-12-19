@@ -109,3 +109,51 @@ func TestArenaCSS_ScrollButtonsUseSidebarSpace(t *testing.T) {
 	}
 }
 
+func TestArenaCSS_StatsChartsHaveUsableHeight(t *testing.T) {
+	t.Helper()
+
+	cssBytes, err := os.ReadFile("templates/arena.css")
+	if err != nil {
+		t.Fatalf("read templates/arena.css: %v", err)
+	}
+	css := string(cssBytes)
+
+	wrapper := cssBlock(t, css, ".chart-wrapper")
+	if !(strings.Contains(wrapper, "min-height:") || strings.Contains(wrapper, "height:")) {
+		t.Fatalf("templates/arena.css .chart-wrapper must define a height so Chart.js can render visible bars")
+	}
+}
+
+func TestArenaCSS_SidebarFurtherCompacted(t *testing.T) {
+	t.Helper()
+
+	cssBytes, err := os.ReadFile("templates/arena.css")
+	if err != nil {
+		t.Fatalf("read templates/arena.css: %v", err)
+	}
+	css := string(cssBytes)
+
+	if !strings.Contains(css, "--sidebar-width: 140px") {
+		t.Fatalf("templates/arena.css must further reduce --sidebar-width (expected 140px)")
+	}
+}
+
+func TestArenaCSS_EvaluatePageCentersScoreAndActions(t *testing.T) {
+	t.Helper()
+
+	cssBytes, err := os.ReadFile("templates/arena.css")
+	if err != nil {
+		t.Fatalf("read templates/arena.css: %v", err)
+	}
+	css := string(cssBytes)
+
+	scoreButtons := cssBlock(t, css, ".evaluation-form .score-buttons")
+	if !strings.Contains(scoreButtons, "justify-content: center") {
+		t.Fatalf("templates/arena.css .evaluation-form .score-buttons must center score selection")
+	}
+
+	evalButtons := cssBlock(t, css, ".evaluation-buttons")
+	if !strings.Contains(evalButtons, "justify-content: center") {
+		t.Fatalf("templates/arena.css .evaluation-buttons must be centered")
+	}
+}

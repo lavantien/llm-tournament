@@ -26,7 +26,7 @@
   --shell-pad: 12px;
   --shell-gap: 12px;
   --topbar-height: 66px;
-  --sidebar-width: 220px;
+  --sidebar-width: 140px;
   --content-max-width: 1320px;
 
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo,
@@ -101,6 +101,19 @@
   align-items: center;
   justify-content: flex-start;
   margin-bottom: 10px;
+}
+
+.evaluation-form .score-buttons {
+  justify-content: center;
+}
+
+.evaluation-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .score-button {
@@ -264,15 +277,16 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 10px;
+  padding: 8px 8px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(244, 248, 255, 0.64);
   text-decoration: none;
-  margin: 8px 6px;
+  margin: 6px 4px;
   background: rgba(0, 0, 0, 0.14);
   transition: transform 120ms ease, border-color 140ms ease, background 140ms ease,
     color 140ms ease;
+  font-size: 13px;
 }
 
 .nav-item:hover {
@@ -524,6 +538,25 @@ input[type="file"]:focus,
 .filter-form select {
   width: 240px;
   max-width: 100%;
+}
+
+.chart-container {
+  height: 52vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 340px;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .filter-container form,
