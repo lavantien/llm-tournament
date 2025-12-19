@@ -36,7 +36,8 @@ CGO_ENABLED=1 go test ./... -v -race -cover  # All tests with race detection
 
 ### Parallel Exploration (Task Tool)
 
-Use for: uncertain decisions, codebase surveys, voting on approaches (N=3).
+Use for: uncertain decisions, codebase surveys, implementing and voting on approaches, subtasks (N=2-5).
 
+- Use Git Worktree if necessary.
 - Paraphrase prompts for each agent to ensure independence.
 - Prefer simpler, more testable proposals when voting.
