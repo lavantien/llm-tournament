@@ -19,7 +19,7 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: test run clean all build buildwindows buildlinux setenv migrate dedup aiderupdate aiderinstalllinux aiderinstallwindows update-coverage
+.PHONY: test run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage
 
 all: test
 
@@ -44,16 +44,10 @@ buildlinux:
 	CGO_ENABLED=1 go build -o ./release/llm-tournament .
 
 setenv:
-	go env -w CGO_ENABLED=1
-
-migrate:
-	$(CGO_PREFIX) go run main.go --migrate-to-sqlite
-
-dedup:
-	$(CGO_PREFIX) go run main.go --cleanup-duplicates
+        go env -w CGO_ENABLED=1
 
 aiderinstalllinux:
-	curl -LsSf https://aider.chat/install.sh | sh
+        curl -LsSf https://aider.chat/install.sh | sh
 
 aiderinstallwindows:
 	powershell -ExecutionPolicy ByPass -c "irm https://aider.chat/install.ps1 | iex"

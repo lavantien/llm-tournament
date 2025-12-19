@@ -1,293 +1,100 @@
-# Automated LLM Evaluation - Setup Guide
+# Automated Evaluation Setup
 
-## Overview
+The LLM Tournament Arena supports **optional automated evaluation** using a Python FastAPI “judge service” (`python_service/`). The Go server stays the source of truth (SQLite + SSR templates + WebSockets); the Python service is only used for scoring.
 
-The LLM Tournament Arena includes automated evaluation powered by AI judges (Claude Opus 4.5, GPT-5.2, Gemini 3 Pro). This guide covers installation, configuration, and usage.
+## What You Get
+- Multi-judge consensus scoring (default judges: Claude Opus 4.5, GPT-5.2, Gemini 3 Pro)
+- Async evaluation jobs with progress + cost updates in the UI
+- Encrypted API key storage (AES-256-GCM) via `ENCRYPTION_KEY`
 
 ## Prerequisites
+- Go 1.24+ with a working CGO toolchain (SQLite requires CGO)
+- Python 3.8+
+- An API key for at least one provider (Anthropic / OpenAI / Google)
 
-- Python 3.8+ (for AI judge service)
-- Go 1.24+ with CGO_ENABLED=1 (for main server)
-- API keys for at least one AI provider:
-  - Anthropic (Claude)
-  - OpenAI (GPT)
-  - Google (Gemini)
+## Quick Start (Local)
 
-## 🚀 Installation
-
-### 1. Install Python Dependencies
+### 1) Install Python Dependencies
 
 ```bash
 cd python_service
 pip install -r requirements.txt
 ```
 
-### 2. Generate Encryption Key
+### 2) Set `ENCRYPTION_KEY` (64 hex chars / 32 bytes)
+
+macOS/Linux:
 
 ```bash
-# Windows (PowerShell)
-$key = -join ((0..31) | ForEach-Object { '{0:x2}' -f (Get-Random -Maximum 256) })
-echo $key
-
-# Linux/Mac
-openssl rand -hex 32
+export ENCRYPTION_KEY=$(openssl rand -hex 32)
 ```
 
-### 3. Set Environment Variables
+PowerShell:
 
-```bash
-# Windows
-set ENCRYPTION_KEY=<your-32-byte-hex-key>
-
-# Linux/Mac
-export ENCRYPTION_KEY=<your-32-byte-hex-key>
+```powershell
+$env:ENCRYPTION_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
 ```
 
-### 4. Start Python Service
+### 3) Start the Python Judge Service (Terminal 1)
 
 ```bash
 cd python_service
 python main.py
 ```
 
-Expected output:
-```
-INFO:     Started server process
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8001
-```
-
-### 5. Start Go Server (in new terminal)
+Health check:
 
 ```bash
-CGO_ENABLED=1 go run main.go
-```
-
-Expected output:
-```
-Initializing database...
-Initializing evaluator...
-Evaluator initialized with Python service URL: http://localhost:8001
-Starting the server...
-Server is listening on :8080
-```
-
-### 6. Configure API Keys
-
-1. Open browser: `http://localhost:8080/settings`
-2. Enter your API keys:
-   - **Anthropic API Key** (for Claude Opus 4.5)
-   - **OpenAI API Key** (for GPT-5.2)
-   - **Google API Key** (for Gemini 3 Pro)
-3. Set cost alert threshold (default: $100)
-4. Save settings
-
----
-
-## 📋 Usage Guide
-
-### Triggering Evaluations
-
-The evaluation system uses AI judges to score model responses. Before triggering an evaluation, ensure you have:
-1. Added models to your suite
-2. Created prompts with the appropriate type (`objective` or `creative`)
-3. Configured API keys in settings
-
-#### 1. Evaluate All
-- **Button**: "Evaluate All" (top-right of Results page)
-- **Action**: Evaluates all models × all prompts in current suite
-- **Endpoint**: `POST /evaluate/all`
-- **Cost Estimate**: Shown before execution
-
-#### 2. Evaluate Per-Model
-- **Button**: "Evaluate" (in model row header)
-- **Action**: Evaluates one model × all prompts
-- **Endpoint**: `POST /evaluate/model?id={model_id}`
-
-#### 3. Evaluate Per-Prompt
-- **Button**: "Evaluate" (in prompt column header)
-- **Action**: Evaluates all models × one prompt
-- **Endpoint**: `POST /evaluate/prompt?id={prompt_id}`
-
-#### 4. Auto-Evaluate New Models
-- **Setting**: Enable in `/settings`
-- **Action**: Automatically evaluates when new models are added
-
-### Monitoring Progress
-
-Progress updates are broadcast via WebSocket:
-
-```javascript
-// Client-side (already implemented in templates)
-ws.onmessage = (event) => {
-  const msg = JSON.parse(event.data);
-
-  switch (msg.type) {
-    case 'evaluation_progress':
-      // Update progress bar: msg.data.current / msg.data.total
-      // Show cost: msg.data.cost
-      break;
-
-    case 'evaluation_completed':
-      // Show success message
-      // Final cost: msg.data.final_cost
-      break;
-
-    case 'evaluation_failed':
-      // Show error: msg.data.error
-      break;
-
-    case 'cost_alert':
-      // Warn user: threshold exceeded
-      break;
-  }
-};
-```
-
----
-
-## 🧪 Testing the System
-
-### 1. Health Check
-
-```bash
-# Test Python service
 curl http://localhost:8001/health
-
-# Expected: {"status":"healthy","service":"llm-evaluation"}
 ```
 
-### 2. Cost Estimation
+### 4) Start the Go Server (Terminal 2)
 
 ```bash
-curl -X POST http://localhost:8001/estimate_cost \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "What is 2+2?",
-    "response": "4",
-    "solution": "4",
-    "type": "objective",
-    "judges": ["claude_opus_4.5", "gpt_5.2", "gemini_3_pro"]
-  }'
-
-# Expected: {"estimated_cost_usd":0.05,"breakdown":{...}}
+CGO_ENABLED=1 go run .
 ```
 
-### 3. Single Evaluation (with fake keys for testing)
+Open the app:
+- http://localhost:8080/settings (configure and test API keys)
+- http://localhost:8080/results (run evaluations from the UI)
 
-```bash
-curl -X POST http://localhost:8001/evaluate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "What is the capital of France?",
-    "response": "Paris is the capital of France.",
-    "solution": "Paris",
-    "type": "objective",
-    "judges": ["claude_opus_4.5"],
-    "api_keys": {
-      "api_key_anthropic": "your-api-key-here"
-    }
-  }'
-```
+## How Evaluation Works
+- **Evaluate All:** `POST /evaluate/all`
+- **Evaluate a model:** `POST /evaluate/model?id={model_id}`
+- **Evaluate a prompt:** `POST /evaluate/prompt?id={prompt_id}`
+- **Progress:** `GET /evaluation/progress?id={job_id}` (also pushed via WebSocket)
+- **Cancel:** `POST /evaluation/cancel?id={job_id}`
 
-### 4. Test Encryption
+Prompts can be `objective` (semantic matching) or `creative` (quality assessment). The UI shows a cost estimate before running jobs.
 
-```bash
-# In Go code or via API:
-# middleware.EncryptAPIKey("sk-test-key-12345")
-# Expected: Base64-encoded encrypted string
+## Environment Variables
 
-# middleware.DecryptAPIKey(<encrypted-string>)
-# Expected: "sk-test-key-12345"
-```
+Go server:
+- `CGO_ENABLED=1` (required for SQLite)
+- `ENCRYPTION_KEY` (64 hex chars / 32 bytes; required for encrypted API keys / automated evaluation)
 
----
+Python judge service:
+- `HOST` (default `0.0.0.0`)
+- `PORT` (default `8001`)
 
-## 🔒 Security Notes
+## Security Notes
+- Never commit `ENCRYPTION_KEY` or provider API keys.
+- Use HTTPS in production and restrict CORS (the judge service is permissive by default for local dev).
+- Cost varies by provider/model; the UI tracks spend and supports alert thresholds.
 
-### API Key Encryption
-- **Algorithm**: AES-256-GCM
-- **Key Source**: `ENCRYPTION_KEY` environment variable (32-byte hex = 64 characters)
-- **Storage**: Encrypted values in `settings` table
-- **Display**: Masked in UI (shows only last 4 characters)
+## Troubleshooting
 
-### Best Practices
-1. **Never commit** `ENCRYPTION_KEY` to version control
-2. **Rotate keys** periodically (requires re-encrypting all stored keys)
-3. **Use HTTPS** in production
-4. **Set restrictive CORS** in production (currently allows all origins for dev)
-5. **Monitor costs** via the cost tracking dashboard
+### `ENCRYPTION_KEY` errors
+If you see an error like “`ENCRYPTION_KEY environment variable not set`” or “must be 64 hex characters”, re-generate it and restart the Go server.
 
-**Cost Note**: Each evaluation costs approximately $0.05 (using 3 AI judges). Cost estimates are shown before execution, and you can set alert thresholds in settings.
+### Python service unavailable / evaluations fail immediately
+- Confirm the service is running and healthy: `curl http://localhost:8001/health`
+- Check Python logs for provider errors (invalid keys, rate limits, etc.)
+- Confirm your keys in http://localhost:8080/settings and use the “Test API Key” buttons
 
----
+### CGO / SQLite build failures
+Install a working C compiler toolchain (CGO requires it to build SQLite support).
 
-## 🐛 Troubleshooting
-
-### Python Service Won't Start
-
-```bash
-# Check port availability
-netstat -an | grep 8001
-
-# Check Python version (requires 3.8+)
-python --version
-
-# Reinstall dependencies
-pip install --force-reinstall -r requirements.txt
-```
-
-### Encryption Key Error
-
-```
-Error: ENCRYPTION_KEY environment variable not set
-```
-
-**Solution**: Set the 64-character hex key:
-```bash
-export ENCRYPTION_KEY=$(openssl rand -hex 32)
-```
-
-### Database Migration Issues
-
-```bash
-# Backup first
-cp data/tournament.db data/tournament.db.backup
-
-# Check schema
-sqlite3 data/tournament.db ".schema"
-
-# Manually add missing columns if needed
-sqlite3 data/tournament.db "ALTER TABLE prompts ADD COLUMN type TEXT NOT NULL DEFAULT 'objective';"
-```
-
-### WebSocket Connection Failed
-
-```
-Error: WebSocket connection closed unexpectedly
-```
-
-**Check**:
-1. Go server is running
-2. No firewall blocking :8080
-3. Browser console for errors
-4. Server logs for connection issues
-
-### Evaluation Fails with "API key invalid"
-
-**Steps**:
-1. Go to `/settings`
-2. Re-enter API keys
-3. Click "Test API Key" buttons
-4. Check Python service logs for detailed error
-
----
-
-## 📚 Additional Resources
-
-- **Main Documentation**: [README.md](README.md) - Complete feature list and architecture
-- **Developer Reference**: [CLAUDE.md](CLAUDE.md) - Development patterns, database schema, testing
-- **API Endpoints**: See README.md for complete endpoint reference
-
-For issues or questions, please refer to the troubleshooting section above or check the main documentation.
+## Additional Resources
+- [README.md](README.md) (UI tour, architecture, endpoints)
+- [CLAUDE.md](CLAUDE.md) (developer notes)

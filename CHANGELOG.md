@@ -2,6 +2,14 @@
 
 All notable changes are documented in this file.
 
+## [v3.3] - 2025-12-20
+
+### Fixed
+- **Stale tooling references:** Removed dead Makefile targets that referenced legacy JSON→SQLite tooling.
+
+### Changed
+- **Documentation consistency:** Updated `AUTOMATED_EVALUATION_SETUP.md` to match the README’s current commands and style.
+
 ## [v3.2] - 2025-12-20
 
 ### Fixed

@@ -4,19 +4,27 @@
 [![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Coverage](./coverage-badge.svg)]()
+[![Coverage](./coverage-badge.svg)](./coverage.html)
 
-A benchmarking platform for evaluating and comparing Large Language Models with automated and manual evaluation workflows.
+A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with both manual scoring and optional automated evaluation.
+
+**Highlights**
+- SQLite-backed, single-binary Go server with SSR templates + WebSockets (`:8080`)
+- Prompt suites, profiles, models, results grid, and analytics
+- Optional Python FastAPI “judge service” for automated evaluation (`:8001`)
+- Encrypted API key storage (AES-256-GCM) via `ENCRYPTION_KEY`
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
+- [Docs](#docs)
 - [UI Tour](#ui-tour)
 - [Features](#features)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
 - [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
 - [API Reference](#api-reference)
 - [Project Structure](#project-structure)
 - [Environment Variables](#environment-variables)
@@ -27,13 +35,28 @@ A benchmarking platform for evaluating and comparing Large Language Models with 
 ```bash
 git clone https://github.com/lavantien/llm-tournament.git
 cd llm-tournament
-make setenv
-make migrate
-make dedup
 make run
 ```
 
-Access at http://localhost:8080
+Open http://localhost:8080 (data is stored in `data/tournament.db` by default).
+
+No `make`? Run directly:
+
+```bash
+CGO_ENABLED=1 go run .
+```
+
+PowerShell:
+
+```powershell
+$env:CGO_ENABLED=1; go run .
+```
+
+## Docs
+
+- Automated evaluation setup: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
+- Design notes: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
+- Changelog / release notes: [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES_v3.3.md](RELEASE_NOTES_v3.3.md)
 
 ## UI Tour
 
@@ -79,7 +102,7 @@ npm run screenshots
 - Multi-judge consensus scoring using Claude Opus 4.5, GPT-5.2, and Gemini 3 Pro with extended thinking
 - Dual evaluation modes: objective (semantic matching) and creative (quality assessment)
 - Async job queue with 3 concurrent workers and job persistence
-- Real-time progress tracking and cost management (approx $0.05 per evaluation)
+- Real-time progress tracking and cost management (provider pricing varies)
 - AES-256-GCM encrypted API key storage
 - Complete audit trail with judge reasoning and confidence scores
 
@@ -221,40 +244,68 @@ Security: XSS sanitization, CORS protection, input validation, encrypted API key
 ### Prerequisites
 - Go 1.24+
 - Python 3.8+ (for automated evaluation)
-- Make, Git, SQLite, GCC
+- A C toolchain for CGO/SQLite (e.g., gcc/clang; on Windows install MinGW-w64/MSYS2)
+- Git
+- Make (optional, for convenience targets)
+- Node.js (only if you want to regenerate UI screenshots)
 
-### Manual Evaluation Mode
+### Manual Evaluation (Go-only)
 ```bash
-# Development
-./dev.sh
+# Run from source
+make run
 
-# Production
-make setenv
-make migrate
-make dedup
-make build
-./release/llm-tournament
+# Or without make
+CGO_ENABLED=1 go run .
 ```
 
-### Automated Evaluation Mode
+Build a binary:
+
 ```bash
-# Install Python dependencies
+make build
+```
+
+Run it:
+- Linux/macOS: `./release/llm-tournament`
+- Windows (PowerShell): `.\release\llm-tournament.exe`
+
+One-time migration (only if upgrading old result formats):
+
+```bash
+CGO_ENABLED=1 go run . --migrate-results
+```
+
+### Automated Evaluation (Go + Python)
+Install Python dependencies:
+
+```bash
 cd python_service
 pip install -r requirements.txt
-
-# Generate encryption key
-export ENCRYPTION_KEY=$(openssl rand -hex 32)  # Linux/Mac
-set ENCRYPTION_KEY=<generated-key>             # Windows
-
-# Start Python service (terminal 1)
-python main.py  # Port 8001
-
-# Start Go server (terminal 2)
-cd ..
-CGO_ENABLED=1 go run main.go  # Port 8080
-
-# Configure API keys at http://localhost:8080/settings
 ```
+
+Generate and export `ENCRYPTION_KEY` (64 hex chars / 32 bytes):
+
+```bash
+export ENCRYPTION_KEY=$(openssl rand -hex 32)
+```
+
+PowerShell:
+
+```powershell
+$env:ENCRYPTION_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
+```
+
+Start Python service (terminal 1):
+```bash
+python main.py  # Port 8001
+```
+
+Start Go server (terminal 2):
+```bash
+cd ..
+CGO_ENABLED=1 go run .  # Port 8080
+```
+
+Configure API keys at http://localhost:8080/settings
 
 Complete setup guide: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
 
@@ -262,6 +313,7 @@ Complete setup guide: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP
 
 ```bash
 # Run all tests with TDD-guard, race detection, and coverage
+# (requires `tdd-guard-go` on your PATH)
 make test
 
 # Run tests with verbose output (bypasses TDD-guard)
@@ -273,6 +325,14 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 # Test Python service health
 curl http://localhost:8001/health
 ```
+
+## Troubleshooting
+
+- `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO requires it for SQLite).
+- `ENCRYPTION_KEY environment variable not set`: set `ENCRYPTION_KEY` before using encrypted API keys / automated evaluation.
+- Automated evaluation stuck/unavailable: confirm the Python service is running and healthy (`GET /health` on `:8001`).
+- Port already in use: stop the conflicting process or run on different ports (Python: `PORT`; Go server currently listens on `:8080` in `main.go`).
+- DB issues: default DB is `data/tournament.db`; you can point to another file with `--db <path>`.
 
 ## API Reference
 
@@ -305,17 +365,22 @@ llm-tournament/
 ├── evaluator/           # Async job queue, LLM client, consensus algorithm
 ├── python_service/      # FastAPI AI judge service (3 LLM judges)
 ├── templates/           # HTML, CSS, JavaScript
+├── assets/              # UI screenshots and static images
 └── data/                # SQLite database
-
-Test Coverage: 79.1% (17,417 lines across 21 test files)
 ```
 
 ## Environment Variables
 
 - CGO_ENABLED=1 (required for SQLite)
-- ENCRYPTION_KEY (64-char hex for API key encryption, required for automated evaluation)
+- ENCRYPTION_KEY (64-char hex / 32 bytes; required for encrypted API key storage and automated evaluation)
 
-Generate encryption key: openssl rand -hex 32
+Python judge service (optional):
+- HOST (default `0.0.0.0`)
+- PORT (default `8001`)
+
+Generate encryption key:
+- `openssl rand -hex 32`
+- `python -c "import secrets; print(secrets.token_hex(32))"`
 
 See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md) for detailed configuration.
 
