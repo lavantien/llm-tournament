@@ -173,8 +173,6 @@ Request Flow: User → Handlers → Middleware → SQLite → WebSocket Broadcas
 
 Evaluation Flow: Job Queue → Python Service → AI Judges → Consensus → Score Update
 
-Based on the image provided, here is the content transcribed into Markdown format.
-
 ### Bird’s-Eye
 
 * This is a Go monolith (HTTP + WebSocket) with SQLite as the single source of truth, plus an optional Python FastAPI “judge service” for automated scoring.
