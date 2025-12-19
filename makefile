@@ -44,10 +44,10 @@ buildlinux:
 	CGO_ENABLED=1 go build -o ./release/llm-tournament .
 
 setenv:
-        go env -w CGO_ENABLED=1
+	go env -w CGO_ENABLED=1
 
 aiderinstalllinux:
-        curl -LsSf https://aider.chat/install.sh | sh
+    curl -LsSf https://aider.chat/install.sh | sh
 
 aiderinstallwindows:
 	powershell -ExecutionPolicy ByPass -c "irm https://aider.chat/install.ps1 | iex"

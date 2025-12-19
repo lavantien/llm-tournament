@@ -444,7 +444,11 @@ func (m *MockDataStore) SetCurrentSuite(name string) error {
 	if m.SetCurrentSuiteFunc != nil {
 		return m.SetCurrentSuiteFunc(name)
 	}
-	return m.Err
+	if m.Err != nil {
+		return m.Err
+	}
+	m.CurrentSuite = name
+	return nil
 }
 
 // SuiteExists returns mock result
