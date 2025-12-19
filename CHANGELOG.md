@@ -2,6 +2,15 @@
 
 All notable changes are documented in this file.
 
+## [v3.2] - 2025-12-20
+
+### Fixed
+- **Stats chart rendering:** Ensured the Chart.js container has a stable height so stacked bars render correctly.
+
+### Changed
+- **Navigation rail width:** Further reduced the left sidebar width to free up content space.
+- **Manual evaluation layout:** Centered score selection and action controls for a more balanced layout.
+
 ## [v3.1] - 2025-12-19
 
 ### Added
