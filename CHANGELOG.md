@@ -1,6 +1,23 @@
 # Changelog
 
-All notable changes for version v2.1 are documented in this file.
+All notable changes are documented in this file.
+
+## [v3.0] - 2025-12-19
+
+### Added
+- **Automated LLM evaluation (optional):** Multi-judge consensus scoring (via a Python FastAPI judge service) with job persistence, WebSocket progress, cost tracking, and an audit trail. See `AUTOMATED_EVALUATION_SETUP.md` and `python_service/`.
+- **Encrypted API key storage:** AES-256-GCM encrypted key storage in SQLite with UI masking (configured via `ENCRYPTION_KEY`).
+- **Arena UI overhaul:** A shared “Neon Glass Foundry” visual system + layout shell (`templates/arena.css`) applied across templates. See `DESIGN_CONCEPT.md` and `DESIGN_ROLLOUT.md`.
+- **Coverage automation:** Coverage badge generation plus update scripts (`scripts/update-badge.sh`, `scripts/update-badge.ps1`) and `make update-coverage`.
+
+### Changed
+- **UI layout:** Templates standardized around a shared top bar + left rail (Arena shell), while preserving SSR Go templates and zero build tooling.
+- **Evaluation workflow:** Added automated evaluation endpoints and async processing while keeping manual scoring fully supported.
+- **Testability:** Refactors (e.g., handler dependency injection) to enable broader unit and integration testing.
+
+### Removed
+- **Legacy JSON migration tooling:** Removed the `v2.0` JSON→SQLite migration/remigration/dedup code paths and CLI flags.
+- **Gemini CLI support:** Removed Gemini CLI integration.
 
 ## [v2.1] - 2025-03-16
 
