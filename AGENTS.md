@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
 ## Non-Negotiables
 
-- **TDD is mandatory**: Write failing test first → minimal code to pass → refactor. TDD-Guard hooks block edits if tests fail.
+- **TDD is mandatory**: Write failing test first → minimal code to pass → refactor.
 - **Adversarial Cooperation**: Rigorously check against linters and hostile unit tests or security exploits. If complexity requires, ultilize parallel Tasks, Concensus Voting, Synthetic and Fuzzy Test Case Generation with high-quality examples and high volume variations.
 - **Common Pitfalls**:
   - **CGO_ENABLED=1**: Always prefix Go commands with this (SQLite requires CGO).
