@@ -11,23 +11,14 @@ import (
 )
 
 var FuncMap = map[string]interface{}{
-	"inc": func(i int) int {
-		return i + 1
-	},
-	"add": func(a, b int) int {
-		return a + b
-	},
-	"sub": func(a, b int) int {
-		return a - b
-	},
-	"gt": func(a, b int) bool {
-		return a > b
-	},
-	"lt": func(a, b int) bool {
-		return a < b
-	},
-        "eq": func(a, b int) bool {
-                return a == b
+        "inc": func(i int) int {
+                return i + 1
+        },
+        "add": func(a, b int) int {
+                return a + b
+        },
+        "sub": func(a, b int) int {
+                return a - b
         },
         "eqs": func(a, b string) bool {
                 return a == b

@@ -20,6 +20,8 @@ type JobQueue struct {
 	resumeDelay time.Duration // Delay before resuming pending jobs (configurable for testing)
 }
 
+var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
+
 // NewJobQueue creates a new job queue with the specified number of workers
 func NewJobQueue(db *sql.DB, workers int, evaluator *Evaluator) *JobQueue {
 	return NewJobQueueWithDelay(db, workers, evaluator, 5*time.Second)
@@ -109,7 +111,7 @@ func (jq *JobQueue) Enqueue(job *EvaluationJob) error {
 		return fmt.Errorf("failed to insert job: %w", err)
 	}
 
-	jobID, err := result.LastInsertId()
+	jobID, err := lastInsertID(result)
 	if err != nil {
 		return fmt.Errorf("failed to get job ID: %w", err)
 	}

@@ -73,8 +73,8 @@ func TestAddProfileHandler_Success(t *testing.T) {
 }
 
 func TestAddProfileHandler_EmptyName(t *testing.T) {
-	cleanup := setupProfilesTestDB(t)
-	defer cleanup()
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
 
 	form := url.Values{}
 	form.Add("profile_name", "")
@@ -91,9 +91,22 @@ func TestAddProfileHandler_EmptyName(t *testing.T) {
 	}
 }
 
+func TestAddProfileHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodGet, "/add_profile", nil)
+        rr := httptest.NewRecorder()
+        AddProfileHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
 func TestEditProfileHandler_POST_Success(t *testing.T) {
-	cleanup := setupProfilesTestDB(t)
-	defer cleanup()
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
 
 	// First add a profile
 	addForm := url.Values{}
@@ -158,8 +171,8 @@ func TestEditProfileHandler_POST_EmptyName(t *testing.T) {
 }
 
 func TestEditProfileHandler_POST_InvalidIndex(t *testing.T) {
-	cleanup := setupProfilesTestDB(t)
-	defer cleanup()
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
 
 	editForm := url.Values{}
 	editForm.Add("index", "invalid")
@@ -176,9 +189,22 @@ func TestEditProfileHandler_POST_InvalidIndex(t *testing.T) {
 	}
 }
 
+func TestEditProfileHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/edit_profile?index=0", nil)
+        rr := httptest.NewRecorder()
+        EditProfileHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
 func TestEditProfileHandler_GET_InvalidIndex(t *testing.T) {
-	cleanup := setupProfilesTestDB(t)
-	defer cleanup()
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
 
 	req := httptest.NewRequest("GET", "/edit_profile?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -189,9 +215,35 @@ func TestEditProfileHandler_GET_InvalidIndex(t *testing.T) {
 	}
 }
 
+func TestDeleteProfileHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/delete_profile?index=0", nil)
+        rr := httptest.NewRecorder()
+        DeleteProfileHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestResetProfilesHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/reset_profiles", nil)
+        rr := httptest.NewRecorder()
+        ResetProfilesHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
 func TestDeleteProfileHandler_POST_Success(t *testing.T) {
-	cleanup := setupProfilesTestDB(t)
-	defer cleanup()
+        cleanup := setupProfilesTestDB(t)
+        defer cleanup()
 
 	// First add a profile
 	addForm := url.Values{}
@@ -912,5 +964,93 @@ func TestAddProfileHandler_WriteProfilesError(t *testing.T) {
 
 	if rr.Code != http.StatusInternalServerError {
 		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestAddProfile_ParseFormError(t *testing.T) {
+        handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/add_profile", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+
+	handler.AddProfile(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestEditProfile_POST_ParseFormError(t *testing.T) {
+        handler := NewHandlerWithDeps(&MockDataStore{
+                Profiles: []middleware.Profile{{Name: "TestProfile"}},
+        }, &MockRenderer{})
+
+        req := httptest.NewRequest(http.MethodPost, "/edit_profile", readErrorReader{})
+        req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+        rr := httptest.NewRecorder()
+
+        handler.EditProfile(rr, req)
+
+        if rr.Code != http.StatusBadRequest {
+                t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+        }
+        if !strings.Contains(rr.Body.String(), "Error parsing form") {
+                t.Fatalf("expected parse error message, got %q", rr.Body.String())
+        }
+}
+
+func TestEditProfile_GET_ParseFormError(t *testing.T) {
+        handler := NewHandlerWithDeps(&MockDataStore{
+                Profiles: []middleware.Profile{{Name: "TestProfile"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodGet, "/edit_profile?index=%zz", nil)
+	rr := httptest.NewRecorder()
+	handler.EditProfile(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeleteProfile_GET_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Profiles: []middleware.Profile{{Name: "TestProfile"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodGet, "/delete_profile?index=%zz", nil)
+	rr := httptest.NewRecorder()
+	handler.DeleteProfile(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeleteProfile_POST_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Profiles: []middleware.Profile{{Name: "TestProfile"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/delete_profile", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.DeleteProfile(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
 	}
 }

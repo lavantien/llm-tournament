@@ -58,57 +58,6 @@ func TestFuncMap_Sub(t *testing.T) {
 	}
 }
 
-func TestFuncMap_Gt(t *testing.T) {
-	gt := FuncMap["gt"].(func(int, int) bool)
-	tests := []struct {
-		a, b     int
-		expected bool
-	}{
-		{5, 3, true},
-		{3, 5, false},
-		{5, 5, false},
-	}
-	for _, tt := range tests {
-		if got := gt(tt.a, tt.b); got != tt.expected {
-			t.Errorf("gt(%d, %d) = %v, want %v", tt.a, tt.b, got, tt.expected)
-		}
-	}
-}
-
-func TestFuncMap_Lt(t *testing.T) {
-	lt := FuncMap["lt"].(func(int, int) bool)
-	tests := []struct {
-		a, b     int
-		expected bool
-	}{
-		{3, 5, true},
-		{5, 3, false},
-		{5, 5, false},
-	}
-	for _, tt := range tests {
-		if got := lt(tt.a, tt.b); got != tt.expected {
-			t.Errorf("lt(%d, %d) = %v, want %v", tt.a, tt.b, got, tt.expected)
-		}
-	}
-}
-
-func TestFuncMap_Eq(t *testing.T) {
-	eq := FuncMap["eq"].(func(int, int) bool)
-	tests := []struct {
-		a, b     int
-		expected bool
-	}{
-		{5, 5, true},
-		{3, 5, false},
-		{0, 0, true},
-	}
-	for _, tt := range tests {
-		if got := eq(tt.a, tt.b); got != tt.expected {
-			t.Errorf("eq(%d, %d) = %v, want %v", tt.a, tt.b, got, tt.expected)
-		}
-	}
-}
-
 func TestFuncMap_Atoi(t *testing.T) {
 	atoi := FuncMap["atoi"].(func(string) int)
 	tests := []struct {
@@ -140,7 +89,7 @@ func TestFuncMap_Markdown(t *testing.T) {
 		{"plain text", func(h template.HTML) bool { return len(h) > 0 }},
 		{"", func(h template.HTML) bool { return len(h) == 0 }},
 		{"<script>alert('xss')</script>", func(h template.HTML) bool {
-			// Should sanitize out script tags
+			// Should sanitize out script tags.
 			return string(h) != "<script>alert('xss')</script>"
 		}},
 	}
@@ -223,7 +172,7 @@ func TestFuncMap_JSON(t *testing.T) {
 	})
 
 	t.Run("unmarshalable value", func(t *testing.T) {
-		// Channels cannot be marshaled to JSON
+		// Channels cannot be marshaled to JSON.
 		ch := make(chan int)
 		_, err := jsonFn(ch)
 		if err == nil {
@@ -278,8 +227,8 @@ func TestPageNameConstants(t *testing.T) {
 
 func TestFuncMapCompleteness(t *testing.T) {
 	expectedFuncs := []string{
-		"inc", "add", "sub", "gt", "lt", "eq",
-		"atoi", "markdown", "tolower", "contains", "json",
+		"inc", "add", "sub",
+		"eqs", "atoi", "markdown", "tolower", "contains", "json",
 	}
 
 	for _, name := range expectedFuncs {
@@ -288,3 +237,4 @@ func TestFuncMapCompleteness(t *testing.T) {
 		}
 	}
 }
+

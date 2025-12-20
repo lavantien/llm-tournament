@@ -5,7 +5,9 @@ import (
 	"os"
 )
 
+var osExit = os.Exit
+
 func main() {
 	log.SetOutput(os.Stderr)
-	os.Exit(run(os.Args[1:], defaultRunDeps()))
+	osExit(run(os.Args[1:], defaultRunDeps()))
 }

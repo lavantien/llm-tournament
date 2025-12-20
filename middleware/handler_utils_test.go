@@ -323,3 +323,40 @@ func TestImportErrorHandler_TemplateParseError(t *testing.T) {
 		t.Errorf("expected status %d for template parse error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+type errorWriteResponseWriter struct {
+	header http.Header
+	code   int
+}
+
+func (w *errorWriteResponseWriter) Header() http.Header {
+	if w.header == nil {
+		w.header = make(http.Header)
+	}
+	return w.header
+}
+
+func (w *errorWriteResponseWriter) WriteHeader(statusCode int) {
+	w.code = statusCode
+}
+
+func (w *errorWriteResponseWriter) Write([]byte) (int, error) {
+	if w.code == 0 {
+		w.code = http.StatusOK
+	}
+	return 0, errors.New("write failed")
+}
+
+func TestImportErrorHandler_TemplateExecuteError(t *testing.T) {
+	restoreDir := changeToProjectRootMiddleware(t)
+	defer restoreDir()
+
+	req := httptest.NewRequest("GET", "/import_error", nil)
+	rw := &errorWriteResponseWriter{}
+
+	ImportErrorHandler(rw, req)
+
+	if rw.code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rw.code)
+	}
+}

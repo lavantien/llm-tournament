@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"crypto/cipher"
 	"encoding/base64"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -368,5 +370,95 @@ func TestDecryptAPIKey_CorruptedCiphertext(t *testing.T) {
 	_, err = DecryptAPIKey(corrupted)
 	if err == nil {
 		t.Error("expected decryption to fail with corrupted ciphertext")
+	}
+}
+
+func TestEncryptAPIKey_NewCipherError(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	original := aesNewCipher
+	t.Cleanup(func() { aesNewCipher = original })
+
+	aesNewCipher = func([]byte) (cipher.Block, error) {
+		return nil, errors.New("boom")
+	}
+
+	_, err := EncryptAPIKey("sk-test")
+	if err == nil || !strings.Contains(err.Error(), "failed to create cipher") {
+		t.Fatalf("expected cipher creation error, got %v", err)
+	}
+}
+
+func TestEncryptAPIKey_NewGCMError(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	original := cipherNewGCM
+	t.Cleanup(func() { cipherNewGCM = original })
+
+	cipherNewGCM = func(cipher.Block) (cipher.AEAD, error) {
+		return nil, errors.New("boom")
+	}
+
+	_, err := EncryptAPIKey("sk-test")
+	if err == nil || !strings.Contains(err.Error(), "failed to create GCM") {
+		t.Fatalf("expected GCM creation error, got %v", err)
+	}
+}
+
+type errorReader struct{}
+
+func (errorReader) Read([]byte) (int, error) { return 0, errors.New("boom") }
+
+func TestEncryptAPIKey_NonceReadError(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	original := randReader
+	t.Cleanup(func() { randReader = original })
+
+	randReader = errorReader{}
+
+	_, err := EncryptAPIKey("sk-test")
+	if err == nil || !strings.Contains(err.Error(), "failed to generate nonce") {
+		t.Fatalf("expected nonce generation error, got %v", err)
+	}
+}
+
+func TestDecryptAPIKey_NewCipherError(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	original := aesNewCipher
+	t.Cleanup(func() { aesNewCipher = original })
+
+	aesNewCipher = func([]byte) (cipher.Block, error) {
+		return nil, errors.New("boom")
+	}
+
+	// Provide a base64 string that decodes to >= nonce size so we reach cipher creation.
+	ct := base64.StdEncoding.EncodeToString(make([]byte, 12))
+	_, err := DecryptAPIKey(ct)
+	if err == nil || !strings.Contains(err.Error(), "failed to create cipher") {
+		t.Fatalf("expected cipher creation error, got %v", err)
+	}
+}
+
+func TestDecryptAPIKey_NewGCMError(t *testing.T) {
+	cleanup := testutil.SetupEncryptionKey(t)
+	defer cleanup()
+
+	original := cipherNewGCM
+	t.Cleanup(func() { cipherNewGCM = original })
+
+	cipherNewGCM = func(cipher.Block) (cipher.AEAD, error) {
+		return nil, errors.New("boom")
+	}
+
+	ct := base64.StdEncoding.EncodeToString(make([]byte, 12))
+	_, err := DecryptAPIKey(ct)
+	if err == nil || !strings.Contains(err.Error(), "failed to create GCM") {
+		t.Fatalf("expected GCM creation error, got %v", err)
 	}
 }

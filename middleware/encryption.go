@@ -10,6 +10,12 @@ import (
 	"os"
 )
 
+var (
+	aesNewCipher = aes.NewCipher
+	cipherNewGCM = cipher.NewGCM
+	randReader   io.Reader = rand.Reader
+)
+
 // getEncryptionKey retrieves the encryption key from environment
 func getEncryptionKey() ([]byte, error) {
 	keyHex := os.Getenv("ENCRYPTION_KEY")
@@ -44,19 +50,19 @@ func EncryptAPIKey(plaintext string) (string, error) {
 		return "", err
 	}
 
-	block, err := aes.NewCipher(key)
+	block, err := aesNewCipher(key)
 	if err != nil {
 		return "", fmt.Errorf("failed to create cipher: %w", err)
 	}
 
-	aesGCM, err := cipher.NewGCM(block)
+	aesGCM, err := cipherNewGCM(block)
 	if err != nil {
 		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}
 
 	// Create nonce
 	nonce := make([]byte, aesGCM.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+	if _, err := io.ReadFull(randReader, nonce); err != nil {
 		return "", fmt.Errorf("failed to generate nonce: %w", err)
 	}
 
@@ -84,12 +90,12 @@ func DecryptAPIKey(ciphertext string) (string, error) {
 		return "", fmt.Errorf("failed to decode ciphertext: %w", err)
 	}
 
-	block, err := aes.NewCipher(key)
+	block, err := aesNewCipher(key)
 	if err != nil {
 		return "", fmt.Errorf("failed to create cipher: %w", err)
 	}
 
-	aesGCM, err := cipher.NewGCM(block)
+	aesGCM, err := cipherNewGCM(block)
 	if err != nil {
 		return "", fmt.Errorf("failed to create GCM: %w", err)
 	}

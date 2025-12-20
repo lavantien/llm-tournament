@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -261,6 +262,99 @@ func TestEvaluateAll_WithData(t *testing.T) {
 	}
 }
 
+func TestEvaluateAll_CountPromptsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err := e.EvaluateAll(1)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to count prompts") {
+		t.Fatalf("expected count prompts error, got %v", err)
+	}
+}
+
+func TestEvaluateAll_CountModelsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("DROP TABLE models"); err != nil {
+		t.Fatalf("failed to drop models table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err := e.EvaluateAll(1)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to count models") {
+		t.Fatalf("expected count models error, got %v", err)
+	}
+}
+
+func TestEvaluateAll_EnqueueError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
+		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err := e.EvaluateAll(1)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to enqueue job") {
+		t.Fatalf("expected enqueue error, got %v", err)
+	}
+}
+
 func TestEvaluateModel(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
 	defer db.Close()
@@ -311,6 +405,720 @@ func TestEvaluateModel(t *testing.T) {
 	}
 	if targetID != int(modelID) {
 		t.Errorf("expected target_id %d, got %d", modelID, targetID)
+	}
+}
+
+func TestEvaluateModel_CountPromptsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get model id: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err = e.EvaluateModel(int(modelID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to count prompts") {
+		t.Fatalf("expected count prompts error, got %v", err)
+	}
+}
+
+func TestEvaluateModel_EnqueueError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get model id: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
+		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err = e.EvaluateModel(int(modelID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to enqueue job") {
+		t.Fatalf("expected enqueue error, got %v", err)
+	}
+}
+
+func TestEvaluatePrompt_CountModelsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get prompt id: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE models"); err != nil {
+		t.Fatalf("failed to drop models table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err = e.EvaluatePrompt(int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to count models") {
+		t.Fatalf("expected count models error, got %v", err)
+	}
+}
+
+func TestEvaluatePrompt_EnqueueError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get prompt id: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
+		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	_, err = e.EvaluatePrompt(int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to enqueue job") {
+		t.Fatalf("expected enqueue error, got %v", err)
+	}
+}
+
+func TestEvaluator_getAPIKeys_QueryError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("DROP TABLE settings"); err != nil {
+		t.Fatalf("failed to drop settings table: %v", err)
+	}
+
+	e := &Evaluator{db: db}
+	_, err := e.getAPIKeys()
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestEvaluateModelPromptPair_NoResponse_SkipsEvaluation(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Create a job, model, and prompt but no model_response.
+	jobRes, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (1, 'all', 'running')")
+	if err != nil {
+		t.Fatalf("failed to insert job: %v", err)
+	}
+	jobID, err := jobRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get job id: %v", err)
+	}
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, err := modelRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get model id: %v", err)
+	}
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, err := promptRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get prompt id: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	cost, err := e.evaluateModelPromptPair(int(jobID), int(modelID), int(promptID))
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if cost != 0 {
+		t.Fatalf("expected cost 0, got %f", cost)
+	}
+}
+
+func TestEvaluateModelPromptPair_Success_WritesScoreAndHistory(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Start a mock LiteLLM server.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/evaluate" {
+			http.NotFound(w, r)
+			return
+		}
+		resp := EvaluationResponse{
+			Results: []JudgeResult{
+				{Judge: "claude", Score: 60, Confidence: 0.9, Reasoning: "ok", CostUSD: 0.01},
+			},
+			TotalCostUSD:   0.01,
+			ConsensusScore: 60,
+			AvgConfidence:  0.9,
+		}
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	jobRes, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (1, 'all', 'running')")
+	if err != nil {
+		t.Fatalf("failed to insert job: %v", err)
+	}
+	jobID, err := jobRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get job id: %v", err)
+	}
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, err := modelRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get model id: %v", err)
+	}
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, solution, type, suite_id, display_order) VALUES ('prompt1', 'sol', 'objective', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, err := promptRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get prompt id: %v", err)
+	}
+
+	_, err = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, 'response')", modelID, promptID)
+	if err != nil {
+		t.Fatalf("failed to insert model response: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient(server.URL),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	cost, err := e.evaluateModelPromptPair(int(jobID), int(modelID), int(promptID))
+	if err != nil {
+		t.Fatalf("evaluateModelPromptPair failed: %v", err)
+	}
+	if cost != 0.01 {
+		t.Fatalf("expected cost 0.01, got %f", cost)
+	}
+
+	var score int
+	err = db.QueryRow("SELECT score FROM scores WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&score)
+	if err != nil {
+		t.Fatalf("failed to query score: %v", err)
+	}
+	if score != 60 {
+		t.Fatalf("expected score 60, got %d", score)
+	}
+
+	var historyCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM evaluation_history WHERE job_id = ?", jobID).Scan(&historyCount)
+	if err != nil {
+		t.Fatalf("failed to query history: %v", err)
+	}
+	if historyCount != 1 {
+		t.Fatalf("expected 1 history record, got %d", historyCount)
+	}
+}
+
+func TestProcessAllJob_Cancelled(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	// Minimal model & prompt so the loop enters.
+	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	if _, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)"); err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	jobRes, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status, progress_total) VALUES (1, 'all', 'running', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert job: %v", err)
+	}
+	jobID, err := jobRes.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get job id: %v", err)
+	}
+	job := &EvaluationJob{ID: int(jobID), SuiteID: 1, JobType: "all", ProgressTotal: 1}
+
+	cancelChan := make(chan bool)
+	close(cancelChan)
+	if err := e.processAllJob(job, cancelChan); err == nil {
+		t.Fatal("expected error for cancelled job")
+	}
+}
+
+func TestProcessAllJob_QueryModelsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("DROP TABLE models"); err != nil {
+		t.Fatalf("failed to drop models table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	job := &EvaluationJob{ID: 1, SuiteID: 1, JobType: "all", ProgressTotal: 0}
+	err := e.processAllJob(job, make(chan bool))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to query models") {
+		t.Fatalf("expected query models error, got %v", err)
+	}
+}
+
+func TestProcessAllJob_QueryPromptsError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	job := &EvaluationJob{ID: 1, SuiteID: 1, JobType: "all", ProgressTotal: 0}
+	err := e.processAllJob(job, make(chan bool))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to query prompts") {
+		t.Fatalf("expected query prompts error, got %v", err)
+	}
+}
+
+func TestProcessAllJob_EvaluatePairError_Continues(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	if _, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)"); err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	// Force evaluateModelPromptPair to error (missing model_responses table).
+	if _, err := db.Exec("DROP TABLE model_responses"); err != nil {
+		t.Fatalf("failed to drop model_responses table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	job := &EvaluationJob{ID: 1, SuiteID: 1, JobType: "all", ProgressTotal: 1}
+	if err := e.processAllJob(job, make(chan bool)); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
+func TestProcessAllJob_UpdateProgressError_Continues(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	if _, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)"); err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+
+	// Cause UpdateJobProgress to error.
+	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
+		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
+	}
+
+	e := &Evaluator{
+		db:            db,
+		litellmClient: NewLiteLLMClient("http://localhost:8001"),
+		judges:        []string{"claude"},
+		jobQueue: &JobQueue{
+			db:      db,
+			jobs:    make(chan *EvaluationJob, 100),
+			workers: 0,
+			running: make(map[int]bool),
+			cancel:  make(map[int]chan bool),
+		},
+	}
+	e.jobQueue.evaluator = e
+
+	job := &EvaluationJob{ID: 1, SuiteID: 1, JobType: "all", ProgressTotal: 1}
+	if err := e.processAllJob(job, make(chan bool)); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
+func TestEvaluateModelPromptPair_ModelResponseQueryError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, _ := modelRes.LastInsertId()
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, _ := promptRes.LastInsertId()
+
+	if _, err := db.Exec("DROP TABLE model_responses"); err != nil {
+		t.Fatalf("failed to drop model_responses table: %v", err)
+	}
+
+	e := &Evaluator{db: db, litellmClient: NewLiteLLMClient("http://localhost:8001"), judges: []string{"claude"}}
+	_, err = e.evaluateModelPromptPair(1, int(modelID), int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to get model response") {
+		t.Fatalf("expected model response error, got %v", err)
+	}
+}
+
+func TestEvaluateModelPromptPair_GetAPIKeysError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, _ := modelRes.LastInsertId()
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, _ := promptRes.LastInsertId()
+
+	_, err = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, 'response')", modelID, promptID)
+	if err != nil {
+		t.Fatalf("failed to insert model response: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE settings"); err != nil {
+		t.Fatalf("failed to drop settings table: %v", err)
+	}
+
+	e := &Evaluator{db: db, litellmClient: NewLiteLLMClient("http://localhost:8001"), judges: []string{"claude"}}
+	_, err = e.evaluateModelPromptPair(1, int(modelID), int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to get API keys") {
+		t.Fatalf("expected api keys error, got %v", err)
+	}
+}
+
+func TestEvaluateModelPromptPair_EvaluateError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, _ := modelRes.LastInsertId()
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, _ := promptRes.LastInsertId()
+
+	_, err = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, 'response')", modelID, promptID)
+	if err != nil {
+		t.Fatalf("failed to insert model response: %v", err)
+	}
+
+	e := &Evaluator{db: db, litellmClient: NewLiteLLMClient(server.URL), judges: []string{"claude"}}
+	_, err = e.evaluateModelPromptPair(1, int(modelID), int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "evaluation failed") {
+		t.Fatalf("expected evaluation error, got %v", err)
+	}
+}
+
+func TestEvaluateModelPromptPair_UpdateScoreError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		resp := EvaluationResponse{
+			Results:        []JudgeResult{{Judge: "claude", Score: 60, Confidence: 0.9, Reasoning: "ok", CostUSD: 0.01}},
+			TotalCostUSD:   0.01,
+			ConsensusScore: 60,
+			AvgConfidence:  0.9,
+		}
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, _ := modelRes.LastInsertId()
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, _ := promptRes.LastInsertId()
+
+	_, err = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, 'response')", modelID, promptID)
+	if err != nil {
+		t.Fatalf("failed to insert model response: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE scores"); err != nil {
+		t.Fatalf("failed to drop scores table: %v", err)
+	}
+
+	e := &Evaluator{db: db, litellmClient: NewLiteLLMClient(server.URL), judges: []string{"claude"}}
+	_, err = e.evaluateModelPromptPair(1, int(modelID), int(promptID))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "failed to update score") {
+		t.Fatalf("expected update score error, got %v", err)
+	}
+}
+
+func TestEvaluateModelPromptPair_HistoryInsertError_IsLogged(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		resp := EvaluationResponse{
+			Results:        []JudgeResult{{Judge: "claude", Score: 60, Confidence: 0.9, Reasoning: "ok", CostUSD: 0.01}},
+			TotalCostUSD:   0.01,
+			ConsensusScore: 60,
+			AvgConfidence:  0.9,
+		}
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+	modelID, _ := modelRes.LastInsertId()
+
+	promptRes, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+	promptID, _ := promptRes.LastInsertId()
+
+	_, err = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, 'response')", modelID, promptID)
+	if err != nil {
+		t.Fatalf("failed to insert model response: %v", err)
+	}
+
+	if _, err := db.Exec("DROP TABLE evaluation_history"); err != nil {
+		t.Fatalf("failed to drop evaluation_history table: %v", err)
+	}
+
+	e := &Evaluator{db: db, litellmClient: NewLiteLLMClient(server.URL), judges: []string{"claude"}}
+	cost, err := e.evaluateModelPromptPair(1, int(modelID), int(promptID))
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if cost != 0.01 {
+		t.Fatalf("expected cost 0.01, got %f", cost)
+	}
+}
+
+func TestGetAPIKeys_ScanError(t *testing.T) {
+	db := setupEvaluatorTestDB(t)
+	defer db.Close()
+
+	if _, err := db.Exec("INSERT INTO settings (key, value) VALUES ('api_key_test', NULL)"); err != nil {
+		t.Fatalf("failed to insert setting: %v", err)
+	}
+
+	e := &Evaluator{db: db}
+	_, err := e.getAPIKeys()
+	if err == nil {
+		t.Fatal("expected error")
 	}
 }
 

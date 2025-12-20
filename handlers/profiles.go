@@ -1,17 +1,12 @@
 package handlers
 
 import (
-	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/russross/blackfriday/v2"
 
 	"llm-tournament/middleware"
+	"llm-tournament/templates"
 )
 
 // ProfilesHandler handles the profiles page (backward compatible wrapper)
@@ -44,20 +39,7 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling profiles page")
 	searchQuery := r.FormValue("search_query")
 
-	funcMap := template.FuncMap{
-		"inc": func(i int) int {
-			return i + 1
-		},
-		"tolower":  strings.ToLower,
-                "contains": strings.Contains,
-                "eqs": func(a, b string) bool {
-                        return a == b
-                },
-        }
-	funcMap["json"] = func(v interface{}) (string, error) {
-		b, err := json.Marshal(v)
-		return string(b), err
-	}
+	funcMap := templates.FuncMap
 
 	pageName := "Profiles"
 	profiles := h.DataStore.ReadProfiles()
@@ -81,11 +63,15 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 
 // AddProfile handles adding a profile
 func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling add profile")
-	err := r.ParseForm()
-	if err != nil {
-		log.Printf("Error parsing form: %v", err)
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
+        log.Println("Handling add profile")
+        if r.Method != http.MethodPost {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }
+        err := r.ParseForm()
+        if err != nil {
+                log.Printf("Error parsing form: %v", err)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
 		return
 	}
 	profileName := r.Form.Get("profile_name")
@@ -127,13 +113,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 		}
 		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
-			funcMap := template.FuncMap{
-				"markdown": func(text string) template.HTML {
-					unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-					html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-					return template.HTML(html)
-				},
-			}
+			funcMap := templates.FuncMap
 			err := h.Renderer.Render(w, "edit_profile.html", funcMap, struct {
 				Index   int
 				Profile middleware.Profile
@@ -147,7 +127,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if r.Method == "POST" {
+        } else if r.Method == "POST" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -194,15 +174,17 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
 		}
-		log.Println("Profile edited successfully")
-		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	}
+                log.Println("Profile edited successfully")
+                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }
 
 // DeleteProfile handles deleting a profile
-func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling delete profile")
-	if r.Method == "GET" {
+func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {       
+        log.Println("Handling delete profile")
+        if r.Method == "GET" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -218,13 +200,7 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 		}
 		profiles := h.DataStore.ReadProfiles()
 		if index >= 0 && index < len(profiles) {
-			funcMap := template.FuncMap{
-				"markdown": func(text string) template.HTML {
-					unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-					html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-					return template.HTML(html)
-				},
-			}
+			funcMap := templates.FuncMap
 			err := h.Renderer.Render(w, "delete_profile.html", funcMap, struct {
 				Index   int
 				Profile middleware.Profile
@@ -261,16 +237,18 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
-		}
-		log.Println("Profile deleted successfully")
-		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	}
+                }
+                log.Println("Profile deleted successfully")
+                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }
 
 // ResetProfiles handles resetting profiles
-func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling reset profiles")
-	if r.Method == "GET" {
+func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {       
+        log.Println("Handling reset profiles")
+        if r.Method == "GET" {
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -281,8 +259,10 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
-		}
-		log.Println("Profiles reset successfully")
-		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	}
+                }
+                log.Println("Profiles reset successfully")
+                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }

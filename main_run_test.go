@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 
@@ -243,5 +244,43 @@ func TestRun_ServePath_ListenAndServeError_Returns1(t *testing.T) {
 	}
 	if !closeDBCalled {
 		t.Fatalf("expected closeDB to be called via defer")
+	}
+}
+
+func TestDefaultRunDeps_HasRequiredDeps(t *testing.T) {
+	deps := defaultRunDeps()
+
+	if deps.initDB == nil ||
+		deps.closeDB == nil ||
+		deps.readResults == nil ||
+		deps.migrateResults == nil ||
+		deps.getCurrentSuiteName == nil ||
+		deps.writeResults == nil ||
+		deps.initEvaluator == nil ||
+		deps.getDB == nil ||
+		deps.listenAndServe == nil {
+		t.Fatalf("expected all default run deps to be non-nil: %#v", deps)
+	}
+}
+
+func TestMain_UsesOsExit(t *testing.T) {
+	origArgs := os.Args
+	origExit := osExit
+	t.Cleanup(func() {
+		os.Args = origArgs
+		osExit = origExit
+	})
+
+	os.Args = []string{"llm-tournament", "-no-such-flag"}
+
+	var gotCode int
+	osExit = func(code int) {
+		gotCode = code
+	}
+
+	main()
+
+	if gotCode != 2 {
+		t.Fatalf("expected exit code 2, got %d", gotCode)
 	}
 }

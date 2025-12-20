@@ -127,33 +127,28 @@ func BroadcastResults() {
 	}
 
 	// Add a group for prompts with no profile only if needed
-	if hasUncategorized {
-		noProfileGroup := &ProfileGroup{
-			ID:    "none",
-			Name:  "Uncategorized",
-			Color: "hsl(0, 0%, 50%)",
+		if hasUncategorized {
+			noProfileGroup := &ProfileGroup{
+				ID:       "none",
+				Name:     "Uncategorized",
+				Color:    "hsl(0, 0%, 50%)",
+				StartCol: -1,
+				EndCol:   -1,
+			}
+			profileGroups = append(profileGroups, noProfileGroup)
+			profileMap[""] = noProfileGroup
 		}
-		profileGroups = append(profileGroups, noProfileGroup)
-		profileMap[""] = noProfileGroup
-	}
 
 	// Process prompts and assign them to profile groups
 	currentCol := 0
-	for i, prompt := range prompts {
-		profileName := prompt.Profile
+		for i, prompt := range prompts {
+			profileName := prompt.Profile
 
-		group, exists := profileMap[profileName]
-		if !exists {
-			// Skip if group doesn't exist and we don't have uncategorized group
-			if _, hasUncategorized := profileMap[""]; !hasUncategorized {
-				continue
+			group := profileMap[profileName]
+
+			if group.StartCol == -1 {
+				group.StartCol = currentCol
 			}
-			group = profileMap[""]
-		}
-
-		if group.StartCol == -1 {
-			group.StartCol = currentCol
-		}
 		group.EndCol = currentCol
 
 		orderedPrompts = append(orderedPrompts, struct {

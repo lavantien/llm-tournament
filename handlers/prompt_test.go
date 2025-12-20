@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -76,8 +77,8 @@ func TestAddPromptHandler_Success(t *testing.T) {
 }
 
 func TestAddPromptHandler_EmptyText(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	form := url.Values{}
 	form.Add("prompt", "")
@@ -90,12 +91,25 @@ func TestAddPromptHandler_EmptyText(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-	}
+        }
+}
+
+func TestAddPromptHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodGet, "/add_prompt", nil)
+        rr := httptest.NewRecorder()
+        AddPromptHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestEditPromptHandler_POST_Success(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// First add a prompt
 	addForm := url.Values{}
@@ -180,8 +194,8 @@ func TestEditPromptHandler_POST_InvalidIndex(t *testing.T) {
 }
 
 func TestEditPromptHandler_GET_InvalidIndex(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	req := httptest.NewRequest("GET", "/edit_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -189,12 +203,25 @@ func TestEditPromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-	}
+        }
+}
+
+func TestEditPromptHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/edit_prompt?index=0", nil)
+        rr := httptest.NewRecorder()
+        EditPromptHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestDeletePromptHandler_POST_Success(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// First add a prompt
 	addForm := url.Values{}
@@ -244,8 +271,8 @@ func TestDeletePromptHandler_POST_InvalidIndex(t *testing.T) {
 }
 
 func TestDeletePromptHandler_GET_InvalidIndex(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	req := httptest.NewRequest("GET", "/delete_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -253,12 +280,25 @@ func TestDeletePromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-	}
+        }
+}
+
+func TestDeletePromptHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/delete_prompt?index=0", nil)
+        rr := httptest.NewRecorder()
+        DeletePromptHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestMovePromptHandler_POST_Success(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// Add multiple prompts
 	for i := 0; i < 3; i++ {
@@ -324,8 +364,8 @@ func TestMovePromptHandler_POST_InvalidNewIndex(t *testing.T) {
 }
 
 func TestMovePromptHandler_GET_InvalidIndex(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	req := httptest.NewRequest("GET", "/move_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -333,12 +373,25 @@ func TestMovePromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-	}
+        }
+}
+
+func TestMovePromptHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/move_prompt?index=0", nil)
+        rr := httptest.NewRecorder()
+        MovePromptHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestResetPromptsHandler_POST(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// Add some prompts
 	for i := 0; i < 3; i++ {
@@ -366,14 +419,27 @@ func TestResetPromptsHandler_POST(t *testing.T) {
 
 	// Verify prompts were reset
 	prompts = middleware.ReadPrompts()
-	if len(prompts) != 0 {
-		t.Errorf("expected 0 prompts after reset, got %d", len(prompts))
-	}
+        if len(prompts) != 0 {
+                t.Errorf("expected 0 prompts after reset, got %d", len(prompts))
+        }
+}
+
+func TestResetPromptsHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/reset_prompts", nil)
+        rr := httptest.NewRecorder()
+        ResetPromptsHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestExportPromptsHandler(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// Add some prompts
 	form := url.Values{}
@@ -399,14 +465,27 @@ func TestExportPromptsHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to unmarshal exported JSON: %v", err)
 	}
-	if len(prompts) != 1 {
-		t.Errorf("expected 1 prompt in export, got %d", len(prompts))
-	}
+        if len(prompts) != 1 {
+                t.Errorf("expected 1 prompt in export, got %d", len(prompts))   
+        }
+}
+
+func TestExportPromptsHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPost, "/export_prompts", nil)
+        rr := httptest.NewRecorder()
+        ExportPromptsHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
 }
 
 func TestUpdatePromptsOrderHandler_ValidOrder(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// The UpdatePromptsOrder function expects database prompt IDs in the order array
 	// which makes it complex to test without knowing the actual IDs generated.
@@ -467,9 +546,38 @@ func TestUpdatePromptsOrderHandler_InvalidJSON(t *testing.T) {
 	}
 }
 
+func TestUpdatePromptsOrderHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodGet, "/update_prompts_order", nil)
+        rr := httptest.NewRecorder()
+        UpdatePromptsOrderHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestUpdatePromptsOrder_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/update_prompts_order", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.UpdatePromptsOrder(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
 func TestBulkDeletePromptsHandler_Success(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// Add some prompts
 	for i := 0; i < 3; i++ {
@@ -579,6 +687,23 @@ func TestBulkDeletePromptsPageHandler_InvalidIndicesJSON(t *testing.T) {
 	}
 }
 
+func TestBulkDeletePromptsPage_RenderError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{RenderError: errors.New("mock render error")})
+
+	req := httptest.NewRequest(http.MethodGet, "/bulk_delete_prompts_page?indices=[0]", nil)
+	rr := httptest.NewRecorder()
+	handler.BulkDeletePromptsPage(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error rendering template") {
+		t.Fatalf("expected render error message, got %q", rr.Body.String())
+	}
+}
+
 func TestPromptListHandler_InvalidOrderFilter(t *testing.T) {
 	cleanup := setupPromptTestDB(t)
 	defer cleanup()
@@ -611,9 +736,163 @@ func createMultipartFormFile(t *testing.T, fieldname, filename string, content [
 	return body, writer.FormDataContentType()
 }
 
+func TestImportPromptsHandler_MethodNotAllowed(t *testing.T) {
+        handler := &Handler{
+                DataStore: &MockDataStore{},
+                Renderer:  &MockRenderer{},
+        }
+
+        req := httptest.NewRequest(http.MethodPut, "/import_prompts", nil)
+        rr := httptest.NewRecorder()
+        handler.ImportPrompts(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestBulkDeletePrompts_InvalidJSONBody(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/bulk_delete_prompts", strings.NewReader("not json"))
+	rr := httptest.NewRecorder()
+	handler.BulkDeletePrompts(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error decoding request") {
+		t.Fatalf("expected decode error message, got %q", rr.Body.String())
+	}
+}
+
+func TestBulkDeletePrompts_NoPrompts(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/bulk_delete_prompts", strings.NewReader(`{"indices":[0]}`))
+	rr := httptest.NewRecorder()
+	handler.BulkDeletePrompts(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "No prompts to delete") {
+		t.Fatalf("expected no prompts message, got %q", rr.Body.String())
+	}
+}
+
+func TestEditPrompt_GET_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodGet, "/edit_prompt?index=%zz", nil)
+	rr := httptest.NewRecorder()
+	handler.EditPrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestEditPrompt_POST_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/edit_prompt", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.EditPrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeletePrompt_GET_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodGet, "/delete_prompt?index=%zz", nil)
+	rr := httptest.NewRecorder()
+	handler.DeletePrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeletePrompt_POST_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/delete_prompt", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.DeletePrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestMovePrompt_GET_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodGet, "/move_prompt?index=%zz", nil)
+	rr := httptest.NewRecorder()
+	handler.MovePrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestMovePrompt_POST_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "P1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/move_prompt", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.MovePrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
 func TestImportPromptsHandler_POST_NoFile(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// POST without file should redirect to error
 	req := httptest.NewRequest("POST", "/import_prompts", nil)
@@ -680,9 +959,226 @@ func TestImportPromptsHandler_POST_InvalidJSON(t *testing.T) {
 	}
 }
 
-func TestImportResultsHandler_POST_NoFile(t *testing.T) {
+func TestImportPromptsHandler_ReadAllError(t *testing.T) {
 	cleanup := setupPromptTestDB(t)
 	defer cleanup()
+
+	handler := &Handler{
+		DataStore: &MockDataStore{},
+		Renderer:  &MockRenderer{},
+	}
+
+	prompts := []middleware.Prompt{{Text: "Imported Prompt"}}
+	jsonData, _ := json.Marshal(prompts)
+
+	body, contentType := createMultipartFormFile(t, "prompts_file", "prompts.json", jsonData)
+	req := httptest.NewRequest("POST", "/import_prompts", body)
+	req.Header.Set("Content-Type", contentType)
+
+	original := readAll
+	readAll = func(io.Reader) ([]byte, error) { return nil, errors.New("mock readall error") }
+	t.Cleanup(func() { readAll = original })
+
+	rr := httptest.NewRecorder()
+	handler.ImportPrompts(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error reading file") {
+		t.Fatalf("expected error message, got %q", rr.Body.String())
+	}
+}
+
+func TestImportResultsHandler_MethodNotAllowed(t *testing.T) {
+        handler := &Handler{
+                DataStore: &MockDataStore{},
+                Renderer:  &MockRenderer{},
+        }
+
+        req := httptest.NewRequest(http.MethodPut, "/import_results", nil)
+        rr := httptest.NewRecorder()
+        handler.ImportResults(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+type promptListListSuitesErrorDataStore struct {
+	MockDataStore
+	Err error
+}
+
+func (ds *promptListListSuitesErrorDataStore) ListPromptSuites() ([]string, error) {
+	return nil, ds.Err
+}
+
+type promptListReadSuiteErrorDataStore struct {
+	MockDataStore
+	Err error
+}
+
+func (ds *promptListReadSuiteErrorDataStore) ReadPromptSuite(suiteName string) ([]middleware.Prompt, error) {
+	return nil, ds.Err
+}
+
+type promptListEmptySuiteNameDataStore struct {
+	MockDataStore
+	GetCalls  int
+	ReadCalls int
+}
+
+func (ds *promptListEmptySuiteNameDataStore) GetCurrentSuiteName() string {
+	ds.GetCalls++
+	return ""
+}
+
+func (ds *promptListEmptySuiteNameDataStore) ReadPromptSuite(suiteName string) ([]middleware.Prompt, error) {
+	ds.ReadCalls++
+	return nil, nil
+}
+
+type promptListSecondReadErrorDataStore struct {
+	MockDataStore
+	ReadCalls int
+}
+
+func (ds *promptListSecondReadErrorDataStore) ReadPromptSuite(suiteName string) ([]middleware.Prompt, error) {
+	ds.ReadCalls++
+	if ds.ReadCalls == 2 {
+		return nil, errors.New("mock read prompt suite error")
+	}
+	return nil, nil
+}
+
+func TestPromptList_InvalidOrderFilter(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts?order_filter=not-an-int", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Invalid order filter") {
+		t.Fatalf("expected invalid order filter message, got %q", rr.Body.String())
+	}
+}
+
+func TestPromptList_ListPromptSuitesError(t *testing.T) {
+	handler := NewHandlerWithDeps(&promptListListSuitesErrorDataStore{
+		Err: errors.New("mock list suites error"),
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error listing prompt suites") {
+		t.Fatalf("expected list suites error message, got %q", rr.Body.String())
+	}
+}
+
+func TestPromptList_ReadPromptSuiteError(t *testing.T) {
+	handler := NewHandlerWithDeps(&promptListReadSuiteErrorDataStore{
+		Err: errors.New("mock read suite error"),
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error reading prompt suite") {
+		t.Fatalf("expected read suite error message, got %q", rr.Body.String())
+	}
+}
+
+func TestPromptList_RenderError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{RenderError: errors.New("mock render error")})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error rendering template") {
+		t.Fatalf("expected render error message, got %q", rr.Body.String())
+	}
+}
+
+func TestPromptList_DefaultSuiteFallback(t *testing.T) {
+	ds := &promptListEmptySuiteNameDataStore{}
+	handler := NewHandlerWithDeps(ds, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+	if ds.GetCalls != 1 {
+		t.Fatalf("expected GetCurrentSuiteName to be called once, got %d", ds.GetCalls)
+	}
+	if ds.ReadCalls != 2 {
+		t.Fatalf("expected ReadPromptSuite to be called twice, got %d", ds.ReadCalls)
+	}
+}
+
+func TestPromptList_WithPrompts(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Prompt 1", Solution: "Solution 1"}},
+	}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestPromptList_ReadDefaultPromptSuiteError(t *testing.T) {
+	handler := NewHandlerWithDeps(&promptListSecondReadErrorDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error reading default prompt suite") {
+		t.Fatalf("expected default suite read error message, got %q", rr.Body.String())
+	}
+}
+
+func TestPromptList_OrderFilterParseSuccess(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest("GET", "/prompts?order_filter=2", nil)
+	rr := httptest.NewRecorder()
+	handler.PromptList(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
+
+func TestImportResultsHandler_POST_NoFile(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	req := httptest.NewRequest("POST", "/import_results", nil)
 	req.Header.Set("Content-Type", "multipart/form-data")
@@ -690,14 +1186,79 @@ func TestImportResultsHandler_POST_NoFile(t *testing.T) {
 	ImportResultsHandler(rr, req)
 
 	// Should redirect to import_error
-	if rr.Code != http.StatusSeeOther {
-		t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
-	}
+        if rr.Code != http.StatusSeeOther {
+                t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
+        }
+}
+
+func TestImportResultsHandler_ReadAllError(t *testing.T) {
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
+
+        handler := &Handler{
+                DataStore: &MockDataStore{},
+                Renderer:  &MockRenderer{},
+        }
+
+        results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
+        jsonData, _ := json.Marshal(results)
+
+        body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+        req := httptest.NewRequest("POST", "/import_results", body)
+        req.Header.Set("Content-Type", contentType)
+
+        original := readAll
+        readAll = func(io.Reader) ([]byte, error) { return nil, errors.New("mock readall error") }
+        t.Cleanup(func() { readAll = original })
+
+        rr := httptest.NewRecorder()
+        handler.ImportResults(rr, req)
+
+        if rr.Code != http.StatusInternalServerError {
+                t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+        }
+        if !strings.Contains(rr.Body.String(), "Error reading file") {
+                t.Fatalf("expected error message, got %q", rr.Body.String())    
+        }
+}
+
+func TestImportResultsHandler_WriteResultsError(t *testing.T) {
+        expectedErr := errors.New("mock write results error")
+        handler := &Handler{
+                DataStore: &MockDataStore{
+                        Prompts:      []middleware.Prompt{{Text: "Prompt 1"}},
+                        CurrentSuite: "test-suite",
+                        WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+                                if suiteName != "test-suite" {
+                                        t.Fatalf("expected suite name %q, got %q", "test-suite", suiteName)
+                                }
+                                return expectedErr
+                        },
+                },
+                Renderer: &MockRenderer{},
+        }
+
+        results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
+        jsonData, _ := json.Marshal(results)
+
+        body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+        req := httptest.NewRequest("POST", "/import_results", body)
+        req.Header.Set("Content-Type", contentType)
+
+        rr := httptest.NewRecorder()
+        handler.ImportResults(rr, req)
+
+        if rr.Code != http.StatusInternalServerError {
+                t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+        }
+        if !strings.Contains(rr.Body.String(), "Error writing results") {
+                t.Fatalf("expected error message, got %q", rr.Body.String())
+        }
 }
 
 func TestImportResultsHandler_POST_ValidJSON(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
+        cleanup := setupPromptTestDB(t)
+        defer cleanup()
 
 	// First create prompts so results have targets
 	prompts := []middleware.Prompt{
@@ -1947,12 +2508,46 @@ func TestAddPromptHandler_ReadPromptSuiteError(t *testing.T) {
 	}
 }
 
-func TestAddPromptHandler_EmptySuiteName(t *testing.T) {
-	mockDS := &MockDataStore{
-		Prompts:      []middleware.Prompt{},
-		CurrentSuite: "", // Empty suite name should default to "default"
-	}
+func TestAddPrompt_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
 
+	req := httptest.NewRequest(http.MethodPost, "/add_prompt", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.AddPrompt(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+type emptySuiteNameDataStore struct {
+	MockDataStore
+	ReadSuiteName  string
+	WriteSuiteName string
+}
+
+func (m *emptySuiteNameDataStore) GetCurrentSuiteName() string { return "" }
+
+func (m *emptySuiteNameDataStore) ReadPromptSuite(suiteName string) ([]middleware.Prompt, error) {
+	m.ReadSuiteName = suiteName
+	return m.MockDataStore.ReadPromptSuite(suiteName)
+}
+
+func (m *emptySuiteNameDataStore) WritePromptSuite(suiteName string, prompts []middleware.Prompt) error {
+	m.WriteSuiteName = suiteName
+	return m.MockDataStore.WritePromptSuite(suiteName, prompts)
+}
+
+func TestAddPromptHandler_EmptySuiteName(t *testing.T) {
+	mockDS := &emptySuiteNameDataStore{
+		MockDataStore: MockDataStore{
+			Prompts: []middleware.Prompt{},
+		},
+	}
 	handler := &Handler{
 		DataStore: mockDS,
 		Renderer:  &MockRenderer{},
@@ -1969,6 +2564,15 @@ func TestAddPromptHandler_EmptySuiteName(t *testing.T) {
 
 	if rr.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d (redirect), got %d", http.StatusSeeOther, rr.Code)
+	}
+	if mockDS.ReadSuiteName != "default" {
+		t.Errorf("expected ReadPromptSuite to use default suite, got %q", mockDS.ReadSuiteName)
+	}
+	if mockDS.WriteSuiteName != "default" {
+		t.Errorf("expected WritePromptSuite to use default suite, got %q", mockDS.WriteSuiteName)
+	}
+	if len(mockDS.Prompts) != 1 {
+		t.Errorf("expected 1 prompt written, got %d", len(mockDS.Prompts))
 	}
 }
 

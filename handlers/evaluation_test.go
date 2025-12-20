@@ -1,9 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"llm-tournament/middleware"
 
@@ -180,16 +185,19 @@ func TestCancelEvaluationHandler_InvalidID(t *testing.T) {
 }
 
 func TestInitEvaluator(t *testing.T) {
-	cleanup := setupEvaluationTestDB(t)
-	defer cleanup()
+        cleanup := setupEvaluationTestDB(t)
+        defer cleanup()
 
 	// Store original globalEvaluator
 	originalEvaluator := globalEvaluator
 	defer func() { globalEvaluator = originalEvaluator }()
 
-	// Test initialization
-	db := middleware.GetDB()
-	InitEvaluator(db)
+        // Ensure default URL path is exercised (tests may set python_service_url).
+        _ = middleware.SetSetting("python_service_url", "")
+
+        // Test initialization
+        db := middleware.GetDB()
+        InitEvaluator(db)
 
 	if globalEvaluator == nil {
 		t.Error("expected globalEvaluator to be initialized")
@@ -442,9 +450,73 @@ func TestCancelEvaluationHandler_WithNonExistentJob(t *testing.T) {
 	}
 }
 
-func TestEvaluateAllHandler_GetCurrentSuiteIDError(t *testing.T) {
+func TestCancelEvaluationHandler_SuccessResponse(t *testing.T) {
 	cleanup := setupEvaluationTestDB(t)
 	defer cleanup()
+
+	originalLogWriter := log.Writer()
+	log.SetOutput(io.Discard)
+	defer log.SetOutput(originalLogWriter)
+
+	db := middleware.GetDB()
+	InitEvaluator(db)
+
+	suiteID, err := middleware.GetSuiteID(middleware.GetCurrentSuiteName())
+	if err != nil {
+		t.Fatalf("GetSuiteID failed: %v", err)
+	}
+
+	// Insert enough work so the job is running when we cancel it.
+	for i := 0; i < 50; i++ {
+		if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", fmt.Sprintf("Model-%d", i), suiteID); err != nil {
+			t.Fatalf("insert model failed: %v", err)
+		}
+		if _, err := db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type) VALUES (?, '', ?, ?, 'objective')", fmt.Sprintf("Prompt-%d", i), suiteID, i); err != nil {
+			t.Fatalf("insert prompt failed: %v", err)
+		}
+	}
+
+	jobID, err := globalEvaluator.EvaluateAll(suiteID)
+	if err != nil {
+		t.Fatalf("EvaluateAll failed: %v", err)
+	}
+
+	// Wait for the job to enter running state (worker has registered cancel channel).
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		var status string
+		if err := db.QueryRow("SELECT status FROM evaluation_jobs WHERE id = ?", jobID).Scan(&status); err != nil {
+			t.Fatalf("query job status failed: %v", err)
+		}
+		if status == "running" {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for job %d to enter running state", jobID)
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	req := httptest.NewRequest("POST", fmt.Sprintf("/evaluation/cancel?id=%d", jobID), nil)
+	rr := httptest.NewRecorder()
+	CancelEvaluationHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	var resp map[string]any
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to unmarshal response: %v", err)
+	}
+	if ok, _ := resp["success"].(bool); !ok {
+		t.Fatalf("expected success=true, got %#v", resp["success"])
+	}
+}
+
+func TestEvaluateAllHandler_GetCurrentSuiteIDError(t *testing.T) {
+        cleanup := setupEvaluationTestDB(t)
+        defer cleanup()
 
 	// Initialize evaluator
 	db := middleware.GetDB()

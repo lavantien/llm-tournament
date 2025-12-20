@@ -12,6 +12,17 @@ import (
 
 var db *sql.DB
 
+var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
+var sqlOpen = sql.Open
+var execPragmas = func(conn *sql.DB) error {
+	_, err := conn.Exec(`PRAGMA journal_mode = WAL;
+                     PRAGMA synchronous = NORMAL;
+                     PRAGMA foreign_keys = ON;`)
+	return err
+}
+var createTablesFunc = createTables
+var dbBegin = func() (*sql.Tx, error) { return db.Begin() }
+
 // GetDB returns the database connection
 func GetDB() *sql.DB {
 	return db
@@ -26,21 +37,18 @@ func InitDB(dbPath string) error {
 	}
 
 	var err error
-	db, err = sql.Open("sqlite3", dbPath)
+	db, err = sqlOpen("sqlite3", dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 
 	// Set pragmas for better performance
-	_, err = db.Exec(`PRAGMA journal_mode = WAL;
-                     PRAGMA synchronous = NORMAL;
-                     PRAGMA foreign_keys = ON;`)
-	if err != nil {
+	if err = execPragmas(db); err != nil {
 		return fmt.Errorf("failed to set database pragmas: %w", err)
 	}
 
 	// Create schema if it doesn't exist
-	if err = createTables(); err != nil {
+	if err = createTablesFunc(); err != nil {
 		return fmt.Errorf("failed to create tables: %w", err)
 	}
 
@@ -209,17 +217,17 @@ func GetSuiteID(suiteName string) (int, error) {
 	}
 
 	// If suite doesn't exist, create it
-	if err == sql.ErrNoRows {
-		result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
-		if err != nil {
-			return 0, fmt.Errorf("failed to create suite: %w", err)
+		if err == sql.ErrNoRows {
+			result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
+			if err != nil {
+				return 0, fmt.Errorf("failed to create suite: %w", err)
+			}
+			id, err := lastInsertID(result)
+			if err != nil {
+				return 0, fmt.Errorf("failed to get suite ID: %w", err)
+			}
+			return int(id), nil
 		}
-		id, err := result.LastInsertId()
-		if err != nil {
-			return 0, fmt.Errorf("failed to get suite ID: %w", err)
-		}
-		return int(id), nil
-	}
 
 	return 0, err
 }
@@ -252,7 +260,7 @@ func SetCurrentSuite(suiteName string) error {
 	}
 
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -316,7 +324,7 @@ func DeleteSuite(suiteName string) error {
 	}
 
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}

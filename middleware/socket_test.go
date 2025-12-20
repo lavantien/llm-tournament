@@ -243,9 +243,33 @@ func TestHandleWebSocket_Connection(t *testing.T) {
 	}
 }
 
+func TestHandleWebSocket_UpgradeError(t *testing.T) {
+        // Clear any existing clients
+        clientsMutex.Lock()
+        clients = make(map[*websocket.Conn]bool)
+        clientsMutex.Unlock()
+
+        req := httptest.NewRequest(http.MethodGet, "/ws", nil)
+        rr := httptest.NewRecorder()
+
+        // Not a websocket upgrade request -> Upgrade should fail.
+        HandleWebSocket(rr, req)
+
+        clientsMutex.Lock()
+        got := len(clients)
+        clientsMutex.Unlock()
+
+        if got != 0 {
+                t.Fatalf("expected 0 clients after upgrade failure, got %d", got)
+        }
+        if rr.Code == http.StatusSwitchingProtocols {
+                t.Fatalf("unexpected websocket upgrade success")
+        }
+}
+
 func TestHandleWebSocket_CloseConnection(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
 
 	err := InitDB(dbPath)
 	if err != nil {
@@ -277,9 +301,82 @@ func TestHandleWebSocket_CloseConnection(t *testing.T) {
 	}
 }
 
+func TestHandleWebSocket_InvalidJSONMessage(t *testing.T) {
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
+
+        err := InitDB(dbPath)
+        if err != nil {
+                t.Fatalf("InitDB failed: %v", err)
+        }
+
+        server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+        defer server.Close()
+
+        conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+        if err != nil {
+                t.Fatalf("failed to connect: %v", err)
+        }
+        defer conn.Close()
+
+        waitForWebSocketClientRegistration(t, 1)
+
+        // Send invalid JSON; handler should log and continue.
+        err = conn.WriteMessage(websocket.TextMessage, []byte("{"))
+        if err != nil {
+                t.Fatalf("failed to send message: %v", err)
+        }
+
+        clientsMutex.Lock()
+        got := len(clients)
+        clientsMutex.Unlock()
+        if got != 1 {
+                t.Fatalf("expected 1 client to remain registered, got %d", got)
+        }
+}
+
+func TestHandleWebSocket_UnexpectedCloseErrorBranch(t *testing.T) {
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
+
+        err := InitDB(dbPath)
+        if err != nil {
+                t.Fatalf("InitDB failed: %v", err)
+        }
+
+        server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+        defer server.Close()
+
+        conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+        if err != nil {
+                t.Fatalf("failed to connect: %v", err)
+        }
+
+        waitForWebSocketClientRegistration(t, 1)
+
+        // Close with a code that's *not* listed as expected in the handler's
+        // websocket.IsUnexpectedCloseError call, so the log branch executes.
+        _ = conn.WriteControl(
+                websocket.CloseMessage,
+                websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
+                time.Now().Add(1*time.Second),
+        )
+        _ = conn.Close()
+
+        // Wait for handler cleanup.
+        time.Sleep(100 * time.Millisecond)
+
+        clientsMutex.Lock()
+        got := len(clients)
+        clientsMutex.Unlock()
+        if got != 0 {
+                t.Fatalf("expected 0 clients after close, got %d", got)
+        }
+}
+
 func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
 
 	err := InitDB(dbPath)
 	if err != nil {
@@ -427,9 +524,202 @@ func TestBroadcastResults_WithClient(t *testing.T) {
 	}
 }
 
+func TestBroadcastMessage_MarshalErrorCleansUpClient(t *testing.T) {
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
+
+        err := InitDB(dbPath)
+        if err != nil {
+                t.Fatalf("InitDB failed: %v", err)
+        }
+
+        clientsMutex.Lock()
+        clients = make(map[*websocket.Conn]bool)
+        clientsMutex.Unlock()
+
+        server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+        defer server.Close()
+
+        conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+        if err != nil {
+                t.Fatalf("failed to connect: %v", err)
+        }
+        defer conn.Close()
+
+        waitForWebSocketClientRegistration(t, 1)
+
+        // Include a channel to force json.Marshal to fail inside WriteJSON.
+        payload := struct {
+                Ch chan int `json:"ch"`
+        }{Ch: make(chan int)}
+
+        broadcastMessage(payload)
+
+        clientsMutex.Lock()
+        got := len(clients)
+        clientsMutex.Unlock()
+        if got != 0 {
+                t.Fatalf("expected client to be removed after marshal error, got %d", got)
+        }
+}
+
+func TestBroadcastResults_UncategorizedStartColAfterProfile(t *testing.T) {
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
+
+        err := InitDB(dbPath)
+        if err != nil {
+                t.Fatalf("InitDB failed: %v", err)
+        }
+
+        // Set up a profile and prompts where the uncategorized prompt comes
+        // after a profiled prompt. The Uncategorized group's StartCol should
+        // reflect the first uncategorized prompt column (not default to 0).
+        err = WriteProfileSuite("default", []Profile{{Name: "general", Description: "General"}})
+        if err != nil {
+                t.Fatalf("WriteProfileSuite failed: %v", err)
+        }
+
+        prompts := []Prompt{
+                {Text: "Prompt 1", Profile: "general"},
+                {Text: "Prompt 2", Profile: ""},
+        }
+        err = WritePromptSuite("default", prompts)
+        if err != nil {
+                t.Fatalf("WritePromptSuite failed: %v", err)
+        }
+
+        err = WriteResults("default", map[string]Result{
+                "Model A": {Scores: []int{100, 80}},
+        })
+        if err != nil {
+                t.Fatalf("WriteResults failed: %v", err)
+        }
+
+        clientsMutex.Lock()
+        clients = make(map[*websocket.Conn]bool)
+        clientsMutex.Unlock()
+
+        server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+        defer server.Close()
+
+        conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+        if err != nil {
+                t.Fatalf("failed to connect: %v", err)
+        }
+        defer conn.Close()
+
+        waitForWebSocketClientRegistration(t, 1)
+        conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+
+        go BroadcastResults()
+
+        _, msg, err := conn.ReadMessage()
+        if err != nil {
+            t.Fatalf("failed to read message: %v", err)
+        }
+
+        var payload struct {
+                Type string `json:"type"`
+                Data struct {
+                        ProfileGroups []ProfileGroup `json:"profileGroups"`
+                } `json:"data"`
+        }
+        err = json.Unmarshal(msg, &payload)
+        if err != nil {
+                t.Fatalf("failed to unmarshal: %v", err)
+        }
+        if payload.Type != "results" {
+                t.Fatalf("expected type 'results', got %q", payload.Type)
+        }
+
+        var uncategorized *ProfileGroup
+        for i := range payload.Data.ProfileGroups {
+                if payload.Data.ProfileGroups[i].Name == "Uncategorized" {
+                        uncategorized = &payload.Data.ProfileGroups[i]
+                        break
+                }
+        }
+        if uncategorized == nil {
+                t.Fatalf("expected Uncategorized profile group to be present")
+        }
+        if uncategorized.StartCol != 1 {
+                t.Fatalf("expected Uncategorized StartCol=1, got %d", uncategorized.StartCol)
+        }
+}
+
+func TestBroadcastResults_WriteJSONErrorCleansUpClient(t *testing.T) {
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
+
+        err := InitDB(dbPath)
+        if err != nil {
+                t.Fatalf("InitDB failed: %v", err)
+        }
+
+        // Ensure BroadcastResults has something to send.
+        err = WritePromptSuite("default", []Prompt{{Text: "Prompt 1"}})
+        if err != nil {
+                t.Fatalf("WritePromptSuite failed: %v", err)
+        }
+
+        err = WriteResults("default", map[string]Result{
+                "Model A": {Scores: []int{100}},
+        })
+        if err != nil {
+                t.Fatalf("WriteResults failed: %v", err)
+        }
+
+        clientsMutex.Lock()
+        clients = make(map[*websocket.Conn]bool)
+        clientsMutex.Unlock()
+
+        registered := make(chan *websocket.Conn, 1)
+        server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+                conn, err := upgrader.Upgrade(w, r, nil)
+                if err != nil {
+                        t.Errorf("Upgrade failed: %v", err)
+                        return
+                }
+                clientsMutex.Lock()
+                clients[conn] = true
+                clientsMutex.Unlock()
+                registered <- conn
+        }))
+        defer server.Close()
+        wsURL := "ws" + strings.TrimPrefix(server.URL, "http")
+
+        clientConn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+        if err != nil {
+                t.Fatalf("failed to connect: %v", err)
+        }
+
+        var serverConn *websocket.Conn
+        select {
+        case serverConn = <-registered:
+        case <-time.After(2 * time.Second):
+                t.Fatalf("timed out waiting for server-side registration")
+        }
+
+        // Close the server-side connection but keep it in the clients map.
+        _ = serverConn.Close()
+        _ = clientConn.Close()
+
+        // This should attempt to write to the registered server-side conn,
+        // hit the error path, close it, and remove it from the clients map.
+        BroadcastResults()
+
+        clientsMutex.Lock()
+        got := len(clients)
+        clientsMutex.Unlock()
+        if got != 0 {
+                t.Fatalf("expected client to be removed after WriteJSON error, got %d", got)
+        }
+}
+
 func TestBroadcastEvaluationProgress(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
+        dbPath, cleanup := setupTestDB(t)
+        defer cleanup()
 
 	err := InitDB(dbPath)
 	if err != nil {

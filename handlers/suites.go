@@ -29,9 +29,9 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeletePromptSuite handles delete prompt suite page
-func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling delete prompt suite page")
-	if r.Method == "GET" {
+func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {   
+        log.Println("Handling delete prompt suite page")
+        if r.Method == "GET" {
 		suiteName := r.URL.Query().Get("suite_name")
 		if err := h.Renderer.Render(w, "delete_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/delete_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
@@ -62,19 +62,25 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Printf("Prompt suite '%s' deleted successfully", suiteName)
-		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	}
+                log.Printf("Prompt suite '%s' deleted successfully", suiteName)
+                h.DataStore.BroadcastResults()
+                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }
 
 // SelectPromptSuite handles select prompt suite
-func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling select prompt suite")
-	err := r.ParseForm()
-	if err != nil {
-		log.Printf("Error parsing form: %v", err)
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
+func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {   
+        log.Println("Handling select prompt suite")
+        if r.Method != http.MethodPost {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }
+        err := r.ParseForm()
+        if err != nil {
+                log.Printf("Error parsing form: %v", err)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
 		return
 	}
 	suiteName := r.Form.Get("suite_name")
@@ -96,9 +102,9 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewPromptSuite handles new prompt suite
-func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling new prompt suite")
-	if r.Method == "GET" {
+func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {      
+        log.Println("Handling new prompt suite")
+        if r.Method == "GET" {
 		if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, nil, "templates/new_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -124,16 +130,18 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error creating prompt suite", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Prompt suite '%s' created successfully", suiteName)
-		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	}
+                log.Printf("Prompt suite '%s' created successfully", suiteName)
+                h.DataStore.BroadcastResults()
+                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }
 
 // EditPromptSuite handles edit prompt suite
-func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling edit prompt suite")
-	if r.Method == "GET" {
+func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {     
+        log.Println("Handling edit prompt suite")
+        if r.Method == "GET" {
 		suiteName := r.URL.Query().Get("suite_name")
 		if err := h.Renderer.Render(w, "edit_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/edit_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
@@ -162,8 +170,10 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("Error renaming suite: %v", err), http.StatusBadRequest)
 			return
 		}
-		log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
-		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	}
+                log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
+                h.DataStore.BroadcastResults()
+                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+        } else {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }
 }

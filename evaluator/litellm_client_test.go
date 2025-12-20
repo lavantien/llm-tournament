@@ -182,6 +182,35 @@ func TestEstimateCost_ServerError(t *testing.T) {
 	}
 }
 
+func TestEstimateCost_InvalidJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("not valid json"))
+	}))
+	defer server.Close()
+
+	client := NewLiteLLMClient(server.URL)
+	req := CostEstimateRequest{
+		Prompt: "Test prompt",
+	}
+
+	_, err := client.EstimateCost(req)
+	if err == nil {
+		t.Error("expected error for invalid JSON response")
+	}
+}
+
+func TestEstimateCost_ConnectionError(t *testing.T) {
+	client := NewLiteLLMClient("http://localhost:99999")
+	req := CostEstimateRequest{
+		Prompt: "Test prompt",
+	}
+
+	_, err := client.EstimateCost(req)
+	if err == nil {
+		t.Error("expected error for connection failure")
+	}
+}
+
 func TestHealthCheck_Success(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {

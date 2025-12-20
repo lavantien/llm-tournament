@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"llm-tournament/middleware"
@@ -79,5 +80,77 @@ func TestSeedDemoData_ReturnsError_WhenDBClosed(t *testing.T) {
 
 	if err := seedDemoData(); err == nil {
 		t.Fatalf("expected error when database is closed")
+	}
+}
+
+func TestSeedDemoData_ReturnsError_WhenWriteProfilesFails(t *testing.T) {
+	t.Helper()
+	ensureDemoEncryptionKey()
+
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "demo.db")
+	if err := middleware.InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB: %v", err)
+	}
+	t.Cleanup(func() { _ = middleware.CloseDB() })
+
+	if _, err := middleware.GetDB().Exec("DROP TABLE profiles"); err != nil {
+		t.Fatalf("drop profiles: %v", err)
+	}
+
+	err := seedDemoData()
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "write profiles") {
+		t.Fatalf("expected write profiles error, got %v", err)
+	}
+}
+
+func TestSeedDemoData_ReturnsError_WhenWritePromptsFails(t *testing.T) {
+	t.Helper()
+	ensureDemoEncryptionKey()
+
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "demo.db")
+	if err := middleware.InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB: %v", err)
+	}
+	t.Cleanup(func() { _ = middleware.CloseDB() })
+
+	if _, err := middleware.GetDB().Exec("DROP TABLE prompts"); err != nil {
+		t.Fatalf("drop prompts: %v", err)
+	}
+
+	err := seedDemoData()
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "write prompts") {
+		t.Fatalf("expected write prompts error, got %v", err)
+	}
+}
+
+func TestSeedDemoData_ReturnsError_WhenWriteResultsFails(t *testing.T) {
+	t.Helper()
+	ensureDemoEncryptionKey()
+
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "demo.db")
+	if err := middleware.InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB: %v", err)
+	}
+	t.Cleanup(func() { _ = middleware.CloseDB() })
+
+	if _, err := middleware.GetDB().Exec("DROP TABLE scores"); err != nil {
+		t.Fatalf("drop scores: %v", err)
+	}
+
+	err := seedDemoData()
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	if !strings.Contains(err.Error(), "write results") {
+		t.Fatalf("expected write results error, got %v", err)
 	}
 }

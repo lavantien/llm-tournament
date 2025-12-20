@@ -36,3 +36,10 @@ llm-tournament.exe
 node_modules/
 nul
 $coverageFile
+coverage
+evaluator_cov
+handlers_cov
+handlers_cov_new
+handlers_one
+middleware_cov
+testutil_cov

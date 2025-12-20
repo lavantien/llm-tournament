@@ -10,6 +10,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var sqlOpen = sql.Open
+var enableForeignKeys = func(db *sql.DB) error {
+	_, err := db.Exec("PRAGMA foreign_keys = ON")
+	return err
+}
+var createTestSchemaFunc = createTestSchema
+var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
+var fatalf = func(t *testing.T, format string, args ...any) { t.Fatalf(format, args...) }
+
 // Prompt is a local type matching middleware.Prompt for testing
 type Prompt struct {
 	Text         string
@@ -66,20 +75,25 @@ func ClearEncryptionKey(t *testing.T) func() {
 // SetupTestDB creates an in-memory SQLite database with schema for testing
 func SetupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
-	db, err := sql.Open("sqlite3", ":memory:")
+	db, err := sqlOpen("sqlite3", ":memory:")
 	if err != nil {
-		t.Fatalf("failed to open test database: %v", err)
+		fatalf(t, "failed to open test database: %v", err)
+		return nil
 	}
 
 	// Enable foreign keys
-	_, err = db.Exec("PRAGMA foreign_keys = ON")
+	err = enableForeignKeys(db)
 	if err != nil {
-		t.Fatalf("failed to enable foreign keys: %v", err)
+		_ = db.Close()
+		fatalf(t, "failed to enable foreign keys: %v", err)
+		return nil
 	}
 
 	// Create schema
-	if err := createTestSchema(db); err != nil {
-		t.Fatalf("failed to create test schema: %v", err)
+	if err := createTestSchemaFunc(db); err != nil {
+		_ = db.Close()
+		fatalf(t, "failed to create test schema: %v", err)
+		return nil
 	}
 
 	return db
@@ -210,11 +224,13 @@ func CreateTestSuite(t *testing.T, db *sql.DB, name string) int {
 	t.Helper()
 	result, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, 0)", name)
 	if err != nil {
-		t.Fatalf("failed to create test suite: %v", err)
+		fatalf(t, "failed to create test suite: %v", err)
+		return 0
 	}
-	id, err := result.LastInsertId()
+	id, err := lastInsertID(result)
 	if err != nil {
-		t.Fatalf("failed to get suite id: %v", err)
+		fatalf(t, "failed to get suite id: %v", err)
+		return 0
 	}
 	return int(id)
 }
@@ -224,11 +240,13 @@ func CreateTestProfile(t *testing.T, db *sql.DB, suiteID int, name, description 
 	t.Helper()
 	result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", name, description, suiteID)
 	if err != nil {
-		t.Fatalf("failed to create test profile: %v", err)
+		fatalf(t, "failed to create test profile: %v", err)
+		return 0
 	}
-	id, err := result.LastInsertId()
+	id, err := lastInsertID(result)
 	if err != nil {
-		t.Fatalf("failed to get profile id: %v", err)
+		fatalf(t, "failed to get profile id: %v", err)
+		return 0
 	}
 	return int(id)
 }
@@ -246,11 +264,13 @@ func CreateTestPrompt(t *testing.T, db *sql.DB, suiteID int, text, solution stri
 			text, solution, suiteID, displayOrder, promptType)
 	}
 	if err != nil {
-		t.Fatalf("failed to create test prompt: %v", err)
+		fatalf(t, "failed to create test prompt: %v", err)
+		return 0
 	}
-	id, err := result.LastInsertId()
+	id, err := lastInsertID(result)
 	if err != nil {
-		t.Fatalf("failed to get prompt id: %v", err)
+		fatalf(t, "failed to get prompt id: %v", err)
+		return 0
 	}
 	return int(id)
 }
@@ -260,11 +280,13 @@ func CreateTestModel(t *testing.T, db *sql.DB, suiteID int, name string) int {
 	t.Helper()
 	result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", name, suiteID)
 	if err != nil {
-		t.Fatalf("failed to create test model: %v", err)
+		fatalf(t, "failed to create test model: %v", err)
+		return 0
 	}
-	id, err := result.LastInsertId()
+	id, err := lastInsertID(result)
 	if err != nil {
-		t.Fatalf("failed to get model id: %v", err)
+		fatalf(t, "failed to get model id: %v", err)
+		return 0
 	}
 	return int(id)
 }
@@ -274,7 +296,8 @@ func CreateTestScore(t *testing.T, db *sql.DB, modelID, promptID, score int) {
 	t.Helper()
 	_, err := db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)", modelID, promptID, score)
 	if err != nil {
-		t.Fatalf("failed to create test score: %v", err)
+		fatalf(t, "failed to create test score: %v", err)
+		return
 	}
 }
 
@@ -284,7 +307,8 @@ func GetDefaultSuiteID(t *testing.T, db *sql.DB) int {
 	var id int
 	err := db.QueryRow("SELECT id FROM suites WHERE name = 'default'").Scan(&id)
 	if err != nil {
-		t.Fatalf("failed to get default suite id: %v", err)
+		fatalf(t, "failed to get default suite id: %v", err)
+		return 0
 	}
 	return id
 }
@@ -294,11 +318,13 @@ func SetCurrentSuite(t *testing.T, db *sql.DB, suiteID int) {
 	t.Helper()
 	_, err := db.Exec("UPDATE suites SET is_current = 0")
 	if err != nil {
-		t.Fatalf("failed to clear current suite: %v", err)
+		fatalf(t, "failed to clear current suite: %v", err)
+		return
 	}
 	_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE id = ?", suiteID)
 	if err != nil {
-		t.Fatalf("failed to set current suite: %v", err)
+		fatalf(t, "failed to set current suite: %v", err)
+		return
 	}
 }
 
@@ -307,7 +333,8 @@ func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) {
 	t.Helper()
 	_, err := db.Exec("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", key, value)
 	if err != nil {
-		t.Fatalf("failed to create test setting: %v", err)
+		fatalf(t, "failed to create test setting: %v", err)
+		return
 	}
 }
 
@@ -316,11 +343,13 @@ func CreateTestEvaluationJob(t *testing.T, db *sql.DB, suiteID int, jobType, sta
 	t.Helper()
 	result, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (?, ?, ?)", suiteID, jobType, status)
 	if err != nil {
-		t.Fatalf("failed to create test evaluation job: %v", err)
+		fatalf(t, "failed to create test evaluation job: %v", err)
+		return 0
 	}
-	id, err := result.LastInsertId()
+	id, err := lastInsertID(result)
 	if err != nil {
-		t.Fatalf("failed to get job id: %v", err)
+		fatalf(t, "failed to get job id: %v", err)
+		return 0
 	}
 	return int(id)
 }
@@ -331,7 +360,8 @@ func CreateTestModelResponse(t *testing.T, db *sql.DB, modelID, promptID int, re
 	_, err := db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, ?)",
 		modelID, promptID, responseText)
 	if err != nil {
-		t.Fatalf("failed to create test model response: %v", err)
+		fatalf(t, "failed to create test model response: %v", err)
+		return
 	}
 }
 

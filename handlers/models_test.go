@@ -70,9 +70,23 @@ func TestAddModelHandler_EmptyName(t *testing.T) {
 	}
 }
 
+func TestAddModelHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupModelsTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodGet, "/add_model", nil)
+        rr := httptest.NewRecorder()
+
+        AddModelHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
 func TestAddModelHandler_DuplicateModel(t *testing.T) {
-	cleanup := setupModelsTestDB(t)
-	defer cleanup()
+        cleanup := setupModelsTestDB(t)
+        defer cleanup()
 
 	// Add first model
 	form := url.Values{}
@@ -466,9 +480,88 @@ func TestDeleteModel_WriteResultsError(t *testing.T) {
 	}
 }
 
+func TestDeleteModelHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupModelsTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/delete_model?model=ModelToDelete", nil)
+        rr := httptest.NewRecorder()
+
+        DeleteModelHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+type readErrorReader struct{}
+
+func (readErrorReader) Read(p []byte) (int, error) {
+	return 0, errors.New("mock read error")
+}
+
+type nilResultsDataStore struct {
+	MockDataStore
+}
+
+func (ds *nilResultsDataStore) ReadResults() map[string]middleware.Result {
+	return nil
+}
+
+func TestAddModel_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/add_model", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+
+	handler.AddModel(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse error message, got %q", rr.Body.String())
+	}
+}
+
+func TestAddModel_ReadResultsNil(t *testing.T) {
+	ds := &nilResultsDataStore{}
+	ds.Prompts = []middleware.Prompt{{Text: "P1"}, {Text: "P2"}}
+	var wrote map[string]middleware.Result
+	ds.WriteResultsFunc = func(suiteName string, results map[string]middleware.Result) error {
+		wrote = results
+		return nil
+	}
+
+	handler := NewHandlerWithDeps(ds, &MockRenderer{})
+
+	form := url.Values{}
+	form.Add("model", "NewModel")
+	req := httptest.NewRequest(http.MethodPost, "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.AddModel(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Fatalf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+	if wrote == nil {
+		t.Fatal("expected WriteResults to be called")
+	}
+	result, ok := wrote["NewModel"]
+	if !ok {
+		t.Fatalf("expected results to contain %q", "NewModel")
+	}
+	if len(result.Scores) != 2 {
+		t.Fatalf("expected 2 scores, got %d", len(result.Scores))
+	}
+}
+
 func TestEditModelHandler_GET_Success(t *testing.T) {
-	restoreDir := changeToProjectRootModels(t)
-	defer restoreDir()
+        restoreDir := changeToProjectRootModels(t)
+        defer restoreDir()
 
 	cleanup := setupModelsTestDB(t)
 	defer cleanup()
@@ -493,9 +586,30 @@ func TestEditModelHandler_GET_Success(t *testing.T) {
 	}
 }
 
+func TestEditModelHandler_MethodNotAllowed(t *testing.T) {
+        restoreDir := changeToProjectRootModels(t)
+        defer restoreDir()
+
+        cleanup := setupModelsTestDB(t)
+        defer cleanup()
+
+        suiteName := middleware.GetCurrentSuiteName()
+        middleware.WriteResults(suiteName, map[string]middleware.Result{
+                "ModelToEdit": {Scores: []int{80}},
+        })
+
+        req := httptest.NewRequest(http.MethodPut, "/edit_model?model=ModelToEdit", nil)
+        rr := httptest.NewRecorder()
+        EditModelHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
 func TestEditModelHandler_GET_RenderError(t *testing.T) {
-	cleanup := setupModelsTestDB(t)
-	defer cleanup()
+        cleanup := setupModelsTestDB(t)
+        defer cleanup()
 
 	// Save original renderer and restore after test
 	original := middleware.DefaultRenderer

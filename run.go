@@ -26,6 +26,8 @@ type runDeps struct {
 	listenAndServe      func(string, http.Handler) error
 }
 
+var osExit = os.Exit
+
 func defaultRunDeps() runDeps {
 	return runDeps{
 		initDB:              middleware.InitDB,
@@ -93,5 +95,5 @@ func run(args []string, deps runDeps) int {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:], defaultRunDeps()))
+	osExit(run(os.Args[1:], defaultRunDeps()))
 }

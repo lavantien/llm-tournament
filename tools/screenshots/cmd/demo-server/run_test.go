@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -270,5 +271,44 @@ func TestRun_NilSignalChannel_ExitsOnErrServerClosed(t *testing.T) {
 	}
 	if !closeCalled {
 		t.Fatalf("expected closeDB to be called via defer")
+	}
+}
+
+func TestDefaultRunDeps_ServeDelegatesToHTTPServer(t *testing.T) {
+	deps := defaultRunDeps()
+
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+	_ = ln.Close()
+
+	server := &http.Server{Handler: http.NewServeMux()}
+	if err := deps.serve(server, ln); err == nil {
+		t.Fatalf("expected serve to return an error for closed listener")
+	}
+}
+
+func TestMain_UsesOsExit(t *testing.T) {
+	origArgs := os.Args
+	origExit := osExit
+	origLogOutput := log.Writer()
+	t.Cleanup(func() {
+		os.Args = origArgs
+		osExit = origExit
+		log.SetOutput(origLogOutput)
+	})
+
+	os.Args = []string{"demo-server", "-no-such-flag"}
+
+	var gotCode int
+	osExit = func(code int) {
+		gotCode = code
+	}
+
+	main()
+
+	if gotCode != 2 {
+		t.Fatalf("expected exit code 2, got %d", gotCode)
 	}
 }

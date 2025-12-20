@@ -504,9 +504,173 @@ func TestDeletePromptSuiteHandler_GET_RenderError(t *testing.T) {
 	}
 }
 
-func TestNewPromptSuiteHandler_GET_RenderError(t *testing.T) {
+func TestSelectPromptSuite_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/select_prompt_suite", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.SelectPromptSuite(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse form error message, got %q", rr.Body.String())
+	}
+}
+
+func TestNewPromptSuite_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/new_prompt_suite", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.NewPromptSuite(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse form error message, got %q", rr.Body.String())
+	}
+}
+
+func TestEditPromptSuite_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/edit_prompt_suite", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+	handler.EditPromptSuite(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error parsing form") {
+		t.Fatalf("expected parse form error message, got %q", rr.Body.String())
+	}
+}
+
+type deletePromptSuiteSetCurrentSuiteErrorDataStore struct {
+	MockDataStore
+}
+
+func (ds *deletePromptSuiteSetCurrentSuiteErrorDataStore) SetCurrentSuite(name string) error {
+	return errors.New("mock set current suite error")
+}
+
+func TestDeletePromptSuite_SetCurrentSuiteError(t *testing.T) {
+	handler := NewHandlerWithDeps(&deletePromptSuiteSetCurrentSuiteErrorDataStore{
+		MockDataStore: MockDataStore{CurrentSuite: "current-suite"},
+	}, &MockRenderer{})
+
+	form := url.Values{}
+	form.Add("suite_name", "current-suite")
+
+	req := httptest.NewRequest("POST", "/delete_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.DeletePromptSuite(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error updating current suite") {
+		t.Fatalf("expected current suite update error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeletePromptSuite_DeleteSuiteError(t *testing.T) {
 	cleanup := setupSuitesTestDB(t)
 	defer cleanup()
+
+	if err := middleware.WritePromptSuite("suite-to-delete", []middleware.Prompt{}); err != nil {
+		t.Fatalf("failed to create suite: %v", err)
+	}
+
+	// Force middleware.DeletePromptSuite to error by closing the DB before deletion.
+	middleware.CloseDB()
+
+	handler := NewHandlerWithDeps(&MockDataStore{CurrentSuite: "default"}, &MockRenderer{})
+
+	form := url.Values{}
+	form.Add("suite_name", "suite-to-delete")
+
+	req := httptest.NewRequest("POST", "/delete_prompt_suite", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+	handler.DeletePromptSuite(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error deleting prompt suite") {
+		t.Fatalf("expected delete suite error message, got %q", rr.Body.String())
+	}
+}
+
+func TestDeletePromptSuiteHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupSuitesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/delete?suite_name=default", nil)
+        rr := httptest.NewRecorder()
+
+        DeletePromptSuiteHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestNewPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupSuitesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/new", nil)
+        rr := httptest.NewRecorder()
+
+        NewPromptSuiteHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestEditPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupSuitesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/edit?suite_name=default", nil)
+        rr := httptest.NewRecorder()
+
+        EditPromptSuiteHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestSelectPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
+        cleanup := setupSuitesTestDB(t)
+        defer cleanup()
+
+        req := httptest.NewRequest(http.MethodGet, "/prompts/suites/select", nil)
+        rr := httptest.NewRecorder()
+
+        SelectPromptSuiteHandler(rr, req)
+
+        if rr.Code != http.StatusMethodNotAllowed {
+                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+        }
+}
+
+func TestNewPromptSuiteHandler_GET_RenderError(t *testing.T) {
+        cleanup := setupSuitesTestDB(t)
+        defer cleanup()
 
 	// Save original renderer and restore after test
 	original := middleware.DefaultRenderer

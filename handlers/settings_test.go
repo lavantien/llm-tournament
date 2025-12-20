@@ -437,3 +437,59 @@ func TestUpdateSettingsHandler_SetAPIKeyError(t *testing.T) {
 		t.Errorf("expected status %d on SetAPIKey error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+type setSettingErrorDataStore struct {
+	MockDataStore
+	errorsByKey map[string]error
+}
+
+func (ds *setSettingErrorDataStore) SetSetting(key, value string) error {
+	if err := ds.errorsByKey[key]; err != nil {
+		return err
+	}
+	return ds.MockDataStore.SetSetting(key, value)
+}
+
+func TestUpdateSettings_SetSettingErrorsDoNotFailRequest(t *testing.T) {
+	ds := &setSettingErrorDataStore{
+		errorsByKey: map[string]error{
+			"cost_alert_threshold_usd":   errors.New("threshold error"),
+			"auto_evaluate_new_models":  errors.New("auto eval error"),
+			"python_service_url":        errors.New("python url error"),
+		},
+	}
+	handler := NewHandlerWithDeps(ds, &MockRenderer{})
+
+	form := url.Values{}
+	form.Add("cost_alert_threshold_usd", "123.45")
+	form.Add("auto_evaluate_new_models", "on")
+	form.Add("python_service_url", "http://example:8001")
+
+	req := httptest.NewRequest(http.MethodPost, "/settings", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+
+	handler.UpdateSettings(rr, req)
+
+	// These SetSetting errors are logged but the handler still redirects back to Settings.
+	if rr.Code != http.StatusSeeOther {
+		t.Fatalf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+}
+
+func TestUpdateSettings_ParseFormError(t *testing.T) {
+	handler := NewHandlerWithDeps(&MockDataStore{}, &MockRenderer{})
+
+	req := httptest.NewRequest(http.MethodPost, "/update_settings", readErrorReader{})
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rr := httptest.NewRecorder()
+
+	handler.UpdateSettings(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Failed to parse form") {
+		t.Fatalf("expected parse form error message, got %q", rr.Body.String())
+	}
+}

@@ -27,10 +27,7 @@ func NewLiteLLMClient(baseURL string) *LiteLLMClient {
 
 // Evaluate sends an evaluation request to the Python service
 func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, error) {
-	jsonData, err := json.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
+	jsonData, _ := json.Marshal(req)
 
 	resp, err := c.httpClient.Post(
 		c.baseURL+"/evaluate",
@@ -57,10 +54,7 @@ func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, er
 
 // EstimateCost estimates the cost of an evaluation
 func (c *LiteLLMClient) EstimateCost(req CostEstimateRequest) (*CostEstimateResponse, error) {
-	jsonData, err := json.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
+	jsonData, _ := json.Marshal(req)
 
 	resp, err := c.httpClient.Post(
 		c.baseURL+"/estimate_cost",

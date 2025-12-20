@@ -112,9 +112,11 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 	// Add a group for prompts with no profile only if needed
 	if hasUncategorized {
 		noProfileGroup := &middleware.ProfileGroup{
-			ID:    "none",
-			Name:  "Uncategorized",
-			Color: "hsl(0, 0%, 50%)",
+			ID:       "none",
+			Name:     "Uncategorized",
+			Color:    "hsl(0, 0%, 50%)",
+			StartCol: -1,
+			EndCol:   -1,
 		}
 		profileGroups = append(profileGroups, noProfileGroup)
 		profileMap[""] = noProfileGroup
@@ -125,14 +127,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 	for i, prompt := range prompts {
 		profileName := prompt.Profile
 
-		group, exists := profileMap[profileName]
-		if !exists {
-			// Skip if group doesn't exist and we don't have uncategorized group
-			if _, hasUncategorized := profileMap[""]; !hasUncategorized {
-				continue
-			}
-			group = profileMap[""]
-		}
+		group := profileMap[profileName]
 
 		if group.StartCol == -1 {
 			group.StartCol = currentCol
@@ -525,19 +520,14 @@ func (h *Handler) ExportResults(w http.ResponseWriter, r *http.Request) {
 	results := h.DataStore.ReadResults()
 
 	// Convert results to JSON
-	jsonData, err := json.MarshalIndent(results, "", "  ")
-	if err != nil {
-		log.Printf("Error marshaling results to JSON: %v", err)
-		http.Error(w, "Error creating JSON export", http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := json.MarshalIndent(results, "", "  ")
 
 	// Set headers for JSON download
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", "attachment;filename=results.json")
 
 	// Write JSON to response
-	_, err = w.Write(jsonData)
+	_, err := w.Write(jsonData)
 	if err != nil {
 		log.Printf("Error writing response: %v", err)
 		http.Error(w, "Error writing response", http.StatusInternalServerError)

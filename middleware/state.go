@@ -6,6 +6,9 @@ import (
 	"log"
 )
 
+var rowsErr = func(rows *sql.Rows) error { return rows.Err() }
+var txCommit = func(tx *sql.Tx) error { return tx.Commit() }
+
 type Prompt struct {
 	Text     string `json:"text"`
 	Solution string `json:"solution"`
@@ -67,7 +70,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 	}
 
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -239,7 +242,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 	}
 
 	// Check for any errors during iteration
-	if err = rows.Err(); err != nil {
+	if err = rowsErr(rows); err != nil {
 		return nil, fmt.Errorf("error iterating prompt rows: %w", err)
 	}
 
@@ -262,7 +265,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 	}
 
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -362,7 +365,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	}
 
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -389,7 +392,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	}
 	promptRows.Close()
 	
-	if err := promptRows.Err(); err != nil {
+	if err := rowsErr(promptRows); err != nil {
 		return fmt.Errorf("error iterating prompt rows: %w", err)
 	}
 
@@ -434,20 +437,20 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		// Get or create model
 		var modelID int
 		err := tx.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&modelID)
-		if err == sql.ErrNoRows {
-			// Create new model
-			modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-			if err != nil {
-				return fmt.Errorf("failed to insert model: %w", err)
-			}
-			modelIDInt64, err := modelResult.LastInsertId()
-			if err != nil {
-				return fmt.Errorf("failed to get model ID: %w", err)
-			}
-			modelID = int(modelIDInt64)
-		} else if err != nil {
-			return fmt.Errorf("failed to query model: %w", err)
-		}
+				if err == sql.ErrNoRows {
+					// Create new model
+					modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+					if err != nil {
+						return fmt.Errorf("failed to insert model: %w", err)
+					}
+					modelIDInt64, err := lastInsertID(modelResult)
+					if err != nil {
+						return fmt.Errorf("failed to get model ID: %w", err)
+					}
+					modelID = int(modelIDInt64)
+				} else if err != nil {
+					return fmt.Errorf("failed to query model: %w", err)
+				}
 
 		// Insert scores
 		if len(result.Scores) > 0 {
@@ -515,7 +518,7 @@ func UpdatePromptsOrder(order []int) {
 	}
 	
 	// Begin transaction
-	tx, err := db.Begin()
+	tx, err := dbBegin()
 	if err != nil {
 		log.Printf("Error beginning transaction: %v", err)
 		return
@@ -559,7 +562,7 @@ func UpdatePromptsOrder(order []int) {
 		}
 	}
 	
-	if err = tx.Commit(); err != nil {
+	if err = txCommit(tx); err != nil {
 		log.Printf("Error committing transaction: %v", err)
 		return
 	}

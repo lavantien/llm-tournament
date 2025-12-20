@@ -160,6 +160,46 @@ func TestJobQueue_GetJob(t *testing.T) {
 	}
 }
 
+func TestJobQueue_GetJob_WithStartedAndCompletedTimes(t *testing.T) {
+	db := setupTestJobQueueDB(t)
+	defer db.Close()
+
+	jq := &JobQueue{
+		db:      db,
+		jobs:    make(chan *EvaluationJob, 100),
+		workers: 0,
+		running: make(map[int]bool),
+		cancel:  make(map[int]chan bool),
+	}
+
+	startedAt := time.Now().Add(-2 * time.Second)
+	completedAt := time.Now().Add(-1 * time.Second)
+
+	result, err := db.Exec(`
+		INSERT INTO evaluation_jobs (suite_id, job_type, target_id, status, progress_total, estimated_cost_usd, started_at, completed_at)
+		VALUES (1, 'all', 0, 'completed', 0, 0.0, ?, ?)
+	`, startedAt, completedAt)
+	if err != nil {
+		t.Fatalf("failed to insert job: %v", err)
+	}
+
+	jobID, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get job id: %v", err)
+	}
+
+	retrieved, err := jq.GetJob(int(jobID))
+	if err != nil {
+		t.Fatalf("GetJob failed: %v", err)
+	}
+	if retrieved.StartedAt == nil {
+		t.Fatal("expected StartedAt to be set")
+	}
+	if retrieved.CompletedAt == nil {
+		t.Fatal("expected CompletedAt to be set")
+	}
+}
+
 func TestJobQueue_GetJob_NotFound(t *testing.T) {
 	db := setupTestJobQueueDB(t)
 	defer db.Close()
