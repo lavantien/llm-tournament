@@ -59,65 +59,65 @@
 				
 				<option value="file1">llm-tournament/evaluator/consensus.go (100.0%)</option>
 				
-				<option value="file2">llm-tournament/evaluator/evaluator.go (84.0%)</option>
+				<option value="file2">llm-tournament/evaluator/evaluator.go (100.0%)</option>
 				
-				<option value="file3">llm-tournament/evaluator/job_queue.go (94.0%)</option>
+				<option value="file3">llm-tournament/evaluator/job_queue.go (100.0%)</option>
 				
-				<option value="file4">llm-tournament/evaluator/litellm_client.go (88.9%)</option>
+				<option value="file4">llm-tournament/evaluator/litellm_client.go (100.0%)</option>
 				
-				<option value="file5">llm-tournament/handlers/evaluation.go (97.6%)</option>
+				<option value="file5">llm-tournament/handlers/evaluation.go (100.0%)</option>
 				
 				<option value="file6">llm-tournament/handlers/handler.go (100.0%)</option>
 				
-				<option value="file7">llm-tournament/handlers/models.go (94.9%)</option>
+				<option value="file7">llm-tournament/handlers/models.go (100.0%)</option>
 				
-				<option value="file8">llm-tournament/handlers/profiles.go (87.8%)</option>
+				<option value="file8">llm-tournament/handlers/profiles.go (100.0%)</option>
 				
-				<option value="file9">llm-tournament/handlers/prompt.go (84.9%)</option>
+				<option value="file9">llm-tournament/handlers/prompt.go (100.0%)</option>
 				
-				<option value="file10">llm-tournament/handlers/results.go (92.1%)</option>
+				<option value="file10">llm-tournament/handlers/results.go (100.0%)</option>
 				
-				<option value="file11">llm-tournament/handlers/settings.go (90.0%)</option>
+				<option value="file11">llm-tournament/handlers/settings.go (100.0%)</option>
 				
-				<option value="file12">llm-tournament/handlers/stats.go (96.2%)</option>
+				<option value="file12">llm-tournament/handlers/stats.go (100.0%)</option>
 				
-				<option value="file13">llm-tournament/handlers/suites.go (85.3%)</option>
+				<option value="file13">llm-tournament/handlers/suites.go (100.0%)</option>
 				
 				<option value="file14">llm-tournament/main.go (100.0%)</option>
 				
-				<option value="file15">llm-tournament/middleware/database.go (93.3%)</option>
+				<option value="file15">llm-tournament/middleware/database.go (100.0%)</option>
 				
 				<option value="file16">llm-tournament/middleware/datastore.go (100.0%)</option>
 				
-				<option value="file17">llm-tournament/middleware/encryption.go (90.7%)</option>
+				<option value="file17">llm-tournament/middleware/encryption.go (100.0%)</option>
 				
 				<option value="file18">llm-tournament/middleware/handler_utils.go (100.0%)</option>
 				
-				<option value="file19">llm-tournament/middleware/import_error.go (75.0%)</option>
+				<option value="file19">llm-tournament/middleware/import_error.go (100.0%)</option>
 				
 				<option value="file20">llm-tournament/middleware/renderer.go (100.0%)</option>
 				
-				<option value="file21">llm-tournament/middleware/settings.go (85.7%)</option>
+				<option value="file21">llm-tournament/middleware/settings.go (100.0%)</option>
 				
-				<option value="file22">llm-tournament/middleware/socket.go (83.2%)</option>
+				<option value="file22">llm-tournament/middleware/socket.go (100.0%)</option>
 				
-				<option value="file23">llm-tournament/middleware/state.go (95.1%)</option>
+				<option value="file23">llm-tournament/middleware/state.go (100.0%)</option>
 				
 				<option value="file24">llm-tournament/middleware/utils.go (100.0%)</option>
 				
-				<option value="file25">llm-tournament/run.go (94.6%)</option>
+				<option value="file25">llm-tournament/run.go (100.0%)</option>
 				
 				<option value="file26">llm-tournament/templates/shared.go (100.0%)</option>
 				
-				<option value="file27">llm-tournament/testutil/testutil.go (90.6%)</option>
+				<option value="file27">llm-tournament/testutil/testutil.go (99.6%)</option>
 				
-				<option value="file28">llm-tournament/tools/screenshots/cmd/demo-server/main.go (0.0%)</option>
+				<option value="file28">llm-tournament/tools/screenshots/cmd/demo-server/main.go (100.0%)</option>
 				
 				<option value="file29">llm-tournament/tools/screenshots/cmd/demo-server/routes.go (100.0%)</option>
 				
-				<option value="file30">llm-tournament/tools/screenshots/cmd/demo-server/run.go (98.4%)</option>
+				<option value="file30">llm-tournament/tools/screenshots/cmd/demo-server/run.go (100.0%)</option>
 				
-				<option value="file31">llm-tournament/tools/screenshots/cmd/demo-server/seed.go (91.7%)</option>
+				<option value="file31">llm-tournament/tools/screenshots/cmd/demo-server/seed.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -327,12 +327,12 @@ func (e *Evaluator) EvaluateAll(suiteID int) (int, error) <span class="cov8" tit
         // Get prompt and model counts
         var promptCount, modelCount int
         err := e.db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = ?", suiteID).Scan(&amp;promptCount)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to count prompts: %w", err)
         }</span>
 
         <span class="cov8" title="1">err = e.db.QueryRow("SELECT COUNT(*) FROM models WHERE suite_id = ?", suiteID).Scan(&amp;modelCount)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to count models: %w", err)
         }</span>
 
@@ -349,7 +349,7 @@ func (e *Evaluator) EvaluateAll(suiteID int) (int, error) <span class="cov8" tit
                 EstimatedCost: estimatedCost,
         }
 
-        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov0" title="0">{
+        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to enqueue job: %w", err)
         }</span>
 
@@ -366,7 +366,7 @@ func (e *Evaluator) EvaluateModel(modelID int) (int, error) <span class="cov8" t
         }</span>
 
         <span class="cov8" title="1">err = e.db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = ?", suiteID).Scan(&amp;promptCount)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to count prompts: %w", err)
         }</span>
 
@@ -380,7 +380,7 @@ func (e *Evaluator) EvaluateModel(modelID int) (int, error) <span class="cov8" t
                 EstimatedCost: estimatedCost,
         }
 
-        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov0" title="0">{
+        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to enqueue job: %w", err)
         }</span>
 
@@ -397,7 +397,7 @@ func (e *Evaluator) EvaluatePrompt(promptID int) (int, error) <span class="cov8"
         }</span>
 
         <span class="cov8" title="1">err = e.db.QueryRow("SELECT COUNT(*) FROM models WHERE suite_id = ?", suiteID).Scan(&amp;modelCount)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to count models: %w", err)
         }</span>
 
@@ -411,7 +411,7 @@ func (e *Evaluator) EvaluatePrompt(promptID int) (int, error) <span class="cov8"
                 EstimatedCost: estimatedCost,
         }
 
-        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov0" title="0">{
+        if err := e.jobQueue.Enqueue(job); err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to enqueue job: %w", err)
         }</span>
 
@@ -438,7 +438,7 @@ func (e *Evaluator) processJob(job *EvaluationJob, cancelChan chan bool) error <
 func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) error <span class="cov8" title="1">{
         // Get all models
         modelRows, err := e.db.Query("SELECT id FROM models WHERE suite_id = ?", job.SuiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query models: %w", err)
         }</span>
         <span class="cov8" title="1">defer modelRows.Close()
@@ -446,7 +446,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
         var modelIDs []int
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
-                if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov0" title="0">{
+                if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov8" title="1">{
                         return err
                 }</span>
                 <span class="cov8" title="1">modelIDs = append(modelIDs, modelID)</span>
@@ -454,7 +454,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
 
         // Get all prompts
         <span class="cov8" title="1">promptRows, err := e.db.Query("SELECT id FROM prompts WHERE suite_id = ?", job.SuiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query prompts: %w", err)
         }</span>
         <span class="cov8" title="1">defer promptRows.Close()
@@ -462,7 +462,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
         var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var promptID int
-                if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov0" title="0">{
+                if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov8" title="1">{
                         return err
                 }</span>
                 <span class="cov8" title="1">promptIDs = append(promptIDs, promptID)</span>
@@ -482,7 +482,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
                         }
 
                         <span class="cov8" title="1">cost, err := e.evaluateModelPromptPair(job.ID, modelID, promptID)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Failed to evaluate model %d, prompt %d: %v", modelID, promptID, err)
                                 // Continue with next evaluation
                         }</span>
@@ -491,7 +491,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
                         current++
 
                         // Update progress
-                        if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov0" title="0">{
+                        if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Failed to update progress: %v", err)
                         }</span>
                 }
@@ -504,7 +504,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
 func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) error <span class="cov8" title="1">{
         // Get all prompts
         promptRows, err := e.db.Query("SELECT id FROM prompts WHERE suite_id = ?", job.SuiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query prompts: %w", err)
         }</span>
         <span class="cov8" title="1">defer promptRows.Close()
@@ -512,7 +512,7 @@ func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) er
         var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var promptID int
-                if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov0" title="0">{
+                if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov8" title="1">{
                         return err
                 }</span>
                 <span class="cov8" title="1">promptIDs = append(promptIDs, promptID)</span>
@@ -529,14 +529,14 @@ func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) er
                 }
 
                 <span class="cov8" title="1">cost, err := e.evaluateModelPromptPair(job.ID, job.TargetID, promptID)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to evaluate prompt %d: %v", promptID, err)
                 }</span>
 
                 <span class="cov8" title="1">totalCost += cost
                 current++
 
-                if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov0" title="0">{
+                if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to update progress: %v", err)
                 }</span>
         }
@@ -548,7 +548,7 @@ func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) er
 func (e *Evaluator) processPromptJob(job *EvaluationJob, cancelChan chan bool) error <span class="cov8" title="1">{
         // Get all models
         modelRows, err := e.db.Query("SELECT id FROM models WHERE suite_id = ?", job.SuiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query models: %w", err)
         }</span>
         <span class="cov8" title="1">defer modelRows.Close()
@@ -556,7 +556,7 @@ func (e *Evaluator) processPromptJob(job *EvaluationJob, cancelChan chan bool) e
         var modelIDs []int
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
-                if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov0" title="0">{
+                if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov8" title="1">{
                         return err
                 }</span>
                 <span class="cov8" title="1">modelIDs = append(modelIDs, modelID)</span>
@@ -573,14 +573,14 @@ func (e *Evaluator) processPromptJob(job *EvaluationJob, cancelChan chan bool) e
                 }
 
                 <span class="cov8" title="1">cost, err := e.evaluateModelPromptPair(job.ID, modelID, job.TargetID)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to evaluate model %d: %v", modelID, err)
                 }</span>
 
                 <span class="cov8" title="1">totalCost += cost
                 current++
 
-                if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov0" title="0">{
+                if err := e.jobQueue.UpdateJobProgress(job.ID, current, job.ProgressTotal, totalCost); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to update progress: %v", err)
                 }</span>
         }
@@ -619,13 +619,13 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
                 // No response stored - skip evaluation
                 log.Printf("No response for model %d, prompt %d - skipping", modelID, promptID)
                 return 0, nil
-        }</span> else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
+        }</span> else<span class="cov8" title="1"> if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to get model response: %w", err)
         }</span>
 
         // Get API keys from settings
         <span class="cov8" title="1">apiKeys, err := e.getAPIKeys()
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to get API keys: %w", err)
         }</span>
 
@@ -653,7 +653,7 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
                 VALUES (?, ?, ?)
         `, modelID, promptID, consensusScore)
 
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return 0, fmt.Errorf("failed to update score: %w", err)
         }</span>
 
@@ -664,7 +664,7 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 `, jobID, modelID, promptID, result.Judge, result.Score, result.Confidence, result.Reasoning, result.CostUSD)
 
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to save evaluation history: %v", err)
                 }</span>
         }
@@ -680,7 +680,7 @@ func (e *Evaluator) getAPIKeys() (map[string]string, error) <span class="cov8" t
                 WHERE key LIKE 'api_key_%'
         `)
 
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -688,7 +688,7 @@ func (e *Evaluator) getAPIKeys() (map[string]string, error) <span class="cov8" t
         apiKeys := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, value string
-                if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov8" title="1">{
                         return nil, err
                 }</span>
                 // TODO: Decrypt value using encryption module (Phase 4)
@@ -730,6 +730,8 @@ type JobQueue struct {
         evaluator   *Evaluator
         resumeDelay time.Duration // Delay before resuming pending jobs (configurable for testing)
 }
+
+var lastInsertID = func(result sql.Result) (int64, error) <span class="cov8" title="1">{ return result.LastInsertId() }</span>
 
 // NewJobQueue creates a new job queue with the specified number of workers
 func NewJobQueue(db *sql.DB, workers int, evaluator *Evaluator) *JobQueue <span class="cov8" title="1">{
@@ -776,7 +778,7 @@ func (jq *JobQueue) worker(id int) <span class="cov8" title="1">{
                 now := time.Now()
                 job.StartedAt = &amp;now
                 job.Status = "running"
-                if err := jq.updateJob(job); err != nil </span><span class="cov0" title="0">{
+                if err := jq.updateJob(job); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to update job status: %v", err)
                 }</span>
 
@@ -796,7 +798,7 @@ func (jq *JobQueue) worker(id int) <span class="cov8" title="1">{
                         log.Printf("Job %d completed successfully", job.ID)
                 }</span>
 
-                <span class="cov8" title="1">if err := jq.updateJob(job); err != nil </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if err := jq.updateJob(job); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Failed to update job completion: %v", err)
                 }</span>
 
@@ -820,8 +822,8 @@ func (jq *JobQueue) Enqueue(job *EvaluationJob) error <span class="cov8" title="
                 return fmt.Errorf("failed to insert job: %w", err)
         }</span>
 
-        <span class="cov8" title="1">jobID, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">jobID, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get job ID: %w", err)
         }</span>
 
@@ -869,10 +871,10 @@ func (jq *JobQueue) GetJob(jobID int) (*EvaluationJob, error) <span class="cov8"
                 return nil, err
         }</span>
 
-        <span class="cov8" title="1">if startedAt.Valid </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if startedAt.Valid </span><span class="cov8" title="1">{
                 job.StartedAt = &amp;startedAt.Time
         }</span>
-        <span class="cov8" title="1">if completedAt.Valid </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if completedAt.Valid </span><span class="cov8" title="1">{
                 job.CompletedAt = &amp;completedAt.Time
         }</span>
 
@@ -973,12 +975,9 @@ func NewLiteLLMClient(baseURL string) *LiteLLMClient <span class="cov8" title="1
 
 // Evaluate sends an evaluation request to the Python service
 func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, error) <span class="cov8" title="1">{
-        jsonData, err := json.Marshal(req)
-        if err != nil </span><span class="cov0" title="0">{
-                return nil, fmt.Errorf("failed to marshal request: %w", err)
-        }</span>
+        jsonData, _ := json.Marshal(req)
 
-        <span class="cov8" title="1">resp, err := c.httpClient.Post(
+        resp, err := c.httpClient.Post(
                 c.baseURL+"/evaluate",
                 "application/json",
                 bytes.NewBuffer(jsonData),
@@ -1003,17 +1002,14 @@ func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, er
 
 // EstimateCost estimates the cost of an evaluation
 func (c *LiteLLMClient) EstimateCost(req CostEstimateRequest) (*CostEstimateResponse, error) <span class="cov8" title="1">{
-        jsonData, err := json.Marshal(req)
-        if err != nil </span><span class="cov0" title="0">{
-                return nil, fmt.Errorf("failed to marshal request: %w", err)
-        }</span>
+        jsonData, _ := json.Marshal(req)
 
-        <span class="cov8" title="1">resp, err := c.httpClient.Post(
+        resp, err := c.httpClient.Post(
                 c.baseURL+"/estimate_cost",
                 "application/json",
                 bytes.NewBuffer(jsonData),
         )
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to send request: %w", err)
         }</span>
         <span class="cov8" title="1">defer resp.Body.Close()
@@ -1024,7 +1020,7 @@ func (c *LiteLLMClient) EstimateCost(req CostEstimateRequest) (*CostEstimateResp
         }</span>
 
         <span class="cov8" title="1">var costResp CostEstimateResponse
-        if err := json.NewDecoder(resp.Body).Decode(&amp;costResp); err != nil </span><span class="cov0" title="0">{
+        if err := json.NewDecoder(resp.Body).Decode(&amp;costResp); err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to decode response: %w", err)
         }</span>
 
@@ -1064,7 +1060,7 @@ var globalEvaluator *evaluator.Evaluator
 // InitEvaluator initializes the global evaluator instance
 func InitEvaluator(db *sql.DB) <span class="cov8" title="1">{
         pythonURL, _ := middleware.GetSetting("python_service_url")
-        if pythonURL == "" </span><span class="cov0" title="0">{
+        if pythonURL == "" </span><span class="cov8" title="1">{
                 pythonURL = "http://localhost:8001"
         }</span>
         <span class="cov8" title="1">globalEvaluator = evaluator.NewEvaluator(db, pythonURL)
@@ -1222,7 +1218,7 @@ func CancelEvaluationHandler(w http.ResponseWriter, r *http.Request) <span class
                 return
         }</span>
 
-        <span class="cov0" title="0">middleware.RespondJSON(w, map[string]interface{}{
+        <span class="cov8" title="1">middleware.RespondJSON(w, map[string]interface{}{
                 "success": true,
                 "message": "Job cancelled",
         })</span>
@@ -1288,10 +1284,14 @@ func DeleteModelHandler(w http.ResponseWriter, r *http.Request) <span class="cov
 // AddModel handles adding a model
 func (h *Handler) AddModel(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling add model")
-        err := r.ParseForm()
-        if err != nil </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+        <span class="cov8" title="1">err := r.ParseForm()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
                 return
         }</span>
         <span class="cov8" title="1">modelName := r.Form.Get("model")
@@ -1301,7 +1301,7 @@ func (h *Handler) AddModel(w http.ResponseWriter, r *http.Request) <span class="
                 return
         }</span>
         <span class="cov8" title="1">results := h.DataStore.ReadResults()
-        if results == nil </span><span class="cov0" title="0">{
+        if results == nil </span><span class="cov8" title="1">{
                 results = make(map[string]middleware.Result)
         }</span>
         <span class="cov8" title="1">if _, ok := results[modelName]; !ok </span><span class="cov8" title="1">{
@@ -1355,6 +1355,11 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) <span class=
                 return</span>
         }
 
+        <span class="cov8" title="1">if r.Method != "GET" </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+
         // Render the edit model form
         <span class="cov8" title="1">if err := h.Renderer.RenderTemplateSimple(w, "edit_model.html", map[string]string{"Model": modelName}); err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error rendering template: %v", err)
@@ -1393,24 +1398,21 @@ func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) <span clas
 
                 <span class="cov8" title="1">h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 </pre>
 		
 		<pre class="file" id="file8" style="display: none">package handlers
 
 import (
-        "encoding/json"
-        "html/template"
         "log"
         "net/http"
         "strconv"
-        "strings"
-
-        "github.com/microcosm-cc/bluemonday"
-        "github.com/russross/blackfriday/v2"
 
         "llm-tournament/middleware"
+        "llm-tournament/templates"
 )
 
 // ProfilesHandler handles the profiles page (backward compatible wrapper)
@@ -1443,22 +1445,9 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) <span class="
         log.Println("Handling profiles page")
         searchQuery := r.FormValue("search_query")
 
-        funcMap := template.FuncMap{
-                "inc": func(i int) int </span><span class="cov8" title="1">{
-                        return i + 1
-                }</span>,
-                "tolower":  strings.ToLower,
-                "contains": strings.Contains,
-                "eqs": func(a, b string) bool <span class="cov8" title="1">{
-                        return a == b
-                }</span>,
-        }
-        <span class="cov8" title="1">funcMap["json"] = func(v interface{}) (string, error) </span><span class="cov0" title="0">{
-                b, err := json.Marshal(v)
-                return string(b), err
-        }</span>
+        funcMap := templates.FuncMap
 
-        <span class="cov8" title="1">pageName := "Profiles"
+        pageName := "Profiles"
         profiles := h.DataStore.ReadProfiles()
 
         err := h.Renderer.Render(w, "profiles.html", funcMap, struct {
@@ -1481,10 +1470,14 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) <span class="
 // AddProfile handles adding a profile
 func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling add profile")
-        err := r.ParseForm()
-        if err != nil </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+        <span class="cov8" title="1">err := r.ParseForm()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
                 return
         }</span>
         <span class="cov8" title="1">profileName := r.Form.Get("profile_name")
@@ -1512,7 +1505,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
         log.Println("Handling edit profile")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -1526,14 +1519,8 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
                 }</span>
                 <span class="cov8" title="1">profiles := h.DataStore.ReadProfiles()
                 if index &gt;= 0 &amp;&amp; index &lt; len(profiles) </span><span class="cov8" title="1">{
-                        funcMap := template.FuncMap{
-                                "markdown": func(text string) template.HTML </span><span class="cov8" title="1">{
-                                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                                        return template.HTML(html)
-                                }</span>,
-                        }
-                        <span class="cov8" title="1">err := h.Renderer.Render(w, "edit_profile.html", funcMap, struct {
+                        funcMap := templates.FuncMap
+                        err := h.Renderer.Render(w, "edit_profile.html", funcMap, struct {
                                 Index   int
                                 Profile middleware.Profile
                         }{
@@ -1548,7 +1535,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
                 }
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -1595,15 +1582,17 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
                 }</span>
                 <span class="cov8" title="1">log.Println("Profile edited successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // DeleteProfile handles deleting a profile
-func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{       
         log.Println("Handling delete profile")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -1617,14 +1606,8 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">profiles := h.DataStore.ReadProfiles()
                 if index &gt;= 0 &amp;&amp; index &lt; len(profiles) </span><span class="cov8" title="1">{
-                        funcMap := template.FuncMap{
-                                "markdown": func(text string) template.HTML </span><span class="cov0" title="0">{
-                                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                                        return template.HTML(html)
-                                }</span>,
-                        }
-                        <span class="cov8" title="1">err := h.Renderer.Render(w, "delete_profile.html", funcMap, struct {
+                        funcMap := templates.FuncMap
+                        err := h.Renderer.Render(w, "delete_profile.html", funcMap, struct {
                                 Index   int
                                 Profile middleware.Profile
                         }{
@@ -1639,7 +1622,7 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span cl
                 }
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -1663,11 +1646,13 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">log.Println("Profile deleted successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // ResetProfiles handles resetting profiles
-func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{       
         log.Println("Handling reset profiles")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil </span><span class="cov8" title="1">{
@@ -1683,7 +1668,9 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">log.Println("Profiles reset successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 </pre>
 		
@@ -1691,18 +1678,16 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span cl
 
 import (
         "encoding/json"
-        "html/template"
         "io"
         "log"
         "net/http"
         "strconv"
-        "strings"
-
-        "github.com/microcosm-cc/bluemonday"
-        "github.com/russross/blackfriday/v2"
 
         "llm-tournament/middleware"
+        "llm-tournament/templates"
 )
+
+var readAll = io.ReadAll
 
 // PromptListHandler handles the prompt list page (backward compatible wrapper)
 func PromptListHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
@@ -1782,31 +1767,10 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) <span class
                 }</span>
         }
 
-        <span class="cov8" title="1">funcMap := template.FuncMap{
-                "inc": func(i int) int </span><span class="cov8" title="1">{
-                        return i + 1
-                }</span>,
-                "markdown": func(text string) template.HTML <span class="cov8" title="1">{
-                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                        return template.HTML(html)
-                }</span>,
-                "string": func(i int) string <span class="cov0" title="0">{
-                        return strconv.Itoa(i)
-                }</span>,
-                "tolower":  strings.ToLower,
-                "contains": strings.Contains,
-                "eqs": func(a, b string) bool <span class="cov8" title="1">{
-                        return a == b
-                }</span>,
-        }
-        <span class="cov8" title="1">funcMap["json"] = func(v interface{}) (string, error) </span><span class="cov8" title="1">{
-                b, err := json.Marshal(v)
-                return string(b), err
-        }</span>
+        <span class="cov8" title="1">funcMap := templates.FuncMap
 
-        <span class="cov8" title="1">suites, err := h.DataStore.ListPromptSuites()
-        if err != nil </span><span class="cov0" title="0">{
+        suites, err := h.DataStore.ListPromptSuites()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error listing prompt suites: %v", err)
                 http.Error(w, "Error listing prompt suites", http.StatusInternalServerError)
                 return
@@ -1814,18 +1778,18 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) <span class
 
         <span class="cov8" title="1">currentSuite := h.DataStore.GetCurrentSuiteName()
         var prompts []middleware.Prompt
-        if currentSuite == "" </span><span class="cov0" title="0">{
+        if currentSuite == "" </span><span class="cov8" title="1">{
                 currentSuite = "default"
         }</span>
         <span class="cov8" title="1">prompts, err = h.DataStore.ReadPromptSuite(currentSuite)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error reading prompt suite: %v", err)
                 http.Error(w, "Error reading prompt suite", http.StatusInternalServerError)
                 return
         }</span>
-        <span class="cov8" title="1">if len(prompts) == 0 &amp;&amp; currentSuite == "default" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if len(prompts) == 0 &amp;&amp; currentSuite == "default" </span><span class="cov8" title="1">{
                 prompts, err = h.DataStore.ReadPromptSuite("default")
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error reading default prompt suite: %v", err)
                         http.Error(w, "Error reading default prompt suite", http.StatusInternalServerError)
                         return
@@ -1871,12 +1835,16 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) <span class
 }
 
 // UpdatePromptsOrder handles updating prompts order
-func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{  
         log.Println("Handling update prompts order")
-        err := r.ParseForm()
-        if err != nil </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+        <span class="cov8" title="1">err := r.ParseForm()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
                 return
         }</span>
         <span class="cov8" title="1">orderStr := r.Form.Get("order")
@@ -1899,10 +1867,14 @@ func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) <sp
 // AddPrompt handles adding a prompt
 func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling add prompt")
-        err := r.ParseForm()
-        if err != nil </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+        <span class="cov8" title="1">err := r.ParseForm()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
                 return
         }</span>
         <span class="cov8" title="1">promptText := r.Form.Get("prompt")
@@ -1915,7 +1887,7 @@ func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) <span class=
         profile := r.Form.Get("profile")
 
         currentSuite := h.DataStore.GetCurrentSuiteName()
-        if currentSuite == "" </span><span class="cov0" title="0">{
+        if currentSuite == "" </span><span class="cov8" title="1">{
                 currentSuite = "default"
         }</span>
 
@@ -1939,24 +1911,23 @@ func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) <span class=
 }
 
 // ExportPrompts handles exporting prompts
-func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{       
         log.Println("Handling export prompts")
-        prompts := h.DataStore.ReadPrompts()
-
-        // Convert prompts to JSON
-        jsonData, err := json.MarshalIndent(prompts, "", "  ")
-        if err != nil </span><span class="cov0" title="0">{
-                log.Printf("Error marshaling prompts to JSON: %v", err)
-                http.Error(w, "Error creating JSON export", http.StatusInternalServerError)
+        if r.Method != http.MethodGet </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
                 return
         }</span>
+        <span class="cov8" title="1">prompts := h.DataStore.ReadPrompts()
+
+        // Convert prompts to JSON
+        jsonData, _ := json.MarshalIndent(prompts, "", "  ")
 
         // Set headers for JSON download
-        <span class="cov8" title="1">w.Header().Set("Content-Type", "application/json")
+        w.Header().Set("Content-Type", "application/json")
         w.Header().Set("Content-Disposition", "attachment;filename=prompts.json")
 
         // Write JSON to response
-        _, err = w.Write(jsonData)
+        _, err := w.Write(jsonData)
         if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error writing response: %v", err)
                 http.Error(w, "Error writing response", http.StatusInternalServerError)
@@ -1977,15 +1948,9 @@ func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">defer file.Close()
 
-                if file == nil </span><span class="cov0" title="0">{
-                        log.Println("No file provided")
-                        http.Redirect(w, r, "/import_error", http.StatusSeeOther)
-                        return
-                }</span>
-
                 // Read the file content
-                <span class="cov8" title="1">data, err := io.ReadAll(file)
-                if err != nil </span><span class="cov0" title="0">{
+                data, err := readAll(file)
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error reading file: %v", err)
                         http.Error(w, "Error reading file", http.StatusInternalServerError)
                         return
@@ -2018,12 +1983,14 @@ func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) <span cl
                 <span class="cov8" title="1">log.Println("Prompts imported successfully from JSON")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov8" title="1"> if r.Method == "GET" </span><span class="cov8" title="1">{
                 if err := h.Renderer.RenderTemplateSimple(w, "import_prompts.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // ImportResults handles importing results
@@ -2038,15 +2005,9 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">defer file.Close()
 
-                if file == nil </span><span class="cov0" title="0">{
-                        log.Println("No file provided")
-                        http.Redirect(w, r, "/import_error", http.StatusSeeOther)
-                        return
-                }</span>
-
                 // Read the file content
-                <span class="cov8" title="1">data, err := io.ReadAll(file)
-                if err != nil </span><span class="cov0" title="0">{
+                data, err := readAll(file)
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error reading file: %v", err)
                         http.Error(w, "Error reading file", http.StatusInternalServerError)
                         return
@@ -2082,7 +2043,7 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span cl
                 // Write the imported results
                 <span class="cov8" title="1">suiteName := h.DataStore.GetCurrentSuiteName()
                 err = h.DataStore.WriteResults(suiteName, results)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error writing results: %v", err)
                         http.Error(w, "Error writing results", http.StatusInternalServerError)
                         return
@@ -2091,12 +2052,14 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span cl
                 <span class="cov8" title="1">log.Println("Results imported successfully from JSON")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
+        } else<span class="cov8" title="1"> if r.Method == "GET" </span><span class="cov8" title="1">{
                 if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // EditPrompt handles editing a prompt
@@ -2104,7 +2067,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
         log.Println("Handling edit prompt")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2118,14 +2081,8 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
                 }</span>
                 <span class="cov8" title="1">prompts := h.DataStore.ReadPrompts()
                 if index &gt;= 0 &amp;&amp; index &lt; len(prompts) </span><span class="cov8" title="1">{
-                        funcMap := template.FuncMap{
-                                "markdown": func(text string) template.HTML </span><span class="cov8" title="1">{
-                                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                                        return template.HTML(html)
-                                }</span>,
-                        }
-                        <span class="cov8" title="1">profiles := h.DataStore.ReadProfiles()
+                        funcMap := templates.FuncMap
+                        profiles := h.DataStore.ReadProfiles()
                         err := h.Renderer.Render(w, "edit_prompt.html", funcMap, struct {
                                 Index    int
                                 Prompt   middleware.Prompt
@@ -2143,7 +2100,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
                 }
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2178,7 +2135,9 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
                 <span class="cov8" title="1">log.Println("Prompt edited successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // BulkDeletePromptsPage handles bulk delete prompts page
@@ -2212,22 +2171,16 @@ func (h *Handler) BulkDeletePromptsPage(w http.ResponseWriter, r *http.Request) 
                 }</span>
         }
 
-        <span class="cov8" title="1">funcMap := template.FuncMap{
-                "markdown": func(text string) template.HTML </span><span class="cov8" title="1">{
-                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                        return template.HTML(html)
-                }</span>,
-        }
+        <span class="cov8" title="1">funcMap := templates.FuncMap
 
-        <span class="cov8" title="1">err = h.Renderer.Render(w, "bulk_delete_prompts.html", funcMap, struct {
+        err = h.Renderer.Render(w, "bulk_delete_prompts.html", funcMap, struct {
                 Indices string
                 Prompts []middleware.Prompt
         }{
                 Indices: indicesStr,
                 Prompts: selectedPrompts,
         }, "templates/bulk_delete_prompts.html")
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error rendering template: %v", err)
                 http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 return
@@ -2247,7 +2200,7 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) <spa
         }
 
         err := json.NewDecoder(r.Body).Decode(&amp;request)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error decoding request: %v", err)
                 http.Error(w, "Error decoding request", http.StatusBadRequest)
                 return
@@ -2256,7 +2209,7 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) <spa
         <span class="cov8" title="1">indices := request.Indices
 
         prompts := h.DataStore.ReadPrompts()
-        if len(prompts) == 0 </span><span class="cov0" title="0">{
+        if len(prompts) == 0 </span><span class="cov8" title="1">{
                 log.Println("No prompts to delete")
                 http.Error(w, "No prompts to delete", http.StatusBadRequest)
                 return
@@ -2295,11 +2248,11 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) <spa
 }
 
 // DeletePrompt handles deleting a prompt
-func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{        
         log.Println("Handling delete prompt")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2313,14 +2266,8 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span cla
                 }</span>
                 <span class="cov8" title="1">prompts := h.DataStore.ReadPrompts()
                 if index &gt;= 0 &amp;&amp; index &lt; len(prompts) </span><span class="cov8" title="1">{
-                        funcMap := template.FuncMap{
-                                "markdown": func(text string) template.HTML </span><span class="cov8" title="1">{
-                                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                                        return template.HTML(html)
-                                }</span>,
-                        }
-                        <span class="cov8" title="1">err := h.Renderer.Render(w, "delete_prompt.html", funcMap, struct {
+                        funcMap := templates.FuncMap
+                        err := h.Renderer.Render(w, "delete_prompt.html", funcMap, struct {
                                 Index  int
                                 Prompt middleware.Prompt
                         }{
@@ -2335,7 +2282,7 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span cla
                 }
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2360,15 +2307,17 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span cla
                 <span class="cov8" title="1">log.Println("Prompt deleted successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
-}
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
+} 
 
 // MovePrompt handles moving a prompt
 func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling move prompt")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2382,17 +2331,8 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
                 }</span>
                 <span class="cov8" title="1">prompts := h.DataStore.ReadPrompts()
                 if index &gt;= 0 &amp;&amp; index &lt; len(prompts) </span><span class="cov8" title="1">{
-                        funcMap := template.FuncMap{
-                                "inc": func(i int) int </span><span class="cov0" title="0">{
-                                        return i + 1
-                                }</span>,
-                                "markdown": func(text string) template.HTML <span class="cov0" title="0">{
-                                        unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
-                                        html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-                                        return template.HTML(html)
-                                }</span>,
-                        }
-                        <span class="cov8" title="1">err := h.Renderer.Render(w, "move_prompt.html", funcMap, struct {
+                        funcMap := templates.FuncMap
+                        err := h.Renderer.Render(w, "move_prompt.html", funcMap, struct {
                                 Index   int
                                 Prompt  string
                                 Prompts []middleware.Prompt
@@ -2409,7 +2349,7 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
                 }
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -2446,11 +2386,13 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
                 <span class="cov8" title="1">log.Println("Prompt moved successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // ResetPrompts handles resetting prompts
-func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{        
         log.Println("Handling reset prompts")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil </span><span class="cov8" title="1">{
@@ -2467,7 +2409,9 @@ func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) <span cla
                 <span class="cov8" title="1">log.Println("Prompts reset successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 </pre>
 		
@@ -2585,9 +2529,11 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
         // Add a group for prompts with no profile only if needed
         <span class="cov8" title="1">if hasUncategorized </span><span class="cov8" title="1">{
                 noProfileGroup := &amp;middleware.ProfileGroup{
-                        ID:    "none",
-                        Name:  "Uncategorized",
-                        Color: "hsl(0, 0%, 50%)",
+                        ID:       "none",
+                        Name:     "Uncategorized",
+                        Color:    "hsl(0, 0%, 50%)",
+                        StartCol: -1,
+                        EndCol:   -1,
                 }
                 profileGroups = append(profileGroups, noProfileGroup)
                 profileMap[""] = noProfileGroup
@@ -2598,16 +2544,9 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
         for i, prompt := range prompts </span><span class="cov8" title="1">{
                 profileName := prompt.Profile
 
-                group, exists := profileMap[profileName]
-                if !exists </span><span class="cov0" title="0">{
-                        // Skip if group doesn't exist and we don't have uncategorized group
-                        if _, hasUncategorized := profileMap[""]; !hasUncategorized </span><span class="cov0" title="0">{
-                                continue</span>
-                        }
-                        <span class="cov0" title="0">group = profileMap[""]</span>
-                }
+                group := profileMap[profileName]
 
-                <span class="cov8" title="1">if group.StartCol == -1 </span><span class="cov8" title="1">{
+                if group.StartCol == -1 </span><span class="cov8" title="1">{
                         group.StartCol = currentCol
                 }</span>
                 <span class="cov8" title="1">group.EndCol = currentCol
@@ -2655,11 +2594,11 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
         filteredResults := make(map[string]middleware.Result)
         for model, result := range results </span><span class="cov8" title="1">{
                 // Apply model filter if specified
-                if modelFilter != "" &amp;&amp; model != modelFilter </span><span class="cov0" title="0">{
+                if modelFilter != "" &amp;&amp; model != modelFilter </span><span class="cov8" title="1">{
                         continue</span>
                 }
                 // Apply search filter if specified
-                <span class="cov8" title="1">if searchQuery != "" &amp;&amp; !strings.Contains(strings.ToLower(model), searchQuery) </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if searchQuery != "" &amp;&amp; !strings.Contains(strings.ToLower(model), searchQuery) </span><span class="cov8" title="1">{
                         continue</span>
                 }
                 <span class="cov8" title="1">filteredResults[model] = result</span>
@@ -2673,12 +2612,12 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
         <span class="cov8" title="1">resultsForTemplate := make(map[string]middleware.Result)
         for model, result := range filteredResults </span><span class="cov8" title="1">{
                 // Initialize scores array if nil
-                if result.Scores == nil </span><span class="cov0" title="0">{
+                if result.Scores == nil </span><span class="cov8" title="1">{
                         result.Scores = make([]int, len(prompts))
                 }</span>
 
                 // Ensure scores array matches prompts length
-                <span class="cov8" title="1">if len(result.Scores) != len(prompts) </span><span class="cov0" title="0">{
+                <span class="cov8" title="1">if len(result.Scores) != len(prompts) </span><span class="cov8" title="1">{
                         newScores := make([]int, len(prompts))
                         copy(newScores, result.Scores)
                         result.Scores = newScores
@@ -2686,7 +2625,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
 
                 // Ensure all scores are valid (0-100)
                 <span class="cov8" title="1">for i, score := range result.Scores </span><span class="cov8" title="1">{
-                        if score &lt; 0 || score &gt; 100 </span><span class="cov0" title="0">{
+                        if score &lt; 0 || score &gt; 100 </span><span class="cov8" title="1">{
                                 result.Scores[i] = 0
                         }</span>
                 }
@@ -2768,7 +2707,7 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) <span cla
 
         <span class="cov8" title="1">suiteName := h.DataStore.GetCurrentSuiteName()
         results := h.DataStore.ReadResults()
-        if results == nil </span><span class="cov0" title="0">{
+        if results == nil </span><span class="cov8" title="1">{
                 results = make(map[string]middleware.Result)
         }</span>
         <span class="cov8" title="1">if _, ok := results[model]; !ok </span><span class="cov8" title="1">{
@@ -2779,13 +2718,13 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) <span cla
 
         <span class="cov8" title="1">prompts := h.DataStore.ReadPrompts()
         result := results[model]
-        if len(result.Scores) &lt; len(prompts) </span><span class="cov0" title="0">{
+        if len(result.Scores) &lt; len(prompts) </span><span class="cov8" title="1">{
                 result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
         }</span>
         <span class="cov8" title="1">if promptIndex &gt;= 0 &amp;&amp; promptIndex &lt; len(result.Scores) </span><span class="cov8" title="1">{
                 if pass </span><span class="cov8" title="1">{
                         result.Scores[promptIndex] = 100
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov8" title="1"> {
                         result.Scores[promptIndex] = 0
                 }</span>
         }
@@ -2800,7 +2739,7 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) <span cla
         <span class="cov8" title="1">h.DataStore.BroadcastResults()
 
         _, err = w.Write([]byte("OK"))
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error writing response: %v", err)
                 http.Error(w, "Error writing response", http.StatusInternalServerError)
                 return
@@ -2899,7 +2838,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
                 }</span>
 
                 <span class="cov8" title="1">results := h.DataStore.ReadResults()
-                if results == nil </span><span class="cov0" title="0">{
+                if results == nil </span><span class="cov8" title="1">{
                         results = make(map[string]middleware.Result)
                 }</span>
 
@@ -2998,19 +2937,14 @@ func (h *Handler) ExportResults(w http.ResponseWriter, r *http.Request) <span cl
         results := h.DataStore.ReadResults()
 
         // Convert results to JSON
-        jsonData, err := json.MarshalIndent(results, "", "  ")
-        if err != nil </span><span class="cov0" title="0">{
-                log.Printf("Error marshaling results to JSON: %v", err)
-                http.Error(w, "Error creating JSON export", http.StatusInternalServerError)
-                return
-        }</span>
+        jsonData, _ := json.MarshalIndent(results, "", "  ")
 
         // Set headers for JSON download
-        <span class="cov8" title="1">w.Header().Set("Content-Type", "application/json")
+        w.Header().Set("Content-Type", "application/json")
         w.Header().Set("Content-Disposition", "attachment;filename=results.json")
 
         // Write JSON to response
-        _, err = w.Write(jsonData)
+        _, err := w.Write(jsonData)
         if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error writing response: %v", err)
                 http.Error(w, "Error writing response", http.StatusInternalServerError)
@@ -3040,7 +2974,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
         log.Println("Received mock data request")
 
         body, err := io.ReadAll(r.Body)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error reading request body: %v", err)
                 http.Error(w, "Error reading request body", http.StatusBadRequest)
                 return
@@ -3118,7 +3052,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
         }
 
         // Sort models by total score in descending order
-        <span class="cov8" title="1">sort.Slice(models, func(i, j int) bool </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">sort.Slice(models, func(i, j int) bool </span><span class="cov8" title="1">{
                 return totalScores[models[i]] &gt; totalScores[models[j]]
         }</span>)
 
@@ -3135,7 +3069,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
         }
 
         err = json.NewEncoder(w).Encode(response)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error encoding response: %v", err)
         }</span>
 
@@ -3217,7 +3151,7 @@ func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) <span c
         <span class="cov8" title="1">log.Println("Updating settings")
 
         // Parse form
-        if err := r.ParseForm(); err != nil </span><span class="cov0" title="0">{
+        if err := r.ParseForm(); err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
                 http.Error(w, "Failed to parse form", http.StatusBadRequest)
                 return
@@ -3243,7 +3177,7 @@ func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) <span c
         // Update other settings
         <span class="cov8" title="1">threshold := r.FormValue("cost_alert_threshold_usd")
         if threshold != "" </span><span class="cov8" title="1">{
-                if err := h.DataStore.SetSetting("cost_alert_threshold_usd", threshold); err != nil </span><span class="cov0" title="0">{
+                if err := h.DataStore.SetSetting("cost_alert_threshold_usd", threshold); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error setting threshold: %v", err)
                 }</span>
         }
@@ -3253,13 +3187,13 @@ func (h *Handler) UpdateSettings(w http.ResponseWriter, r *http.Request) <span c
         if autoEval == "on" </span><span class="cov8" title="1">{
                 autoEvalValue = "true"
         }</span>
-        <span class="cov8" title="1">if err := h.DataStore.SetSetting("auto_evaluate_new_models", autoEvalValue); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err := h.DataStore.SetSetting("auto_evaluate_new_models", autoEvalValue); err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error setting auto_evaluate: %v", err)
         }</span>
 
         <span class="cov8" title="1">pythonURL := r.FormValue("python_service_url")
         if pythonURL != "" </span><span class="cov8" title="1">{
-                if err := h.DataStore.SetSetting("python_service_url", pythonURL); err != nil </span><span class="cov0" title="0">{
+                if err := h.DataStore.SetSetting("python_service_url", pythonURL); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error setting Python URL: %v", err)
                 }</span>
         }
@@ -3417,7 +3351,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) <span class="cov
 
                 // Double-check total score calculation to ensure consistency
                 <span class="cov8" title="1">calculatedTotal := stats.Count20*20 + stats.Count40*40 + stats.Count60*60 + stats.Count80*80 + stats.Count100*100
-                if calculatedTotal != stats.TotalScore </span><span class="cov0" title="0">{
+                if calculatedTotal != stats.TotalScore </span><span class="cov8" title="1">{
                         log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", model, calculatedTotal, stats.TotalScore)
                         // Fix the total score if there's a discrepancy
                         stats.TotalScore = calculatedTotal
@@ -3519,7 +3453,7 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) <span class=
 }</span>
 
 // DeletePromptSuite handles delete prompt suite page
-func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{   
         log.Println("Handling delete prompt suite page")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 suiteName := r.URL.Query().Get("suite_name")
@@ -3538,7 +3472,7 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <spa
 
                 <span class="cov8" title="1">currentSuite := h.DataStore.GetCurrentSuiteName()
                 if suiteName == currentSuite </span><span class="cov8" title="1">{
-                        if err := h.DataStore.SetCurrentSuite("default"); err != nil </span><span class="cov0" title="0">{
+                        if err := h.DataStore.SetCurrentSuite("default"); err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Error updating current suite: %v", err)
                                 http.Error(w, "Error updating current suite", http.StatusInternalServerError)
                                 return
@@ -3546,7 +3480,7 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <spa
                 }
 
                 <span class="cov8" title="1">err := middleware.DeletePromptSuite(suiteName)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error deleting prompt suite: %v", err)
                         http.Error(w, "Error deleting prompt suite", http.StatusInternalServerError)
                         return
@@ -3555,16 +3489,22 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <spa
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' deleted successfully", suiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // SelectPromptSuite handles select prompt suite
-func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{   
         log.Println("Handling select prompt suite")
-        err := r.ParseForm()
-        if err != nil </span><span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+        <span class="cov8" title="1">err := r.ParseForm()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)
+                http.Error(w, "Error parsing form", http.StatusBadRequest)      
                 return
         }</span>
         <span class="cov8" title="1">suiteName := r.Form.Get("suite_name")
@@ -3586,7 +3526,7 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) <spa
 }
 
 // NewPromptSuite handles new prompt suite
-func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{      
         log.Println("Handling new prompt suite")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, nil, "templates/new_prompt_suite.html"); err != nil </span><span class="cov8" title="1">{
@@ -3597,7 +3537,7 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span c
                 <span class="cov8" title="1">log.Println("New prompt suite page rendered successfully")</span>
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -3617,11 +3557,13 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span c
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' created successfully", suiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 
 // EditPromptSuite handles edit prompt suite
-func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{     
         log.Println("Handling edit prompt suite")
         if r.Method == "GET" </span><span class="cov8" title="1">{
                 suiteName := r.URL.Query().Get("suite_name")
@@ -3633,7 +3575,7 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span 
                 <span class="cov8" title="1">log.Println("Edit prompt suite page rendered successfully")</span>
         } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
                 err := r.ParseForm()
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
                         http.Error(w, "Error parsing form", http.StatusBadRequest)
                         return
@@ -3655,7 +3597,9 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span 
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        }
+        } else<span class="cov8" title="1"> {
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        }</span>
 }
 </pre>
 		
@@ -3741,6 +3685,17 @@ import (
 
 var db *sql.DB
 
+var lastInsertID = func(result sql.Result) (int64, error) <span class="cov8" title="1">{ return result.LastInsertId() }</span>
+var sqlOpen = sql.Open
+var execPragmas = func(conn *sql.DB) error <span class="cov8" title="1">{
+        _, err := conn.Exec(`PRAGMA journal_mode = WAL;
+                     PRAGMA synchronous = NORMAL;
+                     PRAGMA foreign_keys = ON;`)
+        return err
+}</span>
+var createTablesFunc = createTables
+var dbBegin = func() (*sql.Tx, error) <span class="cov8" title="1">{ return db.Begin() }</span>
+
 // GetDB returns the database connection
 func GetDB() *sql.DB <span class="cov8" title="1">{
         return db
@@ -3755,21 +3710,18 @@ func InitDB(dbPath string) error <span class="cov8" title="1">{
         }</span>
 
         <span class="cov8" title="1">var err error
-        db, err = sql.Open("sqlite3", dbPath)
-        if err != nil </span><span class="cov0" title="0">{
+        db, err = sqlOpen("sqlite3", dbPath)
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to open database: %w", err)
         }</span>
 
         // Set pragmas for better performance
-        <span class="cov8" title="1">_, err = db.Exec(`PRAGMA journal_mode = WAL;
-                     PRAGMA synchronous = NORMAL;
-                     PRAGMA foreign_keys = ON;`)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err = execPragmas(db); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to set database pragmas: %w", err)
         }</span>
 
         // Create schema if it doesn't exist
-        <span class="cov8" title="1">if err = createTables(); err != nil </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">if err = createTablesFunc(); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to create tables: %w", err)
         }</span>
 
@@ -3938,17 +3890,17 @@ func GetSuiteID(suiteName string) (int, error) <span class="cov8" title="1">{
         }</span>
 
         // If suite doesn't exist, create it
-        <span class="cov8" title="1">if err == sql.ErrNoRows </span><span class="cov8" title="1">{
-                result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
-                if err != nil </span><span class="cov8" title="1">{
-                        return 0, fmt.Errorf("failed to create suite: %w", err)
-                }</span>
-                <span class="cov8" title="1">id, err := result.LastInsertId()
-                if err != nil </span><span class="cov0" title="0">{
-                        return 0, fmt.Errorf("failed to get suite ID: %w", err)
-                }</span>
-                <span class="cov8" title="1">return int(id), nil</span>
-        }
+                <span class="cov8" title="1">if err == sql.ErrNoRows </span><span class="cov8" title="1">{
+                        result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
+                        if err != nil </span><span class="cov8" title="1">{
+                                return 0, fmt.Errorf("failed to create suite: %w", err)
+                        }</span>
+                        <span class="cov8" title="1">id, err := lastInsertID(result)
+                        if err != nil </span><span class="cov8" title="1">{
+                                return 0, fmt.Errorf("failed to get suite ID: %w", err)
+                        }</span>
+                        <span class="cov8" title="1">return int(id), nil</span>
+                }
 
         <span class="cov8" title="1">return 0, err</span>
 }
@@ -3981,8 +3933,8 @@ func SetCurrentSuite(suiteName string) error <span class="cov8" title="1">{
         }</span>
 
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
@@ -4033,20 +3985,20 @@ func DeleteSuite(suiteName string) error <span class="cov8" title="1">{
         }</span>
 
         <span class="cov8" title="1">suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
         // Check if it's the current suite
         <span class="cov8" title="1">var isCurrent bool
         err = db.QueryRow("SELECT is_current FROM suites WHERE id = ?", suiteID).Scan(&amp;isCurrent)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to check if suite is current: %w", err)
         }</span>
 
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
@@ -4095,7 +4047,7 @@ func RenameSuite(oldName, newName string) error <span class="cov8" title="1">{
 
         // Rename the suite
         <span class="cov8" title="1">_, err = db.Exec("UPDATE suites SET name = ? WHERE name = ?", newName, oldName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to rename suite: %w", err)
         }</span>
 
@@ -4282,6 +4234,12 @@ import (
         "os"
 )
 
+var (
+        aesNewCipher = aes.NewCipher
+        cipherNewGCM = cipher.NewGCM
+        randReader   io.Reader = rand.Reader
+)
+
 // getEncryptionKey retrieves the encryption key from environment
 func getEncryptionKey() ([]byte, error) <span class="cov8" title="1">{
         keyHex := os.Getenv("ENCRYPTION_KEY")
@@ -4316,19 +4274,19 @@ func EncryptAPIKey(plaintext string) (string, error) <span class="cov8" title="1
                 return "", err
         }</span>
 
-        <span class="cov8" title="1">block, err := aes.NewCipher(key)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">block, err := aesNewCipher(key)
+        if err != nil </span><span class="cov8" title="1">{
                 return "", fmt.Errorf("failed to create cipher: %w", err)
         }</span>
 
-        <span class="cov8" title="1">aesGCM, err := cipher.NewGCM(block)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">aesGCM, err := cipherNewGCM(block)
+        if err != nil </span><span class="cov8" title="1">{
                 return "", fmt.Errorf("failed to create GCM: %w", err)
         }</span>
 
         // Create nonce
         <span class="cov8" title="1">nonce := make([]byte, aesGCM.NonceSize())
-        if _, err := io.ReadFull(rand.Reader, nonce); err != nil </span><span class="cov0" title="0">{
+        if _, err := io.ReadFull(randReader, nonce); err != nil </span><span class="cov8" title="1">{
                 return "", fmt.Errorf("failed to generate nonce: %w", err)
         }</span>
 
@@ -4356,13 +4314,13 @@ func DecryptAPIKey(ciphertext string) (string, error) <span class="cov8" title="
                 return "", fmt.Errorf("failed to decode ciphertext: %w", err)
         }</span>
 
-        <span class="cov8" title="1">block, err := aes.NewCipher(key)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">block, err := aesNewCipher(key)
+        if err != nil </span><span class="cov8" title="1">{
                 return "", fmt.Errorf("failed to create cipher: %w", err)
         }</span>
 
-        <span class="cov8" title="1">aesGCM, err := cipher.NewGCM(block)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">aesGCM, err := cipherNewGCM(block)
+        if err != nil </span><span class="cov8" title="1">{
                 return "", fmt.Errorf("failed to create GCM: %w", err)
         }</span>
 
@@ -4455,7 +4413,7 @@ func ImportErrorHandler(w http.ResponseWriter, r *http.Request) <span class="cov
                 return
         }</span>
         <span class="cov8" title="1">err = t.Execute(w, nil)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error executing template: %v", err)
                 http.Error(w, "Error executing template", http.StatusInternalServerError)
                 return
@@ -4547,7 +4505,7 @@ func SetAPIKey(provider, apiKey string) error <span class="cov8" title="1">{
 // GetAllSettings retrieves all settings as a map
 func GetAllSettings() (map[string]string, error) <span class="cov8" title="1">{
         rows, err := db.Query("SELECT key, value FROM settings")
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -4555,7 +4513,7 @@ func GetAllSettings() (map[string]string, error) <span class="cov8" title="1">{
         settings := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, value string
-                if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov8" title="1">{
                         return nil, err
                 }</span>
                 <span class="cov8" title="1">settings[key] = value</span>
@@ -4566,7 +4524,7 @@ func GetAllSettings() (map[string]string, error) <span class="cov8" title="1">{
 // GetMaskedAPIKeys retrieves all API keys in masked form for display
 func GetMaskedAPIKeys() (map[string]string, error) <span class="cov8" title="1">{
         rows, err := db.Query("SELECT key, value FROM settings WHERE key LIKE 'api_key_%'")
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -4574,13 +4532,13 @@ func GetMaskedAPIKeys() (map[string]string, error) <span class="cov8" title="1">
         apiKeys := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, encryptedValue string
-                if err := rows.Scan(&amp;key, &amp;encryptedValue); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;key, &amp;encryptedValue); err != nil </span><span class="cov8" title="1">{
                         return nil, err
                 }</span>
 
                 // Decrypt and mask
                 <span class="cov8" title="1">decrypted, err := DecryptAPIKey(encryptedValue)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         apiKeys[key] = "***ERROR***"
                         continue</span>
                 }
@@ -4627,7 +4585,7 @@ var clientsMutex sync.Mutex
 func HandleWebSocket(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling websocket connection")
         conn, err := upgrader.Upgrade(w, r, nil)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error upgrading connection: %v", err)
                 return
         }</span>
@@ -4647,7 +4605,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) <span class="cov8" 
         <span class="cov8" title="1">for </span><span class="cov8" title="1">{
                 _, msg, err := conn.ReadMessage()
                 if err != nil </span><span class="cov8" title="1">{
-                        if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) </span><span class="cov0" title="0">{
+                        if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) </span><span class="cov8" title="1">{
                                 log.Printf("Websocket error: %v", err)
                         }</span>
                         <span class="cov8" title="1">break</span>
@@ -4657,7 +4615,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) <span class="cov8" 
                         Type  string `json:"type"`
                         Order []int  `json:"order"`
                 }
-                if err := json.Unmarshal(msg, &amp;message); err != nil </span><span class="cov0" title="0">{
+                if err := json.Unmarshal(msg, &amp;message); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error unmarshalling message: %v", err)
                         continue</span>
                 }
@@ -4678,16 +4636,16 @@ func BroadcastResults() <span class="cov8" title="1">{
         log.Println("BroadcastResults results:", results)
 
         modelTotalScores := make(map[string]int)
-        for model, result := range results </span><span class="cov0" title="0">{
+        for model, result := range results </span><span class="cov8" title="1">{
                 totalScore := 0
-                for _, score := range result.Scores </span><span class="cov0" title="0">{
+                for _, score := range result.Scores </span><span class="cov8" title="1">{
                         totalScore += score
                 }</span>
-                <span class="cov0" title="0">modelTotalScores[model] = totalScore</span>
+                <span class="cov8" title="1">modelTotalScores[model] = totalScore</span>
         }
 
         <span class="cov8" title="1">models := make([]string, 0, len(results))
-        for model := range results </span><span class="cov0" title="0">{
+        for model := range results </span><span class="cov8" title="1">{
                 models = append(models, model)
         }</span>
         <span class="cov8" title="1">if len(models) == 0 </span><span class="cov8" title="1">{
@@ -4721,33 +4679,28 @@ func BroadcastResults() <span class="cov8" title="1">{
         }
 
         // Add a group for prompts with no profile only if needed
-        <span class="cov8" title="1">if hasUncategorized </span><span class="cov8" title="1">{
-                noProfileGroup := &amp;ProfileGroup{
-                        ID:    "none",
-                        Name:  "Uncategorized",
-                        Color: "hsl(0, 0%, 50%)",
-                }
-                profileGroups = append(profileGroups, noProfileGroup)
-                profileMap[""] = noProfileGroup
-        }</span>
+                <span class="cov8" title="1">if hasUncategorized </span><span class="cov8" title="1">{
+                        noProfileGroup := &amp;ProfileGroup{
+                                ID:       "none",
+                                Name:     "Uncategorized",
+                                Color:    "hsl(0, 0%, 50%)",
+                                StartCol: -1,
+                                EndCol:   -1,
+                        }
+                        profileGroups = append(profileGroups, noProfileGroup)
+                        profileMap[""] = noProfileGroup
+                }</span>
 
         // Process prompts and assign them to profile groups
         <span class="cov8" title="1">currentCol := 0
-        for i, prompt := range prompts </span><span class="cov8" title="1">{
-                profileName := prompt.Profile
+                for i, prompt := range prompts </span><span class="cov8" title="1">{
+                        profileName := prompt.Profile
 
-                group, exists := profileMap[profileName]
-                if !exists </span><span class="cov0" title="0">{
-                        // Skip if group doesn't exist and we don't have uncategorized group
-                        if _, hasUncategorized := profileMap[""]; !hasUncategorized </span><span class="cov0" title="0">{
-                                continue</span>
-                        }
-                        <span class="cov0" title="0">group = profileMap[""]</span>
-                }
+                        group := profileMap[profileName]
 
-                <span class="cov8" title="1">if group.StartCol == -1 </span><span class="cov0" title="0">{
-                        group.StartCol = currentCol
-                }</span>
+                        if group.StartCol == -1 </span><span class="cov8" title="1">{
+                                group.StartCol = currentCol
+                        }</span>
                 <span class="cov8" title="1">group.EndCol = currentCol
 
                 orderedPrompts = append(orderedPrompts, struct {
@@ -4807,7 +4760,7 @@ func BroadcastResults() <span class="cov8" title="1">{
         defer clientsMutex.Unlock()
         for client := range clients </span><span class="cov8" title="1">{
                 err := client.WriteJSON(payload)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error broadcasting message: %v", err)
                         client.Close()
                         delete(clients, client)
@@ -4918,7 +4871,7 @@ func broadcastMessage(payload interface{}) <span class="cov8" title="1">{
 
         for client := range clients </span><span class="cov8" title="1">{
                 err := client.WriteJSON(payload)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error broadcasting message: %v", err)
                         client.Close()
                         delete(clients, client)
@@ -4934,6 +4887,9 @@ import (
         "fmt"
         "log"
 )
+
+var rowsErr = func(rows *sql.Rows) error <span class="cov8" title="1">{ return rows.Err() }</span>
+var txCommit = func(tx *sql.Tx) error <span class="cov8" title="1">{ return tx.Commit() }</span>
 
 type Prompt struct {
         Text     string `json:"text"`
@@ -4996,8 +4952,8 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
         }</span>
 
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
@@ -5015,7 +4971,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
         // Insert new profiles
         <span class="cov8" title="1">if len(profiles) &gt; 0 </span><span class="cov8" title="1">{
                 stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         return fmt.Errorf("failed to prepare profile insert: %w", err)
                 }</span>
                 <span class="cov8" title="1">defer stmt.Close()
@@ -5168,7 +5124,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" titl
         }
 
         // Check for any errors during iteration
-        <span class="cov8" title="1">if err = rows.Err(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err = rowsErr(rows); err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("error iterating prompt rows: %w", err)
         }</span>
 
@@ -5191,8 +5147,8 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
         }</span>
 
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
@@ -5213,7 +5169,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
                 INSERT INTO prompts (text, solution, profile_id, suite_id, display_order) 
                 VALUES (?, ?, ?, ?, ?)
                 `)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         return fmt.Errorf("failed to prepare prompt insert: %w", err)
                 }</span>
                 <span class="cov8" title="1">defer stmt.Close()
@@ -5291,8 +5247,8 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         }</span>
 
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
@@ -5318,7 +5274,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         }
         <span class="cov8" title="1">promptRows.Close()
         
-        if err := promptRows.Err(); err != nil </span><span class="cov0" title="0">{
+        if err := rowsErr(promptRows); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("error iterating prompt rows: %w", err)
         }</span>
 
@@ -5363,25 +5319,25 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                 // Get or create model
                 var modelID int
                 err := tx.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&amp;modelID)
-                if err == sql.ErrNoRows </span><span class="cov8" title="1">{
-                        // Create new model
-                        modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-                        if err != nil </span><span class="cov8" title="1">{
-                                return fmt.Errorf("failed to insert model: %w", err)
-                        }</span>
-                        <span class="cov8" title="1">modelIDInt64, err := modelResult.LastInsertId()
-                        if err != nil </span><span class="cov0" title="0">{
-                                return fmt.Errorf("failed to get model ID: %w", err)
-                        }</span>
-                        <span class="cov8" title="1">modelID = int(modelIDInt64)</span>
-                } else<span class="cov8" title="1"> if err != nil </span><span class="cov0" title="0">{
-                        return fmt.Errorf("failed to query model: %w", err)
-                }</span>
+                                if err == sql.ErrNoRows </span><span class="cov8" title="1">{
+                                        // Create new model
+                                        modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+                                        if err != nil </span><span class="cov8" title="1">{
+                                                return fmt.Errorf("failed to insert model: %w", err)
+                                        }</span>
+                                        <span class="cov8" title="1">modelIDInt64, err := lastInsertID(modelResult)
+                                        if err != nil </span><span class="cov8" title="1">{
+                                                return fmt.Errorf("failed to get model ID: %w", err)
+                                        }</span>
+                                        <span class="cov8" title="1">modelID = int(modelIDInt64)</span>
+                                } else<span class="cov8" title="1"> if err != nil </span><span class="cov8" title="1">{
+                                        return fmt.Errorf("failed to query model: %w", err)
+                                }</span>
 
                 // Insert scores
                 <span class="cov8" title="1">if len(result.Scores) &gt; 0 </span><span class="cov8" title="1">{
                         scoreStmt, err := tx.Prepare("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)")
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to prepare score insert: %w", err)
                         }</span>
                         
@@ -5444,8 +5400,8 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
         }</span>
         
         // Begin transaction
-        <span class="cov8" title="1">tx, err := db.Begin()
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">tx, err := dbBegin()
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error beginning transaction: %v", err)
                 return
         }</span>
@@ -5488,7 +5444,7 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
                 }</span>
         }
         
-        <span class="cov8" title="1">if err = tx.Commit(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err = txCommit(tx); err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error committing transaction: %v", err)
                 return
         }</span>
@@ -5602,7 +5558,9 @@ type runDeps struct {
         listenAndServe      func(string, http.Handler) error
 }
 
-func defaultRunDeps() runDeps <span class="cov0" title="0">{
+var osExit = os.Exit
+
+func defaultRunDeps() runDeps <span class="cov8" title="1">{
         return runDeps{
                 initDB:              middleware.InitDB,
                 closeDB:             middleware.CloseDB,
@@ -5668,8 +5626,8 @@ func run(args []string, deps runDeps) int <span class="cov8" title="1">{
         <span class="cov8" title="1">return 0</span>
 }
 
-func main() <span class="cov0" title="0">{
-        os.Exit(run(os.Args[1:], defaultRunDeps()))
+func main() <span class="cov8" title="1">{
+        osExit(run(os.Args[1:], defaultRunDeps()))
 }</span>
 </pre>
 		
@@ -5694,15 +5652,6 @@ var FuncMap = map[string]interface{}{
         }</span>,
         "sub": func(a, b int) int <span class="cov8" title="1">{
                 return a - b
-        }</span>,
-        "gt": func(a, b int) bool <span class="cov8" title="1">{
-                return a &gt; b
-        }</span>,
-        "lt": func(a, b int) bool <span class="cov8" title="1">{
-                return a &lt; b
-        }</span>,
-        "eq": func(a, b int) bool <span class="cov8" title="1">{
-                return a == b
         }</span>,
         "eqs": func(a, b string) bool <span class="cov8" title="1">{
                 return a == b
@@ -5752,6 +5701,15 @@ import (
 
         _ "github.com/mattn/go-sqlite3"
 )
+
+var sqlOpen = sql.Open
+var enableForeignKeys = func(db *sql.DB) error <span class="cov8" title="1">{
+        _, err := db.Exec("PRAGMA foreign_keys = ON")
+        return err
+}</span>
+var createTestSchemaFunc = createTestSchema
+var lastInsertID = func(result sql.Result) (int64, error) <span class="cov8" title="1">{ return result.LastInsertId() }</span>
+var fatalf = func(t *testing.T, format string, args ...any) <span class="cov0" title="0">{ t.Fatalf(format, args...) }</span>
 
 // Prompt is a local type matching middleware.Prompt for testing
 type Prompt struct {
@@ -5809,20 +5767,25 @@ func ClearEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
 // SetupTestDB creates an in-memory SQLite database with schema for testing
 func SetupTestDB(t *testing.T) *sql.DB <span class="cov8" title="1">{
         t.Helper()
-        db, err := sql.Open("sqlite3", ":memory:")
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to open test database: %v", err)
+        db, err := sqlOpen("sqlite3", ":memory:")
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to open test database: %v", err)
+                return nil
         }</span>
 
         // Enable foreign keys
-        <span class="cov8" title="1">_, err = db.Exec("PRAGMA foreign_keys = ON")
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to enable foreign keys: %v", err)
+        <span class="cov8" title="1">err = enableForeignKeys(db)
+        if err != nil </span><span class="cov8" title="1">{
+                _ = db.Close()
+                fatalf(t, "failed to enable foreign keys: %v", err)
+                return nil
         }</span>
 
         // Create schema
-        <span class="cov8" title="1">if err := createTestSchema(db); err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test schema: %v", err)
+        <span class="cov8" title="1">if err := createTestSchemaFunc(db); err != nil </span><span class="cov8" title="1">{
+                _ = db.Close()
+                fatalf(t, "failed to create test schema: %v", err)
+                return nil
         }</span>
 
         <span class="cov8" title="1">return db</span>
@@ -5952,12 +5915,14 @@ func createTestSchema(db *sql.DB) error <span class="cov8" title="1">{
 func CreateTestSuite(t *testing.T, db *sql.DB, name string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, 0)", name)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test suite: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test suite: %v", err)
+                return 0
         }</span>
-        <span class="cov8" title="1">id, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get suite id: %v", err)
+        <span class="cov8" title="1">id, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get suite id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return int(id)</span>
 }
@@ -5966,12 +5931,14 @@ func CreateTestSuite(t *testing.T, db *sql.DB, name string) int <span class="cov
 func CreateTestProfile(t *testing.T, db *sql.DB, suiteID int, name, description string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", name, description, suiteID)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test profile: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test profile: %v", err)
+                return 0
         }</span>
-        <span class="cov8" title="1">id, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get profile id: %v", err)
+        <span class="cov8" title="1">id, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get profile id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return int(id)</span>
 }
@@ -5988,12 +5955,14 @@ func CreateTestPrompt(t *testing.T, db *sql.DB, suiteID int, text, solution stri
                 result, err = db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type) VALUES (?, ?, ?, ?, ?)",
                         text, solution, suiteID, displayOrder, promptType)
         }</span>
-        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test prompt: %v", err)
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test prompt: %v", err)
+                return 0
         }</span>
-        <span class="cov8" title="1">id, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get prompt id: %v", err)
+        <span class="cov8" title="1">id, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get prompt id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return int(id)</span>
 }
@@ -6002,12 +5971,14 @@ func CreateTestPrompt(t *testing.T, db *sql.DB, suiteID int, text, solution stri
 func CreateTestModel(t *testing.T, db *sql.DB, suiteID int, name string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", name, suiteID)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test model: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test model: %v", err)
+                return 0
         }</span>
-        <span class="cov8" title="1">id, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get model id: %v", err)
+        <span class="cov8" title="1">id, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get model id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return int(id)</span>
 }
@@ -6016,8 +5987,9 @@ func CreateTestModel(t *testing.T, db *sql.DB, suiteID int, name string) int <sp
 func CreateTestScore(t *testing.T, db *sql.DB, modelID, promptID, score int) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)", modelID, promptID, score)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test score: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test score: %v", err)
+                return
         }</span>
 }
 
@@ -6026,8 +5998,9 @@ func GetDefaultSuiteID(t *testing.T, db *sql.DB) int <span class="cov8" title="1
         t.Helper()
         var id int
         err := db.QueryRow("SELECT id FROM suites WHERE name = 'default'").Scan(&amp;id)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get default suite id: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get default suite id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return id</span>
 }
@@ -6036,12 +6009,14 @@ func GetDefaultSuiteID(t *testing.T, db *sql.DB) int <span class="cov8" title="1
 func SetCurrentSuite(t *testing.T, db *sql.DB, suiteID int) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("UPDATE suites SET is_current = 0")
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to clear current suite: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to clear current suite: %v", err)
+                return
         }</span>
         <span class="cov8" title="1">_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to set current suite: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to set current suite: %v", err)
+                return
         }</span>
 }
 
@@ -6049,8 +6024,9 @@ func SetCurrentSuite(t *testing.T, db *sql.DB, suiteID int) <span class="cov8" t
 func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", key, value)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test setting: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test setting: %v", err)
+                return
         }</span>
 }
 
@@ -6058,12 +6034,14 @@ func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) <span class=
 func CreateTestEvaluationJob(t *testing.T, db *sql.DB, suiteID int, jobType, status string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (?, ?, ?)", suiteID, jobType, status)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test evaluation job: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test evaluation job: %v", err)
+                return 0
         }</span>
-        <span class="cov8" title="1">id, err := result.LastInsertId()
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to get job id: %v", err)
+        <span class="cov8" title="1">id, err := lastInsertID(result)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to get job id: %v", err)
+                return 0
         }</span>
         <span class="cov8" title="1">return int(id)</span>
 }
@@ -6073,8 +6051,9 @@ func CreateTestModelResponse(t *testing.T, db *sql.DB, modelID, promptID int, re
         t.Helper()
         _, err := db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, ?)",
                 modelID, promptID, responseText)
-        if err != nil </span><span class="cov0" title="0">{
-                t.Fatalf("failed to create test model response: %v", err)
+        if err != nil </span><span class="cov8" title="1">{
+                fatalf(t, "failed to create test model response: %v", err)
+                return
         }</span>
 }
 
@@ -6380,9 +6359,11 @@ import (
         "os"
 )
 
-func main() <span class="cov0" title="0">{
+var osExit = os.Exit
+
+func main() <span class="cov8" title="1">{
         log.SetOutput(os.Stderr)
-        os.Exit(run(os.Args[1:], defaultRunDeps()))
+        osExit(run(os.Args[1:], defaultRunDeps()))
 }</span>
 </pre>
 		
@@ -6501,7 +6482,7 @@ func defaultRunDeps() runDeps <span class="cov8" title="1">{
                 initEvaluator:  handlers.InitEvaluator,
                 getDB:          middleware.GetDB,
                 listen:         net.Listen,
-                serve:          func(s *http.Server, ln net.Listener) error </span><span class="cov0" title="0">{ return s.Serve(ln) }</span>,
+                serve:          func(s *http.Server, ln net.Listener) error </span><span class="cov8" title="1">{ return s.Serve(ln) }</span>,
                 setLogOutput:   log.SetOutput,
                 ensureDemoKey:  ensureDemoEncryptionKey,
                 registerRoutes: registerRoutes,
@@ -6646,7 +6627,7 @@ func seedDemoData() error <span class="cov8" title="1">{
                 {Name: "programming", Description: "Coding, debugging, and systems design"},
                 {Name: "writing", Description: "Clarity, tone, and composition"},
         }
-        if err := middleware.WriteProfileSuite(suiteName, profiles); err != nil </span><span class="cov0" title="0">{
+        if err := middleware.WriteProfileSuite(suiteName, profiles); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("write profiles: %w", err)
         }</span>
 
@@ -6742,7 +6723,7 @@ func seedDemoData() error <span class="cov8" title="1">{
                         Solution: "- fast\n- reproducible\n- readable",
                 },
         }
-        if err := middleware.WritePromptSuite(suiteName, prompts); err != nil </span><span class="cov0" title="0">{
+        if err := middleware.WritePromptSuite(suiteName, prompts); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("write prompts: %w", err)
         }</span>
 
@@ -6755,7 +6736,7 @@ func seedDemoData() error <span class="cov8" title="1">{
                 "mixtral-8x22b":   {Scores: randomScores(rng, len(prompts))},
                 "llama-3.1-405b":  {Scores: randomScores(rng, len(prompts))},
         }
-        if err := middleware.WriteResults(suiteName, results); err != nil </span><span class="cov0" title="0">{
+        if err := middleware.WriteResults(suiteName, results); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("write results: %w", err)
         }</span>
 

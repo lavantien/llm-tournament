@@ -66,5 +66,6 @@ run:
 
 update-coverage:
 	@$(CGO_PREFIX) go test ./... -coverprofile=coverage.out
+	@go tool cover -html coverage.out -o coverage.html
 	@go tool cover -func=coverage.out | $(GREP) total
 	@$(UPDATE_BADGE)
