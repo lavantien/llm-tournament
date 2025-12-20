@@ -341,7 +341,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | llm-tournament/templates | 100.0% |
 | llm-tournament/testutil | 100.0% |
 | llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
-| **Total** | **100.0%%** |
+| **Total** | **100.0%** |
 <!-- COVERAGE_TABLE_END -->
 
 ## Troubleshooting
