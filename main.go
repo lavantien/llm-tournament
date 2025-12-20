@@ -1,61 +1,12 @@
 package main
 
 import (
-	"flag"
 	"log"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"llm-tournament/handlers"
 	"llm-tournament/middleware"
 )
-
-func main() {
-	// Seed the random number generator for mock data generation
-	rand.Seed(time.Now().UnixNano())
-	
-	// Parse command line flags
-	migrateResults := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
-	dbPath := flag.String("db", "data/tournament.db", "SQLite database path")
-	flag.Parse()
-
-	// Initialize the database
-	log.Println("Initializing database...")
-	if err := middleware.InitDB(*dbPath); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
-	defer middleware.CloseDB()
-
-	// Handle old result format migration
-	if *migrateResults {
-		log.Println("Migrating results to new scoring system...")
-		results := middleware.ReadResults()
-		middleware.MigrateResults(results)
-		suiteName := middleware.GetCurrentSuiteName()
-		err := middleware.WriteResults(suiteName, results)
-		if err != nil {
-			log.Fatalf("Error migrating results: %v", err)
-		}
-		log.Println("Migration completed successfully")
-		return
-	}
-
-	// Initialize the evaluator
-	log.Println("Initializing evaluator...")
-	handlers.InitEvaluator(middleware.GetDB())
-
-	log.Println("Starting the server...")
-	http.HandleFunc("/", router)
-	http.HandleFunc("/ws", middleware.HandleWebSocket)
-	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-	log.Println("Server is listening on :8080")
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
-	}
-}
 
 var routes = map[string]http.HandlerFunc{
 	"/import_error":            middleware.ImportErrorHandler,
@@ -92,14 +43,14 @@ var routes = map[string]http.HandlerFunc{
 	"/reset_profiles":          handlers.ResetProfilesHandler,
 	"/stats":                   handlers.StatsHandler,
 	// New evaluation routes
-	"/settings":                handlers.SettingsHandler,
-	"/settings/update":         handlers.UpdateSettingsHandler,
-	"/settings/test_key":       handlers.TestAPIKeyHandler,
-	"/evaluate/all":            handlers.EvaluateAllHandler,
-	"/evaluate/model":          handlers.EvaluateModelHandler,
-	"/evaluate/prompt":         handlers.EvaluatePromptHandler,
-	"/evaluation/progress":     handlers.EvaluationProgressHandler,
-	"/evaluation/cancel":       handlers.CancelEvaluationHandler,
+	"/settings":            handlers.SettingsHandler,
+	"/settings/update":     handlers.UpdateSettingsHandler,
+	"/settings/test_key":   handlers.TestAPIKeyHandler,
+	"/evaluate/all":        handlers.EvaluateAllHandler,
+	"/evaluate/model":      handlers.EvaluateModelHandler,
+	"/evaluate/prompt":     handlers.EvaluatePromptHandler,
+	"/evaluation/progress": handlers.EvaluationProgressHandler,
+	"/evaluation/cancel":   handlers.CancelEvaluationHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) {
@@ -107,8 +58,9 @@ func router(w http.ResponseWriter, r *http.Request) {
 
 	if handler, exists := routes[r.URL.Path]; exists {
 		handler(w, r)
-	} else {
-		log.Printf("Redirecting to /prompts from %s", r.URL.Path)
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+		return
 	}
+
+	log.Printf("Redirecting to /prompts from %s", r.URL.Path)
+	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }

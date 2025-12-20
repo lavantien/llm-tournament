@@ -65,13 +65,13 @@
 				
 				<option value="file4">llm-tournament/evaluator/litellm_client.go (88.9%)</option>
 				
-				<option value="file5">llm-tournament/handlers/evaluation.go (90.4%)</option>
+				<option value="file5">llm-tournament/handlers/evaluation.go (97.6%)</option>
 				
 				<option value="file6">llm-tournament/handlers/handler.go (100.0%)</option>
 				
 				<option value="file7">llm-tournament/handlers/models.go (94.9%)</option>
 				
-				<option value="file8">llm-tournament/handlers/profiles.go (87.7%)</option>
+				<option value="file8">llm-tournament/handlers/profiles.go (87.8%)</option>
 				
 				<option value="file9">llm-tournament/handlers/prompt.go (84.9%)</option>
 				
@@ -81,11 +81,11 @@
 				
 				<option value="file12">llm-tournament/handlers/stats.go (96.2%)</option>
 				
-				<option value="file13">llm-tournament/handlers/suites.go (82.4%)</option>
+				<option value="file13">llm-tournament/handlers/suites.go (85.3%)</option>
 				
-				<option value="file14">llm-tournament/main.go (14.7%)</option>
+				<option value="file14">llm-tournament/main.go (100.0%)</option>
 				
-				<option value="file15">llm-tournament/middleware/database.go (80.0%)</option>
+				<option value="file15">llm-tournament/middleware/database.go (93.3%)</option>
 				
 				<option value="file16">llm-tournament/middleware/datastore.go (100.0%)</option>
 				
@@ -101,13 +101,23 @@
 				
 				<option value="file22">llm-tournament/middleware/socket.go (83.2%)</option>
 				
-				<option value="file23">llm-tournament/middleware/state.go (75.6%)</option>
+				<option value="file23">llm-tournament/middleware/state.go (95.1%)</option>
 				
 				<option value="file24">llm-tournament/middleware/utils.go (100.0%)</option>
 				
-				<option value="file25">llm-tournament/templates/shared.go (100.0%)</option>
+				<option value="file25">llm-tournament/run.go (94.6%)</option>
 				
-				<option value="file26">llm-tournament/testutil/testutil.go (0.0%)</option>
+				<option value="file26">llm-tournament/templates/shared.go (100.0%)</option>
+				
+				<option value="file27">llm-tournament/testutil/testutil.go (90.6%)</option>
+				
+				<option value="file28">llm-tournament/tools/screenshots/cmd/demo-server/main.go (0.0%)</option>
+				
+				<option value="file29">llm-tournament/tools/screenshots/cmd/demo-server/routes.go (100.0%)</option>
+				
+				<option value="file30">llm-tournament/tools/screenshots/cmd/demo-server/run.go (98.4%)</option>
+				
+				<option value="file31">llm-tournament/tools/screenshots/cmd/demo-server/seed.go (91.7%)</option>
 				
 				</select>
 			</div>
@@ -1069,14 +1079,14 @@ func EvaluateAllHandler(w http.ResponseWriter, r *http.Request) <span class="cov
         }</span>
 
         <span class="cov8" title="1">suiteID, err := middleware.GetCurrentSuiteID()
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error getting current suite: %v", err)
                 http.Error(w, "Failed to get current suite", http.StatusInternalServerError)
                 return
         }</span>
 
         <span class="cov8" title="1">jobID, err := globalEvaluator.EvaluateAll(suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error starting evaluation: %v", err)
                 http.Error(w, fmt.Sprintf("Failed to start evaluation: %v", err), http.StatusInternalServerError)
                 return
@@ -1439,6 +1449,9 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) <span class="
                 }</span>,
                 "tolower":  strings.ToLower,
                 "contains": strings.Contains,
+                "eqs": func(a, b string) bool <span class="cov8" title="1">{
+                        return a == b
+                }</span>,
         }
         <span class="cov8" title="1">funcMap["json"] = func(v interface{}) (string, error) </span><span class="cov0" title="0">{
                 b, err := json.Marshal(v)
@@ -1783,6 +1796,9 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) <span class
                 }</span>,
                 "tolower":  strings.ToLower,
                 "contains": strings.Contains,
+                "eqs": func(a, b string) bool <span class="cov8" title="1">{
+                        return a == b
+                }</span>,
         }
         <span class="cov8" title="1">funcMap["json"] = func(v interface{}) (string, error) </span><span class="cov8" title="1">{
                 b, err := json.Marshal(v)
@@ -3451,6 +3467,9 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) <span class="cov
                         a, _ := json.Marshal(v)
                         return template.JS(a)
                 }</span>,
+                "eqs": func(a, b string) bool <span class="cov8" title="1">{
+                        return a == b
+                }</span>,
                 "tierClass": func(tier string) string <span class="cov8" title="1">{
                         return tier
                 }</span>,
@@ -3555,7 +3574,7 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) <spa
                 return
         }</span>
 
-        <span class="cov8" title="1">if err = h.DataStore.SetCurrentSuite(suiteName); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err = h.DataStore.SetCurrentSuite(suiteName); err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error setting current suite: %v", err)
                 http.Error(w, "Error setting current suite", http.StatusInternalServerError)
                 return
@@ -3643,61 +3662,12 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span 
 		<pre class="file" id="file14" style="display: none">package main
 
 import (
-        "flag"
         "log"
-        "math/rand"
         "net/http"
-        "time"
 
         "llm-tournament/handlers"
         "llm-tournament/middleware"
 )
-
-func main() <span class="cov0" title="0">{
-        // Seed the random number generator for mock data generation
-        rand.Seed(time.Now().UnixNano())
-        
-        // Parse command line flags
-        migrateResults := flag.Bool("migrate-results", false, "Migrate existing results to new scoring system")
-        dbPath := flag.String("db", "data/tournament.db", "SQLite database path")
-        flag.Parse()
-
-        // Initialize the database
-        log.Println("Initializing database...")
-        if err := middleware.InitDB(*dbPath); err != nil </span><span class="cov0" title="0">{
-                log.Fatalf("Failed to initialize database: %v", err)
-        }</span>
-        <span class="cov0" title="0">defer middleware.CloseDB()
-
-        // Handle old result format migration
-        if *migrateResults </span><span class="cov0" title="0">{
-                log.Println("Migrating results to new scoring system...")
-                results := middleware.ReadResults()
-                middleware.MigrateResults(results)
-                suiteName := middleware.GetCurrentSuiteName()
-                err := middleware.WriteResults(suiteName, results)
-                if err != nil </span><span class="cov0" title="0">{
-                        log.Fatalf("Error migrating results: %v", err)
-                }</span>
-                <span class="cov0" title="0">log.Println("Migration completed successfully")
-                return</span>
-        }
-
-        // Initialize the evaluator
-        <span class="cov0" title="0">log.Println("Initializing evaluator...")
-        handlers.InitEvaluator(middleware.GetDB())
-
-        log.Println("Starting the server...")
-        http.HandleFunc("/", router)
-        http.HandleFunc("/ws", middleware.HandleWebSocket)
-        http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-        http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-        log.Println("Server is listening on :8080")
-        err := http.ListenAndServe(":8080", nil)
-        if err != nil </span><span class="cov0" title="0">{
-                log.Fatalf("Error starting server: %v", err)
-        }</span>
-}
 
 var routes = map[string]http.HandlerFunc{
         "/import_error":            middleware.ImportErrorHandler,
@@ -3734,14 +3704,14 @@ var routes = map[string]http.HandlerFunc{
         "/reset_profiles":          handlers.ResetProfilesHandler,
         "/stats":                   handlers.StatsHandler,
         // New evaluation routes
-        "/settings":                handlers.SettingsHandler,
-        "/settings/update":         handlers.UpdateSettingsHandler,
-        "/settings/test_key":       handlers.TestAPIKeyHandler,
-        "/evaluate/all":            handlers.EvaluateAllHandler,
-        "/evaluate/model":          handlers.EvaluateModelHandler,
-        "/evaluate/prompt":         handlers.EvaluatePromptHandler,
-        "/evaluation/progress":     handlers.EvaluationProgressHandler,
-        "/evaluation/cancel":       handlers.CancelEvaluationHandler,
+        "/settings":            handlers.SettingsHandler,
+        "/settings/update":     handlers.UpdateSettingsHandler,
+        "/settings/test_key":   handlers.TestAPIKeyHandler,
+        "/evaluate/all":        handlers.EvaluateAllHandler,
+        "/evaluate/model":      handlers.EvaluateModelHandler,
+        "/evaluate/prompt":     handlers.EvaluatePromptHandler,
+        "/evaluation/progress": handlers.EvaluationProgressHandler,
+        "/evaluation/cancel":   handlers.CancelEvaluationHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
@@ -3749,10 +3719,11 @@ func router(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1"
 
         if handler, exists := routes[r.URL.Path]; exists </span><span class="cov8" title="1">{
                 handler(w, r)
-        }</span> else<span class="cov8" title="1"> {
-                log.Printf("Redirecting to /prompts from %s", r.URL.Path)
-                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+                return
         }</span>
+
+        <span class="cov8" title="1">log.Printf("Redirecting to /prompts from %s", r.URL.Path)
+        http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
 }
 </pre>
 		
@@ -3779,7 +3750,7 @@ func GetDB() *sql.DB <span class="cov8" title="1">{
 func InitDB(dbPath string) error <span class="cov8" title="1">{
         // Ensure data directory exists
         dataDir := filepath.Dir(dbPath)
-        if err := os.MkdirAll(dataDir, 0755); err != nil </span><span class="cov0" title="0">{
+        if err := os.MkdirAll(dataDir, 0755); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to create data directory: %w", err)
         }</span>
 
@@ -3798,7 +3769,7 @@ func InitDB(dbPath string) error <span class="cov8" title="1">{
         }</span>
 
         // Create schema if it doesn't exist
-        <span class="cov8" title="1">if err = createTables(); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err = createTables(); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to create tables: %w", err)
         }</span>
 
@@ -3969,7 +3940,7 @@ func GetSuiteID(suiteName string) (int, error) <span class="cov8" title="1">{
         // If suite doesn't exist, create it
         <span class="cov8" title="1">if err == sql.ErrNoRows </span><span class="cov8" title="1">{
                 result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         return 0, fmt.Errorf("failed to create suite: %w", err)
                 }</span>
                 <span class="cov8" title="1">id, err := result.LastInsertId()
@@ -3979,7 +3950,7 @@ func GetSuiteID(suiteName string) (int, error) <span class="cov8" title="1">{
                 <span class="cov8" title="1">return int(id), nil</span>
         }
 
-        <span class="cov0" title="0">return 0, err</span>
+        <span class="cov8" title="1">return 0, err</span>
 }
 
 // GetCurrentSuiteID returns the ID of the current suite
@@ -3989,7 +3960,7 @@ func GetCurrentSuiteID() (int, error) <span class="cov8" title="1">{
         if err == sql.ErrNoRows </span><span class="cov8" title="1">{
                 // If no current suite, set default as current
                 _, err = db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         return 0, fmt.Errorf("failed to set default suite as current: %w", err)
                 }</span>
                 <span class="cov8" title="1">return GetCurrentSuiteID()</span>
@@ -4005,7 +3976,7 @@ func SetCurrentSuite(suiteName string) error <span class="cov8" title="1">{
 
         // Get or create the suite
         <span class="cov8" title="1">suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get suite: %w", err)
         }</span>
 
@@ -4015,20 +3986,20 @@ func SetCurrentSuite(suiteName string) error <span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Clear current suite flag
         <span class="cov8" title="1">_, err = tx.Exec("UPDATE suites SET is_current = 0")
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to clear current suite flag: %w", err)
         }</span>
 
         // Set new current suite
         <span class="cov8" title="1">_, err = tx.Exec("UPDATE suites SET is_current = 1 WHERE id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to set current suite: %w", err)
         }</span>
 
@@ -4038,7 +4009,7 @@ func SetCurrentSuite(suiteName string) error <span class="cov8" title="1">{
 // ListSuites returns a list of all suite names
 func ListSuites() ([]string, error) <span class="cov8" title="1">{
         rows, err := db.Query("SELECT name FROM suites ORDER BY name")
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query suites: %w", err)
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -4046,7 +4017,7 @@ func ListSuites() ([]string, error) <span class="cov8" title="1">{
         var suites []string
         for rows.Next() </span><span class="cov8" title="1">{
                 var name string
-                if err := rows.Scan(&amp;name); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;name); err != nil </span><span class="cov8" title="1">{
                         return nil, fmt.Errorf("failed to scan suite name: %w", err)
                 }</span>
                 <span class="cov8" title="1">suites = append(suites, name)</span>
@@ -4079,21 +4050,21 @@ func DeleteSuite(suiteName string) error <span class="cov8" title="1">{
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Delete the suite (cascade will delete related data)
         <span class="cov8" title="1">_, err = tx.Exec("DELETE FROM suites WHERE id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to delete suite: %w", err)
         }</span>
 
         // If it was the current suite, set default as current
         <span class="cov8" title="1">if isCurrent </span><span class="cov8" title="1">{
                 _, err = tx.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         return fmt.Errorf("failed to set default suite as current: %w", err)
                 }</span>
         }
@@ -4118,7 +4089,7 @@ func RenameSuite(oldName, newName string) error <span class="cov8" title="1">{
         err := db.QueryRow("SELECT 1 FROM suites WHERE name = ?", newName).Scan(&amp;exists)
         if err == nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("suite with name '%s' already exists", newName)
-        }</span> else<span class="cov8" title="1"> if err != sql.ErrNoRows </span><span class="cov0" title="0">{
+        }</span> else<span class="cov8" title="1"> if err != sql.ErrNoRows </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to check if suite exists: %w", err)
         }</span>
 
@@ -4142,7 +4113,7 @@ func GetProfileID(profileName string, suiteID int) (int, bool, error) <span clas
         if err == sql.ErrNoRows </span><span class="cov8" title="1">{
                 return 0, false, nil
         }</span>
-        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
                 return 0, false, err
         }</span>
         <span class="cov8" title="1">return profileID, true, nil</span>
@@ -4995,12 +4966,12 @@ func WriteProfiles(profiles []Profile) error <span class="cov8" title="1">{
 // Read profile suite from database
 func ReadProfileSuite(suiteName string) ([]Profile, error) <span class="cov8" title="1">{
         suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
         <span class="cov8" title="1">rows, err := db.Query("SELECT name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query profiles: %w", err)
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -5008,7 +4979,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) <span class="cov8" ti
         var profiles []Profile
         for rows.Next() </span><span class="cov8" title="1">{
                 var p Profile
-                if err := rows.Scan(&amp;p.Name, &amp;p.Description); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;p.Name, &amp;p.Description); err != nil </span><span class="cov8" title="1">{
                         return nil, fmt.Errorf("failed to scan profile: %w", err)
                 }</span>
                 <span class="cov8" title="1">profiles = append(profiles, p)</span>
@@ -5020,7 +4991,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) <span class="cov8" ti
 // Write profile suite to database
 func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="cov8" title="1">{
         suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
@@ -5030,14 +5001,14 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Delete existing profiles for this suite
         <span class="cov8" title="1">_, err = tx.Exec("DELETE FROM profiles WHERE suite_id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to delete profiles: %w", err)
         }</span>
 
@@ -5051,7 +5022,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
 
                 for _, profile := range profiles </span><span class="cov8" title="1">{
                         _, err = stmt.Exec(profile.Name, profile.Description, suiteID)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to insert profile: %w", err)
                         }</span>
                 }
@@ -5087,7 +5058,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
         suiteName := GetCurrentSuiteName()
         var suiteID int
         err := db.QueryRow("SELECT id FROM suites WHERE name = ?", suiteName).Scan(&amp;suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error getting suite ID: %v", err)
                 return make(map[string]Result)
         }</span>
@@ -5096,7 +5067,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
         <span class="cov8" title="1">promptCountQuery := "SELECT COUNT(*) FROM prompts WHERE suite_id = ?"
         var promptCount int
         err = db.QueryRow(promptCountQuery, suiteID).Scan(&amp;promptCount)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error counting prompts: %v", err)
                 return make(map[string]Result)
         }</span>
@@ -5104,7 +5075,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
         // Get all models for this suite
         <span class="cov8" title="1">modelQuery := "SELECT id, name FROM models WHERE suite_id = ?"
         modelRows, err := db.Query(modelQuery, suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error querying models: %v", err)
                 return make(map[string]Result)
         }</span>
@@ -5114,7 +5085,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
                 var modelName string
-                if err := modelRows.Scan(&amp;modelID, &amp;modelName); err != nil </span><span class="cov0" title="0">{
+                if err := modelRows.Scan(&amp;modelID, &amp;modelName); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error scanning model: %v", err)
                         continue</span>
                 }
@@ -5131,14 +5102,14 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
                 ORDER BY p.display_order
                 `
                 scoreRows, err := db.Query(scoreQuery, modelID, suiteID)
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error querying scores: %v", err)
                         continue</span>
                 }
 
                 <span class="cov8" title="1">for scoreRows.Next() </span><span class="cov8" title="1">{
                         var promptOrder, score int
-                        if err := scoreRows.Scan(&amp;promptOrder, &amp;score); err != nil </span><span class="cov0" title="0">{
+                        if err := scoreRows.Scan(&amp;promptOrder, &amp;score); err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Error scanning score: %v", err)
                                 continue</span>
                         }
@@ -5158,7 +5129,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
 // Read prompt suite from database
 func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" title="1">{
         suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
@@ -5172,7 +5143,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" titl
         `
 
         rows, err := db.Query(query, suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query prompts: %w", err)
         }</span>
         <span class="cov8" title="1">defer rows.Close()
@@ -5183,7 +5154,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" titl
         for rows.Next() </span><span class="cov8" title="1">{
                 var p Prompt
                 var displayOrder int
-                if err := rows.Scan(&amp;p.Text, &amp;p.Solution, &amp;p.Profile, &amp;displayOrder); err != nil </span><span class="cov0" title="0">{
+                if err := rows.Scan(&amp;p.Text, &amp;p.Solution, &amp;p.Profile, &amp;displayOrder); err != nil </span><span class="cov8" title="1">{
                         return nil, fmt.Errorf("failed to scan prompt: %w", err)
                 }</span>
                 
@@ -5191,7 +5162,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" titl
                 <span class="cov8" title="1">if !seenTexts[p.Text] </span><span class="cov8" title="1">{
                         prompts = append(prompts, p)
                         seenTexts[p.Text] = true
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov8" title="1"> {
                         log.Printf("Warning: Skipped duplicate prompt with text: %s", p.Text[:min(20, len(p.Text))])
                 }</span>
         }
@@ -5215,7 +5186,7 @@ func min(a, b int) int <span class="cov8" title="1">{
 // Write prompt suite to database
 func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov8" title="1">{
         suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
@@ -5225,14 +5196,14 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Delete existing prompts for this suite
         <span class="cov8" title="1">_, err = tx.Exec("DELETE FROM prompts WHERE suite_id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to delete prompts: %w", err)
         }</span>
 
@@ -5252,7 +5223,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
                         var profileID sql.NullInt64
                         if prompt.Profile != "" </span><span class="cov8" title="1">{
                                 id, exists, err := GetProfileID(prompt.Profile, suiteID)
-                                if err != nil </span><span class="cov0" title="0">{
+                                if err != nil </span><span class="cov8" title="1">{
                                         return fmt.Errorf("failed to get profile ID: %w", err)
                                 }</span>
                                 <span class="cov8" title="1">if exists </span><span class="cov8" title="1">{
@@ -5262,7 +5233,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
                         }
 
                         <span class="cov8" title="1">_, err = stmt.Exec(prompt.Text, prompt.Solution, profileID, suiteID, i)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to insert prompt: %w", err)
                         }</span>
                 }
@@ -5300,13 +5271,13 @@ func GetCurrentSuiteName() string <span class="cov8" title="1">{
                 if err == sql.ErrNoRows </span><span class="cov8" title="1">{
                         // Set default suite as current if none is set
                         _, err = db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Error setting default suite as current: %v", err)
                                 return ""
                         }</span>
                         <span class="cov8" title="1">return "default"</span>
                 }
-                <span class="cov0" title="0">log.Printf("Error getting current suite name: %v", err)
+                <span class="cov8" title="1">log.Printf("Error getting current suite name: %v", err)
                 return ""</span>
         }
         <span class="cov8" title="1">return name</span>
@@ -5315,7 +5286,7 @@ func GetCurrentSuiteName() string <span class="cov8" title="1">{
 // Write results to database
 func WriteResults(suiteName string, results map[string]Result) error <span class="cov8" title="1">{
         suiteID, err := GetSuiteID(suiteName)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to get suite ID: %w", err)
         }</span>
 
@@ -5325,21 +5296,21 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                 return fmt.Errorf("failed to begin transaction: %w", err)
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Get all prompt IDs for this suite
         <span class="cov8" title="1">promptRows, err := tx.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query prompts: %w", err)
         }</span>
         
         <span class="cov8" title="1">var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var id int
-                if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov0" title="0">{
+                if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov8" title="1">{
                         promptRows.Close()
                         return fmt.Errorf("failed to scan prompt ID: %w", err)
                 }</span>
@@ -5353,14 +5324,14 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
 
         // Get current model names in the database
         <span class="cov8" title="1">modelNamesRows, err := tx.Query("SELECT name FROM models WHERE suite_id = ?", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query model names: %w", err)
         }</span>
         
         <span class="cov8" title="1">var dbModelNames []string
         for modelNamesRows.Next() </span><span class="cov8" title="1">{
                 var name string
-                if err := modelNamesRows.Scan(&amp;name); err != nil </span><span class="cov0" title="0">{
+                if err := modelNamesRows.Scan(&amp;name); err != nil </span><span class="cov8" title="1">{
                         modelNamesRows.Close()
                         return fmt.Errorf("failed to scan model name: %w", err)
                 }</span>
@@ -5372,7 +5343,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         for _, dbModelName := range dbModelNames </span><span class="cov8" title="1">{
                 if _, exists := results[dbModelName]; !exists </span><span class="cov8" title="1">{
                         _, err = tx.Exec("DELETE FROM models WHERE name = ? AND suite_id = ?", dbModelName, suiteID)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to delete model: %w", err)
                         }</span>
                 }
@@ -5383,7 +5354,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                 DELETE FROM scores 
                 WHERE model_id IN (SELECT id FROM models WHERE suite_id = ?)
         `, suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to delete scores: %w", err)
         }</span>
 
@@ -5395,7 +5366,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                 if err == sql.ErrNoRows </span><span class="cov8" title="1">{
                         // Create new model
                         modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to insert model: %w", err)
                         }</span>
                         <span class="cov8" title="1">modelIDInt64, err := modelResult.LastInsertId()
@@ -5417,7 +5388,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                         <span class="cov8" title="1">for i, score := range result.Scores </span><span class="cov8" title="1">{
                                 if i &lt; len(promptIDs) </span><span class="cov8" title="1">{
                                         _, err = scoreStmt.Exec(modelID, promptIDs[i], score)
-                                        if err != nil </span><span class="cov0" title="0">{
+                                        if err != nil </span><span class="cov8" title="1">{
                                                 scoreStmt.Close()
                                                 return fmt.Errorf("failed to insert score: %w", err)
                                         }</span>
@@ -5467,7 +5438,7 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
         }</span>
         
         <span class="cov8" title="1">suiteID, err := GetCurrentSuiteID()
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error getting current suite ID: %v", err)
                 return
         }</span>
@@ -5479,14 +5450,14 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
                 return
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         tx.Rollback()
                 }</span>
         }()
 
         // Get all prompt IDs for this suite
         <span class="cov8" title="1">promptRows, err := tx.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error querying prompts: %v", err)
                 return
         }</span>
@@ -5494,7 +5465,7 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
         <span class="cov8" title="1">var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var id int
-                if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov0" title="0">{
+                if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov8" title="1">{
                         promptRows.Close()
                         log.Printf("Error scanning prompt ID: %v", err)
                         return
@@ -5511,7 +5482,7 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
                 }</span>
                 
                 <span class="cov8" title="1">_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, promptIDs[oldIndex])
-                if err != nil </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error updating prompt order: %v", err)
                         return
                 }</span>
@@ -5603,7 +5574,106 @@ func GetProfileGroups(prompts []Prompt, profiles []Profile) ([]*ProfileGroup, ma
 }
 </pre>
 		
-		<pre class="file" id="file25" style="display: none">package templates
+		<pre class="file" id="file25" style="display: none">package main
+
+import (
+        "database/sql"
+        "flag"
+        "io"
+        "log"
+        "math/rand"
+        "net/http"
+        "os"
+        "time"
+
+        "llm-tournament/handlers"
+        "llm-tournament/middleware"
+)
+
+type runDeps struct {
+        initDB              func(string) error
+        closeDB             func() error
+        readResults         func() map[string]middleware.Result
+        migrateResults      func(map[string]middleware.Result) map[string]middleware.Result
+        getCurrentSuiteName func() string
+        writeResults        func(string, map[string]middleware.Result) error
+        initEvaluator       func(*sql.DB)
+        getDB               func() *sql.DB
+        listenAndServe      func(string, http.Handler) error
+}
+
+func defaultRunDeps() runDeps <span class="cov0" title="0">{
+        return runDeps{
+                initDB:              middleware.InitDB,
+                closeDB:             middleware.CloseDB,
+                readResults:         middleware.ReadResults,
+                migrateResults:      middleware.MigrateResults,
+                getCurrentSuiteName: middleware.GetCurrentSuiteName,
+                writeResults:        middleware.WriteResults,
+                initEvaluator:       handlers.InitEvaluator,
+                getDB:               middleware.GetDB,
+                listenAndServe:      http.ListenAndServe,
+        }
+}</span>
+
+func run(args []string, deps runDeps) int <span class="cov8" title="1">{
+        rand.Seed(time.Now().UnixNano())
+
+        fs := flag.NewFlagSet("llm-tournament", flag.ContinueOnError)
+        fs.SetOutput(io.Discard)
+
+        migrateResults := fs.Bool("migrate-results", false, "Migrate existing results to new scoring system")
+        dbPath := fs.String("db", "data/tournament.db", "SQLite database path")
+
+        if err := fs.Parse(args); err != nil </span><span class="cov8" title="1">{
+                return 2
+        }</span>
+
+        <span class="cov8" title="1">log.Println("Initializing database...")
+        if err := deps.initDB(*dbPath); err != nil </span><span class="cov8" title="1">{
+                log.Printf("Failed to initialize database: %v", err)
+                return 1
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = deps.closeDB() }</span>()
+
+        <span class="cov8" title="1">if *migrateResults </span><span class="cov8" title="1">{
+                log.Println("Migrating results to new scoring system...")
+                results := deps.readResults()
+                results = deps.migrateResults(results)
+
+                suiteName := deps.getCurrentSuiteName()
+                if err := deps.writeResults(suiteName, results); err != nil </span><span class="cov8" title="1">{
+                        log.Printf("Error migrating results: %v", err)
+                        return 1
+                }</span>
+                <span class="cov8" title="1">log.Println("Migration completed successfully")
+                return 0</span>
+        }
+
+        <span class="cov8" title="1">log.Println("Initializing evaluator...")
+        deps.initEvaluator(deps.getDB())
+
+        mux := http.NewServeMux()
+        mux.HandleFunc("/", router)
+        mux.HandleFunc("/ws", middleware.HandleWebSocket)
+        mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
+        mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+
+        log.Println("Server is listening on :8080")
+        if err := deps.listenAndServe(":8080", mux); err != nil </span><span class="cov8" title="1">{
+                log.Printf("Error starting server: %v", err)
+                return 1
+        }</span>
+
+        <span class="cov8" title="1">return 0</span>
+}
+
+func main() <span class="cov0" title="0">{
+        os.Exit(run(os.Args[1:], defaultRunDeps()))
+}</span>
+</pre>
+		
+		<pre class="file" id="file26" style="display: none">package templates
 
 import (
         "encoding/json"
@@ -5632,6 +5702,9 @@ var FuncMap = map[string]interface{}{
                 return a &lt; b
         }</span>,
         "eq": func(a, b int) bool <span class="cov8" title="1">{
+                return a == b
+        }</span>,
+        "eqs": func(a, b string) bool <span class="cov8" title="1">{
                 return a == b
         }</span>,
         "atoi": func(s string) int <span class="cov8" title="1">{
@@ -5668,7 +5741,7 @@ var ScoreOptions = map[string]int{
 }
 </pre>
 		
-		<pre class="file" id="file26" style="display: none">package testutil
+		<pre class="file" id="file27" style="display: none">package testutil
 
 import (
         "database/sql"
@@ -5701,40 +5774,40 @@ type Result struct {
 }
 
 // ValidEncryptionKey returns a valid 64-char hex key for testing
-func ValidEncryptionKey() string <span class="cov0" title="0">{
+func ValidEncryptionKey() string <span class="cov8" title="1">{
         return "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 }</span>
 
 // SetupEncryptionKey sets up a valid ENCRYPTION_KEY env var and returns cleanup function
-func SetupEncryptionKey(t *testing.T) func() <span class="cov0" title="0">{
+func SetupEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
         t.Helper()
         original := os.Getenv("ENCRYPTION_KEY")
         os.Setenv("ENCRYPTION_KEY", ValidEncryptionKey())
 
-        return func() </span><span class="cov0" title="0">{
-                if original == "" </span><span class="cov0" title="0">{
+        return func() </span><span class="cov8" title="1">{
+                if original == "" </span><span class="cov8" title="1">{
                         os.Unsetenv("ENCRYPTION_KEY")
-                }</span> else<span class="cov0" title="0"> {
+                }</span> else<span class="cov8" title="1"> {
                         os.Setenv("ENCRYPTION_KEY", original)
                 }</span>
         }
 }
 
 // ClearEncryptionKey removes the ENCRYPTION_KEY env var and returns cleanup function
-func ClearEncryptionKey(t *testing.T) func() <span class="cov0" title="0">{
+func ClearEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
         t.Helper()
         original := os.Getenv("ENCRYPTION_KEY")
         os.Unsetenv("ENCRYPTION_KEY")
 
-        return func() </span><span class="cov0" title="0">{
-                if original != "" </span><span class="cov0" title="0">{
+        return func() </span><span class="cov8" title="1">{
+                if original != "" </span><span class="cov8" title="1">{
                         os.Setenv("ENCRYPTION_KEY", original)
                 }</span>
         }
 }
 
 // SetupTestDB creates an in-memory SQLite database with schema for testing
-func SetupTestDB(t *testing.T) *sql.DB <span class="cov0" title="0">{
+func SetupTestDB(t *testing.T) *sql.DB <span class="cov8" title="1">{
         t.Helper()
         db, err := sql.Open("sqlite3", ":memory:")
         if err != nil </span><span class="cov0" title="0">{
@@ -5742,21 +5815,21 @@ func SetupTestDB(t *testing.T) *sql.DB <span class="cov0" title="0">{
         }</span>
 
         // Enable foreign keys
-        <span class="cov0" title="0">_, err = db.Exec("PRAGMA foreign_keys = ON")
+        <span class="cov8" title="1">_, err = db.Exec("PRAGMA foreign_keys = ON")
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to enable foreign keys: %v", err)
         }</span>
 
         // Create schema
-        <span class="cov0" title="0">if err := createTestSchema(db); err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err := createTestSchema(db); err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test schema: %v", err)
         }</span>
 
-        <span class="cov0" title="0">return db</span>
+        <span class="cov8" title="1">return db</span>
 }
 
 // createTestSchema creates the database schema for testing
-func createTestSchema(db *sql.DB) error <span class="cov0" title="0">{
+func createTestSchema(db *sql.DB) error <span class="cov8" title="1">{
         schema := `
                 CREATE TABLE IF NOT EXISTS suites (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -5876,71 +5949,71 @@ func createTestSchema(db *sql.DB) error <span class="cov0" title="0">{
 }</span>
 
 // CreateTestSuite creates a test suite and returns its ID
-func CreateTestSuite(t *testing.T, db *sql.DB, name string) int <span class="cov0" title="0">{
+func CreateTestSuite(t *testing.T, db *sql.DB, name string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, 0)", name)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test suite: %v", err)
         }</span>
-        <span class="cov0" title="0">id, err := result.LastInsertId()
+        <span class="cov8" title="1">id, err := result.LastInsertId()
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get suite id: %v", err)
         }</span>
-        <span class="cov0" title="0">return int(id)</span>
+        <span class="cov8" title="1">return int(id)</span>
 }
 
 // CreateTestProfile creates a test profile and returns its ID
-func CreateTestProfile(t *testing.T, db *sql.DB, suiteID int, name, description string) int <span class="cov0" title="0">{
+func CreateTestProfile(t *testing.T, db *sql.DB, suiteID int, name, description string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", name, description, suiteID)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test profile: %v", err)
         }</span>
-        <span class="cov0" title="0">id, err := result.LastInsertId()
+        <span class="cov8" title="1">id, err := result.LastInsertId()
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get profile id: %v", err)
         }</span>
-        <span class="cov0" title="0">return int(id)</span>
+        <span class="cov8" title="1">return int(id)</span>
 }
 
 // CreateTestPrompt creates a test prompt and returns its ID
-func CreateTestPrompt(t *testing.T, db *sql.DB, suiteID int, text, solution string, profileID *int, displayOrder int, promptType string) int <span class="cov0" title="0">{
+func CreateTestPrompt(t *testing.T, db *sql.DB, suiteID int, text, solution string, profileID *int, displayOrder int, promptType string) int <span class="cov8" title="1">{
         t.Helper()
         var result sql.Result
         var err error
-        if profileID != nil </span><span class="cov0" title="0">{
+        if profileID != nil </span><span class="cov8" title="1">{
                 result, err = db.Exec("INSERT INTO prompts (text, solution, profile_id, suite_id, display_order, type) VALUES (?, ?, ?, ?, ?, ?)",
                         text, solution, *profileID, suiteID, displayOrder, promptType)
-        }</span> else<span class="cov0" title="0"> {
+        }</span> else<span class="cov8" title="1"> {
                 result, err = db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type) VALUES (?, ?, ?, ?, ?)",
                         text, solution, suiteID, displayOrder, promptType)
         }</span>
-        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test prompt: %v", err)
         }</span>
-        <span class="cov0" title="0">id, err := result.LastInsertId()
+        <span class="cov8" title="1">id, err := result.LastInsertId()
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get prompt id: %v", err)
         }</span>
-        <span class="cov0" title="0">return int(id)</span>
+        <span class="cov8" title="1">return int(id)</span>
 }
 
 // CreateTestModel creates a test model and returns its ID
-func CreateTestModel(t *testing.T, db *sql.DB, suiteID int, name string) int <span class="cov0" title="0">{
+func CreateTestModel(t *testing.T, db *sql.DB, suiteID int, name string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", name, suiteID)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test model: %v", err)
         }</span>
-        <span class="cov0" title="0">id, err := result.LastInsertId()
+        <span class="cov8" title="1">id, err := result.LastInsertId()
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get model id: %v", err)
         }</span>
-        <span class="cov0" title="0">return int(id)</span>
+        <span class="cov8" title="1">return int(id)</span>
 }
 
 // CreateTestScore creates a test score
-func CreateTestScore(t *testing.T, db *sql.DB, modelID, promptID, score int) <span class="cov0" title="0">{
+func CreateTestScore(t *testing.T, db *sql.DB, modelID, promptID, score int) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)", modelID, promptID, score)
         if err != nil </span><span class="cov0" title="0">{
@@ -5949,31 +6022,31 @@ func CreateTestScore(t *testing.T, db *sql.DB, modelID, promptID, score int) <sp
 }
 
 // GetDefaultSuiteID returns the ID of the default suite
-func GetDefaultSuiteID(t *testing.T, db *sql.DB) int <span class="cov0" title="0">{
+func GetDefaultSuiteID(t *testing.T, db *sql.DB) int <span class="cov8" title="1">{
         t.Helper()
         var id int
         err := db.QueryRow("SELECT id FROM suites WHERE name = 'default'").Scan(&amp;id)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get default suite id: %v", err)
         }</span>
-        <span class="cov0" title="0">return id</span>
+        <span class="cov8" title="1">return id</span>
 }
 
 // SetCurrentSuite sets the current suite
-func SetCurrentSuite(t *testing.T, db *sql.DB, suiteID int) <span class="cov0" title="0">{
+func SetCurrentSuite(t *testing.T, db *sql.DB, suiteID int) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("UPDATE suites SET is_current = 0")
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to clear current suite: %v", err)
         }</span>
-        <span class="cov0" title="0">_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE id = ?", suiteID)
+        <span class="cov8" title="1">_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE id = ?", suiteID)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to set current suite: %v", err)
         }</span>
 }
 
 // CreateTestSetting creates a test setting
-func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) <span class="cov0" title="0">{
+func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", key, value)
         if err != nil </span><span class="cov0" title="0">{
@@ -5982,21 +6055,21 @@ func CreateTestSetting(t *testing.T, db *sql.DB, key, value string) <span class=
 }
 
 // CreateTestEvaluationJob creates a test evaluation job and returns its ID
-func CreateTestEvaluationJob(t *testing.T, db *sql.DB, suiteID int, jobType, status string) int <span class="cov0" title="0">{
+func CreateTestEvaluationJob(t *testing.T, db *sql.DB, suiteID int, jobType, status string) int <span class="cov8" title="1">{
         t.Helper()
         result, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (?, ?, ?)", suiteID, jobType, status)
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to create test evaluation job: %v", err)
         }</span>
-        <span class="cov0" title="0">id, err := result.LastInsertId()
+        <span class="cov8" title="1">id, err := result.LastInsertId()
         if err != nil </span><span class="cov0" title="0">{
                 t.Fatalf("failed to get job id: %v", err)
         }</span>
-        <span class="cov0" title="0">return int(id)</span>
+        <span class="cov8" title="1">return int(id)</span>
 }
 
 // CreateTestModelResponse creates a test model response
-func CreateTestModelResponse(t *testing.T, db *sql.DB, modelID, promptID int, responseText string) <span class="cov0" title="0">{
+func CreateTestModelResponse(t *testing.T, db *sql.DB, modelID, promptID int, responseText string) <span class="cov8" title="1">{
         t.Helper()
         _, err := db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text) VALUES (?, ?, ?)",
                 modelID, promptID, responseText)
@@ -6019,22 +6092,22 @@ type MockRenderCall struct {
 }
 
 // Render records the call and returns any configured error
-func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap template.FuncMap, data interface{}, files ...string) error <span class="cov0" title="0">{
+func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap template.FuncMap, data interface{}, files ...string) error <span class="cov8" title="1">{
         m.RenderCalls = append(m.RenderCalls, MockRenderCall{
                 Name:  name,
                 Data:  data,
                 Files: files,
         })
-        if m.RenderError != nil </span><span class="cov0" title="0">{
+        if m.RenderError != nil </span><span class="cov8" title="1">{
                 return m.RenderError
         }</span>
         // Write minimal content to satisfy tests expecting output
-        <span class="cov0" title="0">w.Write([]byte("mock rendered"))
+        <span class="cov8" title="1">w.Write([]byte("mock rendered"))
         return nil</span>
 }
 
 // RenderTemplateSimple records the call and returns any configured error
-func (m *MockRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl string, data interface{}) error <span class="cov0" title="0">{
+func (m *MockRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl string, data interface{}) error <span class="cov8" title="1">{
         return m.Render(w, tmpl, nil, data, "templates/"+tmpl)
 }</span>
 
@@ -6077,222 +6150,651 @@ type MockDataStore struct {
 }
 
 // GetCurrentSuiteID returns mock suite ID or error
-func (m *MockDataStore) GetCurrentSuiteID() (int, error) <span class="cov0" title="0">{
-        if m.GetCurrentSuiteIDFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) GetCurrentSuiteID() (int, error) <span class="cov8" title="1">{
+        if m.GetCurrentSuiteIDFunc != nil </span><span class="cov8" title="1">{
                 return m.GetCurrentSuiteIDFunc()
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return 0, m.Err
         }</span>
-        <span class="cov0" title="0">return 1, nil</span>
+        <span class="cov8" title="1">return 1, nil</span>
 }
 
 // GetCurrentSuiteName returns mock suite name
-func (m *MockDataStore) GetCurrentSuiteName() string <span class="cov0" title="0">{
-        if m.GetCurrentSuiteNameFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) GetCurrentSuiteName() string <span class="cov8" title="1">{
+        if m.GetCurrentSuiteNameFunc != nil </span><span class="cov8" title="1">{
                 return m.GetCurrentSuiteNameFunc()
         }</span>
-        <span class="cov0" title="0">if m.CurrentSuite != "" </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.CurrentSuite != "" </span><span class="cov8" title="1">{
                 return m.CurrentSuite
         }</span>
-        <span class="cov0" title="0">return "default"</span>
+        <span class="cov8" title="1">return "default"</span>
 }
 
 // ListSuites returns mock suites or error
-func (m *MockDataStore) ListSuites() ([]string, error) <span class="cov0" title="0">{
-        if m.ListSuitesFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ListSuites() ([]string, error) <span class="cov8" title="1">{
+        if m.ListSuitesFunc != nil </span><span class="cov8" title="1">{
                 return m.ListSuitesFunc()
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return nil, m.Err
         }</span>
-        <span class="cov0" title="0">return []string{"default"}, nil</span>
+        <span class="cov8" title="1">return []string{"default"}, nil</span>
 }
 
 // SetCurrentSuite returns mock error
-func (m *MockDataStore) SetCurrentSuite(name string) error <span class="cov0" title="0">{
-        if m.SetCurrentSuiteFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) SetCurrentSuite(name string) error <span class="cov8" title="1">{
+        if m.SetCurrentSuiteFunc != nil </span><span class="cov8" title="1">{
                 return m.SetCurrentSuiteFunc(name)
         }</span>
-        <span class="cov0" title="0">return m.Err</span>
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
+                return m.Err
+        }</span>
+        <span class="cov8" title="1">m.CurrentSuite = name
+        return nil</span>
 }
 
 // SuiteExists returns mock result
-func (m *MockDataStore) SuiteExists(name string) bool <span class="cov0" title="0">{
-        if m.SuiteExistsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) SuiteExists(name string) bool <span class="cov8" title="1">{
+        if m.SuiteExistsFunc != nil </span><span class="cov8" title="1">{
                 return m.SuiteExistsFunc(name)
         }</span>
-        <span class="cov0" title="0">return true</span>
+        <span class="cov8" title="1">return true</span>
 }
 
 // ReadPrompts returns mock prompts
-func (m *MockDataStore) ReadPrompts() []Prompt <span class="cov0" title="0">{
-        if m.ReadPromptsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ReadPrompts() []Prompt <span class="cov8" title="1">{
+        if m.ReadPromptsFunc != nil </span><span class="cov8" title="1">{
                 return m.ReadPromptsFunc()
         }</span>
-        <span class="cov0" title="0">return m.Prompts</span>
+        <span class="cov8" title="1">return m.Prompts</span>
 }
 
 // WritePrompts stores prompts or returns error
-func (m *MockDataStore) WritePrompts(prompts []Prompt) error <span class="cov0" title="0">{
-        if m.WritePromptsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) WritePrompts(prompts []Prompt) error <span class="cov8" title="1">{
+        if m.WritePromptsFunc != nil </span><span class="cov8" title="1">{
                 return m.WritePromptsFunc(prompts)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return m.Err
         }</span>
-        <span class="cov0" title="0">m.Prompts = prompts
+        <span class="cov8" title="1">m.Prompts = prompts
         return nil</span>
 }
 
 // ReadPromptSuite returns mock prompts for a suite
-func (m *MockDataStore) ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov0" title="0">{
-        if m.ReadPromptSuiteFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" title="1">{
+        if m.ReadPromptSuiteFunc != nil </span><span class="cov8" title="1">{
                 return m.ReadPromptSuiteFunc(suiteName)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return nil, m.Err
         }</span>
-        <span class="cov0" title="0">return m.Prompts, nil</span>
+        <span class="cov8" title="1">return m.Prompts, nil</span>
 }
 
 // WritePromptSuite stores prompts for a suite
-func (m *MockDataStore) WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov0" title="0">{
-        if m.WritePromptSuiteFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov8" title="1">{
+        if m.WritePromptSuiteFunc != nil </span><span class="cov8" title="1">{
                 return m.WritePromptSuiteFunc(suiteName, prompts)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return m.Err
         }</span>
-        <span class="cov0" title="0">m.Prompts = prompts
+        <span class="cov8" title="1">m.Prompts = prompts
         return nil</span>
 }
 
 // ListPromptSuites returns mock suite list
-func (m *MockDataStore) ListPromptSuites() ([]string, error) <span class="cov0" title="0">{
-        if m.ListPromptSuitesFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ListPromptSuites() ([]string, error) <span class="cov8" title="1">{
+        if m.ListPromptSuitesFunc != nil </span><span class="cov8" title="1">{
                 return m.ListPromptSuitesFunc()
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return nil, m.Err
         }</span>
-        <span class="cov0" title="0">return []string{"default"}, nil</span>
+        <span class="cov8" title="1">return []string{"default"}, nil</span>
 }
 
 // UpdatePromptsOrder updates prompts order
-func (m *MockDataStore) UpdatePromptsOrder(order []int) <span class="cov0" title="0">{
-        if m.UpdatePromptsOrderFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
+        if m.UpdatePromptsOrderFunc != nil </span><span class="cov8" title="1">{
                 m.UpdatePromptsOrderFunc(order)
         }</span>
 }
 
 // ReadProfiles returns mock profiles
-func (m *MockDataStore) ReadProfiles() []Profile <span class="cov0" title="0">{
-        if m.ReadProfilesFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ReadProfiles() []Profile <span class="cov8" title="1">{
+        if m.ReadProfilesFunc != nil </span><span class="cov8" title="1">{
                 return m.ReadProfilesFunc()
         }</span>
-        <span class="cov0" title="0">return m.Profiles</span>
+        <span class="cov8" title="1">return m.Profiles</span>
 }
 
 // WriteProfiles stores profiles or returns error
-func (m *MockDataStore) WriteProfiles(profiles []Profile) error <span class="cov0" title="0">{
-        if m.WriteProfilesFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) WriteProfiles(profiles []Profile) error <span class="cov8" title="1">{
+        if m.WriteProfilesFunc != nil </span><span class="cov8" title="1">{
                 return m.WriteProfilesFunc(profiles)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return m.Err
         }</span>
-        <span class="cov0" title="0">m.Profiles = profiles
+        <span class="cov8" title="1">m.Profiles = profiles
         return nil</span>
 }
 
 // ReadResults returns mock results
-func (m *MockDataStore) ReadResults() map[string]Result <span class="cov0" title="0">{
-        if m.ReadResultsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) ReadResults() map[string]Result <span class="cov8" title="1">{
+        if m.ReadResultsFunc != nil </span><span class="cov8" title="1">{
                 return m.ReadResultsFunc()
         }</span>
-        <span class="cov0" title="0">if m.Results == nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Results == nil </span><span class="cov8" title="1">{
                 return make(map[string]Result)
         }</span>
-        <span class="cov0" title="0">return m.Results</span>
+        <span class="cov8" title="1">return m.Results</span>
 }
 
 // WriteResults stores results or returns error
-func (m *MockDataStore) WriteResults(suiteName string, results map[string]Result) error <span class="cov0" title="0">{
-        if m.WriteResultsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) WriteResults(suiteName string, results map[string]Result) error <span class="cov8" title="1">{
+        if m.WriteResultsFunc != nil </span><span class="cov8" title="1">{
                 return m.WriteResultsFunc(suiteName, results)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return m.Err
         }</span>
-        <span class="cov0" title="0">m.Results = results
+        <span class="cov8" title="1">m.Results = results
         return nil</span>
 }
 
 // GetSetting returns mock setting or error
-func (m *MockDataStore) GetSetting(key string) (string, error) <span class="cov0" title="0">{
-        if m.GetSettingFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) GetSetting(key string) (string, error) <span class="cov8" title="1">{
+        if m.GetSettingFunc != nil </span><span class="cov8" title="1">{
                 return m.GetSettingFunc(key)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return "", m.Err
         }</span>
-        <span class="cov0" title="0">if m.Settings != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Settings != nil </span><span class="cov8" title="1">{
                 return m.Settings[key], nil
         }</span>
-        <span class="cov0" title="0">return "", nil</span>
+        <span class="cov8" title="1">return "", nil</span>
 }
 
 // SetSetting stores setting or returns error
-func (m *MockDataStore) SetSetting(key, value string) error <span class="cov0" title="0">{
-        if m.SetSettingFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) SetSetting(key, value string) error <span class="cov8" title="1">{
+        if m.SetSettingFunc != nil </span><span class="cov8" title="1">{
                 return m.SetSettingFunc(key, value)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return m.Err
         }</span>
-        <span class="cov0" title="0">if m.Settings == nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Settings == nil </span><span class="cov8" title="1">{
                 m.Settings = make(map[string]string)
         }</span>
-        <span class="cov0" title="0">m.Settings[key] = value
+        <span class="cov8" title="1">m.Settings[key] = value
         return nil</span>
 }
 
 // GetAPIKey returns mock API key or error
-func (m *MockDataStore) GetAPIKey(provider string) (string, error) <span class="cov0" title="0">{
-        if m.GetAPIKeyFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) GetAPIKey(provider string) (string, error) <span class="cov8" title="1">{
+        if m.GetAPIKeyFunc != nil </span><span class="cov8" title="1">{
                 return m.GetAPIKeyFunc(provider)
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return "", m.Err
         }</span>
-        <span class="cov0" title="0">return "", nil</span>
+        <span class="cov8" title="1">return "", nil</span>
 }
 
 // SetAPIKey stores API key or returns error
-func (m *MockDataStore) SetAPIKey(provider, key string) error <span class="cov0" title="0">{
-        if m.SetAPIKeyFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) SetAPIKey(provider, key string) error <span class="cov8" title="1">{
+        if m.SetAPIKeyFunc != nil </span><span class="cov8" title="1">{
                 return m.SetAPIKeyFunc(provider, key)
         }</span>
-        <span class="cov0" title="0">return m.Err</span>
+        <span class="cov8" title="1">return m.Err</span>
 }
 
 // GetMaskedAPIKeys returns mock masked API keys
-func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) <span class="cov0" title="0">{
-        if m.GetMaskedAPIKeysFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) <span class="cov8" title="1">{
+        if m.GetMaskedAPIKeysFunc != nil </span><span class="cov8" title="1">{
                 return m.GetMaskedAPIKeysFunc()
         }</span>
-        <span class="cov0" title="0">if m.Err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if m.Err != nil </span><span class="cov8" title="1">{
                 return nil, m.Err
         }</span>
-        <span class="cov0" title="0">return map[string]string{}, nil</span>
+        <span class="cov8" title="1">return map[string]string{}, nil</span>
 }
 
 // BroadcastResults does nothing in mock
-func (m *MockDataStore) BroadcastResults() <span class="cov0" title="0">{
-        if m.BroadcastResultsFunc != nil </span><span class="cov0" title="0">{
+func (m *MockDataStore) BroadcastResults() <span class="cov8" title="1">{
+        if m.BroadcastResultsFunc != nil </span><span class="cov8" title="1">{
                 m.BroadcastResultsFunc()
         }</span>
+}
+</pre>
+		
+		<pre class="file" id="file28" style="display: none">package main
+
+import (
+        "log"
+        "os"
+)
+
+func main() <span class="cov0" title="0">{
+        log.SetOutput(os.Stderr)
+        os.Exit(run(os.Args[1:], defaultRunDeps()))
+}</span>
+</pre>
+		
+		<pre class="file" id="file29" style="display: none">package main
+
+import (
+        "llm-tournament/handlers"
+        "llm-tournament/middleware"
+        "log"
+        "net/http"
+)
+
+var routes = map[string]http.HandlerFunc{
+        "/import_error":            middleware.ImportErrorHandler,
+        "/prompts":                 handlers.PromptListHandler,
+        "/add_model":               handlers.AddModelHandler,
+        "/edit_model":              handlers.EditModelHandler,
+        "/delete_model":            handlers.DeleteModelHandler,
+        "/add_prompt":              handlers.AddPromptHandler,
+        "/edit_prompt":             handlers.EditPromptHandler,
+        "/delete_prompt":           handlers.DeletePromptHandler,
+        "/move_prompt":             handlers.MovePromptHandler,
+        "/import_results":          handlers.ImportResultsHandler,
+        "/export_prompts":          handlers.ExportPromptsHandler,
+        "/import_prompts":          handlers.ImportPromptsHandler,
+        "/update_prompts_order":    handlers.UpdatePromptsOrderHandler,
+        "/reset_prompts":           handlers.ResetPromptsHandler,
+        "/bulk_delete_prompts":     handlers.BulkDeletePromptsHandler,
+        "/prompts/suites/new":      handlers.NewPromptSuiteHandler,
+        "/prompts/suites/edit":     handlers.EditPromptSuiteHandler,
+        "/prompts/suites/delete":   handlers.DeletePromptSuiteHandler,
+        "/prompts/suites/select":   handlers.SelectPromptSuiteHandler,
+        "/results":                 handlers.ResultsHandler,
+        "/update_result":           handlers.UpdateResultHandler,
+        "/reset_results":           handlers.ResetResultsHandler,
+        "/confirm_refresh_results": handlers.ConfirmRefreshResultsHandler,
+        "/refresh_results":         handlers.RefreshResultsHandler,
+        "/export_results":          handlers.ExportResultsHandler,
+        "/update_mock_results":     handlers.UpdateMockResultsHandler,
+        "/evaluate":                handlers.EvaluateResult,
+        "/profiles":                handlers.ProfilesHandler,
+        "/add_profile":             handlers.AddProfileHandler,
+        "/edit_profile":            handlers.EditProfileHandler,
+        "/delete_profile":          handlers.DeleteProfileHandler,
+        "/reset_profiles":          handlers.ResetProfilesHandler,
+        "/stats":                   handlers.StatsHandler,
+        "/settings":                handlers.SettingsHandler,
+        "/settings/update":         handlers.UpdateSettingsHandler,
+        "/settings/test_key":       handlers.TestAPIKeyHandler,
+        "/evaluate/all":            handlers.EvaluateAllHandler,
+        "/evaluate/model":          handlers.EvaluateModelHandler,
+        "/evaluate/prompt":         handlers.EvaluatePromptHandler,
+        "/evaluation/progress":     handlers.EvaluationProgressHandler,
+        "/evaluation/cancel":       handlers.CancelEvaluationHandler,
+}
+
+func registerRoutes(mux *http.ServeMux) <span class="cov8" title="1">{
+        mux.HandleFunc("/", router)
+        mux.HandleFunc("/ws", middleware.HandleWebSocket)
+        mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
+        mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+}</span>
+
+func router(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        if handler, exists := routes[r.URL.Path]; exists </span><span class="cov8" title="1">{
+                handler(w, r)
+                return
+        }</span>
+
+        <span class="cov8" title="1">log.Printf("redirecting to /prompts from %s", r.URL.Path)
+        http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
+}
+</pre>
+		
+		<pre class="file" id="file30" style="display: none">package main
+
+import (
+        "context"
+        "database/sql"
+        "flag"
+        "fmt"
+        "io"
+        "llm-tournament/handlers"
+        "llm-tournament/middleware"
+        "log"
+        "net"
+        "net/http"
+        "os"
+        "os/signal"
+        "syscall"
+        "time"
+)
+
+type runDeps struct {
+        stdout io.Writer
+
+        initDB         func(string) error
+        closeDB        func() error
+        seedDemoData   func() error
+        initEvaluator  func(*sql.DB)
+        getDB          func() *sql.DB
+        listen         func(network, address string) (net.Listener, error)
+        serve          func(*http.Server, net.Listener) error
+        signalCh       &lt;-chan os.Signal
+        setLogOutput   func(io.Writer)
+        ensureDemoKey  func()
+        registerRoutes func(*http.ServeMux)
+}
+
+func defaultRunDeps() runDeps <span class="cov8" title="1">{
+        return runDeps{
+                stdout:         os.Stdout,
+                initDB:         middleware.InitDB,
+                closeDB:        middleware.CloseDB,
+                seedDemoData:   seedDemoData,
+                initEvaluator:  handlers.InitEvaluator,
+                getDB:          middleware.GetDB,
+                listen:         net.Listen,
+                serve:          func(s *http.Server, ln net.Listener) error </span><span class="cov0" title="0">{ return s.Serve(ln) }</span>,
+                setLogOutput:   log.SetOutput,
+                ensureDemoKey:  ensureDemoEncryptionKey,
+                registerRoutes: registerRoutes,
+        }
+}
+
+func run(args []string, deps runDeps) int <span class="cov8" title="1">{
+        if deps.stdout == nil </span><span class="cov8" title="1">{
+                deps.stdout = io.Discard
+        }</span>
+        <span class="cov8" title="1">if deps.setLogOutput == nil </span><span class="cov8" title="1">{
+                deps.setLogOutput = log.SetOutput
+        }</span>
+        <span class="cov8" title="1">if deps.ensureDemoKey == nil </span><span class="cov8" title="1">{
+                deps.ensureDemoKey = ensureDemoEncryptionKey
+        }</span>
+        <span class="cov8" title="1">if deps.registerRoutes == nil </span><span class="cov8" title="1">{
+                deps.registerRoutes = registerRoutes
+        }</span>
+
+        <span class="cov8" title="1">fs := flag.NewFlagSet("demo-server", flag.ContinueOnError)
+        fs.SetOutput(io.Discard)
+
+        addr := fs.String("addr", "127.0.0.1:0", "listen address (use :0 for random port)")
+        db := fs.String("db", "", "path to sqlite db file (required)")
+        seed := fs.Bool("seed", true, "seed demo data")
+
+        if err := fs.Parse(args); err != nil </span><span class="cov8" title="1">{
+                return 2
+        }</span>
+
+        <span class="cov8" title="1">if *db == "" </span><span class="cov8" title="1">{
+                log.Print("missing required -db")
+                return 1
+        }</span>
+
+        <span class="cov8" title="1">deps.ensureDemoKey()
+
+        if err := deps.initDB(*db); err != nil </span><span class="cov8" title="1">{
+                log.Printf("init db: %v", err)
+                return 1
+        }</span>
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = deps.closeDB() }</span>()
+
+        <span class="cov8" title="1">if *seed </span><span class="cov8" title="1">{
+                if err := deps.seedDemoData(); err != nil </span><span class="cov8" title="1">{
+                        log.Printf("seed demo data: %v", err)
+                        return 1
+                }</span>
+        }
+
+        <span class="cov8" title="1">deps.initEvaluator(deps.getDB())
+
+        mux := http.NewServeMux()
+        deps.registerRoutes(mux)
+
+        server := &amp;http.Server{
+                Handler:           mux,
+                ReadHeaderTimeout: 5 * time.Second,
+        }
+
+        ln, err := deps.listen("tcp", *addr)
+        if err != nil </span><span class="cov8" title="1">{
+                log.Printf("listen: %v", err)
+                return 1
+        }</span>
+
+        // stdout is reserved for machine-readable output (used by Playwright harness).
+        <span class="cov8" title="1">fmt.Fprintf(deps.stdout, "URL=http://%s\n", ln.Addr().String())
+
+        shutdownCh := make(chan struct{}, 1)
+        mux.HandleFunc("/__shutdown", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                        http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+                        return
+                }</span>
+                <span class="cov8" title="1">w.WriteHeader(http.StatusOK)
+                select </span>{
+                case shutdownCh &lt;- struct{}{}:<span class="cov8" title="1"></span>
+                default:<span class="cov0" title="0"></span>
+                }
+        })
+
+        <span class="cov8" title="1">errCh := make(chan error, 1)
+        go func() </span><span class="cov8" title="1">{
+                errCh &lt;- deps.serve(server, ln)
+        }</span>()
+
+        <span class="cov8" title="1">sigCh := deps.signalCh
+        if sigCh == nil </span><span class="cov8" title="1">{
+                c := make(chan os.Signal, 1)
+                signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+                defer signal.Stop(c)
+                sigCh = c
+        }</span>
+
+        <span class="cov8" title="1">select </span>{
+        case &lt;-sigCh:<span class="cov0" title="0"></span>
+        case &lt;-shutdownCh:<span class="cov8" title="1"></span>
+        case err := &lt;-errCh:<span class="cov8" title="1">
+                if err != nil &amp;&amp; err != http.ErrServerClosed </span><span class="cov8" title="1">{
+                        log.Printf("server error: %v", err)
+                        return 1
+                }</span>
+        }
+
+        <span class="cov8" title="1">ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
+        _ = server.Shutdown(ctx)
+
+        return 0</span>
+}
+</pre>
+		
+		<pre class="file" id="file31" style="display: none">package main
+
+import (
+        "fmt"
+        "llm-tournament/middleware"
+        "math/rand"
+        "os"
+        "time"
+)
+
+func ensureDemoEncryptionKey() <span class="cov8" title="1">{
+        if os.Getenv("ENCRYPTION_KEY") != "" </span><span class="cov8" title="1">{
+                return
+        }</span>
+
+        // Deterministic key for screenshot generation only.
+        <span class="cov8" title="1">_ = os.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")</span>
+}
+
+func seedDemoData() error <span class="cov8" title="1">{
+        suiteName := "default"
+        if err := middleware.SetCurrentSuite(suiteName); err != nil </span><span class="cov8" title="1">{
+                return fmt.Errorf("set current suite: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">profiles := []middleware.Profile{
+                {Name: "general", Description: "General reasoning and knowledge"},
+                {Name: "programming", Description: "Coding, debugging, and systems design"},
+                {Name: "writing", Description: "Clarity, tone, and composition"},
+        }
+        if err := middleware.WriteProfileSuite(suiteName, profiles); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("write profiles: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">prompts := []middleware.Prompt{
+                {
+                        Profile:  "general",
+                        Text:     "Explain the difference between correlation and causation in 2-3 sentences.",
+                        Solution: "Correlation is association; causation is when one factor directly produces an effect.",
+                },
+                {
+                        Profile:  "general",
+                        Text:     "Give a one-paragraph summary of the water cycle.",
+                        Solution: "Evaporation → condensation → precipitation → collection, driven by solar energy and gravity.",
+                },
+                {
+                        Profile:  "general",
+                        Text:     "What is Bayes' theorem in one sentence?",
+                        Solution: "It updates the probability of a hypothesis given evidence using conditional probabilities.",
+                },
+                {
+                        Profile:  "general",
+                        Text:     "List 3 practical uses of SQLite in apps.",
+                        Solution: "Local caching, offline-first storage, and embedded configuration/state for desktop/mobile apps.",
+                },
+                {
+                        Profile:  "general",
+                        Text:     "Define 'idempotent' in the context of web APIs.",
+                        Solution: "Calling the same operation multiple times produces the same end state as calling it once.",
+                },
+                {
+                        Profile:  "general",
+                        Text:     "In one sentence, what is a unit test?",
+                        Solution: "A fast, isolated test that verifies a small piece of code behaves as expected.",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "Write a Go function that returns the max of two ints.",
+                        Solution: "func Max(a, b int) int { if a &gt; b { return a }; return b }",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "What does SQL 'FOREIGN KEY ... ON DELETE CASCADE' do?",
+                        Solution: "Deleting the parent row automatically deletes related child rows referencing it.",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "What is the difference between a goroutine and an OS thread?",
+                        Solution: "Goroutines are lightweight user-space scheduled units; OS threads are heavier kernel-scheduled threads.",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "Explain what CGO is and why SQLite often needs it in Go.",
+                        Solution: "CGO lets Go call C code; the common SQLite driver links C SQLite and requires CGO.",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "What does 'context.Context' enable in Go HTTP handlers?",
+                        Solution: "Cancellation, deadlines, and request-scoped values across API boundaries.",
+                },
+                {
+                        Profile:  "programming",
+                        Text:     "Give a 1-2 sentence explanation of XSS and how to mitigate it.",
+                        Solution: "XSS injects scripts into pages; mitigate with output escaping/sanitization and strict CSP.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Rewrite this sentence to be more concise: 'Due to the fact that it was raining, we decided to stay inside.'",
+                        Solution: "Because it was raining, we stayed inside.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Draft a two-sentence product description for a futuristic desktop dashboard UI.",
+                        Solution: "A sleek, high-density dashboard that turns model evaluation into a control-room experience. Neon-glass panels, fast navigation, and real-time insights—without sacrificing clarity.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Rewrite in active voice: 'The report was generated by the system automatically.'",
+                        Solution: "The system generated the report automatically.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Write a clear error message for a missing API key.",
+                        Solution: "API key not configured. Add it in Settings to enable automated evaluation.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Create a short tooltip explaining a 0–100 scoring scale.",
+                        Solution: "Score quality from 0 (fail) to 100 (excellent), in 20-point steps.",
+                },
+                {
+                        Profile:  "writing",
+                        Text:     "Turn this into a bullet list: 'fast, reproducible, and readable.'",
+                        Solution: "- fast\n- reproducible\n- readable",
+                },
+        }
+        if err := middleware.WritePromptSuite(suiteName, prompts); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("write prompts: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">rng := rand.New(rand.NewSource(42))
+        results := map[string]middleware.Result{
+                "gpt-5.2":         {Scores: randomScores(rng, len(prompts))},
+                "claude-opus-4.5": {Scores: randomScores(rng, len(prompts))},
+                "gemini-3-pro":    {Scores: randomScores(rng, len(prompts))},
+                "deepseek-r1":     {Scores: randomScores(rng, len(prompts))},
+                "mixtral-8x22b":   {Scores: randomScores(rng, len(prompts))},
+                "llama-3.1-405b":  {Scores: randomScores(rng, len(prompts))},
+        }
+        if err := middleware.WriteResults(suiteName, results); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("write results: %w", err)
+        }</span>
+
+        // Populate masked API keys for a more representative Settings screenshot.
+        <span class="cov8" title="1">_ = middleware.SetAPIKey("openai", "sk-demo-openai-1234")
+        _ = middleware.SetAPIKey("anthropic", "sk-demo-anthropic-5678")
+        _ = middleware.SetAPIKey("google", "sk-demo-google-9012")
+        _ = middleware.SetSetting("auto_evaluate_new_models", "true")
+        _ = middleware.SetSetting("cost_alert_threshold_usd", "25.0")
+        _ = middleware.SetSetting("python_service_url", "http://localhost:8001")
+
+        // Make timestamps slightly more realistic in UI components that show recent times.
+        _ = middleware.SetSetting("demo_seeded_at", time.Now().UTC().Format(time.RFC3339))
+
+        return nil</span>
+}
+
+func randomScores(rng *rand.Rand, n int) []int <span class="cov8" title="1">{
+        choices := []int{0, 20, 40, 60, 80, 100}
+        scores := make([]int, n)
+        for i := 0; i &lt; n; i++ </span><span class="cov8" title="1">{
+                // bias toward mid/high scores so the grid looks interesting
+                roll := rng.Intn(100)
+                switch </span>{
+                case roll &lt; 5:<span class="cov8" title="1">
+                        scores[i] = choices[0]</span>
+                case roll &lt; 15:<span class="cov8" title="1">
+                        scores[i] = choices[1]</span>
+                case roll &lt; 35:<span class="cov8" title="1">
+                        scores[i] = choices[2]</span>
+                case roll &lt; 60:<span class="cov8" title="1">
+                        scores[i] = choices[3]</span>
+                case roll &lt; 85:<span class="cov8" title="1">
+                        scores[i] = choices[4]</span>
+                default:<span class="cov8" title="1">
+                        scores[i] = choices[5]</span>
+                }
+        }
+        <span class="cov8" title="1">return scores</span>
 }
 </pre>
 		

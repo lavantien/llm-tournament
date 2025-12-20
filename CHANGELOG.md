@@ -2,6 +2,17 @@
 
 All notable changes are documented in this file.
 
+## [v3.4] - 2025-12-20
+
+### Added
+- **README coverage breakdown:** Added a package-level coverage table for quick visibility into what’s tested.
+
+### Changed
+- **Testability + coverage:** Refactored entrypoints (including the demo screenshot server) to be more test-friendly and expanded unit tests across error paths.
+
+### Fixed
+- **MockDataStore suite state:** `SetCurrentSuite` now updates `CurrentSuite` when no error hook is configured.
+
 ## [v3.3] - 2025-12-20
 
 ### Fixed

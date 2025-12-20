@@ -187,6 +187,26 @@ func createWebSocketTestServer(t *testing.T, handler http.HandlerFunc) (*httptes
 	return server, wsURL
 }
 
+func waitForWebSocketClientRegistration(t *testing.T, wantAtLeast int) {
+	t.Helper()
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		clientsMutex.Lock()
+		got := len(clients)
+		clientsMutex.Unlock()
+		if got >= wantAtLeast {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	clientsMutex.Lock()
+	got := len(clients)
+	clientsMutex.Unlock()
+	t.Fatalf("timed out waiting for %d websocket client(s); got %d", wantAtLeast, got)
+}
+
 func TestHandleWebSocket_Connection(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -211,7 +231,7 @@ func TestHandleWebSocket_Connection(t *testing.T) {
 	}
 
 	// Wait for client registration to complete
-	time.Sleep(50 * time.Millisecond)
+	waitForWebSocketClientRegistration(t, 1)
 
 	// Verify client was registered
 	clientsMutex.Lock()
@@ -375,6 +395,8 @@ func TestBroadcastResults_WithClient(t *testing.T) {
 	}
 	defer conn.Close()
 
+	waitForWebSocketClientRegistration(t, 1)
+
 	// Set read deadline
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
@@ -422,6 +444,8 @@ func TestBroadcastEvaluationProgress(t *testing.T) {
 		t.Fatalf("failed to connect: %v", err)
 	}
 	defer conn.Close()
+
+	waitForWebSocketClientRegistration(t, 1)
 
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
@@ -480,6 +504,8 @@ func TestBroadcastEvaluationCompleted(t *testing.T) {
 	}
 	defer conn.Close()
 
+	waitForWebSocketClientRegistration(t, 1)
+
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastEvaluationCompleted(1, 1.50)
@@ -534,6 +560,8 @@ func TestBroadcastEvaluationFailed(t *testing.T) {
 	}
 	defer conn.Close()
 
+	waitForWebSocketClientRegistration(t, 1)
+
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastEvaluationFailed(1, "test error")
@@ -587,14 +615,11 @@ func TestBroadcastCostAlert(t *testing.T) {
 	}
 	defer conn.Close()
 
+	waitForWebSocketClientRegistration(t, 1)
+
 	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastCostAlert(1, 95.0, 100.0)
-
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		t.Fatalf("failed to read message: %v", err)
-	}
 
 	var payload struct {
 		Type string `json:"type"`
@@ -604,9 +629,21 @@ func TestBroadcastCostAlert(t *testing.T) {
 			Threshold   float64 `json:"threshold"`
 		} `json:"data"`
 	}
-	err = json.Unmarshal(msg, &payload)
-	if err != nil {
-		t.Fatalf("failed to unmarshal: %v", err)
+
+	for {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			t.Fatalf("failed to read message: %v", err)
+		}
+
+		err = json.Unmarshal(msg, &payload)
+		if err != nil {
+			t.Fatalf("failed to unmarshal: %v", err)
+		}
+
+		if payload.Type == "cost_alert" {
+			break
+		}
 	}
 
 	if payload.Type != "cost_alert" {

@@ -11,11 +11,14 @@ $ErrorActionPreference = "Stop"
 function Get-CoverageColor {
     param([decimal]$coverage)
 
-    if ($coverage -ge 80) { return "brightgreen" }
+    # The "Mythical" Tier
+    if ($coverage -ge 90) { return "blueviolet" } 
+    elseif ($coverage -ge 80) { return "brightgreen" }
     elseif ($coverage -ge 60) { return "green" }
     elseif ($coverage -ge 40) { return "yellow" }
     elseif ($coverage -ge 20) { return "orange" }
-    else { return "red" }
+    elseif ($coverage -ge 10) { return "red" }
+    else { return "black" }
 }
 
 function Get-CoveragePercentage {
@@ -91,12 +94,14 @@ function Update-ReadmeBadge {
         return
     }
 
-    $badgeMarkdown = "[![Coverage](./coverage-badge.svg)]()"
+    $badgeMarkdown = "![Coverage](./coverage-badge.svg)"
 
     $readme = Get-Content $readmePath -Raw
 
     # Try to replace existing coverage badge
     if ($readme -match '!\[Coverage\]\([^)]+\)') {
+        # This regex matches ![Coverage](anything), allowing us to swap just the image part
+        # while keeping the external link wrapper (e.g. to coverage.html) intact.
         $readme = $readme -replace '!\[Coverage\]\([^)]+\)', $badgeMarkdown
         Set-Content -Path $readmePath -Value $readme -NoNewline
         Write-Host "Updated coverage badge in README.md to reference local SVG" -ForegroundColor Green
@@ -104,7 +109,11 @@ function Update-ReadmeBadge {
     else {
         Write-Host "No existing coverage badge found in README.md" -ForegroundColor Yellow
         Write-Host "Add this line to your README.md:" -ForegroundColor Cyan
-        Write-Host $badgeMarkdown -ForegroundColor White
+        
+        # We add the link wrapper here manually for the suggestion, 
+        # just in case it's a new file.
+        $suggestedBadge = "[$badgeMarkdown](./coverage.html)" 
+        Write-Host $suggestedBadge -ForegroundColor White
     }
 }
 

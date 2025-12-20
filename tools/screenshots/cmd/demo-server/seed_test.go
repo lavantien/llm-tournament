@@ -55,3 +55,29 @@ func TestSeedDemoData_CreatesCoreRecords(t *testing.T) {
 		t.Fatalf("expected ENCRYPTION_KEY to be set for demo seeding")
 	}
 }
+
+func TestEnsureDemoEncryptionKey_DoesNotOverrideExistingValue(t *testing.T) {
+	t.Setenv("ENCRYPTION_KEY", "already-set")
+	ensureDemoEncryptionKey()
+	if got := os.Getenv("ENCRYPTION_KEY"); got != "already-set" {
+		t.Fatalf("expected ENCRYPTION_KEY to be preserved, got %q", got)
+	}
+}
+
+func TestSeedDemoData_ReturnsError_WhenDBClosed(t *testing.T) {
+	t.Helper()
+	ensureDemoEncryptionKey()
+
+	tmpDir := t.TempDir()
+	dbPath := filepath.Join(tmpDir, "demo.db")
+	if err := middleware.InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB: %v", err)
+	}
+	if err := middleware.CloseDB(); err != nil {
+		t.Fatalf("CloseDB: %v", err)
+	}
+
+	if err := seedDemoData(); err == nil {
+		t.Fatalf("expected error when database is closed")
+	}
+}

@@ -365,8 +365,8 @@ func TestMigrateResults(t *testing.T) {
 	}
 
 	tests := []struct {
-		name   string
-		input  map[string]Result
+		name  string
+		input map[string]Result
 	}{
 		{
 			name:  "empty map",
@@ -417,13 +417,19 @@ func TestUpdatePromptsOrder(t *testing.T) {
 	}
 
 	// Reorder prompts (reverse order)
-	newOrder := []int{3, 2, 1}
+	newOrder := []int{2, 1, 0}
 	UpdatePromptsOrder(newOrder) // This function returns nothing
 
 	// Read back and verify order changed
 	readPrompts, _ := ReadPromptSuite("default")
 	if len(readPrompts) != 3 {
 		t.Fatalf("expected 3 prompts, got %d", len(readPrompts))
+	}
+	if readPrompts[0].Text != "Prompt 3" {
+		t.Fatalf("expected first prompt to be %q, got %q", "Prompt 3", readPrompts[0].Text)
+	}
+	if readPrompts[2].Text != "Prompt 1" {
+		t.Fatalf("expected last prompt to be %q, got %q", "Prompt 1", readPrompts[2].Text)
 	}
 }
 

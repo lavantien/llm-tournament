@@ -4,7 +4,7 @@
 [![Python Version](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[[![Coverage](./coverage-badge.svg)]()](./coverage.html)
+[![Coverage](./coverage-badge.svg)](./coverage.html)
 
 A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with both manual scoring and optional automated evaluation.
 
@@ -56,7 +56,7 @@ $env:CGO_ENABLED=1; go run .
 
 - Automated evaluation setup: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
 - Design notes: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
-- Changelog / release notes: [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES_v3.3.md](RELEASE_NOTES_v3.3.md)
+- Changelog / release notes: [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES_v3.4.md](RELEASE_NOTES_v3.4.md)
 
 ## UI Tour
 
@@ -325,6 +325,23 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 # Test Python service health
 curl http://localhost:8001/health
 ```
+
+### Coverage
+
+Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
+
+<!-- COVERAGE_TABLE_START -->
+| Package | Statements | Covered | Coverage |
+| --- | ---: | ---: | ---: |
+| llm-tournament | 70 | 68 | 97.1% |
+| llm-tournament/evaluator | 315 | 279 | 88.6% |
+| llm-tournament/handlers | 1315 | 1172 | 89.1% |
+| llm-tournament/middleware | 699 | 643 | 92.0% |
+| llm-tournament/templates | 14 | 14 | 100.0% |
+| llm-tournament/testutil | 203 | 184 | 90.6% |
+| llm-tournament/tools/screenshots/cmd/demo-server | 110 | 104 | 94.5% |
+| **Total** | **2726** | **2464** | **90.3%** |
+<!-- COVERAGE_TABLE_END -->
 
 ## Troubleshooting
 

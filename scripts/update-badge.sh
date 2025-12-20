@@ -18,7 +18,10 @@ NC='\033[0m' # No Color
 get_coverage_color() {
     local coverage=$1
 
-    if (( $(echo "$coverage >= 80" | bc -l) )); then
+    # The "Mythical" tier
+    if (( $(echo "$coverage >= 90" | bc -l) )); then
+        echo "blueviolet"
+    elif (( $(echo "$coverage >= 80" | bc -l) )); then
         echo "brightgreen"
     elif (( $(echo "$coverage >= 60" | bc -l) )); then
         echo "green"
@@ -109,7 +112,7 @@ update_readme_badge() {
         return 0
     fi
 
-    local badge_markdown="[![Coverage](./coverage-badge.svg)]()"
+    local badge_markdown="![Coverage](./coverage-badge.svg)"
 
     # Try to replace existing coverage badge
     if grep -q '!\[Coverage\]' "$readme_path"; then
@@ -125,7 +128,7 @@ update_readme_badge() {
     else
         echo -e "${YELLOW}No existing coverage badge found in README.md${NC}"
         echo -e "${CYAN}Add this line to your README.md:${NC}"
-        echo -e "${WHITE}${badge_markdown}${NC}"
+        echo -e "${WHITE}[${badge_markdown}](./coverage.html)${NC}"
     fi
 }
 
