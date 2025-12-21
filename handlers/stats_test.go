@@ -158,11 +158,11 @@ func TestCalculateTiers_AllBoundaries(t *testing.T) {
 
 func TestCalculateTiers_MultipleModels(t *testing.T) {
 	totalScores := map[string]int{
-		"GPT-4":      3800, // transcendental
-		"Claude":     3500, // cosmic
-		"Gemini":     2800, // divine
-		"LLaMA":      1200, // astral
-		"Mistral":    100,  // primordial
+		"GPT-4":   3800, // transcendental
+		"Claude":  3500, // cosmic
+		"Gemini":  2800, // divine
+		"LLaMA":   1200, // astral
+		"Mistral": 100,  // primordial
 	}
 
 	tiers, _ := calculateTiers(totalScores)
@@ -436,9 +436,9 @@ func TestStatsHandler_GET_MultipleModels(t *testing.T) {
 
 	suiteName := middleware.GetCurrentSuiteName()
 	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
-		"GPT-4":   {Scores: []int{100}},
-		"Claude":  {Scores: []int{80}},
-		"Gemini":  {Scores: []int{60}},
+		"GPT-4":  {Scores: []int{100}},
+		"Claude": {Scores: []int{80}},
+		"Gemini": {Scores: []int{60}},
 	})
 	if err != nil {
 		t.Fatalf("failed to write test results: %v", err)

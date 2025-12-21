@@ -59,4 +59,3 @@ func TestInitDB_CreateTablesError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected create tables error, got %v", err)
 	}
 }
-

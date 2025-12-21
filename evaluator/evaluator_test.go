@@ -2500,10 +2500,10 @@ func TestWorker_UpdateJobError(t *testing.T) {
 
 	// Send a job with invalid ID (will fail update but shouldn't crash)
 	job := &EvaluationJob{
-		ID:       -1, // Invalid ID
-		SuiteID:  1,
-		JobType:  "all",
-		Status:   "pending",
+		ID:      -1, // Invalid ID
+		SuiteID: 1,
+		JobType: "all",
+		Status:  "pending",
 	}
 
 	jq.jobs <- job
@@ -2534,9 +2534,9 @@ func TestProcessJob_UnknownJobType(t *testing.T) {
 	evaluator.jobQueue.evaluator = evaluator
 
 	job := &EvaluationJob{
-		ID:       1,
-		SuiteID:  1,
-		JobType:  "unknown_type",
+		ID:      1,
+		SuiteID: 1,
+		JobType: "unknown_type",
 	}
 
 	cancelChan := make(chan bool)

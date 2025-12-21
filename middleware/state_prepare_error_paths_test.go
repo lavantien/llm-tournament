@@ -68,4 +68,3 @@ func TestWritePromptSuite_PrepareError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected prepare error, got %v", err)
 	}
 }
-

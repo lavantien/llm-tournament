@@ -35,4 +35,3 @@ func TestREADME_QuickStartDoesNotUseRemovedMakeTargets(t *testing.T) {
 		t.Errorf("README.md coverage badge should link somewhere (currently empty link)")
 	}
 }
-

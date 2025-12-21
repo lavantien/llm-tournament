@@ -126,4 +126,3 @@ func TestWorker_ProcessJobError_SetsFailedAndCleansUp(t *testing.T) {
 		t.Fatalf("expected cancel channel to be cleared for job %d", job.ID)
 	}
 }
-

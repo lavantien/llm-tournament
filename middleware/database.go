@@ -217,17 +217,17 @@ func GetSuiteID(suiteName string) (int, error) {
 	}
 
 	// If suite doesn't exist, create it
-		if err == sql.ErrNoRows {
-			result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
-			if err != nil {
-				return 0, fmt.Errorf("failed to create suite: %w", err)
-			}
-			id, err := lastInsertID(result)
-			if err != nil {
-				return 0, fmt.Errorf("failed to get suite ID: %w", err)
-			}
-			return int(id), nil
+	if err == sql.ErrNoRows {
+		result, err := db.Exec("INSERT INTO suites (name) VALUES (?)", suiteName)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create suite: %w", err)
 		}
+		id, err := lastInsertID(result)
+		if err != nil {
+			return 0, fmt.Errorf("failed to get suite ID: %w", err)
+		}
+		return int(id), nil
+	}
 
 	return 0, err
 }

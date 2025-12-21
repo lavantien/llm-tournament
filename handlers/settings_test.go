@@ -453,9 +453,9 @@ func (ds *setSettingErrorDataStore) SetSetting(key, value string) error {
 func TestUpdateSettings_SetSettingErrorsDoNotFailRequest(t *testing.T) {
 	ds := &setSettingErrorDataStore{
 		errorsByKey: map[string]error{
-			"cost_alert_threshold_usd":   errors.New("threshold error"),
-			"auto_evaluate_new_models":  errors.New("auto eval error"),
-			"python_service_url":        errors.New("python url error"),
+			"cost_alert_threshold_usd": errors.New("threshold error"),
+			"auto_evaluate_new_models": errors.New("auto eval error"),
+			"python_service_url":       errors.New("python url error"),
 		},
 	}
 	handler := NewHandlerWithDeps(ds, &MockRenderer{})

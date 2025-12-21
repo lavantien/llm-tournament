@@ -28,4 +28,3 @@ func TestDeleteSuite_IsCurrentScanError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected is-current scan error, got %v", err)
 	}
 }
-

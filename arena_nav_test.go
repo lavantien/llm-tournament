@@ -22,4 +22,3 @@ func TestArenaNav_RendersTopbarAndSidebar(t *testing.T) {
 		t.Fatalf("templates/nav.html must include an element with class arena-sidebar")
 	}
 }
-

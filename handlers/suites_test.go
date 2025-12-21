@@ -613,64 +613,64 @@ func TestDeletePromptSuite_DeleteSuiteError(t *testing.T) {
 }
 
 func TestDeletePromptSuiteHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupSuitesTestDB(t)
-        defer cleanup()
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/delete?suite_name=default", nil)
-        rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/prompts/suites/delete?suite_name=default", nil)
+	rr := httptest.NewRecorder()
 
-        DeletePromptSuiteHandler(rr, req)
+	DeletePromptSuiteHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestNewPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupSuitesTestDB(t)
-        defer cleanup()
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/new", nil)
-        rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/prompts/suites/new", nil)
+	rr := httptest.NewRecorder()
 
-        NewPromptSuiteHandler(rr, req)
+	NewPromptSuiteHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestEditPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupSuitesTestDB(t)
-        defer cleanup()
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/prompts/suites/edit?suite_name=default", nil)
-        rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/prompts/suites/edit?suite_name=default", nil)
+	rr := httptest.NewRecorder()
 
-        EditPromptSuiteHandler(rr, req)
+	EditPromptSuiteHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestSelectPromptSuiteHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupSuitesTestDB(t)
-        defer cleanup()
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodGet, "/prompts/suites/select", nil)
-        rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/prompts/suites/select", nil)
+	rr := httptest.NewRecorder()
 
-        SelectPromptSuiteHandler(rr, req)
+	SelectPromptSuiteHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestNewPromptSuiteHandler_GET_RenderError(t *testing.T) {
-        cleanup := setupSuitesTestDB(t)
-        defer cleanup()
+	cleanup := setupSuitesTestDB(t)
+	defer cleanup()
 
 	// Save original renderer and restore after test
 	original := middleware.DefaultRenderer

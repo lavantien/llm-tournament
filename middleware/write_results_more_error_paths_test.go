@@ -91,4 +91,3 @@ func TestWriteResults_QueryModelError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected query model error, got %v", err)
 	}
 }
-

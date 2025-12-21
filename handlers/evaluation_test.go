@@ -185,19 +185,19 @@ func TestCancelEvaluationHandler_InvalidID(t *testing.T) {
 }
 
 func TestInitEvaluator(t *testing.T) {
-        cleanup := setupEvaluationTestDB(t)
-        defer cleanup()
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
 
 	// Store original globalEvaluator
 	originalEvaluator := globalEvaluator
 	defer func() { globalEvaluator = originalEvaluator }()
 
-        // Ensure default URL path is exercised (tests may set python_service_url).
-        _ = middleware.SetSetting("python_service_url", "")
+	// Ensure default URL path is exercised (tests may set python_service_url).
+	_ = middleware.SetSetting("python_service_url", "")
 
-        // Test initialization
-        db := middleware.GetDB()
-        InitEvaluator(db)
+	// Test initialization
+	db := middleware.GetDB()
+	InitEvaluator(db)
 
 	if globalEvaluator == nil {
 		t.Error("expected globalEvaluator to be initialized")
@@ -515,8 +515,8 @@ func TestCancelEvaluationHandler_SuccessResponse(t *testing.T) {
 }
 
 func TestEvaluateAllHandler_GetCurrentSuiteIDError(t *testing.T) {
-        cleanup := setupEvaluationTestDB(t)
-        defer cleanup()
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
 
 	// Initialize evaluator
 	db := middleware.GetDB()
@@ -561,4 +561,3 @@ func TestEvaluateAllHandler_EvaluateAllError(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
-

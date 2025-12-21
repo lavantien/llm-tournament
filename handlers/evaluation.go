@@ -138,13 +138,13 @@ func EvaluationProgressHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	middleware.RespondJSON(w, map[string]interface{}{
-		"job_id":            job.ID,
-		"status":            job.Status,
-		"progress_current":  job.ProgressCurrent,
-		"progress_total":    job.ProgressTotal,
-		"estimated_cost":    job.EstimatedCost,
-		"actual_cost":       job.ActualCost,
-		"error":             job.ErrorMessage,
+		"job_id":           job.ID,
+		"status":           job.Status,
+		"progress_current": job.ProgressCurrent,
+		"progress_total":   job.ProgressTotal,
+		"estimated_cost":   job.EstimatedCost,
+		"actual_cost":      job.ActualCost,
+		"error":            job.ErrorMessage,
 	})
 }
 

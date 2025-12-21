@@ -13,38 +13,38 @@ import (
 
 func TestGetEncryptionKey(t *testing.T) {
 	tests := []struct {
-		name      string
-		envValue  string
-		wantErr   bool
+		name        string
+		envValue    string
+		wantErr     bool
 		errContains string
 	}{
 		{
-			name:      "valid key",
-			envValue:  testutil.ValidEncryptionKey(),
-			wantErr:   false,
+			name:     "valid key",
+			envValue: testutil.ValidEncryptionKey(),
+			wantErr:  false,
 		},
 		{
 			name:        "missing env var",
-			envValue:   "",
-			wantErr:    true,
+			envValue:    "",
+			wantErr:     true,
 			errContains: "not set",
 		},
 		{
 			name:        "too short",
-			envValue:   "0123456789abcdef",
-			wantErr:    true,
+			envValue:    "0123456789abcdef",
+			wantErr:     true,
 			errContains: "64 hex characters",
 		},
 		{
 			name:        "too long",
-			envValue:   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef00",
-			wantErr:    true,
+			envValue:    "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef00",
+			wantErr:     true,
 			errContains: "64 hex characters",
 		},
 		{
 			name:        "invalid hex",
-			envValue:   "ghijklmnopqrstuv0123456789abcdef0123456789abcdef0123456789abcdef",
-			wantErr:    true,
+			envValue:    "ghijklmnopqrstuv0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantErr:     true,
 			errContains: "invalid",
 		},
 	}

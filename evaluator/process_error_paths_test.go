@@ -115,4 +115,3 @@ func TestProcessPromptJob_EvaluateAndProgressErrors_Continue(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 }
-

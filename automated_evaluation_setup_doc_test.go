@@ -42,4 +42,3 @@ func TestAutomatedEvaluationSetupDoc_UsesCurrentCommands(t *testing.T) {
 		}
 	}
 }
-

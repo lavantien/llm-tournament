@@ -32,10 +32,10 @@ func (m *MockDataStore) GetCurrentSuiteName() string {
 	}
 	return "default"
 }
-func (m *MockDataStore) ListSuites() ([]string, error)          { return []string{"default"}, nil }
-func (m *MockDataStore) SetCurrentSuite(name string) error      { return nil }
-func (m *MockDataStore) SuiteExists(name string) bool           { return true }
-func (m *MockDataStore) ReadPrompts() []middleware.Prompt       { return m.Prompts }
+func (m *MockDataStore) ListSuites() ([]string, error)     { return []string{"default"}, nil }
+func (m *MockDataStore) SetCurrentSuite(name string) error { return nil }
+func (m *MockDataStore) SuiteExists(name string) bool      { return true }
+func (m *MockDataStore) ReadPrompts() []middleware.Prompt  { return m.Prompts }
 func (m *MockDataStore) WritePrompts(prompts []middleware.Prompt) error {
 	if m.WritePromptsFunc != nil {
 		return m.WritePromptsFunc(prompts)
@@ -148,12 +148,12 @@ func (f *FailingResponseWriter) WriteHeader(statusCode int) {
 // MockDataStoreWithError creates a MockDataStore that returns specified errors
 type MockDataStoreWithError struct {
 	MockDataStore
-	GetCurrentSuiteIDErr   error
-	ReadPromptSuiteErr     error
-	WritePromptSuiteErr    error
-	ReadProfileSuiteErr    error
-	WriteResultsErr        error
-	ReadResultsErr         error
+	GetCurrentSuiteIDErr error
+	ReadPromptSuiteErr   error
+	WritePromptSuiteErr  error
+	ReadProfileSuiteErr  error
+	WriteResultsErr      error
+	ReadResultsErr       error
 }
 
 func (m *MockDataStoreWithError) GetCurrentSuiteID() (int, error) {

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"reflect"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -1043,8 +1043,8 @@ func TestResultsHandler_NormalizesNilMismatchedAndInvalidScores(t *testing.T) {
 }
 
 func TestUpdateMockResultsHandler_WithEmptyModels(t *testing.T) {
-        cleanup := setupResultsTestDB(t)
-        defer cleanup()
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
 
 	// Add prompts first
 	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
@@ -1525,7 +1525,7 @@ func TestUpdateResultHandler_WriteResponseError(t *testing.T) {
 	rr := httptest.NewRecorder()
 	failingWriter := &FailingResponseWriter{
 		ResponseWriter: rr,
-		WriteError:      errors.New("mock write error"),
+		WriteError:     errors.New("mock write error"),
 	}
 	handler.UpdateResult(failingWriter, req)
 
@@ -1640,41 +1640,41 @@ func TestEvaluateResultHandler_WriteResultsError(t *testing.T) {
 }
 
 func TestEvaluateResultHandler_InitializesNilResultsMap(t *testing.T) {
-        mockDS := &nilResultsDataStore{
-                MockDataStore: MockDataStore{
-                        Prompts:      []middleware.Prompt{{Text: "Test prompt"}},
-                        CurrentSuite: "test-suite",
-                },
-        }
+	mockDS := &nilResultsDataStore{
+		MockDataStore: MockDataStore{
+			Prompts:      []middleware.Prompt{{Text: "Test prompt"}},
+			CurrentSuite: "test-suite",
+		},
+	}
 
-        handler := &Handler{
-                DataStore: mockDS,
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
 
-        form := url.Values{}
-        form.Add("score", "80")
+	form := url.Values{}
+	form.Add("score", "80")
 
-        req := httptest.NewRequest("POST", "/evaluate_result?model=NewModel&prompt=0", strings.NewReader(form.Encode()))
-        req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req := httptest.NewRequest("POST", "/evaluate_result?model=NewModel&prompt=0", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-        rr := httptest.NewRecorder()
-        handler.EvaluateResultHandler(rr, req)
+	rr := httptest.NewRecorder()
+	handler.EvaluateResultHandler(rr, req)
 
-        if rr.Code != http.StatusSeeOther {
-                t.Fatalf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
-        }
+	if rr.Code != http.StatusSeeOther {
+		t.Fatalf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
+	}
 
-        if mockDS.Results == nil {
-                t.Fatalf("expected results map to be initialized")
-        }
-        result, ok := mockDS.Results["NewModel"]
-        if !ok {
-                t.Fatalf("expected NewModel to be created")
-        }
-        if len(result.Scores) != 1 || result.Scores[0] != 80 {
-                t.Fatalf("expected score to be stored, got %#v", result.Scores)
-        }
+	if mockDS.Results == nil {
+		t.Fatalf("expected results map to be initialized")
+	}
+	result, ok := mockDS.Results["NewModel"]
+	if !ok {
+		t.Fatalf("expected NewModel to be created")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 80 {
+		t.Fatalf("expected score to be stored, got %#v", result.Scores)
+	}
 }
 
 func TestUpdateMockResultsHandler_WriteResultsError(t *testing.T) {
@@ -1708,30 +1708,30 @@ func TestUpdateMockResultsHandler_WriteResultsError(t *testing.T) {
 }
 
 func TestUpdateMockResults_ReadAllError(t *testing.T) {
-        handler := &Handler{
-                DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
+		Renderer:  &MockRenderer{},
+	}
 
-        req := httptest.NewRequest("POST", "/update_mock_results", readErrorReader{})
-        req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest("POST", "/update_mock_results", readErrorReader{})
+	req.Header.Set("Content-Type", "application/json")
 
-        rr := httptest.NewRecorder()
-        handler.UpdateMockResults(rr, req)
+	rr := httptest.NewRecorder()
+	handler.UpdateMockResults(rr, req)
 
-        if rr.Code != http.StatusBadRequest {
-                t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-        }
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
 }
 
 func TestUpdateMockResults_SortsModelsByTotalScore(t *testing.T) {
-        handler := &Handler{
-                DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
+		Renderer:  &MockRenderer{},
+	}
 
-        // Intentionally provide models in reverse order; handler should sort by total score.
-        mockData := `{
+	// Intentionally provide models in reverse order; handler should sort by total score.
+	mockData := `{
                 "results": {
                         "ModelA": {"scores": [100]},
                         "ModelB": {"scores": [0]}
@@ -1739,53 +1739,53 @@ func TestUpdateMockResults_SortsModelsByTotalScore(t *testing.T) {
                 "models": ["ModelB", "ModelA"]
         }`
 
-        req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
-        req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
+	req.Header.Set("Content-Type", "application/json")
 
-        rr := httptest.NewRecorder()
-        handler.UpdateMockResults(rr, req)
+	rr := httptest.NewRecorder()
+	handler.UpdateMockResults(rr, req)
 
-        if rr.Code != http.StatusOK {
-                t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
-        }
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
 
-        var resp struct {
-                Models []string `json:"models"`
-        }
-        if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
-                t.Fatalf("failed to unmarshal response: %v", err)
-        }
-        if len(resp.Models) != 2 || resp.Models[0] != "ModelA" || resp.Models[1] != "ModelB" {
-                t.Fatalf("expected models sorted as [ModelA ModelB], got %v", resp.Models)
-        }
+	var resp struct {
+		Models []string `json:"models"`
+	}
+	if err := json.Unmarshal(rr.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to unmarshal response: %v", err)
+	}
+	if len(resp.Models) != 2 || resp.Models[0] != "ModelA" || resp.Models[1] != "ModelB" {
+		t.Fatalf("expected models sorted as [ModelA ModelB], got %v", resp.Models)
+	}
 }
 
 func TestUpdateMockResults_ResponseEncodeError(t *testing.T) {
-        handler := &Handler{
-                DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{Prompts: []middleware.Prompt{{Text: "Test prompt"}}},
+		Renderer:  &MockRenderer{},
+	}
 
-        mockData := `{
+	mockData := `{
                 "results": {"TestModel": {"scores": [80]}},
                 "models": ["TestModel"]
         }`
 
-        req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
-        req.Header.Set("Content-Type", "application/json")
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(mockData))
+	req.Header.Set("Content-Type", "application/json")
 
-        rr := httptest.NewRecorder()
-        failingWriter := &FailingResponseWriter{
-                ResponseWriter: rr,
-                WriteError:     errors.New("mock write error"),
-        }
+	rr := httptest.NewRecorder()
+	failingWriter := &FailingResponseWriter{
+		ResponseWriter: rr,
+		WriteError:     errors.New("mock write error"),
+	}
 
-        handler.UpdateMockResults(failingWriter, req)
+	handler.UpdateMockResults(failingWriter, req)
 
-        // Handler logs encode errors but doesn't return a different status code.
-        if rr.Code != http.StatusOK {
-                t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
-        }
+	// Handler logs encode errors but doesn't return a different status code.
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
 }
 
 func TestRefreshResultsHandler_GET_RenderError(t *testing.T) {

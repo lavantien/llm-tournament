@@ -77,8 +77,8 @@ func TestAddPromptHandler_Success(t *testing.T) {
 }
 
 func TestAddPromptHandler_EmptyText(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	form := url.Values{}
 	form.Add("prompt", "")
@@ -91,25 +91,25 @@ func TestAddPromptHandler_EmptyText(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-        }
+	}
 }
 
 func TestAddPromptHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodGet, "/add_prompt", nil)
-        rr := httptest.NewRecorder()
-        AddPromptHandler(rr, req)
+	req := httptest.NewRequest(http.MethodGet, "/add_prompt", nil)
+	rr := httptest.NewRecorder()
+	AddPromptHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestEditPromptHandler_POST_Success(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// First add a prompt
 	addForm := url.Values{}
@@ -194,8 +194,8 @@ func TestEditPromptHandler_POST_InvalidIndex(t *testing.T) {
 }
 
 func TestEditPromptHandler_GET_InvalidIndex(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	req := httptest.NewRequest("GET", "/edit_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -203,25 +203,25 @@ func TestEditPromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-        }
+	}
 }
 
 func TestEditPromptHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/edit_prompt?index=0", nil)
-        rr := httptest.NewRecorder()
-        EditPromptHandler(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/edit_prompt?index=0", nil)
+	rr := httptest.NewRecorder()
+	EditPromptHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestDeletePromptHandler_POST_Success(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// First add a prompt
 	addForm := url.Values{}
@@ -271,8 +271,8 @@ func TestDeletePromptHandler_POST_InvalidIndex(t *testing.T) {
 }
 
 func TestDeletePromptHandler_GET_InvalidIndex(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	req := httptest.NewRequest("GET", "/delete_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -280,25 +280,25 @@ func TestDeletePromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-        }
+	}
 }
 
 func TestDeletePromptHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/delete_prompt?index=0", nil)
-        rr := httptest.NewRecorder()
-        DeletePromptHandler(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/delete_prompt?index=0", nil)
+	rr := httptest.NewRecorder()
+	DeletePromptHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestMovePromptHandler_POST_Success(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// Add multiple prompts
 	for i := 0; i < 3; i++ {
@@ -364,8 +364,8 @@ func TestMovePromptHandler_POST_InvalidNewIndex(t *testing.T) {
 }
 
 func TestMovePromptHandler_GET_InvalidIndex(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	req := httptest.NewRequest("GET", "/move_prompt?index=invalid", nil)
 	rr := httptest.NewRecorder()
@@ -373,25 +373,25 @@ func TestMovePromptHandler_GET_InvalidIndex(t *testing.T) {
 
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
-        }
+	}
 }
 
 func TestMovePromptHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/move_prompt?index=0", nil)
-        rr := httptest.NewRecorder()
-        MovePromptHandler(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/move_prompt?index=0", nil)
+	rr := httptest.NewRecorder()
+	MovePromptHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestResetPromptsHandler_POST(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// Add some prompts
 	for i := 0; i < 3; i++ {
@@ -419,27 +419,27 @@ func TestResetPromptsHandler_POST(t *testing.T) {
 
 	// Verify prompts were reset
 	prompts = middleware.ReadPrompts()
-        if len(prompts) != 0 {
-                t.Errorf("expected 0 prompts after reset, got %d", len(prompts))
-        }
+	if len(prompts) != 0 {
+		t.Errorf("expected 0 prompts after reset, got %d", len(prompts))
+	}
 }
 
 func TestResetPromptsHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPut, "/reset_prompts", nil)
-        rr := httptest.NewRecorder()
-        ResetPromptsHandler(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/reset_prompts", nil)
+	rr := httptest.NewRecorder()
+	ResetPromptsHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestExportPromptsHandler(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// Add some prompts
 	form := url.Values{}
@@ -465,27 +465,27 @@ func TestExportPromptsHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to unmarshal exported JSON: %v", err)
 	}
-        if len(prompts) != 1 {
-                t.Errorf("expected 1 prompt in export, got %d", len(prompts))   
-        }
+	if len(prompts) != 1 {
+		t.Errorf("expected 1 prompt in export, got %d", len(prompts))
+	}
 }
 
 func TestExportPromptsHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodPost, "/export_prompts", nil)
-        rr := httptest.NewRecorder()
-        ExportPromptsHandler(rr, req)
+	req := httptest.NewRequest(http.MethodPost, "/export_prompts", nil)
+	rr := httptest.NewRecorder()
+	ExportPromptsHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestUpdatePromptsOrderHandler_ValidOrder(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// The UpdatePromptsOrder function expects database prompt IDs in the order array
 	// which makes it complex to test without knowing the actual IDs generated.
@@ -547,16 +547,16 @@ func TestUpdatePromptsOrderHandler_InvalidJSON(t *testing.T) {
 }
 
 func TestUpdatePromptsOrderHandler_MethodNotAllowed(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        req := httptest.NewRequest(http.MethodGet, "/update_prompts_order", nil)
-        rr := httptest.NewRecorder()
-        UpdatePromptsOrderHandler(rr, req)
+	req := httptest.NewRequest(http.MethodGet, "/update_prompts_order", nil)
+	rr := httptest.NewRecorder()
+	UpdatePromptsOrderHandler(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestUpdatePromptsOrder_ParseFormError(t *testing.T) {
@@ -576,8 +576,8 @@ func TestUpdatePromptsOrder_ParseFormError(t *testing.T) {
 }
 
 func TestBulkDeletePromptsHandler_Success(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// Add some prompts
 	for i := 0; i < 3; i++ {
@@ -737,18 +737,18 @@ func createMultipartFormFile(t *testing.T, fieldname, filename string, content [
 }
 
 func TestImportPromptsHandler_MethodNotAllowed(t *testing.T) {
-        handler := &Handler{
-                DataStore: &MockDataStore{},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{},
+		Renderer:  &MockRenderer{},
+	}
 
-        req := httptest.NewRequest(http.MethodPut, "/import_prompts", nil)
-        rr := httptest.NewRecorder()
-        handler.ImportPrompts(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/import_prompts", nil)
+	rr := httptest.NewRecorder()
+	handler.ImportPrompts(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 func TestBulkDeletePrompts_InvalidJSONBody(t *testing.T) {
@@ -891,8 +891,8 @@ func TestMovePrompt_POST_ParseFormError(t *testing.T) {
 }
 
 func TestImportPromptsHandler_POST_NoFile(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// POST without file should redirect to error
 	req := httptest.NewRequest("POST", "/import_prompts", nil)
@@ -991,18 +991,18 @@ func TestImportPromptsHandler_ReadAllError(t *testing.T) {
 }
 
 func TestImportResultsHandler_MethodNotAllowed(t *testing.T) {
-        handler := &Handler{
-                DataStore: &MockDataStore{},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{},
+		Renderer:  &MockRenderer{},
+	}
 
-        req := httptest.NewRequest(http.MethodPut, "/import_results", nil)
-        rr := httptest.NewRecorder()
-        handler.ImportResults(rr, req)
+	req := httptest.NewRequest(http.MethodPut, "/import_results", nil)
+	rr := httptest.NewRecorder()
+	handler.ImportResults(rr, req)
 
-        if rr.Code != http.StatusMethodNotAllowed {
-                t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-        }
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
 }
 
 type promptListListSuitesErrorDataStore struct {
@@ -1177,8 +1177,8 @@ func TestPromptList_OrderFilterParseSuccess(t *testing.T) {
 }
 
 func TestImportResultsHandler_POST_NoFile(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	req := httptest.NewRequest("POST", "/import_results", nil)
 	req.Header.Set("Content-Type", "multipart/form-data")
@@ -1186,79 +1186,79 @@ func TestImportResultsHandler_POST_NoFile(t *testing.T) {
 	ImportResultsHandler(rr, req)
 
 	// Should redirect to import_error
-        if rr.Code != http.StatusSeeOther {
-                t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
-        }
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected status %d for no file, got %d", http.StatusSeeOther, rr.Code)
+	}
 }
 
 func TestImportResultsHandler_ReadAllError(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
-        handler := &Handler{
-                DataStore: &MockDataStore{},
-                Renderer:  &MockRenderer{},
-        }
+	handler := &Handler{
+		DataStore: &MockDataStore{},
+		Renderer:  &MockRenderer{},
+	}
 
-        results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
-        jsonData, _ := json.Marshal(results)
+	results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
+	jsonData, _ := json.Marshal(results)
 
-        body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
-        req := httptest.NewRequest("POST", "/import_results", body)
-        req.Header.Set("Content-Type", contentType)
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
 
-        original := readAll
-        readAll = func(io.Reader) ([]byte, error) { return nil, errors.New("mock readall error") }
-        t.Cleanup(func() { readAll = original })
+	original := readAll
+	readAll = func(io.Reader) ([]byte, error) { return nil, errors.New("mock readall error") }
+	t.Cleanup(func() { readAll = original })
 
-        rr := httptest.NewRecorder()
-        handler.ImportResults(rr, req)
+	rr := httptest.NewRecorder()
+	handler.ImportResults(rr, req)
 
-        if rr.Code != http.StatusInternalServerError {
-                t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
-        }
-        if !strings.Contains(rr.Body.String(), "Error reading file") {
-                t.Fatalf("expected error message, got %q", rr.Body.String())    
-        }
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error reading file") {
+		t.Fatalf("expected error message, got %q", rr.Body.String())
+	}
 }
 
 func TestImportResultsHandler_WriteResultsError(t *testing.T) {
-        expectedErr := errors.New("mock write results error")
-        handler := &Handler{
-                DataStore: &MockDataStore{
-                        Prompts:      []middleware.Prompt{{Text: "Prompt 1"}},
-                        CurrentSuite: "test-suite",
-                        WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
-                                if suiteName != "test-suite" {
-                                        t.Fatalf("expected suite name %q, got %q", "test-suite", suiteName)
-                                }
-                                return expectedErr
-                        },
-                },
-                Renderer: &MockRenderer{},
-        }
+	expectedErr := errors.New("mock write results error")
+	handler := &Handler{
+		DataStore: &MockDataStore{
+			Prompts:      []middleware.Prompt{{Text: "Prompt 1"}},
+			CurrentSuite: "test-suite",
+			WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
+				if suiteName != "test-suite" {
+					t.Fatalf("expected suite name %q, got %q", "test-suite", suiteName)
+				}
+				return expectedErr
+			},
+		},
+		Renderer: &MockRenderer{},
+	}
 
-        results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
-        jsonData, _ := json.Marshal(results)
+	results := map[string]middleware.Result{"Model1": {Scores: []int{80}}}
+	jsonData, _ := json.Marshal(results)
 
-        body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
-        req := httptest.NewRequest("POST", "/import_results", body)
-        req.Header.Set("Content-Type", contentType)
+	body, contentType := createMultipartFormFile(t, "results_file", "results.json", jsonData)
+	req := httptest.NewRequest("POST", "/import_results", body)
+	req.Header.Set("Content-Type", contentType)
 
-        rr := httptest.NewRecorder()
-        handler.ImportResults(rr, req)
+	rr := httptest.NewRecorder()
+	handler.ImportResults(rr, req)
 
-        if rr.Code != http.StatusInternalServerError {
-                t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
-        }
-        if !strings.Contains(rr.Body.String(), "Error writing results") {
-                t.Fatalf("expected error message, got %q", rr.Body.String())
-        }
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error writing results") {
+		t.Fatalf("expected error message, got %q", rr.Body.String())
+	}
 }
 
 func TestImportResultsHandler_POST_ValidJSON(t *testing.T) {
-        cleanup := setupPromptTestDB(t)
-        defer cleanup()
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
 
 	// First create prompts so results have targets
 	prompts := []middleware.Prompt{

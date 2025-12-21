@@ -187,7 +187,7 @@ func ReadResults() map[string]Result {
 				log.Printf("Error scanning score: %v", err)
 				continue
 			}
-			
+
 			if promptOrder >= 0 && promptOrder < promptCount {
 				scores[promptOrder] = score
 			}
@@ -224,14 +224,14 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 
 	var prompts []Prompt
 	seenTexts := make(map[string]bool) // Track unique prompts by text content
-	
+
 	for rows.Next() {
 		var p Prompt
 		var displayOrder int
 		if err := rows.Scan(&p.Text, &p.Solution, &p.Profile, &displayOrder); err != nil {
 			return nil, fmt.Errorf("failed to scan prompt: %w", err)
 		}
-		
+
 		// Ensure we don't add duplicates
 		if !seenTexts[p.Text] {
 			prompts = append(prompts, p)
@@ -380,7 +380,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	if err != nil {
 		return fmt.Errorf("failed to query prompts: %w", err)
 	}
-	
+
 	var promptIDs []int
 	for promptRows.Next() {
 		var id int
@@ -391,7 +391,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		promptIDs = append(promptIDs, id)
 	}
 	promptRows.Close()
-	
+
 	if err := rowsErr(promptRows); err != nil {
 		return fmt.Errorf("error iterating prompt rows: %w", err)
 	}
@@ -401,7 +401,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	if err != nil {
 		return fmt.Errorf("failed to query model names: %w", err)
 	}
-	
+
 	var dbModelNames []string
 	for modelNamesRows.Next() {
 		var name string
@@ -412,7 +412,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		dbModelNames = append(dbModelNames, name)
 	}
 	modelNamesRows.Close()
-	
+
 	// Delete models that are in the database but not in the results map
 	for _, dbModelName := range dbModelNames {
 		if _, exists := results[dbModelName]; !exists {
@@ -437,20 +437,20 @@ func WriteResults(suiteName string, results map[string]Result) error {
 		// Get or create model
 		var modelID int
 		err := tx.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&modelID)
-				if err == sql.ErrNoRows {
-					// Create new model
-					modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-					if err != nil {
-						return fmt.Errorf("failed to insert model: %w", err)
-					}
-					modelIDInt64, err := lastInsertID(modelResult)
-					if err != nil {
-						return fmt.Errorf("failed to get model ID: %w", err)
-					}
-					modelID = int(modelIDInt64)
-				} else if err != nil {
-					return fmt.Errorf("failed to query model: %w", err)
-				}
+		if err == sql.ErrNoRows {
+			// Create new model
+			modelResult, err := tx.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+			if err != nil {
+				return fmt.Errorf("failed to insert model: %w", err)
+			}
+			modelIDInt64, err := lastInsertID(modelResult)
+			if err != nil {
+				return fmt.Errorf("failed to get model ID: %w", err)
+			}
+			modelID = int(modelIDInt64)
+		} else if err != nil {
+			return fmt.Errorf("failed to query model: %w", err)
+		}
 
 		// Insert scores
 		if len(result.Scores) > 0 {
@@ -458,7 +458,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 			if err != nil {
 				return fmt.Errorf("failed to prepare score insert: %w", err)
 			}
-			
+
 			for i, score := range result.Scores {
 				if i < len(promptIDs) {
 					_, err = scoreStmt.Exec(modelID, promptIDs[i], score)
@@ -475,12 +475,11 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	return tx.Commit()
 }
 
-
 // MigrateResults converts old result formats to the current format
 func MigrateResults(results map[string]Result) map[string]Result {
 	migrated := make(map[string]Result)
 	prompts := ReadPrompts()
-	
+
 	for model, result := range results {
 		// If we have no Scores, initialize empty array
 		if result.Scores == nil {
@@ -491,14 +490,14 @@ func MigrateResults(results map[string]Result) map[string]Result {
 			copy(newScores, result.Scores)
 			result.Scores = newScores
 		}
-		
+
 		// Ensure all scores are within valid range
 		for i, score := range result.Scores {
 			if score < 0 || score > 100 {
 				result.Scores[i] = 0
 			}
 		}
-		
+
 		migrated[model] = result
 	}
 	return migrated
@@ -510,13 +509,13 @@ func UpdatePromptsOrder(order []int) {
 		log.Println("Invalid order length")
 		return
 	}
-	
+
 	suiteID, err := GetCurrentSuiteID()
 	if err != nil {
 		log.Printf("Error getting current suite ID: %v", err)
 		return
 	}
-	
+
 	// Begin transaction
 	tx, err := dbBegin()
 	if err != nil {
@@ -535,7 +534,7 @@ func UpdatePromptsOrder(order []int) {
 		log.Printf("Error querying prompts: %v", err)
 		return
 	}
-	
+
 	var promptIDs []int
 	for promptRows.Next() {
 		var id int
@@ -547,26 +546,26 @@ func UpdatePromptsOrder(order []int) {
 		promptIDs = append(promptIDs, id)
 	}
 	promptRows.Close()
-	
+
 	// Update each prompt's display_order
 	for newOrder, oldIndex := range order {
 		if oldIndex < 0 || oldIndex >= len(promptIDs) {
 			log.Println("Invalid index in order")
 			return
 		}
-		
+
 		_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, promptIDs[oldIndex])
 		if err != nil {
 			log.Printf("Error updating prompt order: %v", err)
 			return
 		}
 	}
-	
+
 	if err = txCommit(tx); err != nil {
 		log.Printf("Error committing transaction: %v", err)
 		return
 	}
-	
+
 	log.Println("Prompts order updated successfully")
 	BroadcastResults()
 }

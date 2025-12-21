@@ -105,4 +105,3 @@ func TestProcessAllJob_PromptScanError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected scan error")
 	}
 }
-

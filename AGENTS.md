@@ -7,7 +7,7 @@
 - **Common Pitfalls**:
   - **CGO_ENABLED=1**: Always prefix Go commands with this (SQLite requires CGO).
   - **Never edit `gen/` directories**: Run `go generate` to regenerate from OpenAPI specs.
-  - **Commits**: No Claude Code watermarks. No `Co-Authored-By` lines.
+  - **Commits**: No watermarks. No `Co-Authored-By` lines.
 - **Only trust independent verification**: Never claim "done" without test output and command evidence.
 
 ## Core Workflow
@@ -16,7 +16,10 @@
 
 Before coding, define: Goal, Acceptance Criteria (testable), Non-goals, Constraints, Verification Plan. **Rule**: If you cannot write acceptance criteria, pause and clarify.
 
-Use Repomix MCP to explore code/structure and Context7 MCP to acquire up-to-date documentations. Use Web Search/Fetch if you see fit.
+Use Repomix MCP to explore code/structure and Context7 MCP to acquire up-to-date documentations and Playwright MCP for interactive browser-based testing. Use Web Search/Fetch if you see fit.
+  -Context7: “Use context7 to acquire up-to-date, version-specific documentation for any library or API you touch.”
+  -Repomix: “Use repomix to explore and pack the repository when you need a full-structure view or large-context reasoning.”
+  -Playwright: “Use playwright MCP for interactive browser-based E2E tests and UI debugging instead of only static reasoning.”
 
 Use GitHub CLI (`gh`) for GitHub related operations. And any doc command to stay correct, e.g. `go doc ...` if applicable.
 

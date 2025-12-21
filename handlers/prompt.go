@@ -91,11 +91,11 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-        funcMap := templates.FuncMap
+	funcMap := templates.FuncMap
 
-        suites, err := h.DataStore.ListPromptSuites()
-        if err != nil {
-                log.Printf("Error listing prompt suites: %v", err)
+	suites, err := h.DataStore.ListPromptSuites()
+	if err != nil {
+		log.Printf("Error listing prompt suites: %v", err)
 		http.Error(w, "Error listing prompt suites", http.StatusInternalServerError)
 		return
 	}
@@ -159,16 +159,16 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdatePromptsOrder handles updating prompts order
-func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) {  
-        log.Println("Handling update prompts order")
-        if r.Method != http.MethodPost {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-                return
-        }
-        err := r.ParseForm()
-        if err != nil {
-                log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)      
+func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling update prompts order")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
 	orderStr := r.Form.Get("order")
@@ -190,15 +190,15 @@ func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) {
 
 // AddPrompt handles adding a prompt
 func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) {
-        log.Println("Handling add prompt")
-        if r.Method != http.MethodPost {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-                return
-        }
-        err := r.ParseForm()
-        if err != nil {
-                log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)      
+	log.Println("Handling add prompt")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
 	promptText := r.Form.Get("prompt")
@@ -235,28 +235,28 @@ func (h *Handler) AddPrompt(w http.ResponseWriter, r *http.Request) {
 }
 
 // ExportPrompts handles exporting prompts
-func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) {       
-        log.Println("Handling export prompts")
-        if r.Method != http.MethodGet {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-                return
-        }
-        prompts := h.DataStore.ReadPrompts()
+func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling export prompts")
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	prompts := h.DataStore.ReadPrompts()
 
-        // Convert prompts to JSON
-        jsonData, _ := json.MarshalIndent(prompts, "", "  ")
+	// Convert prompts to JSON
+	jsonData, _ := json.MarshalIndent(prompts, "", "  ")
 
 	// Set headers for JSON download
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Content-Disposition", "attachment;filename=prompts.json")
 
-        // Write JSON to response
-        _, err := w.Write(jsonData)
-        if err != nil {
-                log.Printf("Error writing response: %v", err)
-                http.Error(w, "Error writing response", http.StatusInternalServerError)
-                return
-        }
+	// Write JSON to response
+	_, err := w.Write(jsonData)
+	if err != nil {
+		log.Printf("Error writing response: %v", err)
+		http.Error(w, "Error writing response", http.StatusInternalServerError)
+		return
+	}
 	log.Println("Prompts exported successfully as JSON")
 }
 
@@ -307,14 +307,14 @@ func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) {
 		log.Println("Prompts imported successfully from JSON")
 		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-        } else if r.Method == "GET" {
-                if err := h.Renderer.RenderTemplateSimple(w, "import_prompts.html", nil); err != nil {
-                        log.Printf("Error rendering template: %v", err)
-                        http.Error(w, "Error rendering template", http.StatusInternalServerError)
-                }
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+	} else if r.Method == "GET" {
+		if err := h.Renderer.RenderTemplateSimple(w, "import_prompts.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		}
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // ImportResults handles importing results
@@ -376,14 +376,14 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) {
 		log.Println("Results imported successfully from JSON")
 		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
-        } else if r.Method == "GET" {
-                if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil {
-                        log.Printf("Error rendering template: %v", err)
-                        http.Error(w, "Error rendering template", http.StatusInternalServerError)
-                }
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+	} else if r.Method == "GET" {
+		if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil {
+			log.Printf("Error rendering template: %v", err)
+			http.Error(w, "Error rendering template", http.StatusInternalServerError)
+		}
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // EditPrompt handles editing a prompt
@@ -422,7 +422,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-        } else if r.Method == "POST" {
+	} else if r.Method == "POST" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -456,12 +456,12 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
-                log.Println("Prompt edited successfully")
-                h.DataStore.BroadcastResults()
-                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		log.Println("Prompt edited successfully")
+		h.DataStore.BroadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // BulkDeletePromptsPage handles bulk delete prompts page
@@ -572,9 +572,9 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeletePrompt handles deleting a prompt
-func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {        
-        log.Println("Handling delete prompt")
-        if r.Method == "GET" {
+func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling delete prompt")
+	if r.Method == "GET" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -628,18 +628,18 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
-                log.Println("Prompt deleted successfully")
-                h.DataStore.BroadcastResults()
-                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
-} 
+		log.Println("Prompt deleted successfully")
+		h.DataStore.BroadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
 
 // MovePrompt handles moving a prompt
 func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
-        log.Println("Handling move prompt")
-        if r.Method == "GET" {
+	log.Println("Handling move prompt")
+	if r.Method == "GET" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -707,18 +707,18 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
-                log.Println("Prompt moved successfully")
-                h.DataStore.BroadcastResults()
-                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		log.Println("Prompt moved successfully")
+		h.DataStore.BroadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // ResetPrompts handles resetting prompts
-func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {        
-        log.Println("Handling reset prompts")
-        if r.Method == "GET" {
+func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling reset prompts")
+	if r.Method == "GET" {
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -730,10 +730,10 @@ func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing prompts", http.StatusInternalServerError)
 			return
 		}
-                log.Println("Prompts reset successfully")
-                h.DataStore.BroadcastResults()
-                http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		log.Println("Prompts reset successfully")
+		h.DataStore.BroadcastResults()
+		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }

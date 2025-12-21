@@ -20,4 +20,3 @@ func TestFuncMap_EqString(t *testing.T) {
 		}
 	}
 }
-

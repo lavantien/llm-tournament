@@ -63,15 +63,15 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 
 // AddProfile handles adding a profile
 func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) {
-        log.Println("Handling add profile")
-        if r.Method != http.MethodPost {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-                return
-        }
-        err := r.ParseForm()
-        if err != nil {
-                log.Printf("Error parsing form: %v", err)
-                http.Error(w, "Error parsing form", http.StatusBadRequest)      
+	log.Println("Handling add profile")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
 	profileName := r.Form.Get("profile_name")
@@ -127,7 +127,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-        } else if r.Method == "POST" {
+	} else if r.Method == "POST" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -174,17 +174,17 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
 		}
-                log.Println("Profile edited successfully")
-                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		log.Println("Profile edited successfully")
+		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // DeleteProfile handles deleting a profile
-func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {       
-        log.Println("Handling delete profile")
-        if r.Method == "GET" {
+func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling delete profile")
+	if r.Method == "GET" {
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -237,18 +237,18 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
-                }
-                log.Println("Profile deleted successfully")
-                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		}
+		log.Println("Profile deleted successfully")
+		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // ResetProfiles handles resetting profiles
-func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {       
-        log.Println("Handling reset profiles")
-        if r.Method == "GET" {
+func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling reset profiles")
+	if r.Method == "GET" {
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -259,10 +259,10 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error writing profiles: %v", err)
 			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
 			return
-                }
-                log.Println("Profiles reset successfully")
-                http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-        } else {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }
+		}
+		log.Println("Profiles reset successfully")
+		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
+	} else {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }

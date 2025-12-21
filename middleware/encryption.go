@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	aesNewCipher = aes.NewCipher
-	cipherNewGCM = cipher.NewGCM
+	aesNewCipher           = aes.NewCipher
+	cipherNewGCM           = cipher.NewGCM
 	randReader   io.Reader = rand.Reader
 )
 

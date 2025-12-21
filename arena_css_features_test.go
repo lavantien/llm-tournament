@@ -45,4 +45,3 @@ func TestArenaCSS_DefinesScoreClasses(t *testing.T) {
 		}
 	}
 }
-

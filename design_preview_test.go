@@ -53,4 +53,3 @@ func TestDesignConceptAndPreview_ExistAndStructured(t *testing.T) {
 		t.Errorf("%s must be hardcoded HTML (no Go template actions)", previewPath)
 	}
 }
-

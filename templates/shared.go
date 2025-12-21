@@ -11,22 +11,22 @@ import (
 )
 
 var FuncMap = map[string]interface{}{
-        "inc": func(i int) int {
-                return i + 1
-        },
-        "add": func(a, b int) int {
-                return a + b
-        },
-        "sub": func(a, b int) int {
-                return a - b
-        },
-        "eqs": func(a, b string) bool {
-                return a == b
-        },
-        "atoi": func(s string) int {
-                i, _ := strconv.Atoi(s)
-                return i
-        },
+	"inc": func(i int) int {
+		return i + 1
+	},
+	"add": func(a, b int) int {
+		return a + b
+	},
+	"sub": func(a, b int) int {
+		return a - b
+	},
+	"eqs": func(a, b string) bool {
+		return a == b
+	},
+	"atoi": func(s string) int {
+		i, _ := strconv.Atoi(s)
+		return i
+	},
 	"markdown": func(text string) template.HTML {
 		unsafe := blackfriday.Run([]byte(text), blackfriday.WithNoExtensions())
 		html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)

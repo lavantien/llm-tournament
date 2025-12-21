@@ -53,4 +53,3 @@ func TestRenameSuite_UpdateError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected rename error, got %v", err)
 	}
 }
-

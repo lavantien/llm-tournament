@@ -122,4 +122,3 @@ func TestGetMaskedAPIKeys_DecryptErrorMasksAsError(t *testing.T) {
 		t.Fatalf("expected masked value to be ***ERROR***, got %q", got)
 	}
 }
-

@@ -20,4 +20,3 @@ func TestFuncMap_DoesNotShadowEqForStrings(t *testing.T) {
 		t.Fatalf("output = %q, want %q", got, "empty")
 	}
 }
-

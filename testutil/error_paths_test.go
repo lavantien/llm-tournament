@@ -374,4 +374,3 @@ func TestDBHelper_ErrorPaths(t *testing.T) {
 		}
 	})
 }
-

@@ -226,4 +226,3 @@ func TestUpdatePromptsOrder_CommitError_DoesNotChangeOrder(t *testing.T) {
 		t.Fatalf("expected order to remain unchanged, before=%#v after=%#v", before, after)
 	}
 }
-

@@ -54,4 +54,3 @@ func TestWriteResults_ModelLastInsertIDError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected last-insert-id error, got %v", err)
 	}
 }
-

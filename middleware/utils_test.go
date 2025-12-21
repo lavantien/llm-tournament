@@ -131,9 +131,9 @@ func TestGetProfileGroups_UnusedProfiles(t *testing.T) {
 
 func TestGetProfileGroups_EmptyProfileInPrompt(t *testing.T) {
 	prompts := []Prompt{
-		{Text: "Prompt 1", Profile: ""},         // Empty profile
+		{Text: "Prompt 1", Profile: ""}, // Empty profile
 		{Text: "Prompt 2", Profile: "Profile A"},
-		{Text: "Prompt 3", Profile: ""},         // Empty profile
+		{Text: "Prompt 3", Profile: ""}, // Empty profile
 	}
 	profiles := []Profile{
 		{Name: "Profile A"},
@@ -171,10 +171,10 @@ func TestGetProfileGroups_GoldenAngleColors(t *testing.T) {
 	// Check that colors use HSL format with golden angle distribution
 	// Golden angle: 137 degrees
 	expectedHues := []int{
-		(0 * 137) % 360,  // 0
-		(1 * 137) % 360,  // 137
-		(2 * 137) % 360,  // 274
-		(3 * 137) % 360,  // 51 (411 % 360)
+		(0 * 137) % 360, // 0
+		(1 * 137) % 360, // 137
+		(2 * 137) % 360, // 274
+		(3 * 137) % 360, // 51 (411 % 360)
 	}
 
 	for i, group := range groups {

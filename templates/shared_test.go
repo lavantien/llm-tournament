@@ -237,4 +237,3 @@ func TestFuncMapCompleteness(t *testing.T) {
 		}
 	}
 }
-
