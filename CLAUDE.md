@@ -21,34 +21,6 @@ Universal Rule: Define behavior contracts (interfaces/traits), inject dependenci
 3. Mock Boundaries Only: Mock external I/O (network, filesystem, databases), not internal logic.
 4. Prefer Stubs over Mocks: Use stubs for data provision; reserve mocks for interaction verification.
 
-### Ecosystem Libraries
-
-| Language | Preferred Library | Notes |
-|----------|-------------------|-------|
-| Go | `moq` | Or existing: `testify`, `gomock` |
-| Rust | `mockall` | Use `#[automock]` on traits |
-| TypeScript | `jest.mock` | Avoid mocking primitives |
-| Python | `unittest.mock` | `@patch` decorator |
-| Java | Mockito | `@Mock`, `@InjectMocks` |
-| C# | Moq | `Mock<T>` pattern |
-| Scala | `mockito-scala` | Or `ScalaMock` for strict typing |
-| PHP | Mockery | Or PHPUnit built-in mocks |
-| GDScript | GUT doubles | Via GUT addon |
-
-> Detect existing patterns in codebase before introducing new libraries.
-
-## Language Specific Pitfalls
-
-### Go
-
-* CGO_ENABLED=1: Always prefix Go commands with this (SQLite and Race Detection require CGO).
-* Gen Directories: Never edit `gen/`. Run `go generate`, `protoc`, or `sqlc` to regenerate.
-
-### TypeScript/JS
-
-* Type Safety: No `any`. Use `unknown` + narrowing if necessary.
-* Lockfiles: Do not mix package managers (pnpm/npm/yarn/bun).
-
 ## Core Workflow
 
 ### Requirements Contract (Non-Trivial Tasks)
@@ -193,3 +165,32 @@ For simple typo fixes, comment updates, or one-line non-logic changes:
 1. Skip the "Requirements Contract."
 2. Run the linter/formatter only.
 3. Commit immediately.
+
+## Language Specific Pitfalls
+
+### Go
+
+* CGO_ENABLED=1: Always prefix Go commands with this (SQLite and Race Detection require CGO).
+* Gen Directories: Never edit `gen/`. Run `go generate`, `protoc`, or `sqlc` to regenerate.
+
+### TypeScript/JS
+
+* Type Safety: No `any`. Use `unknown` + narrowing if necessary.
+* Lockfiles: Do not mix package managers (pnpm/npm/yarn/bun).
+
+### Ecosystem Libraries
+
+| Language | Preferred Library | Notes |
+|----------|-------------------|-------|
+| Go | `moq` | Or existing: `testify`, `gomock` |
+| Rust | `mockall` | Use `#[automock]` on traits |
+| TypeScript | `jest.mock` | Avoid mocking primitives |
+| Python | `unittest.mock` | `@patch` decorator |
+| Java | Mockito | `@Mock`, `@InjectMocks` |
+| C# | Moq | `Mock<T>` pattern |
+| Scala | `mockito-scala` | Or `ScalaMock` for strict typing |
+| PHP | Mockery | Or PHPUnit built-in mocks |
+| GDScript | GUT doubles | Via GUT addon |
+
+> Detect existing patterns in codebase before introducing new libraries.
+
