@@ -18,7 +18,7 @@ Before coding, define: Goal, Acceptance Criteria (testable), Non-goals, Constrai
 
 Use Repomix MCP to explore code/structure and Context7 MCP to acquire up-to-date documentations. Use Web Search/Fetch if you see fit.
 
-Use GitHub CLI (`gh`) for GitHub related operations.
+Use GitHub CLI (`gh`) for GitHub related operations. And any doc command to stay correct, e.g. `go doc ...` if applicable.
 
 ### Verification Minimum
 
