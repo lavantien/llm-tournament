@@ -54,7 +54,7 @@ Prioritize infra if detected (Dockerfile, Chart.yaml, main.tf).
 #### Go Verification
 
 ```bash
-go mod tidy && golangci-lint run --fix--timeout=5m && CGO_ENABLED=1 go test ./... -v -race -cover && CGO_ENABLED=1 go test -bench
+go mod tidy && golangci-lint fmt && golangci-lint run --no-config --timeout=5m && CGO_ENABLED=1 go test ./... -v -race -cover && CGO_ENABLED=1 go test -bench
 ```
 
 #### Rust Verification
