@@ -26,7 +26,7 @@ Use GitHub CLI (`gh`) for GitHub related operations. And any doc command to stay
 ### Verification Minimum
 
 ```bash
-CGO_ENABLED=1 go test ./... -v -race -cover  # All tests with race detection
+golangci-lint fmt && golangci-lint run && CGO_ENABLED=1 go test ./... -v -race -cover  # All formatters, linters, and tests with race detection. Or Powershell equivalent if running on Windows
 ```
 
 ### When Stuck (3 Failed Attempts)
