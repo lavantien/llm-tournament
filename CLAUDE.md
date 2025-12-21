@@ -134,7 +134,7 @@ godot --path . -s addons/gut/gut_cmdln.gd -gexit_on_success
 
 ### Context Hygiene
 
-If a conversation exceeds 32 turns or context becomes stale:
+If a conversation exceeds 64 turns or context becomes stale:
 
 1. Summarize: Create `checkpoint.md` capturing: Current Goal, Recent Changes, Next Immediate Step, List of Open Questions.
 2. Verify: Ensure `checkpoint.md` is committed.
