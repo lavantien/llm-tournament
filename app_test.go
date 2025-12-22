@@ -185,10 +185,14 @@ func TestRunMigration_WithData(t *testing.T) {
 	defer CloseDB()
 
 	// Add some test data
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
-	middleware.WriteResults("default", map[string]middleware.Result{
+	if err := middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}}); err != nil {
+		t.Fatalf("failed to write prompts: %v", err)
+	}
+	if err := middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{50}},
-	})
+	}); err != nil {
+		t.Fatalf("failed to write results: %v", err)
+	}
 
 	// Run migration
 	err = RunMigration()
@@ -240,12 +244,16 @@ func TestNewServeMux(t *testing.T) {
 func TestApp_Router_KnownRoute(t *testing.T) {
 	// Save current directory and change to project root for template access
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
+	defer func() {
+		_ = os.Chdir(originalDir)
+	}()
 
 	// Find project root
 	projectRoot := findProjectRoot()
 	if projectRoot != "" {
-		os.Chdir(projectRoot)
+		if err := os.Chdir(projectRoot); err != nil {
+			t.Fatalf("failed to change dir: %v", err)
+		}
 	}
 
 	tmpDir := t.TempDir()
@@ -298,11 +306,15 @@ func TestApp_Router_UnknownRoute(t *testing.T) {
 func TestNewServeMux_Integration(t *testing.T) {
 	// Save current directory and change to project root for template access
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
+	defer func() {
+		_ = os.Chdir(originalDir)
+	}()
 
 	projectRoot := findProjectRoot()
 	if projectRoot != "" {
-		os.Chdir(projectRoot)
+		if err := os.Chdir(projectRoot); err != nil {
+			t.Fatalf("failed to change dir: %v", err)
+		}
 	}
 
 	tmpDir := t.TempDir()

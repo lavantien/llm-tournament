@@ -1329,7 +1329,7 @@ func TestReadPromptSuite_NonExistent(t *testing.T) {
 		// Error is expected for non-existent suite
 		return
 	}
-	if prompts != nil && len(prompts) > 0 {
+	if len(prompts) > 0 {
 		t.Error("expected empty prompts for non-existent suite")
 	}
 }

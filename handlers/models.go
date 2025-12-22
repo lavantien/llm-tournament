@@ -111,7 +111,8 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) {
 // DeleteModel handles deleting a model
 func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete model")
-	if r.Method == "GET" {
+	switch r.Method {
+	case http.MethodGet:
 		modelName := r.URL.Query().Get("model")
 		if modelName == "" {
 			http.Error(w, "Model name is required", http.StatusBadRequest)
@@ -121,7 +122,7 @@ func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	} else if r.Method == "POST" {
+	case http.MethodPost:
 		modelName := r.FormValue("model")
 		if modelName == "" {
 			http.Error(w, "Model name is required", http.StatusBadRequest)
@@ -139,7 +140,7 @@ func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) {
 
 		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

@@ -48,7 +48,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query profiles: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var profiles []Profile
 	for rows.Next() {
@@ -76,7 +76,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -92,7 +92,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 		if err != nil {
 			return fmt.Errorf("failed to prepare profile insert: %w", err)
 		}
-		defer stmt.Close()
+		defer func() { _ = stmt.Close() }()
 
 		for _, profile := range profiles {
 			_, err = stmt.Exec(profile.Name, profile.Description, suiteID)
@@ -153,7 +153,7 @@ func ReadResults() map[string]Result {
 		log.Printf("Error querying models: %v", err)
 		return make(map[string]Result)
 	}
-	defer modelRows.Close()
+	defer func() { _ = modelRows.Close() }()
 
 	results := make(map[string]Result)
 	for modelRows.Next() {
@@ -192,7 +192,7 @@ func ReadResults() map[string]Result {
 				scores[promptOrder] = score
 			}
 		}
-		scoreRows.Close()
+		_ = scoreRows.Close()
 
 		results[modelName] = Result{Scores: scores}
 	}
@@ -220,7 +220,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query prompts: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var prompts []Prompt
 	seenTexts := make(map[string]bool) // Track unique prompts by text content
@@ -271,7 +271,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -290,7 +290,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 		if err != nil {
 			return fmt.Errorf("failed to prepare prompt insert: %w", err)
 		}
-		defer stmt.Close()
+		defer func() { _ = stmt.Close() }()
 
 		for i, prompt := range prompts {
 			// Get profile ID if a profile is specified
@@ -371,7 +371,7 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -385,12 +385,12 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	for promptRows.Next() {
 		var id int
 		if err := promptRows.Scan(&id); err != nil {
-			promptRows.Close()
+			_ = promptRows.Close()
 			return fmt.Errorf("failed to scan prompt ID: %w", err)
 		}
 		promptIDs = append(promptIDs, id)
 	}
-	promptRows.Close()
+	_ = promptRows.Close()
 
 	if err := rowsErr(promptRows); err != nil {
 		return fmt.Errorf("error iterating prompt rows: %w", err)
@@ -406,12 +406,12 @@ func WriteResults(suiteName string, results map[string]Result) error {
 	for modelNamesRows.Next() {
 		var name string
 		if err := modelNamesRows.Scan(&name); err != nil {
-			modelNamesRows.Close()
+			_ = modelNamesRows.Close()
 			return fmt.Errorf("failed to scan model name: %w", err)
 		}
 		dbModelNames = append(dbModelNames, name)
 	}
-	modelNamesRows.Close()
+	_ = modelNamesRows.Close()
 
 	// Delete models that are in the database but not in the results map
 	for _, dbModelName := range dbModelNames {
@@ -463,12 +463,12 @@ func WriteResults(suiteName string, results map[string]Result) error {
 				if i < len(promptIDs) {
 					_, err = scoreStmt.Exec(modelID, promptIDs[i], score)
 					if err != nil {
-						scoreStmt.Close()
+						_ = scoreStmt.Close()
 						return fmt.Errorf("failed to insert score: %w", err)
 					}
 				}
 			}
-			scoreStmt.Close()
+			_ = scoreStmt.Close()
 		}
 	}
 
@@ -524,7 +524,7 @@ func UpdatePromptsOrder(order []int) {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -539,13 +539,13 @@ func UpdatePromptsOrder(order []int) {
 	for promptRows.Next() {
 		var id int
 		if err := promptRows.Scan(&id); err != nil {
-			promptRows.Close()
+			_ = promptRows.Close()
 			log.Printf("Error scanning prompt ID: %v", err)
 			return
 		}
 		promptIDs = append(promptIDs, id)
 	}
-	promptRows.Close()
+	_ = promptRows.Close()
 
 	// Update each prompt's display_order
 	for newOrder, oldIndex := range order {

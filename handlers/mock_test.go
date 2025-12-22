@@ -114,7 +114,7 @@ func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap templa
 	if m.RenderError != nil {
 		return m.RenderError
 	}
-	w.Write([]byte("mock rendered"))
+	_, _ = w.Write([]byte("mock rendered"))
 	return nil
 }
 

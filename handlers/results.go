@@ -276,7 +276,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 // UpdateResult handles AJAX requests to update results
 func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update result")
-	r.ParseForm()
+	_ = r.ParseForm()
 	model := r.Form.Get("model")
 	promptIndexStr := r.Form.Get("promptIndex")
 	passStr := r.Form.Get("pass")

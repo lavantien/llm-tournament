@@ -47,7 +47,7 @@ func InitDB(dbPath string) error {
 
 // CloseDB closes the database connection
 func CloseDB() {
-	middleware.CloseDB()
+	_ = middleware.CloseDB()
 }
 
 // GetDB returns the database instance

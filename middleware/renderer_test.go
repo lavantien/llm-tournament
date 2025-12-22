@@ -44,7 +44,7 @@ func (m *mockRenderer) Render(w http.ResponseWriter, name string, funcMap templa
 	if m.err != nil {
 		return m.err
 	}
-	w.Write([]byte("mock content"))
+	_, _ = w.Write([]byte("mock content"))
 	return nil
 }
 
@@ -67,8 +67,8 @@ func TestFileRenderer_Render_ParseError(t *testing.T) {
 func changeToProjectRootRenderer(t *testing.T) func() {
 	t.Helper()
 	originalDir, _ := os.Getwd()
-	os.Chdir("..")
-	return func() { os.Chdir(originalDir) }
+	_ = os.Chdir("..")
+	return func() { _ = os.Chdir(originalDir) }
 }
 
 func TestFileRenderer_Render_Success(t *testing.T) {

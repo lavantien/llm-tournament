@@ -266,7 +266,7 @@ func SetCurrentSuite(suiteName string) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 
@@ -291,7 +291,7 @@ func ListSuites() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query suites: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var suites []string
 	for rows.Next() {
@@ -330,7 +330,7 @@ func DeleteSuite(suiteName string) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 		}
 	}()
 

@@ -55,16 +55,16 @@ func TestGetEncryptionKey(t *testing.T) {
 			original := os.Getenv("ENCRYPTION_KEY")
 			defer func() {
 				if original == "" {
-					os.Unsetenv("ENCRYPTION_KEY")
+					_ = os.Unsetenv("ENCRYPTION_KEY")
 				} else {
-					os.Setenv("ENCRYPTION_KEY", original)
+					_ = os.Setenv("ENCRYPTION_KEY", original)
 				}
 			}()
 
 			if tt.envValue == "" {
-				os.Unsetenv("ENCRYPTION_KEY")
+				_ = os.Unsetenv("ENCRYPTION_KEY")
 			} else {
-				os.Setenv("ENCRYPTION_KEY", tt.envValue)
+				_ = os.Setenv("ENCRYPTION_KEY", tt.envValue)
 			}
 
 			key, err := getEncryptionKey()

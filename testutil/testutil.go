@@ -48,13 +48,13 @@ func ValidEncryptionKey() string {
 func SetupEncryptionKey(t *testing.T) func() {
 	t.Helper()
 	original := os.Getenv("ENCRYPTION_KEY")
-	os.Setenv("ENCRYPTION_KEY", ValidEncryptionKey())
+	_ = os.Setenv("ENCRYPTION_KEY", ValidEncryptionKey())
 
 	return func() {
 		if original == "" {
-			os.Unsetenv("ENCRYPTION_KEY")
+			_ = os.Unsetenv("ENCRYPTION_KEY")
 		} else {
-			os.Setenv("ENCRYPTION_KEY", original)
+			_ = os.Setenv("ENCRYPTION_KEY", original)
 		}
 	}
 }
@@ -63,11 +63,11 @@ func SetupEncryptionKey(t *testing.T) func() {
 func ClearEncryptionKey(t *testing.T) func() {
 	t.Helper()
 	original := os.Getenv("ENCRYPTION_KEY")
-	os.Unsetenv("ENCRYPTION_KEY")
+	_ = os.Unsetenv("ENCRYPTION_KEY")
 
 	return func() {
 		if original != "" {
-			os.Setenv("ENCRYPTION_KEY", original)
+			_ = os.Setenv("ENCRYPTION_KEY", original)
 		}
 	}
 }
@@ -389,7 +389,7 @@ func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap templa
 		return m.RenderError
 	}
 	// Write minimal content to satisfy tests expecting output
-	w.Write([]byte("mock rendered"))
+	_, _ = w.Write([]byte("mock rendered"))
 	return nil
 }
 

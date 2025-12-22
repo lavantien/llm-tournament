@@ -482,7 +482,7 @@ func TestSQLiteDataStore_UpdatePromptsOrder(t *testing.T) {
 	ds := &SQLiteDataStore{}
 
 	// Write some prompts first
-	ds.WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}})
+	_ = ds.WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}})
 
 	// Update order - should not panic
 	ds.UpdatePromptsOrder([]int{1, 0})
@@ -530,7 +530,7 @@ func TestSQLiteDataStore_ReadWriteResults(t *testing.T) {
 	ds := &SQLiteDataStore{}
 
 	// Write prompts first (needed for results)
-	ds.WritePrompts([]Prompt{{Text: "P1"}})
+	_ = ds.WritePrompts([]Prompt{{Text: "P1"}})
 
 	// Write results
 	err = ds.WriteResults("default", map[string]Result{

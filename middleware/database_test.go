@@ -22,8 +22,8 @@ func setupTestDB(t *testing.T) (string, func()) {
 	dbPath := filepath.Join(tmpDir, "test.db")
 
 	cleanup := func() {
-		CloseDB()
-		os.RemoveAll(tmpDir)
+		_ = CloseDB()
+		_ = os.RemoveAll(tmpDir)
 	}
 
 	return dbPath, cleanup
@@ -59,7 +59,7 @@ func TestInitDB_CreatesDataDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create a nested path that doesn't exist yet
 	dbPath := filepath.Join(tmpDir, "nested", "data", "test.db")
@@ -68,7 +68,7 @@ func TestInitDB_CreatesDataDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("InitDB failed: %v", err)
 	}
-	defer CloseDB()
+	defer func() { _ = CloseDB() }()
 
 	// Verify the directory was created
 	if _, err := os.Stat(filepath.Dir(dbPath)); os.IsNotExist(err) {
@@ -82,7 +82,7 @@ func TestInitDB_InvalidPath(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create a file
 	filePath := filepath.Join(tmpDir, "notadir")
@@ -96,7 +96,7 @@ func TestInitDB_InvalidPath(t *testing.T) {
 
 	// Should fail because we can't create a directory where a file exists
 	if err == nil {
-		CloseDB()
+		_ = CloseDB()
 		t.Error("expected error when path is invalid")
 	}
 }
@@ -108,7 +108,7 @@ func TestInitDB_OpenError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Create a path with special characters that might cause issues
 	// Using null bytes which are invalid in file paths
@@ -116,7 +116,7 @@ func TestInitDB_OpenError(t *testing.T) {
 	err = InitDB(invalidPath)
 
 	if err == nil {
-		CloseDB()
+		_ = CloseDB()
 		// On some systems this might not fail, so we don't require an error
 		// but if it succeeds, we just clean up
 	}
@@ -127,7 +127,7 @@ func TestInitDB_CreateTablesError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dbPath := filepath.Join(tmpDir, "readonly.db")
 
@@ -136,7 +136,7 @@ func TestInitDB_CreateTablesError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("InitDB failed on first call: %v", err)
 	}
-	CloseDB()
+	_ = CloseDB()
 
 	// Make the database file read-only
 	if err := os.Chmod(dbPath, 0444); err != nil {
@@ -149,7 +149,7 @@ func TestInitDB_CreateTablesError(t *testing.T) {
 	// We don't assert error here because SQLite is resilient
 	// The test is more about ensuring we don't panic
 	if err == nil {
-		CloseDB()
+		_ = CloseDB()
 	}
 }
 
@@ -349,8 +349,8 @@ func TestListSuites(t *testing.T) {
 	}
 
 	// Create additional suites
-	GetSuiteID("suite-a")
-	GetSuiteID("suite-b")
+	_, _ = GetSuiteID("suite-a")
+	_, _ = GetSuiteID("suite-b")
 
 	suites, err := ListSuites()
 	if err != nil {

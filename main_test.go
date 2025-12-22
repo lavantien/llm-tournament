@@ -19,7 +19,7 @@ func setupMainTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 

@@ -180,7 +180,7 @@ func InitDB(dbPath string) error <span class="cov8" title="1">{
 
 // CloseDB closes the database connection
 func CloseDB() <span class="cov8" title="1">{
-        middleware.CloseDB()
+        _ = middleware.CloseDB()
 }</span>
 
 // GetDB returns the database instance
@@ -441,9 +441,9 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query models: %w", err)
         }</span>
-        <span class="cov8" title="1">defer modelRows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = modelRows.Close() }</span>()
 
-        var modelIDs []int
+        <span class="cov8" title="1">var modelIDs []int
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
                 if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov8" title="1">{
@@ -457,9 +457,9 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query prompts: %w", err)
         }</span>
-        <span class="cov8" title="1">defer promptRows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = promptRows.Close() }</span>()
 
-        var promptIDs []int
+        <span class="cov8" title="1">var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var promptID int
                 if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov8" title="1">{
@@ -507,9 +507,9 @@ func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) er
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query prompts: %w", err)
         }</span>
-        <span class="cov8" title="1">defer promptRows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = promptRows.Close() }</span>()
 
-        var promptIDs []int
+        <span class="cov8" title="1">var promptIDs []int
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var promptID int
                 if err := promptRows.Scan(&amp;promptID); err != nil </span><span class="cov8" title="1">{
@@ -551,9 +551,9 @@ func (e *Evaluator) processPromptJob(job *EvaluationJob, cancelChan chan bool) e
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("failed to query models: %w", err)
         }</span>
-        <span class="cov8" title="1">defer modelRows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = modelRows.Close() }</span>()
 
-        var modelIDs []int
+        <span class="cov8" title="1">var modelIDs []int
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
                 if err := modelRows.Scan(&amp;modelID); err != nil </span><span class="cov8" title="1">{
@@ -683,9 +683,9 @@ func (e *Evaluator) getAPIKeys() (map[string]string, error) <span class="cov8" t
         if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        apiKeys := make(map[string]string)
+        <span class="cov8" title="1">apiKeys := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, value string
                 if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov8" title="1">{
@@ -924,9 +924,9 @@ func (jq *JobQueue) resumePendingJobs() <span class="cov8" title="1">{
                 log.Printf("Failed to query pending jobs: %v", err)
                 return
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        count := 0
+        <span class="cov8" title="1">count := 0
         for rows.Next() </span><span class="cov8" title="1">{
                 job := &amp;EvaluationJob{}
                 if err := rows.Scan(&amp;job.ID, &amp;job.SuiteID, &amp;job.JobType, &amp;job.TargetID,
@@ -985,9 +985,9 @@ func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, er
         if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to send request: %w", err)
         }</span>
-        <span class="cov8" title="1">defer resp.Body.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = resp.Body.Close() }</span>()
 
-        if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
                 body, _ := io.ReadAll(resp.Body)
                 return nil, fmt.Errorf("evaluation failed with status %d: %s", resp.StatusCode, string(body))
         }</span>
@@ -1012,9 +1012,9 @@ func (c *LiteLLMClient) EstimateCost(req CostEstimateRequest) (*CostEstimateResp
         if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to send request: %w", err)
         }</span>
-        <span class="cov8" title="1">defer resp.Body.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = resp.Body.Close() }</span>()
 
-        if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
                 body, _ := io.ReadAll(resp.Body)
                 return nil, fmt.Errorf("cost estimation failed with status %d: %s", resp.StatusCode, string(body))
         }</span>
@@ -1033,9 +1033,9 @@ func (c *LiteLLMClient) HealthCheck() error <span class="cov8" title="1">{
         if err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("health check failed: %w", err)
         }</span>
-        <span class="cov8" title="1">defer resp.Body.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = resp.Body.Close() }</span>()
 
-        if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">if resp.StatusCode != http.StatusOK </span><span class="cov8" title="1">{
                 return fmt.Errorf("service unhealthy, status: %d", resp.StatusCode)
         }</span>
 
@@ -1370,7 +1370,8 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) <span class=
 // DeleteModel handles deleting a model
 func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling delete model")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodGet:<span class="cov8" title="1">
                 modelName := r.URL.Query().Get("model")
                 if modelName == "" </span><span class="cov8" title="1">{
                         http.Error(w, "Model name is required", http.StatusBadRequest)
@@ -1380,7 +1381,7 @@ func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) <span clas
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case http.MethodPost:<span class="cov8" title="1">
                 modelName := r.FormValue("model")
                 if modelName == "" </span><span class="cov8" title="1">{
                         http.Error(w, "Model name is required", http.StatusBadRequest)
@@ -1398,9 +1399,9 @@ func (h *Handler) DeleteModel(w http.ResponseWriter, r *http.Request) <span clas
 
                 <span class="cov8" title="1">h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 </pre>
 		
@@ -1503,7 +1504,8 @@ func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) <span class
 // EditProfile handles editing a profile
 func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling edit profile")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodGet:<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -1533,7 +1535,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
                                 return
                         }</span>
                 }
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case http.MethodPost:<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -1582,15 +1584,16 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) <span clas
                 }</span>
                 <span class="cov8" title="1">log.Println("Profile edited successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // DeleteProfile handles deleting a profile
 func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling delete profile")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodGet:<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -1620,7 +1623,7 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span cl
                                 return
                         }</span>
                 }
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case http.MethodPost:<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -1646,20 +1649,21 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">log.Println("Profile deleted successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // ResetProfiles handles resetting profiles
 func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling reset profiles")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodGet:<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case http.MethodPost:<span class="cov8" title="1">
                 err := h.DataStore.WriteProfiles([]middleware.Profile{})
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error writing profiles: %v", err)
@@ -1668,9 +1672,9 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) <span cl
                 }</span>
                 <span class="cov8" title="1">log.Println("Profiles reset successfully")
                 http.Redirect(w, r, "/profiles", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 </pre>
 		
@@ -1939,17 +1943,18 @@ func (h *Handler) ExportPrompts(w http.ResponseWriter, r *http.Request) <span cl
 // ImportPrompts handles importing prompts
 func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling import prompts")
-        if r.Method == "POST" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodPost:<span class="cov8" title="1">
                 file, _, err := r.FormFile("prompts_file")
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error uploading file: %v", err)
                         http.Redirect(w, r, "/import_error", http.StatusSeeOther)
                         return
                 }</span>
-                <span class="cov8" title="1">defer file.Close()
+                <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
 
                 // Read the file content
-                data, err := readAll(file)
+                <span class="cov8" title="1">data, err := readAll(file)
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error reading file: %v", err)
                         http.Error(w, "Error reading file", http.StatusInternalServerError)
@@ -1983,30 +1988,31 @@ func (h *Handler) ImportPrompts(w http.ResponseWriter, r *http.Request) <span cl
                 <span class="cov8" title="1">log.Println("Prompts imported successfully from JSON")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> if r.Method == "GET" </span><span class="cov8" title="1">{
+        case http.MethodGet:<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "import_prompts.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // ImportResults handles importing results
 func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling import results")
-        if r.Method == "POST" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case http.MethodPost:<span class="cov8" title="1">
                 file, _, err := r.FormFile("results_file")
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error uploading file: %v", err)
                         http.Redirect(w, r, "/import_error", http.StatusSeeOther)
                         return
                 }</span>
-                <span class="cov8" title="1">defer file.Close()
+                <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = file.Close() }</span>()
 
                 // Read the file content
-                data, err := readAll(file)
+                <span class="cov8" title="1">data, err := readAll(file)
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error reading file: %v", err)
                         http.Error(w, "Error reading file", http.StatusInternalServerError)
@@ -2052,20 +2058,21 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span cl
                 <span class="cov8" title="1">log.Println("Results imported successfully from JSON")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> if r.Method == "GET" </span><span class="cov8" title="1">{
+        case http.MethodGet:<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // EditPrompt handles editing a prompt
 func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling edit prompt")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2098,7 +2105,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
                                 return
                         }</span>
                 }
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2135,9 +2142,9 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) <span class
                 <span class="cov8" title="1">log.Println("Prompt edited successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // BulkDeletePromptsPage handles bulk delete prompts page
@@ -2250,7 +2257,8 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) <spa
 // DeletePrompt handles deleting a prompt
 func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling delete prompt")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2280,7 +2288,7 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span cla
                                 return
                         }</span>
                 }
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2307,15 +2315,16 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) <span cla
                 <span class="cov8" title="1">log.Println("Prompt deleted successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // MovePrompt handles moving a prompt
 func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling move prompt")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2347,7 +2356,7 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
                                 return
                         }</span>
                 }
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -2386,9 +2395,9 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
                 <span class="cov8" title="1">log.Println("Prompt moved successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // ResetPrompts handles resetting prompts
@@ -2693,7 +2702,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
 // UpdateResult handles AJAX requests to update results
 func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling update result")
-        r.ParseForm()
+        _ = r.ParseForm()
         model := r.Form.Get("model")
         promptIndexStr := r.Form.Get("promptIndex")
         passStr := r.Form.Get("pass")
@@ -3244,6 +3253,9 @@ import (
         "log"
         "net/http"
         "strings"
+
+        "golang.org/x/text/cases"
+        "golang.org/x/text/language"
 )
 
 // Calculate tiers based on total scores
@@ -3408,7 +3420,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) <span class="cov
                         return tier
                 }</span>,
                 "formatTierName": func(tier string) string <span class="cov8" title="1">{
-                        return strings.Title(strings.ReplaceAll(tier, "-", " "))
+                        return cases.Title(language.English).String(strings.ReplaceAll(tier, "-", " "))
                 }</span>,
                 "join": strings.Join,
         }
@@ -3939,7 +3951,7 @@ func SetCurrentSuite(suiteName string) error <span class="cov8" title="1">{
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -3964,9 +3976,9 @@ func ListSuites() ([]string, error) <span class="cov8" title="1">{
         if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query suites: %w", err)
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        var suites []string
+        <span class="cov8" title="1">var suites []string
         for rows.Next() </span><span class="cov8" title="1">{
                 var name string
                 if err := rows.Scan(&amp;name); err != nil </span><span class="cov8" title="1">{
@@ -4003,7 +4015,7 @@ func DeleteSuite(suiteName string) error <span class="cov8" title="1">{
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -4508,9 +4520,9 @@ func GetAllSettings() (map[string]string, error) <span class="cov8" title="1">{
         if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        settings := make(map[string]string)
+        <span class="cov8" title="1">settings := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, value string
                 if err := rows.Scan(&amp;key, &amp;value); err != nil </span><span class="cov8" title="1">{
@@ -4527,9 +4539,9 @@ func GetMaskedAPIKeys() (map[string]string, error) <span class="cov8" title="1">
         if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        apiKeys := make(map[string]string)
+        <span class="cov8" title="1">apiKeys := make(map[string]string)
         for rows.Next() </span><span class="cov8" title="1">{
                 var key, encryptedValue string
                 if err := rows.Scan(&amp;key, &amp;encryptedValue); err != nil </span><span class="cov8" title="1">{
@@ -4599,7 +4611,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) <span class="cov8" 
                 delete(clients, conn)
                 clientsMutex.Unlock()
                 log.Println("Closing websocket connection")
-                conn.Close()
+                _ = conn.Close()
         }</span>()
 
         <span class="cov8" title="1">for </span><span class="cov8" title="1">{
@@ -4762,7 +4774,7 @@ func BroadcastResults() <span class="cov8" title="1">{
                 err := client.WriteJSON(payload)
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error broadcasting message: %v", err)
-                        client.Close()
+                        _ = client.Close()
                         delete(clients, client)
                 }</span>
         }
@@ -4873,7 +4885,7 @@ func broadcastMessage(payload interface{}) <span class="cov8" title="1">{
                 err := client.WriteJSON(payload)
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error broadcasting message: %v", err)
-                        client.Close()
+                        _ = client.Close()
                         delete(clients, client)
                 }</span>
         }
@@ -4930,9 +4942,9 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) <span class="cov8" ti
         if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query profiles: %w", err)
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        var profiles []Profile
+        <span class="cov8" title="1">var profiles []Profile
         for rows.Next() </span><span class="cov8" title="1">{
                 var p Profile
                 if err := rows.Scan(&amp;p.Name, &amp;p.Description); err != nil </span><span class="cov8" title="1">{
@@ -4958,7 +4970,7 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -4974,9 +4986,9 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error <span class="
                 if err != nil </span><span class="cov8" title="1">{
                         return fmt.Errorf("failed to prepare profile insert: %w", err)
                 }</span>
-                <span class="cov8" title="1">defer stmt.Close()
+                <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = stmt.Close() }</span>()
 
-                for _, profile := range profiles </span><span class="cov8" title="1">{
+                <span class="cov8" title="1">for _, profile := range profiles </span><span class="cov8" title="1">{
                         _, err = stmt.Exec(profile.Name, profile.Description, suiteID)
                         if err != nil </span><span class="cov8" title="1">{
                                 return fmt.Errorf("failed to insert profile: %w", err)
@@ -5035,9 +5047,9 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
                 log.Printf("Error querying models: %v", err)
                 return make(map[string]Result)
         }</span>
-        <span class="cov8" title="1">defer modelRows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = modelRows.Close() }</span>()
 
-        results := make(map[string]Result)
+        <span class="cov8" title="1">results := make(map[string]Result)
         for modelRows.Next() </span><span class="cov8" title="1">{
                 var modelID int
                 var modelName string
@@ -5074,7 +5086,7 @@ func ReadResults() map[string]Result <span class="cov8" title="1">{
                                 scores[promptOrder] = score
                         }</span>
                 }
-                <span class="cov8" title="1">scoreRows.Close()
+                <span class="cov8" title="1">_ = scoreRows.Close()
 
                 results[modelName] = Result{Scores: scores}</span>
         }
@@ -5102,9 +5114,9 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) <span class="cov8" titl
         if err != nil </span><span class="cov8" title="1">{
                 return nil, fmt.Errorf("failed to query prompts: %w", err)
         }</span>
-        <span class="cov8" title="1">defer rows.Close()
+        <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = rows.Close() }</span>()
 
-        var prompts []Prompt
+        <span class="cov8" title="1">var prompts []Prompt
         seenTexts := make(map[string]bool) // Track unique prompts by text content
 
         for rows.Next() </span><span class="cov8" title="1">{
@@ -5153,7 +5165,7 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -5172,9 +5184,9 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error <span class="cov
                 if err != nil </span><span class="cov8" title="1">{
                         return fmt.Errorf("failed to prepare prompt insert: %w", err)
                 }</span>
-                <span class="cov8" title="1">defer stmt.Close()
+                <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{ _ = stmt.Close() }</span>()
 
-                for i, prompt := range prompts </span><span class="cov8" title="1">{
+                <span class="cov8" title="1">for i, prompt := range prompts </span><span class="cov8" title="1">{
                         // Get profile ID if a profile is specified
                         var profileID sql.NullInt64
                         if prompt.Profile != "" </span><span class="cov8" title="1">{
@@ -5253,7 +5265,7 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -5267,12 +5279,12 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var id int
                 if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov8" title="1">{
-                        promptRows.Close()
+                        _ = promptRows.Close()
                         return fmt.Errorf("failed to scan prompt ID: %w", err)
                 }</span>
                 <span class="cov8" title="1">promptIDs = append(promptIDs, id)</span>
         }
-        <span class="cov8" title="1">promptRows.Close()
+        <span class="cov8" title="1">_ = promptRows.Close()
 
         if err := rowsErr(promptRows); err != nil </span><span class="cov8" title="1">{
                 return fmt.Errorf("error iterating prompt rows: %w", err)
@@ -5288,12 +5300,12 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
         for modelNamesRows.Next() </span><span class="cov8" title="1">{
                 var name string
                 if err := modelNamesRows.Scan(&amp;name); err != nil </span><span class="cov8" title="1">{
-                        modelNamesRows.Close()
+                        _ = modelNamesRows.Close()
                         return fmt.Errorf("failed to scan model name: %w", err)
                 }</span>
                 <span class="cov8" title="1">dbModelNames = append(dbModelNames, name)</span>
         }
-        <span class="cov8" title="1">modelNamesRows.Close()
+        <span class="cov8" title="1">_ = modelNamesRows.Close()
 
         // Delete models that are in the database but not in the results map
         for _, dbModelName := range dbModelNames </span><span class="cov8" title="1">{
@@ -5345,12 +5357,12 @@ func WriteResults(suiteName string, results map[string]Result) error <span class
                                 if i &lt; len(promptIDs) </span><span class="cov8" title="1">{
                                         _, err = scoreStmt.Exec(modelID, promptIDs[i], score)
                                         if err != nil </span><span class="cov8" title="1">{
-                                                scoreStmt.Close()
+                                                _ = scoreStmt.Close()
                                                 return fmt.Errorf("failed to insert score: %w", err)
                                         }</span>
                                 }
                         }
-                        <span class="cov8" title="1">scoreStmt.Close()</span>
+                        <span class="cov8" title="1">_ = scoreStmt.Close()</span>
                 }
         }
 
@@ -5406,7 +5418,7 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
         }</span>
         <span class="cov8" title="1">defer func() </span><span class="cov8" title="1">{
                 if err != nil </span><span class="cov8" title="1">{
-                        tx.Rollback()
+                        _ = tx.Rollback()
                 }</span>
         }()
 
@@ -5421,13 +5433,13 @@ func UpdatePromptsOrder(order []int) <span class="cov8" title="1">{
         for promptRows.Next() </span><span class="cov8" title="1">{
                 var id int
                 if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov8" title="1">{
-                        promptRows.Close()
+                        _ = promptRows.Close()
                         log.Printf("Error scanning prompt ID: %v", err)
                         return
                 }</span>
                 <span class="cov8" title="1">promptIDs = append(promptIDs, id)</span>
         }
-        <span class="cov8" title="1">promptRows.Close()
+        <span class="cov8" title="1">_ = promptRows.Close()
 
         // Update each prompt's display_order
         for newOrder, oldIndex := range order </span><span class="cov8" title="1">{
@@ -5536,10 +5548,8 @@ import (
         "flag"
         "io"
         "log"
-        "math/rand"
         "net/http"
         "os"
-        "time"
 
         "llm-tournament/handlers"
         "llm-tournament/middleware"
@@ -5574,8 +5584,6 @@ func defaultRunDeps() runDeps <span class="cov8" title="1">{
 }</span>
 
 func run(args []string, deps runDeps) int <span class="cov8" title="1">{
-        rand.Seed(time.Now().UnixNano())
-
         fs := flag.NewFlagSet("llm-tournament", flag.ContinueOnError)
         fs.SetOutput(io.Discard)
 
@@ -5739,13 +5747,13 @@ func ValidEncryptionKey() string <span class="cov8" title="1">{
 func SetupEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
         t.Helper()
         original := os.Getenv("ENCRYPTION_KEY")
-        os.Setenv("ENCRYPTION_KEY", ValidEncryptionKey())
+        _ = os.Setenv("ENCRYPTION_KEY", ValidEncryptionKey())
 
         return func() </span><span class="cov8" title="1">{
                 if original == "" </span><span class="cov8" title="1">{
-                        os.Unsetenv("ENCRYPTION_KEY")
+                        _ = os.Unsetenv("ENCRYPTION_KEY")
                 }</span> else<span class="cov8" title="1"> {
-                        os.Setenv("ENCRYPTION_KEY", original)
+                        _ = os.Setenv("ENCRYPTION_KEY", original)
                 }</span>
         }
 }
@@ -5754,11 +5762,11 @@ func SetupEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
 func ClearEncryptionKey(t *testing.T) func() <span class="cov8" title="1">{
         t.Helper()
         original := os.Getenv("ENCRYPTION_KEY")
-        os.Unsetenv("ENCRYPTION_KEY")
+        _ = os.Unsetenv("ENCRYPTION_KEY")
 
         return func() </span><span class="cov8" title="1">{
                 if original != "" </span><span class="cov8" title="1">{
-                        os.Setenv("ENCRYPTION_KEY", original)
+                        _ = os.Setenv("ENCRYPTION_KEY", original)
                 }</span>
         }
 }
@@ -6080,7 +6088,7 @@ func (m *MockRenderer) Render(w http.ResponseWriter, name string, funcMap templa
                 return m.RenderError
         }</span>
         // Write minimal content to satisfy tests expecting output
-        <span class="cov8" title="1">w.Write([]byte("mock rendered"))
+        <span class="cov8" title="1">_, _ = w.Write([]byte("mock rendered"))
         return nil</span>
 }
 
@@ -6550,7 +6558,7 @@ func run(args []string, deps runDeps) int <span class="cov8" title="1">{
         }</span>
 
         // stdout is reserved for machine-readable output (used by Playwright harness).
-        <span class="cov8" title="1">fmt.Fprintf(deps.stdout, "URL=http://%s\n", ln.Addr().String())
+        <span class="cov8" title="1">_, _ = fmt.Fprintf(deps.stdout, "URL=http://%s\n", ln.Addr().String())
 
         shutdownCh := make(chan struct{}, 1)
         mux.HandleFunc("/__shutdown", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{

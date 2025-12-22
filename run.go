@@ -5,10 +5,8 @@ import (
 	"flag"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
 	"llm-tournament/handlers"
 	"llm-tournament/middleware"
@@ -43,8 +41,6 @@ func defaultRunDeps() runDeps {
 }
 
 func run(args []string, deps runDeps) int {
-	rand.Seed(time.Now().UnixNano())
-
 	fs := flag.NewFlagSet("llm-tournament", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 

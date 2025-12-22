@@ -26,7 +26,7 @@ func changeToProjectRootStats(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -39,7 +39,7 @@ func setupStatsTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 

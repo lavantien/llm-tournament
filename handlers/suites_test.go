@@ -26,7 +26,7 @@ func changeToProjectRootForSuites(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -39,7 +39,7 @@ func setupSuitesTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
@@ -343,7 +343,9 @@ func TestEditPromptSuiteHandler_GET(t *testing.T) {
 	defer cleanup()
 
 	// Create a suite to edit
-	middleware.WritePromptSuite("test-suite", []middleware.Prompt{})
+	if err := middleware.WritePromptSuite("test-suite", []middleware.Prompt{}); err != nil {
+		t.Fatalf("failed to create suite: %v", err)
+	}
 
 	req := httptest.NewRequest("GET", "/edit_prompt_suite?suite_name=test-suite", nil)
 	rr := httptest.NewRecorder()
@@ -393,7 +395,9 @@ func TestSelectPromptSuiteHandler_WithDataDir(t *testing.T) {
 	}
 
 	// Create a suite to select
-	middleware.WritePromptSuite("selectable-suite", []middleware.Prompt{})
+	if err := middleware.WritePromptSuite("selectable-suite", []middleware.Prompt{}); err != nil {
+		t.Fatalf("failed to create suite: %v", err)
+	}
 
 	form := url.Values{}
 	form.Add("suite_name", "selectable-suite")
@@ -428,8 +432,12 @@ func TestDeletePromptSuiteHandler_POST_CurrentSuiteReset(t *testing.T) {
 	}
 
 	// Create a suite and set it as current via database
-	middleware.WritePromptSuite("current-suite", []middleware.Prompt{})
-	middleware.SetCurrentSuite("current-suite")
+	if err := middleware.WritePromptSuite("current-suite", []middleware.Prompt{}); err != nil {
+		t.Fatalf("failed to create suite: %v", err)
+	}
+	if err := middleware.SetCurrentSuite("current-suite"); err != nil {
+		t.Fatalf("failed to set current suite: %v", err)
+	}
 
 	// Delete the current suite - handler should reset current to default
 	form := url.Values{}
@@ -457,7 +465,9 @@ func TestEditPromptSuiteHandler_POST_RenameToSameName(t *testing.T) {
 	defer cleanup()
 
 	// Create a suite first
-	middleware.WritePromptSuite("existing-suite", []middleware.Prompt{})
+	if err := middleware.WritePromptSuite("existing-suite", []middleware.Prompt{}); err != nil {
+		t.Fatalf("failed to create suite: %v", err)
+	}
 
 	// Try to rename to same name (should return error since name already exists)
 	form := url.Values{}

@@ -119,7 +119,7 @@ func TestArenaCSS_StatsChartsHaveUsableHeight(t *testing.T) {
 	css := string(cssBytes)
 
 	wrapper := cssBlock(t, css, ".chart-wrapper")
-	if !(strings.Contains(wrapper, "min-height:") || strings.Contains(wrapper, "height:")) {
+	if !strings.Contains(wrapper, "min-height:") && !strings.Contains(wrapper, "height:") {
 		t.Fatalf("templates/arena.css .chart-wrapper must define a height so Chart.js can render visible bars")
 	}
 }

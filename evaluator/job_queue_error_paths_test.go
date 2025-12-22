@@ -11,7 +11,7 @@ import (
 
 func TestJobQueue_Enqueue_InsertError_ReturnsError(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
 		t.Fatalf("drop evaluation_jobs: %v", err)
@@ -43,7 +43,7 @@ func TestJobQueue_Enqueue_InsertError_ReturnsError(t *testing.T) {
 
 func TestJobQueue_Enqueue_LastInsertIDError_ReturnsError(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -75,7 +75,7 @@ func TestJobQueue_Enqueue_LastInsertIDError_ReturnsError(t *testing.T) {
 
 func TestWorker_ProcessJobError_SetsFailedAndCleansUp(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
 		t.Fatalf("drop evaluation_jobs: %v", err)

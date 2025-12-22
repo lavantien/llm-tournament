@@ -24,10 +24,10 @@ func setupSettingsTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	// Set encryption key for API key tests
-	os.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
+	_ = os.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
 	return func() {
-		middleware.CloseDB()
-		os.Unsetenv("ENCRYPTION_KEY")
+		_ = middleware.CloseDB()
+		_ = os.Unsetenv("ENCRYPTION_KEY")
 	}
 }
 
@@ -249,7 +249,7 @@ func changeToProjectRootSettings(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -282,10 +282,10 @@ func TestSettingsHandler_GET_WithExistingSettings(t *testing.T) {
 	defer cleanup()
 
 	// Set some existing settings
-	middleware.SetSetting("cost_alert_threshold_usd", "75.50")
-	middleware.SetSetting("auto_evaluate_new_models", "true")
-	middleware.SetSetting("python_service_url", "http://custom:9000")
-	middleware.SetAPIKey("anthropic", "test-key-123")
+	_ = middleware.SetSetting("cost_alert_threshold_usd", "75.50")
+	_ = middleware.SetSetting("auto_evaluate_new_models", "true")
+	_ = middleware.SetSetting("python_service_url", "http://custom:9000")
+	_ = middleware.SetAPIKey("anthropic", "test-key-123")
 
 	req := httptest.NewRequest("GET", "/settings", nil)
 	rr := httptest.NewRecorder()
@@ -309,7 +309,7 @@ func TestSettingsHandler_GET_WithZeroThreshold(t *testing.T) {
 	defer cleanup()
 
 	// Set threshold to zero (should default to 100.0)
-	middleware.SetSetting("cost_alert_threshold_usd", "0")
+	_ = middleware.SetSetting("cost_alert_threshold_usd", "0")
 
 	req := httptest.NewRequest("GET", "/settings", nil)
 	rr := httptest.NewRecorder()

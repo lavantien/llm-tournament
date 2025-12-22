@@ -24,7 +24,7 @@ func setupModelsTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
@@ -332,7 +332,7 @@ func TestAddModelHandler_WithPrompts(t *testing.T) {
 	defer cleanup()
 
 	// Add some prompts first to test that new model gets correct number of score slots
-	middleware.WritePrompts([]middleware.Prompt{
+	_ = middleware.WritePrompts([]middleware.Prompt{
 		{Text: "Prompt 1"},
 		{Text: "Prompt 2"},
 		{Text: "Prompt 3"},
@@ -370,7 +370,7 @@ func changeToProjectRootModels(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -383,7 +383,7 @@ func TestDeleteModelHandler_GET_Success(t *testing.T) {
 
 	// Add a model first
 	suiteName := middleware.GetCurrentSuiteName()
-	middleware.WriteResults(suiteName, map[string]middleware.Result{
+	_ = middleware.WriteResults(suiteName, map[string]middleware.Result{
 		"ModelToDelete": {Scores: []int{80}},
 	})
 
@@ -568,7 +568,7 @@ func TestEditModelHandler_GET_Success(t *testing.T) {
 
 	// Add a model first
 	suiteName := middleware.GetCurrentSuiteName()
-	middleware.WriteResults(suiteName, map[string]middleware.Result{
+	_ = middleware.WriteResults(suiteName, map[string]middleware.Result{
 		"ModelToEdit": {Scores: []int{80}},
 	})
 
@@ -594,7 +594,7 @@ func TestEditModelHandler_MethodNotAllowed(t *testing.T) {
 	defer cleanup()
 
 	suiteName := middleware.GetCurrentSuiteName()
-	middleware.WriteResults(suiteName, map[string]middleware.Result{
+	_ = middleware.WriteResults(suiteName, map[string]middleware.Result{
 		"ModelToEdit": {Scores: []int{80}},
 	})
 
@@ -620,7 +620,7 @@ func TestEditModelHandler_GET_RenderError(t *testing.T) {
 
 	// Add a model first
 	suiteName := middleware.GetCurrentSuiteName()
-	middleware.WriteResults(suiteName, map[string]middleware.Result{
+	_ = middleware.WriteResults(suiteName, map[string]middleware.Result{
 		"ModelToEdit": {Scores: []int{80}},
 	})
 
@@ -646,7 +646,7 @@ func TestDeleteModelHandler_GET_RenderError(t *testing.T) {
 
 	// Add a model first
 	suiteName := middleware.GetCurrentSuiteName()
-	middleware.WriteResults(suiteName, map[string]middleware.Result{
+	_ = middleware.WriteResults(suiteName, map[string]middleware.Result{
 		"ModelToDelete": {Scores: []int{80}},
 	})
 

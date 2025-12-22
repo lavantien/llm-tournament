@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Calculate tiers based on total scores
@@ -170,7 +173,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 			return tier
 		},
 		"formatTierName": func(tier string) string {
-			return strings.Title(strings.ReplaceAll(tier, "-", " "))
+			return cases.Title(language.English).String(strings.ReplaceAll(tier, "-", " "))
 		},
 		"join": strings.Join,
 	}

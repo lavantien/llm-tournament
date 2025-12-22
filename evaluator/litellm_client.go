@@ -37,7 +37,7 @@ func (c *LiteLLMClient) Evaluate(req EvaluationRequest) (*EvaluationResponse, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -64,7 +64,7 @@ func (c *LiteLLMClient) EstimateCost(req CostEstimateRequest) (*CostEstimateResp
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -85,7 +85,7 @@ func (c *LiteLLMClient) HealthCheck() error {
 	if err != nil {
 		return fmt.Errorf("health check failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("service unhealthy, status: %d", resp.StatusCode)

@@ -29,7 +29,7 @@ func changeToProjectRootResults(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -42,7 +42,7 @@ func setupResultsTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
@@ -492,6 +492,7 @@ func TestEvaluateResult_GET_Request(t *testing.T) {
 	// GET request should fail (expects POST or template rendering)
 	if evalRR.Code == http.StatusMethodNotAllowed {
 		// That's fine, handler only supports POST
+		_ = evalRR.Code
 	}
 }
 
@@ -1114,7 +1115,7 @@ func TestExportResultsHandler_GET_WithData(t *testing.T) {
 
 	// Add test data
 	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
-	middleware.WriteResults("default", map[string]middleware.Result{
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
 
@@ -1159,7 +1160,7 @@ func TestResetResultsHandler_POST_AndVerify(t *testing.T) {
 
 	// Add test data
 	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
-	middleware.WriteResults("default", map[string]middleware.Result{
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
 
@@ -1189,7 +1190,7 @@ func TestConfirmRefreshResultsHandler_WithSearchQuery(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	middleware.WriteResults("default", map[string]middleware.Result{
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 		"Model2": {Scores: []int{60}},
 	})
@@ -1209,7 +1210,7 @@ func TestRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
 
 	// Add prompts and models
 	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
-	middleware.WriteResults("default", map[string]middleware.Result{
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
 
@@ -1276,7 +1277,7 @@ func TestUpdateResultHandler_WithScoreValue(t *testing.T) {
 	defer cleanup()
 
 	middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
-	middleware.WriteResults("default", map[string]middleware.Result{
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{50}},
 	})
 
@@ -1857,5 +1858,6 @@ func TestExportResultsHandler_WriteError(t *testing.T) {
 	if failingWriter.HeaderWritten && rr.Code == http.StatusOK {
 		// Write error occurred after header was written
 		// This is expected behavior - the error is logged but header already sent
+		_ = failingWriter.HeaderWritten
 	}
 }

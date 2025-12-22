@@ -147,7 +147,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
 	if err != nil {
 		return fmt.Errorf("failed to query models: %w", err)
 	}
-	defer modelRows.Close()
+	defer func() { _ = modelRows.Close() }()
 
 	var modelIDs []int
 	for modelRows.Next() {
@@ -163,7 +163,7 @@ func (e *Evaluator) processAllJob(job *EvaluationJob, cancelChan chan bool) erro
 	if err != nil {
 		return fmt.Errorf("failed to query prompts: %w", err)
 	}
-	defer promptRows.Close()
+	defer func() { _ = promptRows.Close() }()
 
 	var promptIDs []int
 	for promptRows.Next() {
@@ -213,7 +213,7 @@ func (e *Evaluator) processModelJob(job *EvaluationJob, cancelChan chan bool) er
 	if err != nil {
 		return fmt.Errorf("failed to query prompts: %w", err)
 	}
-	defer promptRows.Close()
+	defer func() { _ = promptRows.Close() }()
 
 	var promptIDs []int
 	for promptRows.Next() {
@@ -257,7 +257,7 @@ func (e *Evaluator) processPromptJob(job *EvaluationJob, cancelChan chan bool) e
 	if err != nil {
 		return fmt.Errorf("failed to query models: %w", err)
 	}
-	defer modelRows.Close()
+	defer func() { _ = modelRows.Close() }()
 
 	var modelIDs []int
 	for modelRows.Next() {
@@ -389,7 +389,7 @@ func (e *Evaluator) getAPIKeys() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	apiKeys := make(map[string]string)
 	for rows.Next() {

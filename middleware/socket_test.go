@@ -224,7 +224,7 @@ func TestHandleWebSocket_Connection(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to WebSocket: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if resp.StatusCode != http.StatusSwitchingProtocols {
 		t.Errorf("expected status %d, got %d", http.StatusSwitchingProtocols, resp.StatusCode)
@@ -286,7 +286,7 @@ func TestHandleWebSocket_CloseConnection(t *testing.T) {
 	}
 
 	// Close connection
-	conn.Close()
+	_ = conn.Close()
 
 	// Wait for cleanup
 	time.Sleep(100 * time.Millisecond)
@@ -317,7 +317,7 @@ func TestHandleWebSocket_InvalidJSONMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
@@ -400,7 +400,7 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	// Send update_prompts_order message
 	msg := map[string]interface{}{
@@ -432,7 +432,7 @@ func TestHandleWebSocket_UnknownMessageType(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	// Send unknown message type
 	msg := map[string]interface{}{
@@ -490,12 +490,12 @@ func TestBroadcastResults_WithClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
 	// Set read deadline
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	// Trigger broadcast
 	go BroadcastResults()
@@ -544,7 +544,7 @@ func TestBroadcastMessage_MarshalErrorCleansUpClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
@@ -607,10 +607,10 @@ func TestBroadcastResults_UncategorizedStartColAfterProfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastResults()
 
@@ -733,11 +733,11 @@ func TestBroadcastEvaluationProgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	// Trigger broadcast
 	go BroadcastEvaluationProgress(1, 5, 10, 0.50)
@@ -792,11 +792,11 @@ func TestBroadcastEvaluationCompleted(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastEvaluationCompleted(1, 1.50)
 
@@ -848,11 +848,11 @@ func TestBroadcastEvaluationFailed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastEvaluationFailed(1, "test error")
 
@@ -903,11 +903,11 @@ func TestBroadcastCostAlert(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	waitForWebSocketClientRegistration(t, 1)
 
-	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 
 	go BroadcastCostAlert(1, 95.0, 100.0)
 
@@ -974,7 +974,7 @@ func TestBroadcastMessage_WriteJSONError(t *testing.T) {
 	}
 
 	// Close connection to trigger WriteJSON error
-	conn.Close()
+	_ = conn.Close()
 
 	// Wait for close to take effect
 	time.Sleep(50 * time.Millisecond)
@@ -1012,7 +1012,7 @@ func TestBroadcastMessage_ClientCleanupOnError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect client 1: %v", err)
 	}
-	defer conn1.Close()
+	defer func() { _ = conn1.Close() }()
 
 	conn2, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
@@ -1032,7 +1032,7 @@ func TestBroadcastMessage_ClientCleanupOnError(t *testing.T) {
 	}
 
 	// Close one connection
-	conn2.Close()
+	_ = conn2.Close()
 	time.Sleep(50 * time.Millisecond)
 
 	// Trigger broadcast - should clean up the closed client

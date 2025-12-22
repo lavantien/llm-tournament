@@ -50,7 +50,7 @@ func GetAllSettings() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	settings := make(map[string]string)
 	for rows.Next() {
@@ -69,7 +69,7 @@ func GetMaskedAPIKeys() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	apiKeys := make(map[string]string)
 	for rows.Next() {

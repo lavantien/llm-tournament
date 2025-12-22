@@ -111,7 +111,7 @@ func run(args []string, deps runDeps) int {
 	}
 
 	// stdout is reserved for machine-readable output (used by Playwright harness).
-	fmt.Fprintf(deps.stdout, "URL=http://%s\n", ln.Addr().String())
+	_, _ = fmt.Fprintf(deps.stdout, "URL=http://%s\n", ln.Addr().String())
 
 	shutdownCh := make(chan struct{}, 1)
 	mux.HandleFunc("/__shutdown", func(w http.ResponseWriter, r *http.Request) {

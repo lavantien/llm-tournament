@@ -21,7 +21,7 @@ func changeToProjectRootMiddleware(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -260,7 +260,7 @@ func (m *testMockRenderer) Render(w http.ResponseWriter, name string, funcMap te
 	if m.err != nil {
 		return m.err
 	}
-	w.Write([]byte("mock content"))
+	_, _ = w.Write([]byte("mock content"))
 	return nil
 }
 

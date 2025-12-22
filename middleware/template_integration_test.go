@@ -273,6 +273,7 @@ func TestFileRenderer_Render_ExecuteError(t *testing.T) {
 	if err == nil {
 		// Note: Go templates might not error on nil fields, they just output nothing
 		// This is actually expected behavior - templates are lenient
+		t.Log("Template execution did not return error as expected for nil data")
 	}
 }
 

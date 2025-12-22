@@ -47,7 +47,7 @@ func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		delete(clients, conn)
 		clientsMutex.Unlock()
 		log.Println("Closing websocket connection")
-		conn.Close()
+		_ = conn.Close()
 	}()
 
 	for {
@@ -210,7 +210,7 @@ func BroadcastResults() {
 		err := client.WriteJSON(payload)
 		if err != nil {
 			log.Printf("Error broadcasting message: %v", err)
-			client.Close()
+			_ = client.Close()
 			delete(clients, client)
 		}
 	}
@@ -321,7 +321,7 @@ func broadcastMessage(payload interface{}) {
 		err := client.WriteJSON(payload)
 		if err != nil {
 			log.Printf("Error broadcasting message: %v", err)
-			client.Close()
+			_ = client.Close()
 			delete(clients, client)
 		}
 	}

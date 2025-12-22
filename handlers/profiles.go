@@ -97,7 +97,8 @@ func (h *Handler) AddProfile(w http.ResponseWriter, r *http.Request) {
 // EditProfile handles editing a profile
 func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit profile")
-	if r.Method == "GET" {
+	switch r.Method {
+	case http.MethodGet:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -127,7 +128,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if r.Method == "POST" {
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -176,7 +177,7 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Profile edited successfully")
 		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
@@ -184,7 +185,8 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 // DeleteProfile handles deleting a profile
 func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete profile")
-	if r.Method == "GET" {
+	switch r.Method {
+	case http.MethodGet:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -214,7 +216,7 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	} else if r.Method == "POST" {
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -240,7 +242,7 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Profile deleted successfully")
 		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
@@ -248,12 +250,13 @@ func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 // ResetProfiles handles resetting profiles
 func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset profiles")
-	if r.Method == "GET" {
+	switch r.Method {
+	case http.MethodGet:
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_profiles.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	} else if r.Method == "POST" {
+	case http.MethodPost:
 		err := h.DataStore.WriteProfiles([]middleware.Profile{})
 		if err != nil {
 			log.Printf("Error writing profiles: %v", err)
@@ -262,7 +265,7 @@ func (h *Handler) ResetProfiles(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Profiles reset successfully")
 		http.Redirect(w, r, "/profiles", http.StatusSeeOther)
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

@@ -213,7 +213,7 @@ func (jq *JobQueue) resumePendingJobs() {
 		log.Printf("Failed to query pending jobs: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	count := 0
 	for rows.Next() {

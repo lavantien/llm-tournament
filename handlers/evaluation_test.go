@@ -24,7 +24,7 @@ func setupEvaluationTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
@@ -213,7 +213,7 @@ func TestInitEvaluator_WithCustomURL(t *testing.T) {
 	defer func() { globalEvaluator = originalEvaluator }()
 
 	// Set custom python service URL
-	middleware.SetSetting("python_service_url", "http://custom:8001")
+	_ = middleware.SetSetting("python_service_url", "http://custom:8001")
 
 	// Test initialization
 	db := middleware.GetDB()
@@ -276,7 +276,7 @@ func TestEvaluatePromptHandler_WithEvaluator(t *testing.T) {
 	InitEvaluator(db)
 
 	// Add a prompt first
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 
 	req := httptest.NewRequest("POST", "/evaluate/prompt?id=1", nil)
 	rr := httptest.NewRecorder()
@@ -380,6 +380,7 @@ func TestEvaluateAllHandler_NilEvaluator(t *testing.T) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Expected - nil evaluator causes panic, test passes
+			_ = r
 		}
 	}()
 

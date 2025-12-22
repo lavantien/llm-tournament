@@ -30,7 +30,7 @@ func changeToProjectRootPrompts(t *testing.T) func() {
 		t.Fatalf("failed to change to project root: %v", err)
 	}
 	return func() {
-		os.Chdir(originalDir)
+		_ = os.Chdir(originalDir)
 	}
 }
 
@@ -43,7 +43,7 @@ func setupPromptTestDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
@@ -731,7 +731,7 @@ func createMultipartFormFile(t *testing.T, fieldname, filename string, content [
 	if err != nil {
 		t.Fatalf("failed to write file content: %v", err)
 	}
-	writer.Close()
+	_ = writer.Close()
 
 	return body, writer.FormDataContentType()
 }
@@ -1265,7 +1265,7 @@ func TestImportResultsHandler_POST_ValidJSON(t *testing.T) {
 		{Text: "Prompt 1", Solution: "Solution 1"},
 		{Text: "Prompt 2", Solution: "Solution 2"},
 	}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	results := map[string]middleware.Result{
 		"Model A": {Scores: []int{80, 60}},
@@ -1396,7 +1396,7 @@ func TestDeletePromptHandler_GET_Success(t *testing.T) {
 
 	// Add a prompt first
 	prompts := []middleware.Prompt{{Text: "Delete me"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/delete_prompt?index=0", nil)
 	rr := httptest.NewRecorder()
@@ -1418,7 +1418,7 @@ func TestDeletePromptHandler_GET_OutOfRange(t *testing.T) {
 
 	// Add a prompt
 	prompts := []middleware.Prompt{{Text: "Test"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/delete_prompt?index=99", nil)
 	rr := httptest.NewRecorder()
@@ -1438,9 +1438,9 @@ func TestEditPromptHandler_GET_Success(t *testing.T) {
 	defer cleanup()
 
 	// Add prompt and profile
-	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+	_ = middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
 	prompts := []middleware.Prompt{{Text: "Edit me", Profile: "TestProfile"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/edit_prompt?index=0", nil)
 	rr := httptest.NewRecorder()
@@ -1462,7 +1462,7 @@ func TestExportPromptsHandler_GET_JSON(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "Export me"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/export_prompts", nil)
 	rr := httptest.NewRecorder()
@@ -1549,7 +1549,7 @@ func TestImportResultsHandler_ScoresExtended(t *testing.T) {
 		{Text: "Prompt 2"},
 		{Text: "Prompt 3"},
 	}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Create results with fewer scores than prompts
 	results := map[string]middleware.Result{
@@ -1593,7 +1593,7 @@ func TestPromptListHandler_WithSearch(t *testing.T) {
 		{Text: "Find this prompt"},
 		{Text: "Another prompt"},
 	}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/prompts?search_query=Find", nil)
 	rr := httptest.NewRecorder()
@@ -1609,7 +1609,7 @@ func TestAddPromptHandler_WithProfile(t *testing.T) {
 	defer cleanup()
 
 	// Add a profile first
-	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+	_ = middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
 
 	form := url.Values{}
 	form.Add("prompt", "Prompt with profile")
@@ -1658,7 +1658,7 @@ func TestMovePromptHandler_POST_OutOfRange(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	form := url.Values{}
 	form.Add("index", "99")
@@ -1682,7 +1682,7 @@ func TestMovePromptHandler_POST_MoveUp(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}, {Text: "Third"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Move Third (index 2) to position 0
 	form := url.Values{}
@@ -1715,7 +1715,7 @@ func TestMovePromptHandler_GET_OutOfRange(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "Only prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	req := httptest.NewRequest("GET", "/move_prompt?index=99", nil)
 	rr := httptest.NewRecorder()
@@ -1800,7 +1800,7 @@ func TestMovePromptHandler_POST_SamePosition(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "First"}, {Text: "Second"}, {Text: "Third"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Move to same position
 	form := url.Values{}
@@ -1882,10 +1882,12 @@ func TestPromptListHandler_WithOrderFilter(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{
+	if err := middleware.WritePrompts([]middleware.Prompt{
 		{Text: "First Prompt"},
 		{Text: "Second Prompt"},
-	})
+	}); err != nil {
+		t.Fatalf("failed to write prompts: %v", err)
+	}
 
 	req := httptest.NewRequest("GET", "/prompts?order_filter=1", nil)
 	rr := httptest.NewRecorder()
@@ -1904,11 +1906,13 @@ func TestPromptListHandler_WithProfileFilter(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts with profiles
-	middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
-	middleware.WritePrompts([]middleware.Prompt{
+	_ = middleware.WriteProfiles([]middleware.Profile{{Name: "TestProfile"}})
+	if err := middleware.WritePrompts([]middleware.Prompt{
 		{Text: "Filtered Prompt", Profile: "TestProfile"},
 		{Text: "Other Prompt", Profile: "Other"},
-	})
+	}); err != nil {
+		t.Fatalf("failed to write prompts: %v", err)
+	}
 
 	req := httptest.NewRequest("GET", "/prompts?profile_filter=TestProfile", nil)
 	rr := httptest.NewRecorder()
@@ -1929,10 +1933,12 @@ func TestExportPromptsHandler_WithPrompts(t *testing.T) {
 	defer cleanup()
 
 	// Add some prompts with all fields
-	middleware.WritePrompts([]middleware.Prompt{
+	if err := middleware.WritePrompts([]middleware.Prompt{
 		{Text: "Prompt 1", Solution: "Solution 1", Profile: "Profile1"},
 		{Text: "Prompt 2", Solution: "Solution 2", Profile: "Profile2"},
-	})
+	}); err != nil {
+		t.Fatalf("failed to write prompts: %v", err)
+	}
 
 	req := httptest.NewRequest("GET", "/export_prompts", nil)
 	rr := httptest.NewRecorder()
@@ -2324,8 +2330,8 @@ func TestImportPromptsHandler_WritePromptsError(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("prompts_file", "prompts.json")
-	part.Write([]byte(jsonContent))
-	writer.Close()
+	_, _ = part.Write([]byte(jsonContent))
+	_ = writer.Close()
 
 	req := httptest.NewRequest("POST", "/import_prompts", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -2601,8 +2607,8 @@ func TestImportResultsHandler_POST_ShorterScores(t *testing.T) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile("results_file", "results.json")
-	part.Write(jsonData)
-	writer.Close()
+	_, _ = part.Write(jsonData)
+	_ = writer.Close()
 
 	req := httptest.NewRequest("POST", "/import_results", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())

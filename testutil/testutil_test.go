@@ -24,8 +24,8 @@ func TestValidEncryptionKey_HasExpectedFormat(t *testing.T) {
 
 func TestSetupEncryptionKey_RestoresOriginalValue(t *testing.T) {
 	const original = "original"
-	os.Setenv("ENCRYPTION_KEY", original)
-	t.Cleanup(func() { os.Setenv("ENCRYPTION_KEY", original) })
+	_ = os.Setenv("ENCRYPTION_KEY", original)
+	t.Cleanup(func() { _ = os.Setenv("ENCRYPTION_KEY", original) })
 
 	cleanup := SetupEncryptionKey(t)
 
@@ -40,8 +40,8 @@ func TestSetupEncryptionKey_RestoresOriginalValue(t *testing.T) {
 }
 
 func TestSetupEncryptionKey_UnsetsOnCleanupWhenOriginallyUnset(t *testing.T) {
-	os.Unsetenv("ENCRYPTION_KEY")
-	t.Cleanup(func() { os.Unsetenv("ENCRYPTION_KEY") })
+	_ = os.Unsetenv("ENCRYPTION_KEY")
+	t.Cleanup(func() { _ = os.Unsetenv("ENCRYPTION_KEY") })
 
 	cleanup := SetupEncryptionKey(t)
 
@@ -57,8 +57,8 @@ func TestSetupEncryptionKey_UnsetsOnCleanupWhenOriginallyUnset(t *testing.T) {
 
 func TestClearEncryptionKey_RestoresOriginalValue(t *testing.T) {
 	const original = "original"
-	os.Setenv("ENCRYPTION_KEY", original)
-	t.Cleanup(func() { os.Setenv("ENCRYPTION_KEY", original) })
+	_ = os.Setenv("ENCRYPTION_KEY", original)
+	t.Cleanup(func() { _ = os.Setenv("ENCRYPTION_KEY", original) })
 
 	cleanup := ClearEncryptionKey(t)
 
@@ -73,8 +73,8 @@ func TestClearEncryptionKey_RestoresOriginalValue(t *testing.T) {
 }
 
 func TestClearEncryptionKey_StaysUnsetWhenOriginallyUnset(t *testing.T) {
-	os.Unsetenv("ENCRYPTION_KEY")
-	t.Cleanup(func() { os.Unsetenv("ENCRYPTION_KEY") })
+	_ = os.Unsetenv("ENCRYPTION_KEY")
+	t.Cleanup(func() { _ = os.Unsetenv("ENCRYPTION_KEY") })
 
 	cleanup := ClearEncryptionKey(t)
 

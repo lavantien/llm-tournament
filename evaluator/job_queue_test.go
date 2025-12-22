@@ -53,7 +53,7 @@ func setupTestJobQueueDB(t *testing.T) *sql.DB {
 
 func TestNewJobQueue(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Create a mock evaluator (nil is ok for this test)
 	jq := NewJobQueue(db, 1, nil)
@@ -77,7 +77,7 @@ func TestNewJobQueue(t *testing.T) {
 
 func TestJobQueue_Enqueue(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Create job queue without starting workers
 	jq := &JobQueue{
@@ -120,7 +120,7 @@ func TestJobQueue_Enqueue(t *testing.T) {
 
 func TestJobQueue_GetJob(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -162,7 +162,7 @@ func TestJobQueue_GetJob(t *testing.T) {
 
 func TestJobQueue_GetJob_WithStartedAndCompletedTimes(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -202,7 +202,7 @@ func TestJobQueue_GetJob_WithStartedAndCompletedTimes(t *testing.T) {
 
 func TestJobQueue_GetJob_NotFound(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -220,7 +220,7 @@ func TestJobQueue_GetJob_NotFound(t *testing.T) {
 
 func TestJobQueue_CancelJob_NotRunning(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -238,7 +238,7 @@ func TestJobQueue_CancelJob_NotRunning(t *testing.T) {
 
 func TestJobQueue_CancelJob_Running(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -283,7 +283,7 @@ func TestJobQueue_CancelJob_Running(t *testing.T) {
 
 func TestJobQueue_UpdateJobProgress(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -362,7 +362,7 @@ func TestEvaluationJob_Fields(t *testing.T) {
 
 func TestJobQueue_MultipleJobs(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -409,7 +409,7 @@ func TestJobQueue_MultipleJobs(t *testing.T) {
 
 func TestJobQueue_UpdateJob_StatusChange(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -449,7 +449,7 @@ func TestJobQueue_UpdateJob_StatusChange(t *testing.T) {
 
 func TestJobQueue_UpdateJob_Completed(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -494,7 +494,7 @@ func TestJobQueue_UpdateJob_Completed(t *testing.T) {
 
 func TestJobQueue_UpdateJob_WithError(t *testing.T) {
 	db := setupTestJobQueueDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,

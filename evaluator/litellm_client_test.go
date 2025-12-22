@@ -49,7 +49,7 @@ func TestEvaluate_Success(t *testing.T) {
 			ConsensusScore: 80,
 			AvgConfidence:  0.9,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
@@ -81,7 +81,7 @@ func TestEvaluate_Success(t *testing.T) {
 func TestEvaluate_ServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Internal server error"))
+		_, _ = w.Write([]byte("Internal server error"))
 	}))
 	defer server.Close()
 
@@ -98,7 +98,7 @@ func TestEvaluate_ServerError(t *testing.T) {
 
 func TestEvaluate_InvalidJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("not valid json"))
+		_, _ = w.Write([]byte("not valid json"))
 	}))
 	defer server.Close()
 
@@ -142,7 +142,7 @@ func TestEstimateCost_Success(t *testing.T) {
 				"gemini": 0.05,
 			},
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
@@ -169,7 +169,7 @@ func TestEstimateCost_Success(t *testing.T) {
 func TestEstimateCost_ServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Bad request"))
+		_, _ = w.Write([]byte("Bad request"))
 	}))
 	defer server.Close()
 
@@ -184,7 +184,7 @@ func TestEstimateCost_ServerError(t *testing.T) {
 
 func TestEstimateCost_InvalidJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("not valid json"))
+		_, _ = w.Write([]byte("not valid json"))
 	}))
 	defer server.Close()
 
@@ -220,7 +220,7 @@ func TestHealthCheck_Success(t *testing.T) {
 			t.Errorf("expected /health path, got %s", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "healthy"}`))
+		_, _ = w.Write([]byte(`{"status": "healthy"}`))
 	}))
 	defer server.Close()
 
@@ -264,7 +264,7 @@ func TestEvaluate_MultipleJudges(t *testing.T) {
 			ConsensusScore: 75,
 			AvgConfidence:  0.85,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 

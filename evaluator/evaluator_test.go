@@ -136,7 +136,7 @@ func setupEvaluatorTestDB(t *testing.T) *sql.DB {
 
 func TestNewEvaluator(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := NewEvaluator(db, "http://localhost:8001")
 
@@ -159,7 +159,7 @@ func TestNewEvaluator(t *testing.T) {
 
 func TestEvaluator_Judges(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := NewEvaluator(db, "http://localhost:8001")
 
@@ -173,7 +173,7 @@ func TestEvaluator_Judges(t *testing.T) {
 
 func TestEvaluateAll_NoData(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Create evaluator without starting workers
 	evaluator := &Evaluator{
@@ -212,7 +212,7 @@ func TestEvaluateAll_NoData(t *testing.T) {
 
 func TestEvaluateAll_WithData(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -264,7 +264,7 @@ func TestEvaluateAll_WithData(t *testing.T) {
 
 func TestEvaluateAll_CountPromptsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
 		t.Fatalf("failed to drop prompts table: %v", err)
@@ -295,7 +295,7 @@ func TestEvaluateAll_CountPromptsError(t *testing.T) {
 
 func TestEvaluateAll_CountModelsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE models"); err != nil {
 		t.Fatalf("failed to drop models table: %v", err)
@@ -326,7 +326,7 @@ func TestEvaluateAll_CountModelsError(t *testing.T) {
 
 func TestEvaluateAll_EnqueueError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE evaluation_jobs"); err != nil {
 		t.Fatalf("failed to drop evaluation_jobs table: %v", err)
@@ -357,7 +357,7 @@ func TestEvaluateAll_EnqueueError(t *testing.T) {
 
 func TestEvaluateModel(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -410,7 +410,7 @@ func TestEvaluateModel(t *testing.T) {
 
 func TestEvaluateModel_CountPromptsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
 	if err != nil {
@@ -450,7 +450,7 @@ func TestEvaluateModel_CountPromptsError(t *testing.T) {
 
 func TestEvaluateModel_EnqueueError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	result, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
 	if err != nil {
@@ -490,7 +490,7 @@ func TestEvaluateModel_EnqueueError(t *testing.T) {
 
 func TestEvaluatePrompt_CountModelsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	result, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
 	if err != nil {
@@ -530,7 +530,7 @@ func TestEvaluatePrompt_CountModelsError(t *testing.T) {
 
 func TestEvaluatePrompt_EnqueueError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	result, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
 	if err != nil {
@@ -570,7 +570,7 @@ func TestEvaluatePrompt_EnqueueError(t *testing.T) {
 
 func TestEvaluator_getAPIKeys_QueryError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE settings"); err != nil {
 		t.Fatalf("failed to drop settings table: %v", err)
@@ -585,7 +585,7 @@ func TestEvaluator_getAPIKeys_QueryError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_NoResponse_SkipsEvaluation(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Create a job, model, and prompt but no model_response.
 	jobRes, err := db.Exec("INSERT INTO evaluation_jobs (suite_id, job_type, status) VALUES (1, 'all', 'running')")
@@ -640,7 +640,7 @@ func TestEvaluateModelPromptPair_NoResponse_SkipsEvaluation(t *testing.T) {
 
 func TestEvaluateModelPromptPair_Success_WritesScoreAndHistory(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Start a mock LiteLLM server.
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -735,7 +735,7 @@ func TestEvaluateModelPromptPair_Success_WritesScoreAndHistory(t *testing.T) {
 
 func TestProcessAllJob_Cancelled(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Minimal model & prompt so the loop enters.
 	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
@@ -778,7 +778,7 @@ func TestProcessAllJob_Cancelled(t *testing.T) {
 
 func TestProcessAllJob_QueryModelsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE models"); err != nil {
 		t.Fatalf("failed to drop models table: %v", err)
@@ -810,7 +810,7 @@ func TestProcessAllJob_QueryModelsError(t *testing.T) {
 
 func TestProcessAllJob_QueryPromptsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
 		t.Fatalf("failed to insert model: %v", err)
@@ -845,7 +845,7 @@ func TestProcessAllJob_QueryPromptsError(t *testing.T) {
 
 func TestProcessAllJob_EvaluatePairError_Continues(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
 		t.Fatalf("failed to insert model: %v", err)
@@ -880,7 +880,7 @@ func TestProcessAllJob_EvaluatePairError_Continues(t *testing.T) {
 
 func TestProcessAllJob_UpdateProgressError_Continues(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)"); err != nil {
 		t.Fatalf("failed to insert model: %v", err)
@@ -916,7 +916,7 @@ func TestProcessAllJob_UpdateProgressError_Continues(t *testing.T) {
 
 func TestEvaluateModelPromptPair_ModelResponseQueryError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
 	if err != nil {
@@ -946,7 +946,7 @@ func TestEvaluateModelPromptPair_ModelResponseQueryError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_GetAPIKeysError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	modelRes, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
 	if err != nil {
@@ -981,7 +981,7 @@ func TestEvaluateModelPromptPair_GetAPIKeysError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_EvaluateError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -1017,7 +1017,7 @@ func TestEvaluateModelPromptPair_EvaluateError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_UpdateScoreError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		resp := EvaluationResponse{
@@ -1063,7 +1063,7 @@ func TestEvaluateModelPromptPair_UpdateScoreError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_HistoryInsertError_IsLogged(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		resp := EvaluationResponse{
@@ -1109,7 +1109,7 @@ func TestEvaluateModelPromptPair_HistoryInsertError_IsLogged(t *testing.T) {
 
 func TestGetAPIKeys_ScanError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("INSERT INTO settings (key, value) VALUES ('api_key_test', NULL)"); err != nil {
 		t.Fatalf("failed to insert setting: %v", err)
@@ -1124,7 +1124,7 @@ func TestGetAPIKeys_ScanError(t *testing.T) {
 
 func TestEvaluateModel_NotFound(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1148,7 +1148,7 @@ func TestEvaluateModel_NotFound(t *testing.T) {
 
 func TestEvaluatePrompt(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	result, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1202,7 +1202,7 @@ func TestEvaluatePrompt(t *testing.T) {
 
 func TestEvaluatePrompt_NotFound(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1226,7 +1226,7 @@ func TestEvaluatePrompt_NotFound(t *testing.T) {
 
 func TestGetJobStatus(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1264,7 +1264,7 @@ func TestGetJobStatus(t *testing.T) {
 
 func TestCancelJob(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1295,7 +1295,7 @@ func TestCancelJob(t *testing.T) {
 
 func TestProcessJob_UnknownType(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1324,7 +1324,7 @@ func TestProcessJob_UnknownType(t *testing.T) {
 
 func TestProcessAllJob_NoData(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1356,7 +1356,7 @@ func TestProcessAllJob_NoData(t *testing.T) {
 
 func TestProcessModelJob_NoPrompts(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add model
 	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('model1', 1)")
@@ -1395,7 +1395,7 @@ func TestProcessModelJob_NoPrompts(t *testing.T) {
 
 func TestProcessPromptJob_NoModels(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add prompt
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1434,7 +1434,7 @@ func TestProcessPromptJob_NoModels(t *testing.T) {
 
 func TestGetAPIKeys(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Update API keys
 	_, err := db.Exec("UPDATE settings SET value = 'sk-test-anthropic' WHERE key = 'api_key_anthropic'")
@@ -1465,7 +1465,7 @@ func TestGetAPIKeys(t *testing.T) {
 
 func TestEvaluateModelPromptPair_NoResponse(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add model and prompt
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1495,7 +1495,7 @@ func TestEvaluateModelPromptPair_NoResponse(t *testing.T) {
 
 func TestEvaluateModelPromptPair_PromptNotFound(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -1512,7 +1512,7 @@ func TestEvaluateModelPromptPair_PromptNotFound(t *testing.T) {
 
 func TestProcessAllJob_Cancellation(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1557,7 +1557,7 @@ func TestProcessAllJob_Cancellation(t *testing.T) {
 
 func TestProcessModelJob_Cancellation(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1603,7 +1603,7 @@ func TestProcessModelJob_Cancellation(t *testing.T) {
 
 func TestProcessPromptJob_Cancellation(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, err := db.Exec("INSERT INTO prompts (text, suite_id, display_order) VALUES ('prompt1', 1, 0)")
@@ -1651,15 +1651,16 @@ func TestProcessPromptJob_Cancellation(t *testing.T) {
 func createMockEvalServer(t *testing.T, response *EvaluationResponse, statusCode int) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/evaluate" {
+		switch r.URL.Path {
+		case "/evaluate":
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(statusCode)
 			if response != nil {
-				json.NewEncoder(w).Encode(response)
+				_ = json.NewEncoder(w).Encode(response)
 			}
-		} else if r.URL.Path == "/health" {
+		case "/health":
 			w.WriteHeader(http.StatusOK)
-		} else {
+		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
@@ -1667,7 +1668,7 @@ func createMockEvalServer(t *testing.T, response *EvaluationResponse, statusCode
 
 func TestEvaluateModelPromptPair_WithMockServer_Success(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add prompt with solution
 	_, err := db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type) VALUES ('What is 2+2?', '4', 1, 0, 'objective')")
@@ -1752,7 +1753,7 @@ func TestEvaluateModelPromptPair_WithMockServer_Success(t *testing.T) {
 
 func TestEvaluateModelPromptPair_WithMockServer_HTTPError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add prompt and model
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('Test prompt', 1, 0, 'objective')")
@@ -1777,7 +1778,7 @@ func TestEvaluateModelPromptPair_WithMockServer_HTTPError(t *testing.T) {
 
 func TestEvaluateModelPromptPair_WithMockServer_LowScore(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add prompt and model
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('Test prompt', 1, 0, 'creative')")
@@ -1829,7 +1830,7 @@ func TestEvaluateModelPromptPair_WithMockServer_LowScore(t *testing.T) {
 
 func TestProcessAllJob_WithMockServer(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('p1', 1, 0, 'objective')")
@@ -1887,7 +1888,7 @@ func TestProcessAllJob_WithMockServer(t *testing.T) {
 
 func TestProcessModelJob_WithMockServer(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('p1', 1, 0, 'objective')")
@@ -1944,7 +1945,7 @@ func TestProcessModelJob_WithMockServer(t *testing.T) {
 
 func TestProcessPromptJob_WithMockServer(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('p1', 1, 0, 'objective')")
@@ -2003,7 +2004,7 @@ func TestProcessPromptJob_WithMockServer(t *testing.T) {
 
 func TestWorker_ProcessesJob(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Add test data
 	_, _ = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('p1', 1, 0, 'objective')")
@@ -2069,7 +2070,7 @@ func TestWorker_ProcessesJob(t *testing.T) {
 
 func TestWorker_FailedJob(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Create mock server that returns errors
 	server := createMockEvalServer(t, nil, http.StatusInternalServerError)
@@ -2124,7 +2125,7 @@ func TestWorker_FailedJob(t *testing.T) {
 
 func TestJobQueue_UpdateJobProgress_FromEvaluator(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{db: db}
 
@@ -2154,7 +2155,7 @@ func TestJobQueue_UpdateJobProgress_FromEvaluator(t *testing.T) {
 
 func TestJobQueue_CancelRunningJob(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db:      db,
@@ -2263,7 +2264,7 @@ func TestLiteLLMClient_EstimateCost(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/estimate_cost" {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(CostEstimateResponse{
+			_ = json.NewEncoder(w).Encode(CostEstimateResponse{
 				EstimatedCostUSD: 0.15,
 				Breakdown:        map[string]float64{"claude": 0.10, "gpt": 0.05},
 			})
@@ -2308,7 +2309,7 @@ func TestLiteLLMClient_EstimateCost_Error(t *testing.T) {
 
 func TestResumePendingJobs_NoPendingJobs(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -2328,7 +2329,7 @@ func TestResumePendingJobs_NoPendingJobs(t *testing.T) {
 
 func TestResumePendingJobs_WithPendingJobs(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Insert pending jobs directly into database
 	_, err := db.Exec(`
@@ -2389,7 +2390,7 @@ func TestResumePendingJobs_WithPendingJobs(t *testing.T) {
 
 func TestResumePendingJobs_ScanError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Insert a job with NULL values that will cause scan issues
 	_, err := db.Exec(`
@@ -2422,7 +2423,7 @@ func TestResumePendingJobs_ScanError(t *testing.T) {
 
 func TestNewJobQueueWithDelay(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -2442,7 +2443,7 @@ func TestNewJobQueueWithDelay(t *testing.T) {
 
 func TestJobQueue_GetJob_NotFound_WithSetup(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	jq := &JobQueue{
 		db: db,
@@ -2456,7 +2457,7 @@ func TestJobQueue_GetJob_NotFound_WithSetup(t *testing.T) {
 
 func TestJobQueue_Enqueue_DBError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	db.Close() // Close DB to cause error
+	_ = db.Close() // Close DB to cause error
 
 	jq := &JobQueue{
 		db:   db,
@@ -2476,7 +2477,7 @@ func TestJobQueue_Enqueue_DBError(t *testing.T) {
 
 func TestWorker_UpdateJobError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -2517,7 +2518,7 @@ func TestWorker_UpdateJobError(t *testing.T) {
 
 func TestProcessJob_UnknownJobType(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	evaluator := &Evaluator{
 		db:            db,
@@ -2551,7 +2552,7 @@ func TestProcessJob_UnknownJobType(t *testing.T) {
 
 func TestProcessJob_AllType(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Insert a suite
 	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)
@@ -2590,7 +2591,7 @@ func TestProcessJob_AllType(t *testing.T) {
 
 func TestProcessJob_ModelType(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Insert a suite
 	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)
@@ -2630,7 +2631,7 @@ func TestProcessJob_ModelType(t *testing.T) {
 
 func TestProcessJob_PromptType(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Insert a suite
 	_, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, ?)", "test", true)

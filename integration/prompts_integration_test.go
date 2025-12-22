@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 
@@ -13,21 +12,6 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-// changeToProjectRoot changes to project root for integration tests
-func changeToProjectRoot(t *testing.T) func() {
-	t.Helper()
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("failed to get current directory: %v", err)
-	}
-	if err := os.Chdir(".."); err != nil {
-		t.Fatalf("failed to change to project root: %v", err)
-	}
-	return func() {
-		os.Chdir(originalDir)
-	}
-}
 
 // setupIntegrationDB creates a test database for integration tests
 func setupIntegrationDB(t *testing.T) func() {
@@ -38,7 +22,7 @@ func setupIntegrationDB(t *testing.T) func() {
 		t.Fatalf("Failed to initialize integration test database: %v", err)
 	}
 	return func() {
-		middleware.CloseDB()
+		_ = middleware.CloseDB()
 	}
 }
 
