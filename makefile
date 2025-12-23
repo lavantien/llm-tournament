@@ -19,9 +19,9 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: test run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage
+.PHONY: lint test run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage screenshots
 
-all: test
+all: lint test
 
 clean:
 	$(RM)
@@ -55,10 +55,10 @@ aiderinstallwindows:
 aiderupdate:
 	aider --install-main-branch
 
-test:
-	$(CGO_PREFIX) go test -json ./... -race -cover 2>&1 | tdd-guard-go -project-root "C:/Users/lavantien/dev/llm-tournament"
+lint:
+	golangci-lint run --no-config ./...
 
-test-verbose:
+test:
 	$(CGO_PREFIX) go test ./... -v -race -cover
 
 run:
@@ -69,3 +69,6 @@ update-coverage:
 	@go tool cover -html coverage.out -o coverage.html
 	@go tool cover -func=coverage.out | $(GREP) total
 	@$(UPDATE_BADGE)
+
+screenshots:
+	npm run screenshots

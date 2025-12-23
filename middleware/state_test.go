@@ -342,8 +342,8 @@ func TestListPromptSuites(t *testing.T) {
 	}
 
 	// Create additional suites
-	GetSuiteID("suite-a")
-	GetSuiteID("suite-b")
+	_, _ = GetSuiteID("suite-a")
+	_, _ = GetSuiteID("suite-b")
 
 	suites, err := ListPromptSuites()
 	if err != nil {
@@ -555,7 +555,7 @@ func TestDeletePromptSuite(t *testing.T) {
 	}
 
 	// Create a new suite
-	GetSuiteID("test-delete-suite")
+	_, _ = GetSuiteID("test-delete-suite")
 
 	// Verify it exists
 	if !SuiteExists("test-delete-suite") {
@@ -584,7 +584,7 @@ func TestDeleteProfileSuite(t *testing.T) {
 	}
 
 	// Create a suite and add profiles
-	GetSuiteID("profile-delete-suite")
+	_, _ = GetSuiteID("profile-delete-suite")
 	err = WriteProfileSuite("profile-delete-suite", []Profile{
 		{Name: "Profile to Delete"},
 	})
@@ -609,8 +609,8 @@ func TestListProfileSuites(t *testing.T) {
 	}
 
 	// Create additional suites
-	GetSuiteID("profile-suite-a")
-	GetSuiteID("profile-suite-b")
+	_, _ = GetSuiteID("profile-suite-a")
+	_, _ = GetSuiteID("profile-suite-b")
 
 	suites, err := ListProfileSuites()
 	if err != nil {
@@ -632,7 +632,7 @@ func TestRenameSuiteFiles(t *testing.T) {
 	}
 
 	// Create a suite
-	GetSuiteID("old-suite-name")
+	_, _ = GetSuiteID("old-suite-name")
 	if !SuiteExists("old-suite-name") {
 		t.Fatal("old-suite-name should exist before rename")
 	}
@@ -938,7 +938,7 @@ func TestUpdatePromptsOrder_TransactionBeginError(t *testing.T) {
 	}
 
 	// Close database to trigger transaction begin error
-	CloseDB()
+	_ = CloseDB()
 
 	// Should not panic when transaction begin fails
 	UpdatePromptsOrder([]int{1, 0})
@@ -1395,7 +1395,7 @@ func TestReadResults_WithPromptsNoScores(t *testing.T) {
 	}
 
 	// Add prompts
-	WritePrompts([]Prompt{{Text: "Test prompt"}})
+	_ = WritePrompts([]Prompt{{Text: "Test prompt"}})
 
 	// Results should still be empty (no models/scores)
 	results := ReadResults()
@@ -1414,7 +1414,7 @@ func TestWriteResults_WithMultipleModels(t *testing.T) {
 	}
 
 	// Add prompts first
-	WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
+	_ = WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
 
 	// Write results for multiple models
 	results := map[string]Result{
@@ -1444,12 +1444,12 @@ func TestWritePromptSuite_UpdatesExisting(t *testing.T) {
 	}
 
 	// Write initial prompts
-	WritePromptSuite("default", []Prompt{
+	_ = WritePromptSuite("default", []Prompt{
 		{Text: "Original prompt"},
 	})
 
 	// Update prompts
-	WritePromptSuite("default", []Prompt{
+	_ = WritePromptSuite("default", []Prompt{
 		{Text: "Updated prompt 1"},
 		{Text: "Updated prompt 2"},
 	})
@@ -1474,7 +1474,7 @@ func TestReadResults_AfterWriteResults(t *testing.T) {
 	}
 
 	// Add prompts
-	WritePrompts([]Prompt{{Text: "Test prompt"}})
+	_ = WritePrompts([]Prompt{{Text: "Test prompt"}})
 
 	// Write results
 	err = WriteResults("default", map[string]Result{
@@ -1504,7 +1504,7 @@ func TestWriteResults_DeleteModel(t *testing.T) {
 	}
 
 	// Add prompts
-	WritePrompts([]Prompt{{Text: "Prompt 1"}})
+	_ = WritePrompts([]Prompt{{Text: "Prompt 1"}})
 
 	// Write initial results with two models
 	err = WriteResults("default", map[string]Result{
@@ -1549,7 +1549,7 @@ func TestMigrateResults_NilScores(t *testing.T) {
 	}
 
 	// Add prompts so we know the expected length
-	WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
+	_ = WritePrompts([]Prompt{{Text: "Prompt 1"}, {Text: "Prompt 2"}})
 
 	results := map[string]Result{
 		"Model1": {Scores: nil}, // Nil scores should be initialized
@@ -1573,7 +1573,7 @@ func TestMigrateResults_ShorterScores(t *testing.T) {
 	}
 
 	// Add 3 prompts
-	WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}, {Text: "P3"}})
+	_ = WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}, {Text: "P3"}})
 
 	results := map[string]Result{
 		"Model1": {Scores: []int{80}}, // Only 1 score for 3 prompts
@@ -1601,7 +1601,7 @@ func TestWriteResults_EmptyScores(t *testing.T) {
 	}
 
 	// Add prompts
-	WritePrompts([]Prompt{{Text: "P1"}})
+	_ = WritePrompts([]Prompt{{Text: "P1"}})
 
 	// Write results with empty scores
 	err = WriteResults("default", map[string]Result{
@@ -1628,7 +1628,7 @@ func TestWriteResults_CreateNewModel(t *testing.T) {
 	}
 
 	// Add prompts
-	WritePrompts([]Prompt{{Text: "P1"}})
+	_ = WritePrompts([]Prompt{{Text: "P1"}})
 
 	// Write results with a new model (should create it)
 	err = WriteResults("default", map[string]Result{

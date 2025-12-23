@@ -76,7 +76,7 @@ func TestUpdateResultHandler_Success(t *testing.T) {
 
 	// Add a prompt first
 	prompts := []middleware.Prompt{{Text: "Test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add a model
 	form := url.Values{}
@@ -211,7 +211,7 @@ func TestEvaluateResult_POST_Success(t *testing.T) {
 
 	// Add a prompt first
 	prompts := []middleware.Prompt{{Text: "Evaluate test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add a model
 	form := url.Values{}
@@ -292,7 +292,7 @@ func TestEvaluateResult_POST_ScoreClamping(t *testing.T) {
 
 	// Add a prompt
 	prompts := []middleware.Prompt{{Text: "Clamp test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add a model
 	form := url.Values{}
@@ -338,7 +338,7 @@ func TestUpdateMockResultsHandler_Success(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "Mock test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	mockData := map[string]interface{}{
 		"models":  []string{"MockModel"},
@@ -378,7 +378,7 @@ func TestUpdateMockResultsHandler_ValidatesScores(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "Validate test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Send invalid score (should be corrected to 0)
 	mockData := map[string]interface{}{
@@ -475,7 +475,7 @@ func TestEvaluateResult_GET_Request(t *testing.T) {
 
 	// Add a prompt
 	prompts := []middleware.Prompt{{Text: "GET test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add a model
 	form := url.Values{}
@@ -666,7 +666,7 @@ func TestEvaluateResult_GET_WithTemplate(t *testing.T) {
 
 	// Add a prompt
 	prompts := []middleware.Prompt{{Text: "Template test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add a model with results
 	form := url.Values{}
@@ -696,7 +696,7 @@ func TestEvaluateResult_POST_NewModel(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "New model test prompt"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// POST with model that doesn't have results yet
 	evalForm := url.Values{}
@@ -729,7 +729,7 @@ func TestEvaluateResult_POST_NegativeScore(t *testing.T) {
 
 	// Add prompts
 	prompts := []middleware.Prompt{{Text: "Negative score test"}}
-	middleware.WritePrompts(prompts)
+	_ = middleware.WritePrompts(prompts)
 
 	// Add model
 	form := url.Values{}
@@ -1048,7 +1048,7 @@ func TestUpdateMockResultsHandler_WithEmptyModels(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts first
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 
 	// Send request with results but no explicit models array
 	mockData := `{
@@ -1076,7 +1076,7 @@ func TestUpdateMockResultsHandler_ValidatesInvalidScores(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts first
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 
 	// Send request with invalid scores (should be corrected to 0)
 	mockData := `{
@@ -1114,7 +1114,7 @@ func TestExportResultsHandler_GET_WithData(t *testing.T) {
 	defer cleanup()
 
 	// Add test data
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
@@ -1159,7 +1159,7 @@ func TestResetResultsHandler_POST_AndVerify(t *testing.T) {
 	defer cleanup()
 
 	// Add test data
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
@@ -1208,8 +1208,8 @@ func TestRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	// Add prompts and models
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	// Add test data
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
 	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{80}},
 	})
@@ -1247,7 +1247,7 @@ func TestUpdateResultHandler_CreatesNewModel(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
 
 	form := url.Values{}
 	form.Add("model", "NewModel")
@@ -1276,7 +1276,7 @@ func TestUpdateResultHandler_WithScoreValue(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test"}})
 	_ = middleware.WriteResults("default", map[string]middleware.Result{
 		"Model1": {Scores: []int{50}},
 	})

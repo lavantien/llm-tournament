@@ -325,7 +325,7 @@ func TestUpdateSettingsHandler_POST_EmptyPythonURL(t *testing.T) {
 	defer cleanup()
 
 	// Set initial python URL
-	middleware.SetSetting("python_service_url", "http://initial:8001")
+	_ = middleware.SetSetting("python_service_url", "http://initial:8001")
 
 	// Update with empty Python URL (should not change existing)
 	form := url.Values{}
@@ -354,7 +354,7 @@ func TestUpdateSettingsHandler_POST_EmptyThreshold(t *testing.T) {
 	defer cleanup()
 
 	// Set initial threshold
-	middleware.SetSetting("cost_alert_threshold_usd", "100")
+	_ = middleware.SetSetting("cost_alert_threshold_usd", "100")
 
 	// Update with empty threshold (should not change)
 	form := url.Values{}

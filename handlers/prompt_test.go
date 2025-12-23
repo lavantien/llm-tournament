@@ -2037,7 +2037,7 @@ func TestMovePromptHandler_POST_InvalidFromIndex(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
 
 	// Try to move from invalid index
 	form := url.Values{}
@@ -2060,7 +2060,7 @@ func TestMovePromptHandler_POST_InvalidToIndex(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
 
 	// Try to move to invalid index
 	form := url.Values{}
@@ -2083,7 +2083,7 @@ func TestMovePromptHandler_POST_OutOfBoundsFrom(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
 
 	// Try to move from out-of-bounds index
 	form := url.Values{}
@@ -2106,7 +2106,7 @@ func TestMovePromptHandler_POST_OutOfBoundsTo(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
 
 	// Try to move to out-of-bounds index
 	form := url.Values{}
@@ -2129,7 +2129,7 @@ func TestMovePromptHandler_POST_NegativeFrom(t *testing.T) {
 	defer cleanup()
 
 	// Add prompts
-	middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Prompt 1"}})
 
 	// Try negative from index
 	form := url.Values{}

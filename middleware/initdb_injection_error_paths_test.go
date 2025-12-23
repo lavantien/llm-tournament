@@ -34,7 +34,7 @@ func TestInitDB_PragmasError_ReturnsError(t *testing.T) {
 
 	err := InitDB(dbPath)
 	if err == nil {
-		CloseDB()
+		_ = CloseDB()
 		t.Fatalf("expected error")
 	}
 	if !strings.Contains(err.Error(), "failed to set database pragmas") {
@@ -52,7 +52,7 @@ func TestInitDB_CreateTablesError_ReturnsError(t *testing.T) {
 
 	err := InitDB(dbPath)
 	if err == nil {
-		CloseDB()
+		_ = CloseDB()
 		t.Fatalf("expected error")
 	}
 	if !strings.Contains(err.Error(), "failed to create tables") {

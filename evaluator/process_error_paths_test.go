@@ -9,7 +9,7 @@ import (
 
 func TestProcessModelJob_QueryPromptsError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
 		t.Fatalf("drop prompts: %v", err)
@@ -29,7 +29,7 @@ func TestProcessModelJob_QueryPromptsError_ReturnsError(t *testing.T) {
 
 func TestProcessPromptJob_QueryModelsError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("DROP TABLE models"); err != nil {
 		t.Fatalf("drop models: %v", err)
@@ -49,7 +49,7 @@ func TestProcessPromptJob_QueryModelsError_ReturnsError(t *testing.T) {
 
 func TestProcessModelJob_EvaluateAndProgressErrors_Continue(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	origLogOutput := log.Writer()
 	log.SetOutput(io.Discard)
@@ -82,7 +82,7 @@ func TestProcessModelJob_EvaluateAndProgressErrors_Continue(t *testing.T) {
 
 func TestProcessPromptJob_EvaluateAndProgressErrors_Continue(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	origLogOutput := log.Writer()
 	log.SetOutput(io.Discard)

@@ -4,7 +4,7 @@ import "testing"
 
 func TestProcessModelJob_PromptScanError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("PRAGMA foreign_keys = OFF"); err != nil {
 		t.Fatalf("disable foreign keys: %v", err)
@@ -29,7 +29,7 @@ func TestProcessModelJob_PromptScanError_ReturnsError(t *testing.T) {
 
 func TestProcessPromptJob_ModelScanError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("PRAGMA foreign_keys = OFF"); err != nil {
 		t.Fatalf("disable foreign keys: %v", err)
@@ -54,7 +54,7 @@ func TestProcessPromptJob_ModelScanError_ReturnsError(t *testing.T) {
 
 func TestProcessAllJob_ModelScanError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("PRAGMA foreign_keys = OFF"); err != nil {
 		t.Fatalf("disable foreign keys: %v", err)
@@ -79,7 +79,7 @@ func TestProcessAllJob_ModelScanError_ReturnsError(t *testing.T) {
 
 func TestProcessAllJob_PromptScanError_ReturnsError(t *testing.T) {
 	db := setupEvaluatorTestDB(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES ('m1', 1)"); err != nil {
 		t.Fatalf("insert model: %v", err)

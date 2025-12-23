@@ -723,12 +723,13 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 // ResetPrompts handles resetting prompts
 func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset prompts")
-	if r.Method == "GET" {
+	switch r.Method {
+	case "GET":
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	} else if r.Method == "POST" {
+	case "POST":
 		err := h.DataStore.WritePrompts([]middleware.Prompt{})
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)
@@ -738,7 +739,7 @@ func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 		log.Println("Prompts reset successfully")
 		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
-	} else {
+	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

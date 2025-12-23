@@ -130,7 +130,7 @@ func TestSelectPromptSuiteHandler_SetCurrentSuiteError(t *testing.T) {
 	defer cleanup()
 
 	// Close the database to trigger SetCurrentSuite error
-	middleware.CloseDB()
+	_ = middleware.CloseDB()
 
 	form := url.Values{}
 	form.Add("suite_name", "test-suite")
@@ -496,7 +496,7 @@ func TestDeletePromptSuiteHandler_GET_RenderError(t *testing.T) {
 	defer cleanup()
 
 	// Create a suite to delete
-	middleware.WritePromptSuite("test-to-delete", []middleware.Prompt{})
+	_ = middleware.WritePromptSuite("test-to-delete", []middleware.Prompt{})
 
 	// Save original renderer and restore after test
 	original := middleware.DefaultRenderer
@@ -601,7 +601,7 @@ func TestDeletePromptSuite_DeleteSuiteError(t *testing.T) {
 	}
 
 	// Force middleware.DeletePromptSuite to error by closing the DB before deletion.
-	middleware.CloseDB()
+	_ = middleware.CloseDB()
 
 	handler := NewHandlerWithDeps(&MockDataStore{CurrentSuite: "default"}, &MockRenderer{})
 
@@ -703,7 +703,7 @@ func TestEditPromptSuiteHandler_GET_RenderError(t *testing.T) {
 	defer cleanup()
 
 	// Create a suite to edit
-	middleware.WritePromptSuite("test-to-edit", []middleware.Prompt{})
+	_ = middleware.WritePromptSuite("test-to-edit", []middleware.Prompt{})
 
 	// Save original renderer and restore after test
 	original := middleware.DefaultRenderer

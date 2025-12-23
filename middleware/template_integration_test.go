@@ -72,7 +72,7 @@ func TestRenderTemplate_LargeDataStructure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("InitDB failed: %v", err)
 	}
-	defer CloseDB()
+	defer func() { _ = CloseDB() }()
 
 	// Create 100 prompts
 	prompts := make([]Prompt, 100)
