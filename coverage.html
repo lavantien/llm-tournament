@@ -75,7 +75,7 @@
 				
 				<option value="file9">llm-tournament/handlers/prompt.go (100.0%)</option>
 				
-				<option value="file10">llm-tournament/handlers/results.go (100.0%)</option>
+				<option value="file10">llm-tournament/handlers/results.go (99.0%)</option>
 				
 				<option value="file11">llm-tournament/handlers/settings.go (100.0%)</option>
 				
@@ -2403,12 +2403,13 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) <span class
 // ResetPrompts handles resetting prompts
 func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling reset prompts")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := h.DataStore.WritePrompts([]middleware.Prompt{})
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error writing prompts: %v", err)
@@ -2418,9 +2419,9 @@ func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) <span cla
                 <span class="cov8" title="1">log.Println("Prompts reset successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 </pre>
 		
@@ -2759,12 +2760,13 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) <span cla
 // ResetResults handles resetting results
 func (h *Handler) ResetResults(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling reset results")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "reset_results.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 emptyResults := make(map[string]middleware.Result)
                 suiteName := h.DataStore.GetCurrentSuiteName()
                 err := h.DataStore.WriteResults(suiteName, emptyResults)
@@ -2776,18 +2778,21 @@ func (h *Handler) ResetResults(w http.ResponseWriter, r *http.Request) <span cla
                 <span class="cov8" title="1">log.Println("Results reset successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
+        default:<span class="cov0" title="0">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
         }
 }
 
 // ConfirmRefreshResults handles confirm refresh results
 func (h *Handler) ConfirmRefreshResults(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling confirm refresh results")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 results := h.DataStore.ReadResults()
                 for model := range results </span><span class="cov8" title="1">{
                         results[model] = middleware.Result{
@@ -2804,18 +2809,21 @@ func (h *Handler) ConfirmRefreshResults(w http.ResponseWriter, r *http.Request) 
                 <span class="cov8" title="1">log.Println("Results refreshed successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
+        default:<span class="cov0" title="0">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
         }
 }
 
 // RefreshResults handles refresh results
 func (h *Handler) RefreshResults(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling refresh results")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 results := h.DataStore.ReadResults()
                 for model := range results </span><span class="cov8" title="1">{
                         results[model] = middleware.Result{Scores: make([]int, len(h.DataStore.ReadPrompts()))}
@@ -2830,6 +2838,8 @@ func (h *Handler) RefreshResults(w http.ResponseWriter, r *http.Request) <span c
                 <span class="cov8" title="1">log.Println("Results refreshed successfully")
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
+        default:<span class="cov0" title="0">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
         }
 }
 
@@ -3467,7 +3477,8 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) <span class=
 // DeletePromptSuite handles delete prompt suite page
 func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling delete prompt suite page")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 suiteName := r.URL.Query().Get("suite_name")
                 if err := h.Renderer.Render(w, "delete_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/delete_prompt_suite.html"); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
@@ -3475,7 +3486,7 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <spa
                         return
                 }</span>
                 <span class="cov8" title="1">log.Println("Delete prompt suite page rendered successfully")</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 suiteName := r.FormValue("suite_name")
                 if suiteName == "" </span><span class="cov8" title="1">{
                         http.Error(w, "Suite name is required", http.StatusBadRequest)
@@ -3501,9 +3512,9 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) <spa
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' deleted successfully", suiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // SelectPromptSuite handles select prompt suite
@@ -3540,14 +3551,15 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) <spa
 // NewPromptSuite handles new prompt suite
 func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling new prompt suite")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, nil, "templates/new_prompt_suite.html"); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                         return
                 }</span>
                 <span class="cov8" title="1">log.Println("New prompt suite page rendered successfully")</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -3569,15 +3581,16 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) <span c
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' created successfully", suiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 
 // EditPromptSuite handles edit prompt suite
 func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
         log.Println("Handling edit prompt suite")
-        if r.Method == "GET" </span><span class="cov8" title="1">{
+        switch r.Method </span>{
+        case "GET":<span class="cov8" title="1">
                 suiteName := r.URL.Query().Get("suite_name")
                 if err := h.Renderer.Render(w, "edit_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/edit_prompt_suite.html"); err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
@@ -3585,7 +3598,7 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span 
                         return
                 }</span>
                 <span class="cov8" title="1">log.Println("Edit prompt suite page rendered successfully")</span>
-        } else<span class="cov8" title="1"> if r.Method == "POST" </span><span class="cov8" title="1">{
+        case "POST":<span class="cov8" title="1">
                 err := r.ParseForm()
                 if err != nil </span><span class="cov8" title="1">{
                         log.Printf("Error parsing form: %v", err)
@@ -3609,9 +3622,9 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) <span 
                 <span class="cov8" title="1">log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
                 h.DataStore.BroadcastResults()
                 http.Redirect(w, r, "/prompts", http.StatusSeeOther)</span>
-        } else<span class="cov8" title="1"> {
-                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-        }</span>
+        default:<span class="cov8" title="1">
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)</span>
+        }
 }
 </pre>
 		

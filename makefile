@@ -7,6 +7,7 @@ ifeq ($(OS),Windows_NT)
     SHELL_EXT := .bat
     EXE_EXT := .exe
     GREP := findstr
+    GRANT_PERMISSION := echo "Permission Granted"
     UPDATE_BADGE := powershell -ExecutionPolicy Bypass -File scripts\update-badge.ps1
 else
     DETECTED_OS := $(shell uname -s)
@@ -16,6 +17,7 @@ else
     SHELL_EXT := .sh
     EXE_EXT :=
     GREP := grep
+    GRANT_PERMISSION := chmod +x ./scripts/update-badge.sh
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
@@ -68,6 +70,7 @@ update-coverage:
 	@$(CGO_PREFIX) go test ./... -coverprofile=coverage.out
 	@go tool cover -html coverage.out -o coverage.html
 	@go tool cover -func=coverage.out | $(GREP) total
+	@$(GRANT_PERMISSION)
 	@$(UPDATE_BADGE)
 
 screenshots:
