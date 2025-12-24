@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -2276,4 +2277,100 @@ func getProfileGroupByName(field reflect.Value, name string) *middleware.Profile
 		}
 	}
 	return nil
+}
+
+func TestRandomizeScoresHandler_OnlyRandomizesScores_NotRegenerateData(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("failed to get suite ID: %v", err)
+	}
+
+	// Create initial prompts
+	for i := 0; i < 5; i++ {
+		_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", fmt.Sprintf("Prompt %d", i), suiteID, i)
+		if err != nil {
+			t.Fatalf("failed to insert prompt: %v", err)
+		}
+	}
+
+	// Create a model
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "Model1", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	// Set initial scores to all 100
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{"models": ["Model1"], "results": {"Model1": {"scores": [100, 100, 100, 100, 100]}}}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify initial scores are all 100
+	var scores string
+	err = db.QueryRow("SELECT GROUP_CONCAT(score ORDER BY display_order) FROM scores s JOIN prompts p ON s.prompt_id = p.id WHERE s.model_id = (SELECT id FROM models WHERE name = 'Model1')").Scan(&scores)
+	if err != nil {
+		t.Fatalf("failed to query scores: %v", err)
+	}
+	if scores != "100,100,100,100,100" {
+		t.Fatalf("expected initial scores '100,100,100,100,100', got '%s'", scores)
+	}
+
+	// Count initial prompts and models
+	var promptCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
+	if err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+
+	var modelCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&modelCount)
+	if err != nil {
+		t.Fatalf("failed to count models: %v", err)
+	}
+
+	// Call RandomizeScores handler
+	req2 := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr2 := httptest.NewRecorder()
+	DefaultHandler.RandomizeScores(rr2, req2)
+
+	if rr2.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr2.Code)
+	}
+
+	// Verify prompts and models haven't changed
+	var newPromptCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&newPromptCount)
+	if err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+	if newPromptCount != promptCount {
+		t.Errorf("prompt count changed from %d to %d", promptCount, newPromptCount)
+	}
+
+	var newModelCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&newModelCount)
+	if err != nil {
+		t.Fatalf("failed to count models: %v", err)
+	}
+	if newModelCount != modelCount {
+		t.Errorf("model count changed from %d to %d", modelCount, newModelCount)
+	}
+
+	// Verify scores are different (randomized)
+	var newScores string
+	err = db.QueryRow("SELECT GROUP_CONCAT(score ORDER BY display_order) FROM scores s JOIN prompts p ON s.prompt_id = p.id WHERE s.model_id = (SELECT id FROM models WHERE name = 'Model1')").Scan(&newScores)
+	if err != nil {
+		t.Fatalf("failed to query scores: %v", err)
+	}
+	if newScores == scores {
+		t.Error("scores were not randomized")
+	}
 }
