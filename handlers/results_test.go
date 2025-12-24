@@ -2665,3 +2665,49 @@ func TestRefreshResultsHandler_MethodNotAllowed(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
 	}
 }
+
+func TestUpdateMockResultsHandler_PromptsHaveSolutions(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify all prompts have solution field (not NULL)
+	db := middleware.GetDB()
+	rows, err := db.Query("SELECT text, solution FROM prompts")
+	if err != nil {
+		t.Fatalf("failed to query prompts: %v", err)
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
+
+	count := 0
+	for rows.Next() {
+		var text, solution string
+		if err := rows.Scan(&text, &solution); err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+		if solution == "" {
+			// Empty string is OK, NULL is not
+		}
+		count++
+	}
+
+	if count == 0 {
+		t.Error("no prompts found in database")
+	}
+
+	// Also verify we can read prompts via middleware without error
+	prompts := middleware.ReadPrompts()
+	if len(prompts) == 0 {
+		t.Error("ReadPrompts returned empty slice")
+	}
+}

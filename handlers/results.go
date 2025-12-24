@@ -626,9 +626,17 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 		// First create the 5 profiles
 		profileNames := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+		profileDescriptions := map[string]string{
+			"Math":        "Mathematics and logic problems",
+			"Philosophy":  "Philosophical and ethical questions",
+			"Programming": "Programming and software development",
+			"Science":     "Scientific and natural world questions",
+			"Writing":     "Creative and technical writing",
+		}
 		profileIDs := make(map[string]int64)
 		for _, name := range profileNames {
-			result, err := db.Exec("INSERT INTO profiles (name, suite_id) VALUES (?, ?)", name, suiteID)
+			result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)",
+				name, profileDescriptions[name], suiteID)
 			if err != nil {
 				log.Printf("Error inserting mock profile: %v", err)
 				continue
@@ -717,8 +725,8 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 			promptsForProfile := profilePrompts[profileName]
 			for _, text := range promptsForProfile {
-				_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, 'objective', ?)",
-					text, suiteID, displayOrder, profileID)
+				_, err = db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, ?, 'objective', ?)",
+					text, "", suiteID, displayOrder, profileID)
 				if err != nil {
 					log.Printf("Error inserting mock prompt for profile %s: %v", profileName, err)
 				}
