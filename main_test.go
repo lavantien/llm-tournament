@@ -129,7 +129,7 @@ func TestRouter_RootRoute_Redirects(t *testing.T) {
 
 func TestRoutesCount(t *testing.T) {
 	// Ensure we have the expected number of routes
-	expectedCount := 41
+	expectedCount := 42
 	if len(routes) != expectedCount {
 		t.Errorf("expected %d routes, got %d", expectedCount, len(routes))
 	}

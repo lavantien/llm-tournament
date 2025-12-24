@@ -100,8 +100,12 @@ func TestSaveModelResponseHandler_ValidInput(t *testing.T) {
 	// First, create a test model and prompt
 	db := middleware.GetDB()
 	var modelID, promptID int
-	db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID)
-	db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID)
+	if err := db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID); err != nil {
+		t.Fatalf("failed to create test model: %v", err)
+	}
+	if err := db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID); err != nil {
+		t.Fatalf("failed to create test prompt: %v", err)
+	}
 
 	reqBody := map[string]interface{}{
 		"model_id":      modelID,
@@ -137,8 +141,12 @@ func TestSaveModelResponseHandler_UpdateExisting(t *testing.T) {
 	// First, create a test model and prompt
 	db := middleware.GetDB()
 	var modelID, promptID int
-	db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID)
-	db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID)
+	if err := db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID); err != nil {
+		t.Fatalf("failed to create test model: %v", err)
+	}
+	if err := db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID); err != nil {
+		t.Fatalf("failed to create test prompt: %v", err)
+	}
 
 	// Insert initial response
 	_, _ = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text, response_source) VALUES (?, ?, 'original', 'manual')", modelID, promptID)
