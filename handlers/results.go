@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
@@ -161,11 +160,6 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 	models := make([]string, 0, len(results))
 	for model := range results {
 		models = append(models, model)
-	}
-	if len(models) == 0 {
-		// If no results exist, get models from somewhere else if needed
-		// This is just a fallback - you may need to adjust based on your data source
-		models = []string{"Model1", "Model2"} // Example fallback
 	}
 	sort.Slice(models, func(i, j int) bool {
 		return modelScores[models[i]] > modelScores[models[j]]
@@ -427,13 +421,6 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	model := r.URL.Query().Get("model")
 	promptIndexStr := r.URL.Query().Get("prompt")
 
-	// If both model and prompt parameters are missing, redirect to results page
-	if model == "" || promptIndexStr == "" {
-		log.Printf("Missing parameters - model: '%s', prompt: '%s', redirecting to /results", model, promptIndexStr)
-		http.Redirect(w, r, "/results", http.StatusSeeOther)
-		return
-	}
-
 	if r.Method == "POST" {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
@@ -624,207 +611,53 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	prompts := h.DataStore.ReadPrompts()
 
-	// Initialize models slice
-	var models []string
-
-	// Get database connection and suite ID for use throughout
-	db := middleware.GetDB()
-	suiteID, err := middleware.GetCurrentSuiteID()
-	if err != nil || suiteID == 0 {
-		suiteID = 1
-	}
-
-	// If no prompts exist, create mock prompts with profiles
+	// If no prompts exist, create mock prompts
 	if len(prompts) == 0 {
-
-		// Define profiles and their prompts
-		profileDefinitions := map[string][]string{
-			"Math": {
-				"What is the derivative of x^2?",
-				"Explain the Pythagorean theorem",
-				"What is the integral of e^x?",
-				"Define a prime number",
-				"What is Euler's identity?",
-				"Explain linear algebra basics",
-				"What is the square root of -1?",
-				"Describe the Fibonacci sequence",
-				"What is a matrix determinant?",
-				"Explain the concept of infinity",
-			},
-			"Philosophy": {
-				"What is the trolley problem?",
-				"Explain Plato's cave allegory",
-				"What is utilitarianism?",
-				"Describe Kant's categorical imperative",
-				"What is existentialism?",
-				"Explain the ship of Theseus paradox",
-				"What is free will?",
-				"Describe virtue ethics",
-				"What is the mind-body problem?",
-				"Explain social contract theory",
-			},
-			"Programming": {
-				"What is recursion?",
-				"Explain Big O notation",
-				"Write a function to reverse a string",
-				"What is polymorphism?",
-				"Explain the difference between stack and heap",
-				"What is a closure?",
-				"Describe the MVC pattern",
-				"What is concurrency?",
-				"Explain database normalization",
-				"What is a design pattern?",
-			},
-			"Science": {
-				"What is photosynthesis?",
-				"Explain the theory of relativity",
-				"What is Newton's first law?",
-				"Describe the structure of an atom",
-				"What is natural selection?",
-				"Explain the water cycle",
-				"What is the periodic table?",
-				"Describe the greenhouse effect",
-				"What is DNA?",
-				"Explain plate tectonics",
-			},
-			"Writing": {
-				"What is a thesis statement?",
-				"Explain the difference between plot and theme",
-				"What is a metaphor?",
-				"Describe the hero's journey",
-				"What is active vs passive voice?",
-				"Explain first-person vs third-person point of view",
-				"What is alliteration?",
-				"Describe the structure of a persuasive essay",
-				"What is foreshadowing?",
-				"Explain the difference between fiction and non-fiction",
-			},
+		db := middleware.GetDB()
+		suiteID, err := middleware.GetCurrentSuiteID()
+		if err != nil || suiteID == 0 {
+			suiteID = 1
 		}
-
-		// Create profiles first
-		profileIDs := make(map[string]int)
-		for profileName := range profileDefinitions {
-			var profileID int
-			err := db.QueryRow("SELECT id FROM profiles WHERE name = ? AND suite_id = ?", profileName, suiteID).Scan(&profileID)
-			if err == sql.ErrNoRows {
-				result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", 
-					profileName, profileName+" prompts", suiteID)
-				if err != nil {
-					log.Printf("Error inserting profile %s: %v", profileName, err)
-					continue
-				}
-				id, err := result.LastInsertId()
-				if err != nil {
-					log.Printf("Error getting profile ID for %s: %v", profileName, err)
-					continue
-				}
-				profileID = int(id)
-			} else if err != nil {
-				log.Printf("Error querying profile %s: %v", profileName, err)
-				continue
-			}
-			profileIDs[profileName] = profileID
+		mockPrompts := []string{
+			"What is 2 + 2?",
+			"Explain recursion in programming",
+			"What is the capital of France?",
+			"Write a function to reverse a string",
+			"What is photosynthesis?",
 		}
-
-		// Create prompts with profile associations
-		displayOrder := 0
-		for profileName, promptTexts := range profileDefinitions {
-			profileID := profileIDs[profileName]
-			for _, text := range promptTexts {
-				_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, 'objective', ?)", 
-					text, suiteID, displayOrder, profileID)
-				if err != nil {
-					log.Printf("Error inserting mock prompt: %v", err)
-				}
-				displayOrder++
+		for i, text := range mockPrompts {
+			_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", text, suiteID, i)
+			if err != nil {
+				log.Printf("Error inserting mock prompt: %v", err)
 			}
 		}
-
 		prompts = h.DataStore.ReadPrompts()
-		log.Printf("Created %d mock prompts with profiles", len(prompts))
-
-		// Delete all existing models to start fresh
-		_, err = db.Exec("DELETE FROM models WHERE suite_id = ?", suiteID)
-		if err != nil {
-			log.Printf("Error deleting existing models: %v", err)
-		} else {
-			log.Printf("Deleted all existing models for fresh mock data generation")
-		}
-
-		// Create tiered mock models in database
-		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
-			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
-		for i := 0; i < 15; i++ {
-			tier := tiers[i%len(tiers)]
-			num := i/len(tiers) + 1
-			modelName := tier + "-" + strconv.Itoa(num)
-			_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-			if err != nil {
-				log.Printf("Error inserting model %s: %v", modelName, err)
-			}
-		}
-		log.Printf("Created 15 tiered mock models in database")
+		log.Printf("Created %d mock prompts", len(prompts))
 	}
 
-	// Get all model names from database (not from client data)
-	modelRows, err := db.Query("SELECT name FROM models WHERE suite_id = ?", suiteID)
-	if err != nil {
-		log.Printf("Error querying models: %v", err)
-		models = []string{}
-	} else {
-		defer func() {
-			if err := modelRows.Close(); err != nil {
-				log.Printf("Error closing model rows: %v", err)
-			}
-		}()
-		for modelRows.Next() {
-			var name string
-			if err := modelRows.Scan(&name); err != nil {
-				log.Printf("Error scanning model: %v", err)
-				continue
-			}
-			models = append(models, name)
-		}
-	}
-
-	// If no models exist in database, create tiered mock models
+	// Get all model names
+	models := mockData.Models
 	if len(models) == 0 {
-		log.Printf("No models in database - creating tiered mock models")
-		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
-			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
-		for i := 0; i < 15; i++ {
-			tier := tiers[i%len(tiers)]
-			num := i/len(tiers) + 1
-			modelName := tier + "-" + strconv.Itoa(num)
-			_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
-			if err != nil {
-				log.Printf("Error inserting model %s: %v", modelName, err)
-			} else {
-				models = append(models, modelName)
-			}
-		}
-		log.Printf("Created 15 tiered mock models in database")
-	}
-
-	// If still no models after creation attempt, use client data
-	if len(models) == 0 {
-		models = mockData.Models
-		if len(models) == 0 {
-			// If no models passed, use models from existing results
-			for model := range mockData.Results {
-				models = append(models, model)
-			}
+		// If no models passed, use models from existing results
+		for model := range mockData.Results {
+			models = append(models, model)
 		}
 	}
 
 	// Use the client's results directly
 	results := mockData.Results
 
-	// Initialize empty results map if needed
-	if len(results) == 0 {
+	// Generate mock models if both models and results are empty
+	if len(models) == 0 && len(results) == 0 {
 		results = make(map[string]middleware.Result)
-		for _, model := range models {
-			results[model] = middleware.Result{Scores: make([]int, len(prompts))}
+		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
+		for i := 0; i < 15; i++ {
+			tier := tiers[i%len(tiers)]
+			num := i/len(tiers) + 1
+			modelName := tier + "-" + strconv.Itoa(num)
+			models = append(models, modelName)
+			results[modelName] = middleware.Result{Scores: make([]int, len(prompts))}
 		}
 	}
 
@@ -857,7 +690,8 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	// Generate mock responses for each model and prompt combination
 	// Get database for inserting mock responses
-	// db and suiteID are already declared above
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
 	if err != nil {
 		suiteID = 1 // fallback to default suite
 	}
