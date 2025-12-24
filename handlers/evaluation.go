@@ -204,5 +204,29 @@ func SaveModelResponseHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "response_text is required", http.StatusBadRequest)
 		return
 	}
-	// TODO: implement full handler
+
+	// Get database connection
+	db := middleware.GetDB()
+
+	// Insert or update the model response
+	query := `
+		INSERT INTO model_responses (model_id, prompt_id, response_text, response_source)
+		VALUES (?, ?, ?, 'manual')
+		ON CONFLICT(model_id, prompt_id) DO UPDATE SET
+			response_text = excluded.response_text,
+			updated_at = CURRENT_TIMESTAMP
+	`
+	_, err := db.Exec(query, reqBody.ModelID, reqBody.PromptID, reqBody.ResponseText)
+	if err != nil {
+		log.Printf("Error saving model response: %v", err)
+		http.Error(w, "Failed to save response", http.StatusInternalServerError)
+		return
+	}
+
+	// Return success
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Response saved successfully",
+	})
 }
