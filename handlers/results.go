@@ -616,38 +616,118 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	prompts := h.DataStore.ReadPrompts()
 
-	// If no prompts exist, create mock prompts
+	// If no prompts exist, create mock prompts with profiles
 	if len(prompts) == 0 {
 		db := middleware.GetDB()
 		suiteID, err := middleware.GetCurrentSuiteID()
 		if err != nil || suiteID == 0 {
 			suiteID = 1
 		}
-		mockPrompts := []string{
-			"What is 2 + 2?",
-			"Explain recursion in programming",
-			"What is the capital of France?",
-			"Write a function to reverse a string",
-			"What is photosynthesis?",
-		}
-		for i, text := range mockPrompts {
-			_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", text, suiteID, i)
-			if err != nil {
-				log.Printf("Error inserting mock prompt: %v", err)
-			}
-		}
-		prompts = h.DataStore.ReadPrompts()
-		log.Printf("Created %d mock prompts", len(prompts))
 
-		// Create mock profiles
-		profiles := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
-		for _, name := range profiles {
-			_, err = db.Exec("INSERT INTO profiles (name, suite_id) VALUES (?, ?)", name, suiteID)
+		// First create the 5 profiles
+		profileNames := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+		profileIDs := make(map[string]int64)
+		for _, name := range profileNames {
+			result, err := db.Exec("INSERT INTO profiles (name, suite_id) VALUES (?, ?)", name, suiteID)
 			if err != nil {
 				log.Printf("Error inserting mock profile: %v", err)
+				continue
+			}
+			profileID, err := result.LastInsertId()
+			if err != nil {
+				log.Printf("Error getting profile ID: %v", err)
+				continue
+			}
+			profileIDs[name] = profileID
+		}
+		log.Printf("Created %d mock profiles", len(profileNames))
+
+		// Define 10 prompts for each profile
+		profilePrompts := map[string][]string{
+			"Math": {
+				"What is 2 + 2?",
+				"Solve for x: 2x = 10",
+				"What is the derivative of x^2?",
+				"Calculate the area of a circle with radius 5",
+				"What is the square root of 144?",
+				"If f(x) = 3x + 1, what is f(5)?",
+				"What is the Pythagorean theorem?",
+				"Simplify: (x + 2)(x - 3)",
+				"What is 15% of 200?",
+				"What is the sum of angles in a triangle?",
+			},
+			"Philosophy": {
+				"What is the meaning of life?",
+				"Explain Plato's allegory of the cave",
+				"Is free will compatible with determinism?",
+				"What is ethics?",
+				"Describe utilitarianism",
+				"What is consciousness?",
+				"Does objective morality exist?",
+				"Explain the trolley problem",
+				"What is epistemology?",
+				"Can we truly know anything?",
+			},
+			"Programming": {
+				"Write a function to reverse a string",
+				"What is the time complexity of binary search?",
+				"Explain recursion",
+				"What is a closure in JavaScript?",
+				"Write a function to check if a number is prime",
+				"What is the difference between == and ===?",
+				"Explain the concept of Big O notation",
+				"What is a race condition?",
+				"Write a function to merge two sorted arrays",
+				"What is dependency injection?",
+			},
+			"Science": {
+				"What is photosynthesis?",
+				"Explain the theory of evolution",
+				"What is the speed of light?",
+				"Describe the structure of an atom",
+				"What is Newton's first law of motion?",
+				"Explain the water cycle",
+				"What is DNA?",
+				"Describe the process of mitosis",
+				"What is the greenhouse effect?",
+				"Explain the concept of entropy",
+			},
+			"Writing": {
+				"Write a haiku about nature",
+				"Describe your perfect day",
+				"Write a short story about adventure",
+				"What makes a good character?",
+				"Write a persuasive paragraph about climate change",
+				"Describe the taste of chocolate",
+				"Write a metaphor for time",
+				"What is the difference between fiction and non-fiction?",
+				"Write a dialogue between two strangers",
+				"Describe the feeling of nostalgia",
+			},
+		}
+
+		// Create all prompts with their associated profile_id
+		displayOrder := 0
+		for _, profileName := range profileNames {
+			profileID, exists := profileIDs[profileName]
+			if !exists {
+				log.Printf("Profile ID not found for %s", profileName)
+				continue
+			}
+
+			promptsForProfile := profilePrompts[profileName]
+			for _, text := range promptsForProfile {
+				_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, 'objective', ?)",
+					text, suiteID, displayOrder, profileID)
+				if err != nil {
+					log.Printf("Error inserting mock prompt for profile %s: %v", profileName, err)
+				}
+				displayOrder++
 			}
 		}
-		log.Printf("Created %d mock profiles", len(profiles))
+
+		prompts = h.DataStore.ReadPrompts()
+		log.Printf("Created %d mock prompts with profiles", len(prompts))
 	}
 
 	// Get all model names

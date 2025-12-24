@@ -2510,3 +2510,92 @@ func TestRandomizeScoresHandler_ErrorCases(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Start with completely empty database
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify 50 prompts were created (5 profiles × 10 prompts each)
+	db := middleware.GetDB()
+	var promptCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
+	if err != nil {
+		t.Fatalf("failed to query prompt count: %v", err)
+	}
+
+	if promptCount != 50 {
+		t.Errorf("expected 50 prompts to be created in database, got %d", promptCount)
+	}
+
+	// Verify prompts have profiles assigned
+	var promptsWithProfile int
+	err = db.QueryRow("SELECT COUNT(*) FROM prompts p WHERE p.profile_id IS NOT NULL").Scan(&promptsWithProfile)
+	if err != nil {
+		t.Fatalf("failed to query prompts with profiles: %v", err)
+	}
+
+	if promptsWithProfile != 50 {
+		t.Errorf("expected all 50 prompts to have profiles, got %d", promptsWithProfile)
+	}
+
+	// Verify 5 profiles exist
+	var profileCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount)
+	if err != nil {
+		t.Fatalf("failed to query profile count: %v", err)
+	}
+
+	if profileCount != 5 {
+		t.Errorf("expected 5 profiles, got %d", profileCount)
+	}
+
+	// Verify each profile has exactly 10 prompts
+	rows, err := db.Query(`
+		SELECT pr.name, COUNT(p.id) as prompt_count
+		FROM profiles pr
+		LEFT JOIN prompts p ON p.profile_id = pr.id
+		GROUP BY pr.name
+		ORDER BY pr.name
+	`)
+	if err != nil {
+		t.Fatalf("failed to query profile prompt counts: %v", err)
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
+
+	expectedProfiles := map[string]int{
+		"Math":        10,
+		"Philosophy":  10,
+		"Programming": 10,
+		"Science":     10,
+		"Writing":     10,
+	}
+
+	for rows.Next() {
+		var profileName string
+		var count int
+		if err := rows.Scan(&profileName, &count); err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+
+		expectedCount, exists := expectedProfiles[profileName]
+		if !exists {
+			t.Errorf("unexpected profile: %s", profileName)
+		}
+		if count != expectedCount {
+			t.Errorf("profile %s: expected %d prompts, got %d", profileName, expectedCount, count)
+		}
+	}
+}
