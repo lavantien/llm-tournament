@@ -253,6 +253,13 @@
          */
         function generateMockScores() {
             console.log("Generating mock scores...");
+
+            // Confirm with user before proceeding
+            if (!confirm('Are you sure you want to generate mock data? This will override all current scores.')) {
+                console.log('Mock data generation cancelled by user');
+                return;
+            }
+
             // Backup current state before generating new random scores
             backupCurrentState();
     
@@ -441,7 +448,7 @@
             }
             
             // Render the models
-            renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter);
+            renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter, profileGroups);
             
             // Apply styling to data cells after they've been created
             setTimeout(applyDataCellStyling, 50);
@@ -505,7 +512,7 @@
          * @param {Object} passPercentages - Pass percentages by model
          * @param {string} modelFilter - Model filter string
          */
-        function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter) {
+        function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter, profileGroups = []) {
             console.log(`Rendering ${models.length} models to table`);
             
             // Clear the table first
@@ -523,11 +530,12 @@
                     
                     // Create and append the row
                     const row = createModelRow(
-                        model, 
-                        rowCount, 
-                        results[model], 
+                        model,
+                        rowCount,
+                        results[model],
                         totalScores[model] || 0,
-                        passPercentages[model] || 0
+                        passPercentages[model] || 0,
+                        profileGroups
                     );
                     
                     fragment.appendChild(row);
@@ -559,7 +567,7 @@
          * @param {number} passPercentage - Pass percentage
          * @returns {HTMLElement} The created row element
          */
-        function createModelRow(model, rank, modelData, totalScore, passPercentage) {
+        function createModelRow(model, rank, modelData, totalScore, passPercentage, profileGroups = []) {
             const row = document.createElement("tr");
             const promptsCount = {{len .Prompts}} || 0;
             
@@ -585,7 +593,7 @@
                 scores.push(0);
             }
             
-            const scoreCells = createScoreCells(model, scores, promptsCount);
+            const scoreCells = createScoreCells(model, scores, promptsCount, profileGroups);
             
             // Create total score cell with progress bar
             const totalCell = createTotalScoreCell(totalScore, passPercentage);
@@ -605,18 +613,34 @@
          * @param {string} model - Model name
          * @param {Array} scores - Array of scores
          * @param {number} promptsCount - Total number of prompts
+         * @param {Array} profileGroups - Array of profile group data
          * @returns {Array} Array of score cell elements
          */
-        function createScoreCells(model, scores, promptsCount) {
+        function createScoreCells(model, scores, promptsCount, profileGroups = []) {
             const cells = [];
-            
+
+            // Build a set of column indices that need dividers (start of each profile group except first)
+            const dividerColumns = new Set();
+            profileGroups.forEach((group, idx) => {
+                if (idx > 0 && group.startCol >= 0) {
+                    dividerColumns.add(group.startCol);
+                }
+            });
+
             for (let index = 0; index < promptsCount; index++) {
                 const score = scores[index] || 0;
                 const scoreCell = document.createElement("td");
-                
+
                 // Set cell class based on score
                 const scoreClass = getScoreClass(score);
-                scoreCell.className = `score-cell ${scoreClass}`;
+                let cellClass = `score-cell ${scoreClass}`;
+
+                // Add visual guide if this column is at a profile group boundary
+                if (dividerColumns.has(index)) {
+                    cellClass += ' profile-group-divider';
+                }
+
+                scoreCell.className = cellClass;
                 
                 // Set data attributes for styling and interactivity
                 scoreCell.setAttribute('data-prompt-index', index.toString());
@@ -796,7 +820,7 @@
                     cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
                     
                     if (boundary.isStart) {
-                        cell.classList.add('profile-group-start');
+                        cell.classList.add('profile-group-start', 'profile-group-divider');
                         cell.style.borderLeft = `var(--profile-border-width) solid ${boundary.color}`;
                     }
                     
@@ -844,10 +868,10 @@
                         cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
                         
                         if (boundary.isStart) {
-                            cells[i].classList.add('profile-group-start');
+                            cells[i].classList.add('profile-group-start', 'profile-group-divider');
                             // Apply border using CSS variables
                             cells[i].style.setProperty('--profile-color', '#333');
-                            cells[i].style.borderLeft = 
+                            cells[i].style.borderLeft =
                                 `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
                         }
                         

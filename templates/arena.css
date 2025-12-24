@@ -93,6 +93,12 @@
   outline-offset: -2px;
 }
 
+/* Visual guide between profile groups - extends vertically through entire table */
+.score-cell.profile-group-divider {
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
+}
+
 /* Evaluate page score buttons */
 .score-buttons {
   display: flex;
