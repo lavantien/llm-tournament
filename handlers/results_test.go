@@ -1869,7 +1869,10 @@ func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
 	// Initial state: verify no models exist
 	db := middleware.GetDB()
 	var count int
-	db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	if err != nil {
+		t.Fatalf("failed to query model count: %v", err)
+	}
 	if count != 0 {
 		t.Fatalf("expected 0 models initially, got %d", count)
 	}
@@ -1886,7 +1889,10 @@ func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
 	DefaultHandler.UpdateMockResults(rr, req)
 
 	// Verify 15 mock models created
-	db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	if err != nil {
+		t.Fatalf("failed to query model count after generation: %v", err)
+	}
 	if count != 15 {
 		t.Errorf("expected 15 mock models, got %d", count)
 	}
@@ -1896,12 +1902,18 @@ func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to query models: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
 
 	models := []string{}
 	for rows.Next() {
 		var name string
-		rows.Scan(&name)
+		if err := rows.Scan(&name); err != nil {
+			t.Fatalf("failed to scan model name: %v", err)
+		}
 		models = append(models, name)
 	}
 
@@ -1944,12 +1956,18 @@ func TestUpdateMockResultsHandler_GeneratesTierBasedModelNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to query models: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
 
 	models := []string{}
 	for rows.Next() {
 		var name string
-		rows.Scan(&name)
+		if err := rows.Scan(&name); err != nil {
+			t.Fatalf("failed to scan model name: %v", err)
+		}
 		models = append(models, name)
 	}
 
@@ -1984,8 +2002,11 @@ func TestUpdateMockResultsHandler_GeneratesMockResponses(t *testing.T) {
 	// Verify mock responses were created
 	db := middleware.GetDB()
 	var responseCount int
-	db.QueryRow("SELECT COUNT(*) FROM model_responses WHERE response_source = 'mock'").Scan(&responseCount)
-	
+	err := db.QueryRow("SELECT COUNT(*) FROM model_responses WHERE response_source = 'mock'").Scan(&responseCount)
+	if err != nil {
+		t.Fatalf("failed to query response count: %v", err)
+	}
+
 	// Should have 15 models * 1 prompt = 15 mock responses
 	expectedResponses := 15 // models count * prompt count
 	if responseCount < expectedResponses {
@@ -1994,7 +2015,7 @@ func TestUpdateMockResultsHandler_GeneratesMockResponses(t *testing.T) {
 
 	// Verify response text is not empty
 	var responseText string
-	err := db.QueryRow("SELECT response_text FROM model_responses WHERE response_source = 'mock' LIMIT 1").Scan(&responseText)
+	err = db.QueryRow("SELECT response_text FROM model_responses WHERE response_source = 'mock' LIMIT 1").Scan(&responseText)
 	if err != nil {
 		t.Fatalf("failed to query mock response: %v", err)
 	}
