@@ -2444,3 +2444,35 @@ func TestEvaluateResultHandler_RedirectsWhenModelOrPromptMissing(t *testing.T) {
 		})
 	}
 }
+
+func TestRandomizeScoresHandler_WrapperFunction(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("failed to get suite ID: %v", err)
+	}
+
+	// Create a model
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	// Create a prompt
+	_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", "Test prompt", suiteID, 0)
+	if err != nil {
+		t.Fatalf("failed to insert prompt: %v", err)
+	}
+
+	// Call the wrapper function directly
+	req := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr := httptest.NewRecorder()
+	RandomizeScoresHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}
