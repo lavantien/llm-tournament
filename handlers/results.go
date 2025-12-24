@@ -803,3 +803,85 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Mock results with even tier distribution updated successfully")
 }
+
+// RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)
+func RandomizeScoresHandler(w http.ResponseWriter, r *http.Request) {
+	DefaultHandler.RandomizeScores(w, r)
+}
+
+// RandomizeScores randomizes existing scores in the database without creating new models or prompts
+func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
+	log.Println("Handling randomize scores")
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		log.Printf("Error getting suite ID: %v", err)
+		http.Error(w, "Error getting suite ID", http.StatusInternalServerError)
+		return
+	}
+
+	modelRows, err := db.Query("SELECT id, name FROM models WHERE suite_id = ?", suiteID)
+	if err != nil {
+		log.Printf("Error querying models: %v", err)
+		http.Error(w, "Error querying models", http.StatusInternalServerError)
+		return
+	}
+	defer modelRows.Close()
+
+	var models []struct {
+		ID   int
+		Name string
+	}
+
+	for modelRows.Next() {
+		var m struct {
+			ID   int
+			Name string
+		}
+		if err := modelRows.Scan(&m.ID, &m.Name); err != nil {
+			continue
+		}
+		models = append(models, m)
+	}
+
+	promptRows, err := db.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
+	if err != nil {
+		http.Error(w, "Error querying prompts", http.StatusInternalServerError)
+		return
+	}
+	defer promptRows.Close()
+
+	var promptIDs []int
+	for promptRows.Next() {
+		var id int
+		if err := promptRows.Scan(&id); err != nil {
+			continue
+		}
+		promptIDs = append(promptIDs, id)
+	}
+
+	validScores := []int{0, 20, 40, 60, 80, 100}
+	rng := initRand()
+
+	for _, model := range models {
+		for _, promptID := range promptIDs {
+			randomScore := validScores[rng.Intn(len(validScores))]
+			db.Exec(
+				"INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?) "+
+					"ON CONFLICT(model_id, prompt_id) DO UPDATE SET score = excluded.score",
+				model.ID, promptID, randomScore)
+		}
+	}
+
+	h.DataStore.BroadcastResults()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
