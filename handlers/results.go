@@ -500,7 +500,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	db := middleware.GetDB()
 	var modelID int
 	var promptID int
-	
+
 	// Get model_id from model name
 	err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&modelID)
 	if err == nil {
@@ -517,17 +517,17 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	data := struct {
-		PageName       string
-		Model          string
-		PromptIndex    string
-		ScoreOptions   map[string]int
-		CurrentScore   int
-		PromptText     string
-		Solution       string
-		TotalPrompts   int
-		ModelResponse  string
-		ModelID        int
-		PromptID       int
+		PageName      string
+		Model         string
+		PromptIndex   string
+		ScoreOptions  map[string]int
+		CurrentScore  int
+		PromptText    string
+		Solution      string
+		TotalPrompts  int
+		ModelResponse string
+		ModelID       int
+		PromptID      int
 	}{
 		PageName:      templates.PageNameEvaluate,
 		Model:         model,
@@ -633,6 +633,16 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 		}
 		prompts = h.DataStore.ReadPrompts()
 		log.Printf("Created %d mock prompts", len(prompts))
+
+		// Create mock profiles
+		profiles := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+		for _, name := range profiles {
+			_, err = db.Exec("INSERT INTO profiles (name, suite_id) VALUES (?, ?)", name, suiteID)
+			if err != nil {
+				log.Printf("Error inserting mock profile: %v", err)
+			}
+		}
+		log.Printf("Created %d mock profiles", len(profiles))
 	}
 
 	// Get all model names
@@ -722,7 +732,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 				"Duis aute irure dolor in reprehenderit in voluptate velit esse.",
 				"Excepteur sint occaecat cupidatat non proident sunt in culpa.",
 			}
-			
+
 			// Build 3-5 random sentences
 			numSentences := 3 + rand.Intn(3)
 			var responseParts []string
