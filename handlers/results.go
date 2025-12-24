@@ -421,6 +421,11 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	model := r.URL.Query().Get("model")
 	promptIndexStr := r.URL.Query().Get("prompt")
 
+	// Validate required query parameters
+	if model == "" || promptIndexStr == "" {
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		return
+	}
 	if r.Method == "POST" {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
