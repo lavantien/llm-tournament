@@ -624,13 +624,18 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	prompts := h.DataStore.ReadPrompts()
 
+	// Initialize models slice
+	var models []string
+
+	// Get database connection and suite ID for use throughout
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil || suiteID == 0 {
+		suiteID = 1
+	}
+
 	// If no prompts exist, create mock prompts with profiles
 	if len(prompts) == 0 {
-		db := middleware.GetDB()
-		suiteID, err := middleware.GetCurrentSuiteID()
-		if err != nil || suiteID == 0 {
-			suiteID = 1
-		}
 
 		// Define profiles and their prompts
 		profileDefinitions := map[string][]string{
@@ -737,31 +742,89 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 		prompts = h.DataStore.ReadPrompts()
 		log.Printf("Created %d mock prompts with profiles", len(prompts))
-	}
 
-	// Get all model names
-	models := mockData.Models
-	if len(models) == 0 {
-		// If no models passed, use models from existing results
-		for model := range mockData.Results {
-			models = append(models, model)
+		// Delete all existing models to start fresh
+		_, err = db.Exec("DELETE FROM models WHERE suite_id = ?", suiteID)
+		if err != nil {
+			log.Printf("Error deleting existing models: %v", err)
+		} else {
+			log.Printf("Deleted all existing models for fresh mock data generation")
 		}
-	}
 
-	// Use the client's results directly
-	results := mockData.Results
-
-	// Generate mock models if both models and results are empty
-	if len(models) == 0 && len(results) == 0 {
-		results = make(map[string]middleware.Result)
+		// Create tiered mock models in database
 		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
 			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
 		for i := 0; i < 15; i++ {
 			tier := tiers[i%len(tiers)]
 			num := i/len(tiers) + 1
 			modelName := tier + "-" + strconv.Itoa(num)
-			models = append(models, modelName)
-			results[modelName] = middleware.Result{Scores: make([]int, len(prompts))}
+			_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+			if err != nil {
+				log.Printf("Error inserting model %s: %v", modelName, err)
+			}
+		}
+		log.Printf("Created 15 tiered mock models in database")
+	}
+
+	// Get all model names from database (not from client data)
+	modelRows, err := db.Query("SELECT name FROM models WHERE suite_id = ?", suiteID)
+	if err != nil {
+		log.Printf("Error querying models: %v", err)
+		models = []string{}
+	} else {
+		defer func() {
+			if err := modelRows.Close(); err != nil {
+				log.Printf("Error closing model rows: %v", err)
+			}
+		}()
+		for modelRows.Next() {
+			var name string
+			if err := modelRows.Scan(&name); err != nil {
+				log.Printf("Error scanning model: %v", err)
+				continue
+			}
+			models = append(models, name)
+		}
+	}
+
+	// If no models exist in database, create tiered mock models
+	if len(models) == 0 {
+		log.Printf("No models in database - creating tiered mock models")
+		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
+		for i := 0; i < 15; i++ {
+			tier := tiers[i%len(tiers)]
+			num := i/len(tiers) + 1
+			modelName := tier + "-" + strconv.Itoa(num)
+			_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", modelName, suiteID)
+			if err != nil {
+				log.Printf("Error inserting model %s: %v", modelName, err)
+			} else {
+				models = append(models, modelName)
+			}
+		}
+		log.Printf("Created 15 tiered mock models in database")
+	}
+
+	// If still no models after creation attempt, use client data
+	if len(models) == 0 {
+		models = mockData.Models
+		if len(models) == 0 {
+			// If no models passed, use models from existing results
+			for model := range mockData.Results {
+				models = append(models, model)
+			}
+		}
+	}
+
+	// Use the client's results directly
+	results := mockData.Results
+
+	// Initialize empty results map if needed
+	if len(results) == 0 {
+		results = make(map[string]middleware.Result)
+		for _, model := range models {
+			results[model] = middleware.Result{Scores: make([]int, len(prompts))}
 		}
 	}
 
@@ -794,8 +857,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	// Generate mock responses for each model and prompt combination
 	// Get database for inserting mock responses
-	db := middleware.GetDB()
-	suiteID, err := middleware.GetCurrentSuiteID()
+	// db and suiteID are already declared above
 	if err != nil {
 		suiteID = 1 // fallback to default suite
 	}
