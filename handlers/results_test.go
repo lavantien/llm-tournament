@@ -2599,3 +2599,69 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 		}
 	}
 }
+
+func TestResetResultsHandler_MethodNotAllowed(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{
+			{Text: "Prompt 1"},
+		},
+		Results: map[string]middleware.Result{
+			"Model1": {Scores: []int{100}},
+		},
+	}
+	renderer := &testutil.MockRenderer{}
+	handler := NewHandlerWithDeps(mockDS, renderer)
+
+	// Test PUT method (not GET or POST)
+	req := httptest.NewRequest("PUT", "/reset_results", nil)
+	rr := httptest.NewRecorder()
+	handler.ResetResults(rr, req)
+
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
+}
+
+func TestConfirmRefreshResultsHandler_MethodNotAllowed(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{
+			{Text: "Prompt 1"},
+		},
+		Results: map[string]middleware.Result{
+			"Model1": {Scores: []int{100}},
+		},
+	}
+	renderer := &testutil.MockRenderer{}
+	handler := NewHandlerWithDeps(mockDS, renderer)
+
+	// Test PUT method (not GET or POST)
+	req := httptest.NewRequest("PUT", "/confirm_refresh_results", nil)
+	rr := httptest.NewRecorder()
+	handler.ConfirmRefreshResults(rr, req)
+
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
+}
+
+func TestRefreshResultsHandler_MethodNotAllowed(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{
+			{Text: "Prompt 1"},
+		},
+		Results: map[string]middleware.Result{
+			"Model1": {Scores: []int{100}},
+		},
+	}
+	renderer := &testutil.MockRenderer{}
+	handler := NewHandlerWithDeps(mockDS, renderer)
+
+	// Test DELETE method (not GET or POST)
+	req := httptest.NewRequest("DELETE", "/refresh_results", nil)
+	rr := httptest.NewRecorder()
+	handler.RefreshResults(rr, req)
+
+	if rr.Code != http.StatusMethodNotAllowed {
+		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
+	}
+}
