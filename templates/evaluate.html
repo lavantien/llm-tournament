@@ -49,6 +49,15 @@
           <h4>Solution:</h4>
           <div class="markdown-content">{{.Solution}}</div>
       </div>
+      <hr/>
+      <div class="model-response-section">
+          <h4>Model Response:</h4>
+          <textarea id="modelResponse" rows="10" placeholder="Model's response will appear here...">{{.ModelResponse}}</textarea>
+          <div style="margin-top: 10px;">
+              <button type="button" class="action-button" onclick="saveModelResponse()">💾 Save Response</button>
+              <span id="save-status"></span>
+          </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

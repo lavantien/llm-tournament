@@ -276,32 +276,12 @@
             sendDataToServer(newData)
                 .then(data => {
                     console.log('Mock data saved successfully');
-                    
-                    // Use the server-generated data if available
-                    if (data.results && data.models && data.totalScores && data.passPercentages) {
-                        const serverData = {
-                            Results: data.results,
-                            Models: data.models,
-                            TotalScores: data.totalScores,
-                            PassPercentages: data.passPercentages
-                        };
-                        
-                        // Update hidden elements with server data
-                        updateHiddenData(serverData);
-                        
-                        // Update the UI with the server's data
-                        updateResults(serverData);
-                        console.log('UI updated with server-generated data');
-                    } else {
-                        // Fall back to local data if server didn't return the expected format
-                        console.log('Server returned invalid data format, using local calculations');
-                        updateResults(newData);
-                    }
+                    // Reload the page to show new prompts and models
+                    location.reload();
                 })
                 .catch(error => {
                     console.error('Error saving mock data:', error);
-                    // Still update the UI even if the server request fails
-                    updateResults(newData);
+                    alert('Failed to generate mock data. Please try again.');
                 });
         }
 
@@ -912,8 +892,8 @@
             </form>
         </div>
         <div class="title-container">
-            <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data (Models, Scores, Responses)</button>
-            <button class="action-button" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores (Keep Models/Prompts)</button>
+            <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data</button>
+            <button class="action-button" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores</button>
             <button class="action-button" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
         </div>
         <div class="search-container">
