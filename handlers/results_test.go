@@ -2476,3 +2476,37 @@ func TestRandomizeScoresHandler_WrapperFunction(t *testing.T) {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
+
+func TestRandomizeScoresHandler_ErrorCases(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	tests := []struct {
+		name           string
+		method         string
+		expectStatus   int
+	}{
+		{
+			name:           "GET method not allowed",
+			method:         "GET",
+			expectStatus:   http.StatusMethodNotAllowed,
+		},
+		{
+			name:           "PUT method not allowed",
+			method:         "PUT",
+			expectStatus:   http.StatusMethodNotAllowed,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, "/randomize_scores", nil)
+			rr := httptest.NewRecorder()
+			RandomizeScoresHandler(rr, req)
+
+			if rr.Code != tt.expectStatus {
+				t.Errorf("expected status %d, got %d", tt.expectStatus, rr.Code)
+			}
+		})
+	}
+}
