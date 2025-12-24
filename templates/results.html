@@ -304,7 +304,41 @@
                     updateResults(newData);
                 });
         }
-        
+
+        /**
+         * Randomizes scores without changing models or prompts
+         */
+        function randomizeScores() {
+            console.log("Randomizing scores...");
+
+            // Backup current state before randomizing
+            backupCurrentState();
+
+            // Send request to server to randomize scores
+            fetch('/randomize_scores', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to randomize scores');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Scores randomized successfully');
+
+                // Refresh the page to show updated scores
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error randomizing scores:', error);
+                alert('Failed to randomize scores. Please try again.');
+            });
+        }
+
         /**
          * Generates tiered scores for models
          * @param {Array<string>} models - Array of model names
@@ -879,6 +913,7 @@
         </div>
         <div class="title-container">
             <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data (Models, Scores, Responses)</button>
+            <button class="action-button" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores (Keep Models/Prompts)</button>
             <button class="action-button" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
         </div>
         <div class="search-container">
