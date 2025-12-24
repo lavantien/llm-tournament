@@ -259,8 +259,8 @@
             // Retrieve the current models list from the hidden element
             const models = safeJsonParse(document.getElementById('models-data').textContent, []);
             if (models.length === 0) {
-                console.error('Models data is empty');
-                return;
+                console.log('No existing models - backend will create mock models');
+                // Don't return - allow the request to proceed so backend can create models
             }
             
             // Get the number of prompts (using Go template injection)
@@ -878,7 +878,7 @@
             </form>
         </div>
         <div class="title-container">
-            <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Random Mock Scores</button>
+            <button class="action-button" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data (Models, Scores, Responses)</button>
             <button class="action-button" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
         </div>
         <div class="search-container">

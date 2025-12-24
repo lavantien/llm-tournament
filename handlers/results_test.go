@@ -1861,3 +1861,178 @@ func TestExportResultsHandler_WriteError(t *testing.T) {
 		_ = failingWriter.HeaderWritten
 	}
 }
+
+func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Initial state: verify no models exist
+	db := middleware.GetDB()
+	var count int
+	db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	if count != 0 {
+		t.Fatalf("expected 0 models initially, got %d", count)
+	}
+
+	// Add prompts
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	// Use default handler which uses real middleware
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify 15 mock models created
+	db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
+	if count != 15 {
+		t.Errorf("expected 15 mock models, got %d", count)
+	}
+
+	// Verify model names use tier-based pattern
+	rows, err := db.Query("SELECT name FROM models ORDER BY name")
+	if err != nil {
+		t.Fatalf("failed to query models: %v", err)
+	}
+	defer rows.Close()
+
+	models := []string{}
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		models = append(models, name)
+	}
+
+	// Check for expected tier prefixes in model names
+	expectedTiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite"}
+	foundTiers := make(map[string]bool)
+	for _, model := range models {
+		for _, tier := range expectedTiers {
+			if strings.Contains(model, tier) {
+				foundTiers[tier] = true
+				break
+			}
+		}
+	}
+
+	// At least some expected tiers should be present
+	if len(foundTiers) < 3 {
+		t.Errorf("expected tier-based model names (Cosmic, Transcendent, etc.), got: %v", models[:5])
+	}
+}
+
+func TestUpdateMockResultsHandler_GeneratesTierBasedModelNames(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	// Use default handler which uses real middleware
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify model names use tier-based pattern
+	db := middleware.GetDB()
+	rows, err := db.Query("SELECT name FROM models ORDER BY name")
+	if err != nil {
+		t.Fatalf("failed to query models: %v", err)
+	}
+	defer rows.Close()
+
+	models := []string{}
+	for rows.Next() {
+		var name string
+		rows.Scan(&name)
+		models = append(models, name)
+	}
+
+	// Check that at least one model contains 'Cosmic'
+	foundCosmic := false
+	for _, model := range models {
+		if strings.Contains(model, "Cosmic") {
+			foundCosmic = true
+			break
+		}
+	}
+	if !foundCosmic {
+		t.Errorf("expected at least one model to contain 'Cosmic', got: %v", models[:5])
+	}
+}
+
+func TestUpdateMockResultsHandler_GeneratesMockResponses(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	// Use default handler which uses real middleware
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify mock responses were created
+	db := middleware.GetDB()
+	var responseCount int
+	db.QueryRow("SELECT COUNT(*) FROM model_responses WHERE response_source = 'mock'").Scan(&responseCount)
+	
+	// Should have 15 models * 1 prompt = 15 mock responses
+	expectedResponses := 15 // models count * prompt count
+	if responseCount < expectedResponses {
+		t.Errorf("expected at least %d mock responses, got %d", expectedResponses, responseCount)
+	}
+
+	// Verify response text is not empty
+	var responseText string
+	err := db.QueryRow("SELECT response_text FROM model_responses WHERE response_source = 'mock' LIMIT 1").Scan(&responseText)
+	if err != nil {
+		t.Fatalf("failed to query mock response: %v", err)
+	}
+	if len(responseText) == 0 {
+		t.Error("expected mock response text to be non-empty")
+	}
+}
+
+func TestUpdateMockResultsHandler_CreatesModelsInCurrentSuite(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add prompts
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+
+	// Trigger mock generation with empty request (no existing models)
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify the response is successful
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// Verify models were created in the database
+	db := middleware.GetDB()
+	var modelCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM models").Scan(&modelCount)
+	if err != nil {
+		t.Fatalf("failed to query model count: %v", err)
+	}
+
+	// Should have created 15 mock models
+	expectedModels := 15
+	if modelCount != expectedModels {
+		t.Errorf("expected %d models in database, got %d", expectedModels, modelCount)
+	}
+}
