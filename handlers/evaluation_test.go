@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -560,5 +561,72 @@ func TestEvaluateAllHandler_EvaluateAllError(t *testing.T) {
 	// Should return internal server error when EvaluateAll fails
 	if rr.Code != http.StatusInternalServerError {
 		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestSaveModelResponseHandler_ErrorCases(t *testing.T) {
+	cleanup := setupEvaluationTestDB(t)
+	defer cleanup()
+
+	tests := []struct {
+		name           string
+		method         string
+		body           string
+		expectStatus   int
+		expectContains string
+	}{
+		{
+			name:           "GET method not allowed",
+			method:         "GET",
+			expectStatus:   http.StatusMethodNotAllowed,
+			expectContains: "Method not allowed",
+		},
+		{
+			name:           "missing model_id",
+			method:         "POST",
+			body:           `{"prompt_id": 1, "response_text": "test response"}`,
+			expectStatus:   http.StatusBadRequest,
+			expectContains: "model_id is required",
+		},
+		{
+			name:           "missing prompt_id",
+			method:         "POST",
+			body:           `{"model_id": 1, "response_text": "test response"}`,
+			expectStatus:   http.StatusBadRequest,
+			expectContains: "prompt_id is required",
+		},
+		{
+			name:           "missing response_text",
+			method:         "POST",
+			body:           `{"model_id": 1, "prompt_id": 1}`,
+			expectStatus:   http.StatusBadRequest,
+			expectContains: "response_text is required",
+		},
+		{
+			name:           "invalid JSON",
+			method:         "POST",
+			body:           `invalid json`,
+			expectStatus:   http.StatusBadRequest,
+			expectContains: "model_id is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(tt.method, "/save_model_response", strings.NewReader(tt.body))
+			req.Header.Set("Content-Type", "application/json")
+			rr := httptest.NewRecorder()
+
+			SaveModelResponseHandler(rr, req)
+
+			if rr.Code != tt.expectStatus {
+				t.Errorf("expected status %d, got %d", tt.expectStatus, rr.Code)
+			}
+
+			body := rr.Body.String()
+			if !strings.Contains(body, tt.expectContains) {
+				t.Errorf("expected response to contain '%s', got '%s'", tt.expectContains, body)
+			}
+		})
 	}
 }
