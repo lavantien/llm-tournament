@@ -7,6 +7,7 @@ import (
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
+	"encoding/json"
 	"strconv"
 )
 
@@ -177,4 +178,31 @@ func CancelEvaluationHandler(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"message": "Job cancelled",
 	})
+}
+
+// SaveModelResponseHandler saves or updates a model's response for a prompt
+func SaveModelResponseHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqBody struct {
+		ModelID       int    `json:"model_id"`
+		PromptID      int    `json:"prompt_id"`
+		ResponseText  string `json:"response_text"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil || reqBody.ModelID == 0 {
+		http.Error(w, "model_id is required", http.StatusBadRequest)
+		return
+	}
+	if reqBody.PromptID == 0 {
+		http.Error(w, "prompt_id is required", http.StatusBadRequest)
+		return
+	}
+	if reqBody.ResponseText == "" {
+		http.Error(w, "response_text is required", http.StatusBadRequest)
+		return
+	}
+	// TODO: implement full handler
 }

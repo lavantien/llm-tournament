@@ -69,3 +69,25 @@ func TestSaveModelResponseHandler_MissingPromptID(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
 	}
 }
+
+// TestSaveModelResponseHandler_MissingResponseText verifies requests without response_text are rejected
+func TestSaveModelResponseHandler_MissingResponseText(t *testing.T) {
+	cleanup := setupModelResponseTestDB(t)
+	defer cleanup()
+
+	reqBody := map[string]int{
+		"model_id":  1,
+		"prompt_id": 1,
+	}
+	bodyBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest("POST", "/save_model_response", bytes.NewReader(bodyBytes))
+	rr := httptest.NewRecorder()
+	SaveModelResponseHandler(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d, got %d", http.StatusBadRequest, rr.Code)
+	}
+	if rr.Body.String() != "response_text is required\n" {
+		t.Errorf("expected body 'response_text is required\n', got '%s'", rr.Body.String())
+	}
+}
