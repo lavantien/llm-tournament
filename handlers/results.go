@@ -495,24 +495,51 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		solution = prompts[promptIndex].Solution
 	}
 
+	// Get model response if available
+	var modelResponse string
+	db := middleware.GetDB()
+	var modelID int
+	var promptID int
+	
+	// Get model_id from model name
+	err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&modelID)
+	if err == nil {
+		// Get prompt_id from database using prompt index (1-indexed)
+		err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = 1 ORDER BY display_order LIMIT 1 OFFSET ?", promptIndex).Scan(&promptID)
+		if err == nil {
+			// Get the response for this model/prompt pair
+			err = db.QueryRow("SELECT response_text FROM model_responses WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&modelResponse)
+			if err != nil {
+				// No response found, leave empty
+				modelResponse = ""
+			}
+		}
+	}
+
 	data := struct {
-		PageName     string
-		Model        string
-		PromptIndex  string
-		ScoreOptions map[string]int
-		CurrentScore int
-		PromptText   string
-		Solution     string
-		TotalPrompts int
+		PageName       string
+		Model          string
+		PromptIndex    string
+		ScoreOptions   map[string]int
+		CurrentScore   int
+		PromptText     string
+		Solution       string
+		TotalPrompts   int
+		ModelResponse  string
+		ModelID        int
+		PromptID       int
 	}{
-		PageName:     templates.PageNameEvaluate,
-		Model:        model,
-		PromptIndex:  promptIndexStr,
-		ScoreOptions: templates.ScoreOptions,
-		CurrentScore: currentScore,
-		PromptText:   promptText,
-		Solution:     solution,
-		TotalPrompts: len(prompts),
+		PageName:      templates.PageNameEvaluate,
+		Model:         model,
+		PromptIndex:   promptIndexStr,
+		ScoreOptions:  templates.ScoreOptions,
+		CurrentScore:  currentScore,
+		PromptText:    promptText,
+		Solution:      solution,
+		TotalPrompts:  len(prompts),
+		ModelResponse: modelResponse,
+		ModelID:       modelID,
+		PromptID:      promptID,
 	}
 
 	err = h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html")

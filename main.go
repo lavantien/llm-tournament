@@ -51,6 +51,7 @@ var routes = map[string]http.HandlerFunc{
 	"/evaluate/prompt":     handlers.EvaluatePromptHandler,
 	"/evaluation/progress": handlers.EvaluationProgressHandler,
 	"/evaluation/cancel":   handlers.CancelEvaluationHandler,
+	"/save_model_response":  handlers.SaveModelResponseHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) {

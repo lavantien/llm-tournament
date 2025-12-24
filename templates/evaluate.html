@@ -107,6 +107,38 @@
             alert('Failed to copy text. Please try again.');
           });
       }
+      
+      function saveModelResponse() {
+        const responseText = document.getElementById('modelResponse').value;
+        const statusSpan = document.getElementById('save-status');
+        
+        statusSpan.textContent = 'Saving...';
+        
+        fetch('/save_model_response', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model_id: {{.ModelID}},
+            prompt_id: {{.PromptID}},
+            response_text: responseText,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            statusSpan.textContent = 'Saved!';
+            setTimeout(() => statusSpan.textContent = '', 2000);
+          } else {
+            statusSpan.textContent = 'Error: ' + (data.message || 'Unknown error');
+          }
+        })
+        .catch(error => {
+          console.error('Error saving response:', error);
+          statusSpan.textContent = 'Error: Failed to save';
+        });
+      }
     </script>
 </main>
 </div>
