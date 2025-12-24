@@ -2088,3 +2088,35 @@ func TestResultsHandler_ZeroPrompts_DoesNotReturnNaN(t *testing.T) {
 		t.Error("response should contain complete HTML, but template rendering likely failed due to NaN")
 	}
 }
+
+func TestUpdateMockResultsHandler_GeneratesMockPrompts(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Start with completely empty database (no prompts, no models)
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify the response is successful
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// Verify prompts were created in the database
+	db := middleware.GetDB()
+	var promptCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
+	if err != nil {
+		t.Fatalf("failed to query prompt count: %v", err)
+	}
+
+	// Should have created mock prompts
+	if promptCount == 0 {
+		t.Errorf("expected prompts to be created in database, got %d", promptCount)
+	}
+}

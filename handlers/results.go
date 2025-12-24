@@ -616,6 +616,30 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	prompts := h.DataStore.ReadPrompts()
 
+	// If no prompts exist, create mock prompts
+	if len(prompts) == 0 {
+		db := middleware.GetDB()
+		suiteID, err := middleware.GetCurrentSuiteID()
+		if err != nil || suiteID == 0 {
+			suiteID = 1
+		}
+		mockPrompts := []string{
+			"What is 2 + 2?",
+			"Explain recursion in programming",
+			"What is the capital of France?",
+			"Write a function to reverse a string",
+			"What is photosynthesis?",
+		}
+		for i, text := range mockPrompts {
+			_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", text, suiteID, i)
+			if err != nil {
+				log.Printf("Error inserting mock prompt: %v", err)
+			}
+		}
+		prompts = h.DataStore.ReadPrompts()
+		log.Printf("Created %d mock prompts", len(prompts))
+	}
+
 	// Get all model names
 	models := mockData.Models
 	if len(models) == 0 {
