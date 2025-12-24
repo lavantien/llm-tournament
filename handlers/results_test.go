@@ -1831,6 +1831,31 @@ func TestEvaluateResultHandler_GET_RenderError(t *testing.T) {
 	}
 }
 
+func TestEvaluateResultHandler_GET_MissingBothParametersRedirects(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts:      []middleware.Prompt{{Text: "Test prompt"}},
+		CurrentSuite: "test-suite",
+	}
+
+	handler := &Handler{
+		DataStore: mockDS,
+		Renderer:  &MockRenderer{},
+	}
+
+	req := httptest.NewRequest("GET", "/evaluate", nil)
+	rr := httptest.NewRecorder()
+	handler.EvaluateResultHandler(rr, req)
+
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("expected redirect status %d when both parameters missing, got %d", http.StatusSeeOther, rr.Code)
+	}
+
+	location := rr.Header().Get("Location")
+	if location != "/results" {
+		t.Errorf("expected redirect to /results, got %s", location)
+	}
+}
+
 func TestExportResultsHandler_WriteError(t *testing.T) {
 	mockDS := &MockDataStore{
 		Results: map[string]middleware.Result{
@@ -2089,7 +2114,7 @@ func TestResultsHandler_ZeroPrompts_DoesNotReturnNaN(t *testing.T) {
 	}
 }
 
-func TestUpdateMockResultsHandler_GeneratesMockPrompts(t *testing.T) {
+func TestUpdateMockResultsHandler_CreatesProfiles(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
@@ -2107,16 +2132,127 @@ func TestUpdateMockResultsHandler_GeneratesMockPrompts(t *testing.T) {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
 	}
 
-	// Verify prompts were created in the database
+	// Verify profiles were created in the database
+	db := middleware.GetDB()
+	var profileCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount)
+	if err != nil {
+		t.Fatalf("failed to query profile count: %v", err)
+	}
+
+	// Should have created 5 profiles
+	if profileCount != 5 {
+		t.Errorf("expected 5 profiles in database, got %d", profileCount)
+	}
+}
+
+func TestUpdateMockResultsHandler_GeneratesMockPrompts(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// Verify 50 prompts were created (5 profiles x 10 prompts)
 	db := middleware.GetDB()
 	var promptCount int
 	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
 	if err != nil {
 		t.Fatalf("failed to query prompt count: %v", err)
 	}
+	if promptCount != 50 {
+		t.Errorf("expected 50 prompts in database, got %d", promptCount)
+	}
+}
 
-	// Should have created mock prompts
-	if promptCount == 0 {
-		t.Errorf("expected prompts to be created in database, got %d", promptCount)
+func TestUpdateMockResultsHandler_CreatesModelsInDatabase(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Create some existing models first
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("failed to get suite ID: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "OldModel1", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert old model: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "OldModel2", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert old model: %v", err)
+	}
+
+	// Verify old models exist before triggering mock generation
+	var beforeCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&beforeCount)
+	if err != nil {
+		t.Fatalf("failed to query model count before: %v", err)
+	}
+	if beforeCount != 2 {
+		t.Fatalf("expected 2 models before mock generation, got %d", beforeCount)
+	}
+
+	// Trigger mock generation with empty request (no models sent)
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// Verify old models were deleted and 15 new models were created (total 15, not 17)
+	var modelCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&modelCount)
+	if err != nil {
+		t.Fatalf("failed to query model count: %v", err)
+	}
+	if modelCount != 15 {
+		t.Errorf("expected 15 models in database (old ones deleted), got %d", modelCount)
+	}
+
+	// Verify the models have the expected tiered names
+	rows, err := db.Query("SELECT name FROM models ORDER BY name")
+	if err != nil {
+		t.Fatalf("failed to query models: %v", err)
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
+
+	expectedModels := []string{"Celestial-1", "Celestial-2", "Cosmic-1", "Cosmic-2",
+		"Dimensional-1", "Ethereal-1", "Ethereal-2", "Galactic-1",
+		"Infinite-1", "Nebular-1", "Quantum-1", "Stellar-1",
+		"Transcendent-1", "Transcendent-2", "Universal-1"}
+
+	var gotModels []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			t.Fatalf("failed to scan model name: %v", err)
+		}
+		gotModels = append(gotModels, name)
+	}
+	if len(gotModels) != len(expectedModels) {
+		t.Errorf("expected %d models, got %d", len(expectedModels), len(gotModels))
+	}
+	for i, expected := range expectedModels {
+		if i >= len(gotModels) || gotModels[i] != expected {
+			t.Errorf("expected model %d to be %s, got %s", i, expected, gotModels[i])
+		}
 	}
 }

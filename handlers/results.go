@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
@@ -426,6 +427,13 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	model := r.URL.Query().Get("model")
 	promptIndexStr := r.URL.Query().Get("prompt")
 
+	// If both model and prompt parameters are missing, redirect to results page
+	if model == "" || promptIndexStr == "" {
+		log.Printf("Missing parameters - model: '%s', prompt: '%s', redirecting to /results", model, promptIndexStr)
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		return
+	}
+
 	if r.Method == "POST" {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
@@ -616,28 +624,119 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 	prompts := h.DataStore.ReadPrompts()
 
-	// If no prompts exist, create mock prompts
+	// If no prompts exist, create mock prompts with profiles
 	if len(prompts) == 0 {
 		db := middleware.GetDB()
 		suiteID, err := middleware.GetCurrentSuiteID()
 		if err != nil || suiteID == 0 {
 			suiteID = 1
 		}
-		mockPrompts := []string{
-			"What is 2 + 2?",
-			"Explain recursion in programming",
-			"What is the capital of France?",
-			"Write a function to reverse a string",
-			"What is photosynthesis?",
+
+		// Define profiles and their prompts
+		profileDefinitions := map[string][]string{
+			"Math": {
+				"What is the derivative of x^2?",
+				"Explain the Pythagorean theorem",
+				"What is the integral of e^x?",
+				"Define a prime number",
+				"What is Euler's identity?",
+				"Explain linear algebra basics",
+				"What is the square root of -1?",
+				"Describe the Fibonacci sequence",
+				"What is a matrix determinant?",
+				"Explain the concept of infinity",
+			},
+			"Philosophy": {
+				"What is the trolley problem?",
+				"Explain Plato's cave allegory",
+				"What is utilitarianism?",
+				"Describe Kant's categorical imperative",
+				"What is existentialism?",
+				"Explain the ship of Theseus paradox",
+				"What is free will?",
+				"Describe virtue ethics",
+				"What is the mind-body problem?",
+				"Explain social contract theory",
+			},
+			"Programming": {
+				"What is recursion?",
+				"Explain Big O notation",
+				"Write a function to reverse a string",
+				"What is polymorphism?",
+				"Explain the difference between stack and heap",
+				"What is a closure?",
+				"Describe the MVC pattern",
+				"What is concurrency?",
+				"Explain database normalization",
+				"What is a design pattern?",
+			},
+			"Science": {
+				"What is photosynthesis?",
+				"Explain the theory of relativity",
+				"What is Newton's first law?",
+				"Describe the structure of an atom",
+				"What is natural selection?",
+				"Explain the water cycle",
+				"What is the periodic table?",
+				"Describe the greenhouse effect",
+				"What is DNA?",
+				"Explain plate tectonics",
+			},
+			"Writing": {
+				"What is a thesis statement?",
+				"Explain the difference between plot and theme",
+				"What is a metaphor?",
+				"Describe the hero's journey",
+				"What is active vs passive voice?",
+				"Explain first-person vs third-person point of view",
+				"What is alliteration?",
+				"Describe the structure of a persuasive essay",
+				"What is foreshadowing?",
+				"Explain the difference between fiction and non-fiction",
+			},
 		}
-		for i, text := range mockPrompts {
-			_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", text, suiteID, i)
-			if err != nil {
-				log.Printf("Error inserting mock prompt: %v", err)
+
+		// Create profiles first
+		profileIDs := make(map[string]int)
+		for profileName := range profileDefinitions {
+			var profileID int
+			err := db.QueryRow("SELECT id FROM profiles WHERE name = ? AND suite_id = ?", profileName, suiteID).Scan(&profileID)
+			if err == sql.ErrNoRows {
+				result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", 
+					profileName, profileName+" prompts", suiteID)
+				if err != nil {
+					log.Printf("Error inserting profile %s: %v", profileName, err)
+					continue
+				}
+				id, err := result.LastInsertId()
+				if err != nil {
+					log.Printf("Error getting profile ID for %s: %v", profileName, err)
+					continue
+				}
+				profileID = int(id)
+			} else if err != nil {
+				log.Printf("Error querying profile %s: %v", profileName, err)
+				continue
+			}
+			profileIDs[profileName] = profileID
+		}
+
+		// Create prompts with profile associations
+		displayOrder := 0
+		for profileName, promptTexts := range profileDefinitions {
+			profileID := profileIDs[profileName]
+			for _, text := range promptTexts {
+				_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, 'objective', ?)", 
+					text, suiteID, displayOrder, profileID)
+				if err != nil {
+					log.Printf("Error inserting mock prompt: %v", err)
+				}
+				displayOrder++
 			}
 		}
+
 		prompts = h.DataStore.ReadPrompts()
-		log.Printf("Created %d mock prompts", len(prompts))
+		log.Printf("Created %d mock prompts with profiles", len(prompts))
 	}
 
 	// Get all model names

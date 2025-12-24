@@ -209,7 +209,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 
 	// Query to get prompts with profile names - ensure distinct results
 	query := `
-	SELECT p.text, p.solution, COALESCE(pr.name, '') as profile_name, p.display_order
+	SELECT p.text, COALESCE(p.solution, '') as solution, COALESCE(pr.name, '') as profile_name, p.display_order
 	FROM prompts p
 	LEFT JOIN profiles pr ON p.profile_id = pr.id
 	WHERE p.suite_id = ?
