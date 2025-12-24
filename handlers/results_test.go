@@ -2374,3 +2374,73 @@ func TestRandomizeScoresHandler_OnlyRandomizesScores_NotRegenerateData(t *testin
 		t.Error("scores were not randomized")
 	}
 }
+
+func TestEvaluateResultHandler_RedirectsWhenModelOrPromptMissing(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{
+			{Text: "Prompt 1"},
+			{Text: "Prompt 2"},
+		},
+		Results: map[string]middleware.Result{
+			"Model1": {Scores: []int{100, 80}},
+		},
+	}
+	renderer := &testutil.MockRenderer{}
+	handler := NewHandlerWithDeps(mockDS, renderer)
+
+	tests := []struct {
+		name           string
+		url            string
+		expectRedirect bool
+		expectLocation string
+	}{
+		{
+			name:           "missing both model and prompt",
+			url:            "/evaluate",
+			expectRedirect: true,
+			expectLocation: "/results",
+		},
+		{
+			name:           "missing model",
+			url:            "/evaluate?prompt=0",
+			expectRedirect: true,
+			expectLocation: "/results",
+		},
+		{
+			name:           "missing prompt",
+			url:            "/evaluate?model=Model1",
+			expectRedirect: true,
+			expectLocation: "/results",
+		},
+		{
+			name:           "empty model parameter",
+			url:            "/evaluate?model=&prompt=0",
+			expectRedirect: true,
+			expectLocation: "/results",
+		},
+		{
+			name:           "empty prompt parameter",
+			url:            "/evaluate?model=Model1&prompt=",
+			expectRedirect: true,
+			expectLocation: "/results",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", tt.url, nil)
+			rr := httptest.NewRecorder()
+			handler.EvaluateResultHandler(rr, req)
+
+			if tt.expectRedirect {
+				if rr.Code != http.StatusSeeOther {
+					t.Errorf("expected redirect status %d, got %d", http.StatusSeeOther, rr.Code)
+				}
+				location := rr.Header().Get("Location")
+				if location != tt.expectLocation {
+					t.Errorf("expected redirect to '%s', got '%s'", tt.expectLocation, location)
+				}
+			}
+		})
+	}
+}
