@@ -2120,3 +2120,60 @@ func TestUpdateMockResultsHandler_GeneratesMockPrompts(t *testing.T) {
 		t.Errorf("expected prompts to be created in database, got %d", promptCount)
 	}
 }
+
+func TestUpdateMockResultsHandler_CreatesProfiles(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Start with completely empty database (no prompts, no models)
+
+	// Trigger mock generation with empty request
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// Verify 5 profiles were created
+	db := middleware.GetDB()
+	var profileCount int
+	err := db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount)
+	if err != nil {
+		t.Fatalf("failed to query profile count: %v", err)
+	}
+
+	if profileCount != 5 {
+		t.Errorf("expected 5 profiles to be created in database, got %d", profileCount)
+	}
+
+	// Verify profile names
+	rows, err := db.Query("SELECT name FROM profiles ORDER BY name")
+	if err != nil {
+		t.Fatalf("failed to query profiles: %v", err)
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			t.Logf("warning: failed to close rows: %v", err)
+		}
+	}()
+
+	var profiles []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			t.Fatalf("failed to scan profile name: %v", err)
+		}
+		profiles = append(profiles, name)
+	}
+
+	expectedProfiles := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+	if len(profiles) != len(expectedProfiles) {
+		t.Fatalf("expected %d profiles, got %d", len(expectedProfiles), len(profiles))
+	}
+
+	for i, expected := range expectedProfiles {
+		if profiles[i] != expected {
+			t.Errorf("expected profile %d to be '%s', got '%s'", i, expected, profiles[i])
+		}
+	}
+}
