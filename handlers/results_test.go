@@ -2057,3 +2057,34 @@ func TestUpdateMockResultsHandler_CreatesModelsInCurrentSuite(t *testing.T) {
 		t.Errorf("expected %d models in database, got %d", expectedModels, modelCount)
 	}
 }
+
+func TestResultsHandler_ZeroPrompts_DoesNotReturnNaN(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add results but NO prompts - this causes NaN in pass percentage calculation
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
+		"TestModel": {Scores: []int{}}, // Empty scores because no prompts
+	})
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+
+	ResultsHandler(rr, req)
+
+	// When NaN occurs, the response body is incomplete/empty
+	body := rr.Body.String()
+
+	// Debug: print the body to see what we got
+	t.Logf("Response body length: %d", len(body))
+	t.Logf("Response body preview: %s", body[:min(500, len(body))])
+
+	// The template will fail to render properly when NaN is in PassPercentages
+	// Check that the response is actually complete and valid HTML
+	if !strings.Contains(body, "</html>") {
+		t.Error("response should contain complete HTML, but template rendering likely failed due to NaN")
+	}
+}

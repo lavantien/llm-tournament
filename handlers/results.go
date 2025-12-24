@@ -229,7 +229,12 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 		for _, score := range result.Scores {
 			totalScore += score
 		}
-		modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		// Avoid division by zero when there are no prompts
+		if len(prompts) > 0 {
+			modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		} else {
+			modelPassPercentages[model] = 0
+		}
 		modelTotalScores[model] = totalScore
 	}
 
@@ -623,6 +628,20 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	// Use the client's results directly
 	results := mockData.Results
 
+	// Generate mock models if both models and results are empty
+	if len(models) == 0 && len(results) == 0 {
+		results = make(map[string]middleware.Result)
+		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
+		for i := 0; i < 15; i++ {
+			tier := tiers[i%len(tiers)]
+			num := i/len(tiers) + 1
+			modelName := tier + "-" + strconv.Itoa(num)
+			models = append(models, modelName)
+			results[modelName] = middleware.Result{Scores: make([]int, len(prompts))}
+		}
+	}
+
 	// Validate that all scores are legitimate values: 0, 20, 40, 60, 80, 100
 	for model, result := range results {
 		for i, score := range result.Scores {
@@ -650,6 +669,62 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate mock responses for each model and prompt combination
+	// Get database for inserting mock responses
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		suiteID = 1 // fallback to default suite
+	}
+
+	// Get all prompts for response generation
+	for _, modelName := range models {
+		// Get model ID
+		var modelID int
+		err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&modelID)
+		if err != nil {
+			continue // model might not exist yet
+		}
+
+		// Generate mock response for each prompt
+		for promptIdx := range prompts {
+			var promptID int
+			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?",
+				suiteID, promptIdx).Scan(&promptID)
+			if err != nil {
+				continue
+			}
+
+			// Generate Lorem ipsum mock response
+			loremPhrases := []string{
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+				"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+				"Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+				"Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+				"Excepteur sint occaecat cupidatat non proident sunt in culpa.",
+			}
+			
+			// Build 3-5 random sentences
+			numSentences := 3 + rand.Intn(3)
+			var responseParts []string
+			for i := 0; i < numSentences; i++ {
+				responseParts = append(responseParts, loremPhrases[rand.Intn(len(loremPhrases))])
+			}
+			mockResponse := strings.Join(responseParts, " ")
+
+			// Insert or update mock response
+			_, err = db.Exec(
+				"INSERT INTO model_responses (model_id, prompt_id, response_text, response_source) "+
+					"VALUES (?, ?, ?, 'mock') "+
+					"ON CONFLICT(model_id, prompt_id) DO UPDATE SET "+
+					"response_text = excluded.response_text, response_source = 'mock', updated_at = CURRENT_TIMESTAMP",
+				modelID, promptID, mockResponse)
+			if err != nil {
+				log.Printf("Error inserting mock response for model %s prompt %d: %v", modelName, promptIdx, err)
+			}
+		}
+	}
+
 	// Broadcast the updated results to all connected clients
 	h.DataStore.BroadcastResults()
 
@@ -664,7 +739,12 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 			totalScore += score
 		}
 		totalScores[model] = totalScore
-		passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		// Avoid division by zero when there are no prompts
+		if len(prompts) > 0 {
+			passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+		} else {
+			passPercentages[model] = 0
+		}
 
 		log.Printf("Model %s: total score = %d, pass percentage = %.2f%%",
 			model, totalScore, passPercentages[model])
