@@ -2177,3 +2177,103 @@ func TestUpdateMockResultsHandler_CreatesProfiles(t *testing.T) {
 		}
 	}
 }
+
+func TestResultsHandler_ProfileGroups_ColumnIndices_MultipleProfiles(t *testing.T) {
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{
+			{Text: "Math Prompt 1", Profile: "Math"},
+			{Text: "Math Prompt 2", Profile: "Math"},
+			{Text: "Science Prompt 1", Profile: "Science"},
+			{Text: "Science Prompt 2", Profile: "Science"},
+			{Text: "Writing Prompt 1", Profile: "Writing"},
+		},
+		Profiles: []middleware.Profile{
+			{Name: "Math", Description: "Math problems"},
+			{Name: "Science", Description: "Science questions"},
+			{Name: "Writing", Description: "Writing tasks"},
+		},
+		Results: map[string]middleware.Result{
+			"Model1": {Scores: []int{100, 100, 100, 100, 100}},
+		},
+	}
+	renderer := &testutil.MockRenderer{}
+	handler := NewHandlerWithDeps(mockDS, renderer)
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	handler.Results(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	if len(renderer.RenderCalls) != 1 {
+		t.Fatalf("expected 1 render call, got %d", len(renderer.RenderCalls))
+	}
+
+	data := renderer.RenderCalls[0].Data
+	val := reflect.ValueOf(data)
+	if val.Kind() != reflect.Struct {
+		t.Fatalf("expected struct template data, got %T", data)
+	}
+
+	field := val.FieldByName("ProfileGroups")
+	if !field.IsValid() {
+		t.Fatalf("expected ProfileGroups field on template data")
+	}
+
+	// Verify we have 3 profile groups
+	if field.Len() != 3 {
+		t.Fatalf("expected 3 profile groups, got %d", field.Len())
+	}
+
+	// Check Math profile (first 2 prompts: indices 0-1)
+	mathGroup := getProfileGroupByName(field, "Math")
+	if mathGroup == nil {
+		t.Fatal("Math profile group not found")
+	}
+	if mathGroup.StartCol != 0 {
+		t.Errorf("expected Math StartCol=0, got %d", mathGroup.StartCol)
+	}
+	if mathGroup.EndCol != 1 {
+		t.Errorf("expected Math EndCol=1, got %d", mathGroup.EndCol)
+	}
+
+	// Check Science profile (next 2 prompts: indices 2-3)
+	scienceGroup := getProfileGroupByName(field, "Science")
+	if scienceGroup == nil {
+		t.Fatal("Science profile group not found")
+	}
+	if scienceGroup.StartCol != 2 {
+		t.Errorf("expected Science StartCol=2, got %d", scienceGroup.StartCol)
+	}
+	if scienceGroup.EndCol != 3 {
+		t.Errorf("expected Science EndCol=3, got %d", scienceGroup.EndCol)
+	}
+
+	// Check Writing profile (last prompt: index 4)
+	writingGroup := getProfileGroupByName(field, "Writing")
+	if writingGroup == nil {
+		t.Fatal("Writing profile group not found")
+	}
+	if writingGroup.StartCol != 4 {
+		t.Errorf("expected Writing StartCol=4, got %d", writingGroup.StartCol)
+	}
+	if writingGroup.EndCol != 4 {
+		t.Errorf("expected Writing EndCol=4, got %d", writingGroup.EndCol)
+	}
+}
+
+// Helper function to get profile group by name
+func getProfileGroupByName(field reflect.Value, name string) *middleware.ProfileGroup {
+	for i := 0; i < field.Len(); i++ {
+		pg, ok := field.Index(i).Interface().(*middleware.ProfileGroup)
+		if !ok {
+			continue
+		}
+		if pg.Name == name {
+			return pg
+		}
+	}
+	return nil
+}
