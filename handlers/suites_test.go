@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
-	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -390,7 +389,7 @@ func TestSelectPromptSuiteHandler_WithDataDir(t *testing.T) {
 	defer cleanup()
 
 	// Ensure data directory exists
-	if err := os.MkdirAll("data", 0755); err != nil {
+	if err := os.MkdirAll("data", 0o755); err != nil {
 		t.Fatalf("failed to create data directory: %v", err)
 	}
 
@@ -427,7 +426,7 @@ func TestDeletePromptSuiteHandler_POST_CurrentSuiteReset(t *testing.T) {
 	defer cleanup()
 
 	// Ensure data directory exists
-	if err := os.MkdirAll("data", 0755); err != nil {
+	if err := os.MkdirAll("data", 0o755); err != nil {
 		t.Fatalf("failed to create data directory: %v", err)
 	}
 

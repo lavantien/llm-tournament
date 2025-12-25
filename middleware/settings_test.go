@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"testing"
-
 	"llm-tournament/testutil"
+	"testing"
 )
 
 func TestGetSetting(t *testing.T) {

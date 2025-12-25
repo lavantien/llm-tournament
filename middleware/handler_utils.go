@@ -2,10 +2,9 @@ package middleware
 
 import (
 	"encoding/json"
+	"llm-tournament/templates"
 	"log"
 	"net/http"
-
-	"llm-tournament/templates"
 )
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, data interface{}) {

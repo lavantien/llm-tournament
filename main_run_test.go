@@ -3,13 +3,12 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"llm-tournament/middleware"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"reflect"
 	"testing"
-
-	"llm-tournament/middleware"
 )
 
 func TestRun_MigrateResults_UsesMigratedMap(t *testing.T) {

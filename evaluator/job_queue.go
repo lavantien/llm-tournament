@@ -106,7 +106,6 @@ func (jq *JobQueue) Enqueue(job *EvaluationJob) error {
 		INSERT INTO evaluation_jobs (suite_id, job_type, target_id, status, progress_total, estimated_cost_usd)
 		VALUES (?, ?, ?, 'pending', ?, ?)
 	`, job.SuiteID, job.JobType, job.TargetID, job.ProgressTotal, job.EstimatedCost)
-
 	if err != nil {
 		return fmt.Errorf("failed to insert job: %w", err)
 	}
@@ -155,7 +154,6 @@ func (jq *JobQueue) GetJob(jobID int) (*EvaluationJob, error) {
 		&job.ProgressCurrent, &job.ProgressTotal, &job.EstimatedCost, &job.ActualCost,
 		&job.ErrorMessage, &job.CreatedAt, &startedAt, &completedAt,
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +206,6 @@ func (jq *JobQueue) resumePendingJobs() {
 		WHERE status = 'pending' OR status = 'running'
 		ORDER BY created_at
 	`)
-
 	if err != nil {
 		log.Printf("Failed to query pending jobs: %v", err)
 		return

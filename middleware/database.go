@@ -12,16 +12,21 @@ import (
 
 var db *sql.DB
 
-var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
-var sqlOpen = sql.Open
-var execPragmas = func(conn *sql.DB) error {
-	_, err := conn.Exec(`PRAGMA journal_mode = WAL;
+var (
+	lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
+	sqlOpen      = sql.Open
+	execPragmas  = func(conn *sql.DB) error {
+		_, err := conn.Exec(`PRAGMA journal_mode = WAL;
                      PRAGMA synchronous = NORMAL;
                      PRAGMA foreign_keys = ON;`)
-	return err
-}
-var createTablesFunc = createTables
-var dbBegin = func() (*sql.Tx, error) { return db.Begin() }
+		return err
+	}
+)
+
+var (
+	createTablesFunc = createTables
+	dbBegin          = func() (*sql.Tx, error) { return db.Begin() }
+)
 
 // GetDB returns the database connection
 func GetDB() *sql.DB {
@@ -32,7 +37,7 @@ func GetDB() *sql.DB {
 func InitDB(dbPath string) error {
 	// Ensure data directory exists
 	dataDir := filepath.Dir(dbPath)
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create data directory: %w", err)
 	}
 

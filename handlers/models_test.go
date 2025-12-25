@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
-	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )

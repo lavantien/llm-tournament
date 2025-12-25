@@ -1,11 +1,10 @@
 package main
 
 import (
+	"llm-tournament/middleware"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"llm-tournament/middleware"
 
 	_ "github.com/mattn/go-sqlite3"
 )

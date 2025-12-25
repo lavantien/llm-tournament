@@ -1,13 +1,12 @@
 package main
 
 import (
+	"llm-tournament/middleware"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"llm-tournament/middleware"
 )
 
 func TestDefaultConfig(t *testing.T) {

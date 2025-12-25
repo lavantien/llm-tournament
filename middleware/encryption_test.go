@@ -4,11 +4,10 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
+	"llm-tournament/testutil"
 	"os"
 	"strings"
 	"testing"
-
-	"llm-tournament/testutil"
 )
 
 func TestGetEncryptionKey(t *testing.T) {

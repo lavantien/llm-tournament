@@ -2,9 +2,8 @@ package handlers
 
 import (
 	"html/template"
-	"net/http"
-
 	"llm-tournament/middleware"
+	"net/http"
 )
 
 // MockDataStore implements middleware.DataStore for handler testing with error injection
@@ -43,9 +42,11 @@ func (m *MockDataStore) WritePrompts(prompts []middleware.Prompt) error {
 	m.Prompts = prompts
 	return nil
 }
+
 func (m *MockDataStore) ReadPromptSuite(suiteName string) ([]middleware.Prompt, error) {
 	return m.Prompts, nil
 }
+
 func (m *MockDataStore) WritePromptSuite(suiteName string, prompts []middleware.Prompt) error {
 	m.Prompts = prompts
 	return nil
@@ -60,12 +61,14 @@ func (m *MockDataStore) WriteProfiles(profiles []middleware.Profile) error {
 	m.Profiles = profiles
 	return nil
 }
+
 func (m *MockDataStore) ReadResults() map[string]middleware.Result {
 	if m.Results == nil {
 		return make(map[string]middleware.Result)
 	}
 	return m.Results
 }
+
 func (m *MockDataStore) WriteResults(suiteName string, results map[string]middleware.Result) error {
 	if m.WriteResultsFunc != nil {
 		return m.WriteResultsFunc(suiteName, results)
@@ -73,12 +76,14 @@ func (m *MockDataStore) WriteResults(suiteName string, results map[string]middle
 	m.Results = results
 	return nil
 }
+
 func (m *MockDataStore) GetSetting(key string) (string, error) {
 	if m.Settings != nil {
 		return m.Settings[key], nil
 	}
 	return "", nil
 }
+
 func (m *MockDataStore) SetSetting(key, value string) error {
 	if m.Settings == nil {
 		m.Settings = make(map[string]string)
@@ -93,12 +98,14 @@ func (m *MockDataStore) SetAPIKey(provider, key string) error {
 	}
 	return nil
 }
+
 func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) {
 	if m.GetMaskedAPIKeysFunc != nil {
 		return m.GetMaskedAPIKeysFunc()
 	}
 	return map[string]string{}, nil
 }
+
 func (m *MockDataStore) BroadcastResults() {
 	if m.BroadcastResultsFunc != nil {
 		m.BroadcastResultsFunc()

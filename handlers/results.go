@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"llm-tournament/middleware"
+	"llm-tournament/templates"
 	"log"
 	"math/rand"
 	"net/http"
@@ -10,9 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"llm-tournament/middleware"
-	"llm-tournament/templates"
 )
 
 // min returns the smaller of x or y
@@ -250,6 +249,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 		SearchQuery     string
 		ProfileGroups   []*middleware.ProfileGroup
 		OrderedPrompts  []GroupedPrompt
+		CurrentPath     string
 	}{
 		PageName:        pageName,
 		Prompts:         promptTexts,
@@ -262,6 +262,7 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 		SearchQuery:     searchQuery,
 		ProfileGroups:   profileGroups,
 		OrderedPrompts:  orderedPrompts,
+		CurrentPath:     "/results",
 	}
 
 	err := h.Renderer.Render(w, "results.html", templates.FuncMap, templateData, "templates/results.html", "templates/nav.html")
@@ -533,6 +534,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		ModelResponse string
 		ModelID       int
 		PromptID      int
+		CurrentPath   string
 	}{
 		PageName:      templates.PageNameEvaluate,
 		Model:         model,
@@ -545,6 +547,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		ModelResponse: modelResponse,
 		ModelID:       modelID,
 		PromptID:      promptID,
+		CurrentPath:   "/evaluate",
 	}
 
 	err = h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html")
@@ -650,67 +653,71 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("Created %d mock profiles", len(profileNames))
 
-		// Define 10 prompts for each profile
-		profilePrompts := map[string][]string{
+		// Define 10 prompts with solutions for each profile
+		type PromptWithSolution struct {
+			Text     string
+			Solution string
+		}
+		profilePrompts := map[string][]PromptWithSolution{
 			"Math": {
-				"What is 2 + 2?",
-				"Solve for x: 2x = 10",
-				"What is the derivative of x^2?",
-				"Calculate the area of a circle with radius 5",
-				"What is the square root of 144?",
-				"If f(x) = 3x + 1, what is f(5)?",
-				"What is the Pythagorean theorem?",
-				"Simplify: (x + 2)(x - 3)",
-				"What is 15% of 200?",
-				"What is the sum of angles in a triangle?",
+				{"What is 2 + 2?", "The answer is **4**."},
+				{"Solve for x: 2x = 10", "Divide both sides by 2: x = **5**"},
+				{"What is the derivative of x^2?", "Using the power rule: **2x**"},
+				{"Calculate the area of a circle with radius 5", "Area = πr² = π × 5² = **25π** or approximately **78.54** square units"},
+				{"What is the square root of 144?", "**12**"},
+				{"If f(x) = 3x + 1, what is f(5)?", "f(5) = 3(5) + 1 = **16**"},
+				{"What is the Pythagorean theorem?", "a² + b² = c², where c is the hypotenuse of a right triangle"},
+				{"Simplify: (x + 2)(x - 3)", "x² - 3x + 2x - 6 = **x² - x - 6**"},
+				{"What is 15% of 200?", "0.15 × 200 = **30**"},
+				{"What is the sum of angles in a triangle?", "**180 degrees**"},
 			},
 			"Philosophy": {
-				"What is the meaning of life?",
-				"Explain Plato's allegory of the cave",
-				"Is free will compatible with determinism?",
-				"What is ethics?",
-				"Describe utilitarianism",
-				"What is consciousness?",
-				"Does objective morality exist?",
-				"Explain the trolley problem",
-				"What is epistemology?",
-				"Can we truly know anything?",
+				{"What is the meaning of life?", "A profound philosophical question with many perspectives including: finding purpose, creating meaning, seeking happiness, or serving others."},
+				{"Explain Plato's allegory of the cave", "Plato's allegory describes prisoners chained in a cave seeing only shadows. One escapes to see reality (the sun), representing enlightenment and the philosopher's journey from ignorance to knowledge."},
+				{"Is free will compatible with determinism?", "A central debate in philosophy. Compatibilists argue free will and determinism can coexist, while incompatibilists believe they cannot."},
+				{"What is ethics?", "The branch of philosophy studying morality, including principles of right and wrong conduct, moral values, and how we should live."},
+				{"Describe utilitarianism", "An ethical theory stating the best action maximizes overall happiness or utility - 'the greatest good for the greatest number.'"},
+				{"What is consciousness?", "The subjective experience of awareness, qualia, and self-reflective thought - one of philosophy's 'hard problems.'"},
+				{"Does objective morality exist?", "Moral realists argue yes; moral relativists disagree. This debate examines whether moral truths are independent of human opinion."},
+				{"Explain the trolley problem", "A thought experiment: do you pull a lever to kill one person and save five? Explores utilitarianism vs. deontological ethics."},
+				{"What is epistemology?", "The philosophical study of knowledge - its nature, origin, limits, and justification."},
+				{"Can we truly know anything?", "Skeptical questioning that challenges certainty. Responses range from radical skepticism to pragmatic acceptance of justified true belief."},
 			},
 			"Programming": {
-				"Write a function to reverse a string",
-				"What is the time complexity of binary search?",
-				"Explain recursion",
-				"What is a closure in JavaScript?",
-				"Write a function to check if a number is prime",
-				"What is the difference between == and ===?",
-				"Explain the concept of Big O notation",
-				"What is a race condition?",
-				"Write a function to merge two sorted arrays",
-				"What is dependency injection?",
+				{"Write a function to reverse a string", "```python\ndef reverse_string(s):\n    return s[::-1]\n```"},
+				{"What is the time complexity of binary search?", "**O(log n)** - the search space is halved each iteration."},
+				{"Explain recursion", "A function that calls itself to solve smaller instances of the same problem. Requires base case(s) and recursive case(s)."},
+				{"What is a closure in JavaScript?", "A function bundled with its lexical environment. Closures remember variables from their outer scope even after the outer function returns."},
+				{"Write a function to check if a number is prime", "```python\ndef is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n```"},
+				{"What is the difference between == and ===?", "In JavaScript, `==` checks equality with type coercion, while `===` checks strict equality without type coercion."},
+				{"Explain the concept of Big O notation", "A mathematical notation describing algorithm efficiency as input size grows, focusing on worst-case time and space complexity."},
+				{"What is a race condition?", "A bug where output depends on the timing of uncontrollable events, often occurring in concurrent programming when multiple threads access shared data."},
+				{"Write a function to merge two sorted arrays", "```python\ndef merge_sorted_arrays(arr1, arr2):\n    result = []\n    i = j = 0\n    while i < len(arr1) and j < len(arr2):\n        if arr1[i] <= arr2[j]:\n            result.append(arr1[i])\n            i += 1\n        else:\n            result.append(arr2[j])\n            j += 1\n    result.extend(arr1[i:])\n    result.extend(arr2[j:])\n    return result\n```"},
+				{"What is dependency injection?", "A design pattern where dependencies are provided to a class rather than created within it, improving testability and loose coupling."},
 			},
 			"Science": {
-				"What is photosynthesis?",
-				"Explain the theory of evolution",
-				"What is the speed of light?",
-				"Describe the structure of an atom",
-				"What is Newton's first law of motion?",
-				"Explain the water cycle",
-				"What is DNA?",
-				"Describe the process of mitosis",
-				"What is the greenhouse effect?",
-				"Explain the concept of entropy",
+				{"What is photosynthesis?", "The process by which plants convert light energy (sunlight), CO₂, and water into glucose and oxygen. Equation: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂"},
+				{"Explain the theory of evolution", "The scientific theory that species change over time through natural selection, where organisms with advantageous traits are more likely to survive and reproduce."},
+				{"What is the speed of light?", "**299,792,458 meters per second** in a vacuum, denoted as **c**."},
+				{"Describe the structure of an atom", "An atom consists of a nucleus containing protons and neutrons, surrounded by electrons in electron shells/orbitals."},
+				{"What is Newton's first law of motion?", "An object at rest stays at rest, and an object in motion stays in motion at constant velocity, unless acted upon by an external force (law of inertia)."},
+				{"Explain the water cycle", "The continuous cycle of water evaporation, condensation (forming clouds), precipitation (rain/snow), and collection (oceans, lakes, groundwater)."},
+				{"What is DNA?", "Deoxyribonucleic acid - the molecule carrying genetic instructions. A double helix of nucleotides (A, T, C, G) that encodes genetic information."},
+				{"Describe the process of mitosis", "Cell division producing two genetically identical daughter cells. Phases: prophase, metaphase, anaphase, telophase, followed by cytokinesis."},
+				{"What is the greenhouse effect?", "Gases in Earth's atmosphere trap heat from the sun, warming the planet. Key greenhouse gases include CO₂, methane, and water vapor."},
+				{"Explain the concept of entropy", "A measure of disorder or randomness in a system. The second law of thermodynamics states entropy in an isolated system always increases."},
 			},
 			"Writing": {
-				"Write a haiku about nature",
-				"Describe your perfect day",
-				"Write a short story about adventure",
-				"What makes a good character?",
-				"Write a persuasive paragraph about climate change",
-				"Describe the taste of chocolate",
-				"Write a metaphor for time",
-				"What is the difference between fiction and non-fiction?",
-				"Write a dialogue between two strangers",
-				"Describe the feeling of nostalgia",
+				{"Write a haiku about nature", "Morning dew glistens,\nLeaves dance in gentle breeze,\nLife awakes anew."},
+				{"Describe your perfect day", "Waking to golden sunlight, a warm cup of coffee, meaningful conversations with loved ones, time for creativity, and ending with gratitude under starlight."},
+				{"Write a short story about adventure", "The ancient map crinkled in her hands. X marked the hidden temple. She stepped into the jungle, heart racing, ready for whatever lay beyond the veil of leaves."},
+				{"What makes a good character?", "Depth, flaws, clear motivation, growth arc, authentic voice, and relatable struggles that resonate with readers."},
+				{"Write a persuasive paragraph about climate change", "Climate change is an urgent crisis demanding immediate action. Rising temperatures, extreme weather, and ecosystem collapse threaten our future. We must transition to renewable energy, reduce emissions, and protect our planet for generations to come."},
+				{"Describe the taste of chocolate", "Rich, velvety sweetness melting across the tongue - hints of vanilla, earthy cocoa, and a lingering embrace of comfort."},
+				{"Write a metaphor for time", "Time is a river - always flowing, never stopping, carving memories into the canyon of our lives."},
+				{"What is the difference between fiction and non-fiction?", "Fiction presents invented stories, characters, and events. Non-fiction presents factual information about real people, places, and events."},
+				{"Write a dialogue between two strangers", "\\\"Excuse me, is this seat taken?\\\" \\\"No, please.\\\" \\\"Thanks. Long day?\\\" \\\"The longest. You?\\\" \\\"Same. At least we're in this together.\\\" A small smile, shared understanding."},
+				{"Describe the feeling of nostalgia", "A bittersweet ache - warm memories gilded by time's golden filter, yet tinged with longing for moments that can never return."},
 			},
 		}
 
@@ -724,9 +731,9 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 			}
 
 			promptsForProfile := profilePrompts[profileName]
-			for _, text := range promptsForProfile {
+			for _, prompt := range promptsForProfile {
 				_, err = db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, ?, 'objective', ?)",
-					text, "", suiteID, displayOrder, profileID)
+					prompt.Text, prompt.Solution, suiteID, displayOrder, profileID)
 				if err != nil {
 					log.Printf("Error inserting mock prompt for profile %s: %v", profileName, err)
 				}
@@ -736,6 +743,162 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 
 		prompts = h.DataStore.ReadPrompts()
 		log.Printf("Created %d mock prompts with profiles", len(prompts))
+
+		// Create a second suite with 4 profiles and 5 prompts each
+		secondSuiteName := "Alternative Suite"
+		result, err := db.Exec("INSERT INTO suites (name, is_current) VALUES (?, 0)", secondSuiteName)
+		if err != nil {
+			log.Printf("Error creating second suite: %v", err)
+		} else {
+			secondSuiteID, err := result.LastInsertId()
+			if err != nil {
+				log.Printf("Error getting second suite ID: %v", err)
+			} else {
+				log.Printf("Created second suite: %s (ID: %d)", secondSuiteName, secondSuiteID)
+
+				// Create 4 profiles for the second suite
+				secondSuiteProfileNames := []string{"History", "Geography", "Literature", "Art"}
+				secondSuiteProfileDescriptions := map[string]string{
+					"History":    "Historical events and figures",
+					"Geography":  "Geographical and environmental topics",
+					"Literature": "Literary analysis and creative writing",
+					"Art":        "Visual arts, music, and aesthetics",
+				}
+				secondSuiteProfileIDs := make(map[string]int64)
+				for _, name := range secondSuiteProfileNames {
+					result, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)",
+						name, secondSuiteProfileDescriptions[name], secondSuiteID)
+					if err != nil {
+						log.Printf("Error inserting second suite profile: %v", err)
+						continue
+					}
+					profileID, err := result.LastInsertId()
+					if err != nil {
+						log.Printf("Error getting second suite profile ID: %v", err)
+						continue
+					}
+					secondSuiteProfileIDs[name] = profileID
+				}
+				log.Printf("Created %d mock profiles for second suite", len(secondSuiteProfileNames))
+
+				// Define 5 prompts with solutions for each profile in the second suite
+				secondSuitePrompts := map[string][]PromptWithSolution{
+					"History": {
+						{"When did World War II end?", "World War II ended in **1945**, with Germany surrendering in May and Japan in September."},
+						{"Who was the first President of the United States?", "**George Washington** served as the first U.S. President from 1789 to 1797."},
+						{"What was the Renaissance?", "A cultural movement (14th-17th century) marking the transition from medieval to modern times, characterized by renewed interest in classical art, literature, and learning."},
+						{"Explain the causes of the French Revolution", "Key causes included: social inequality (three estates), financial crisis from wars, Enlightenment ideas, food shortages, and resentment toward the monarchy."},
+						{"What was the Silk Road?", "A network of trade routes connecting East Asia to the Mediterranean, facilitating exchange of goods, ideas, and cultures from around 130 BCE to 1453 CE."},
+					},
+					"Geography": {
+						{"What is the capital of Australia?", "**Canberra** is the capital of Australia, not Sydney or Melbourne as commonly assumed."},
+						{"What is the longest river in the world?", "The **Nile River** in Africa is generally considered the longest at approximately 6,650 km (4,130 miles)."},
+						{"Explain the water cycle", "The continuous movement of water: evaporation from surfaces, condensation into clouds, precipitation as rain/snow, and collection in bodies of water."},
+						{"What are the seven continents?", "Africa, Antarctica, Asia, Australia/Oceania, Europe, North America, and South America."},
+						{"What is a tectonic plate?", "A large, rigid slab of Earth's lithosphere that moves and interacts with other plates, causing earthquakes, volcanic activity, and mountain formation."},
+					},
+					"Literature": {
+						{"Who wrote 'Romeo and Juliet'?", "**William Shakespeare** wrote this tragic play around 1595-1597."},
+						{"What is a haiku?", "A Japanese poetic form with three lines and a 5-7-5 syllable structure, traditionally focusing on nature and seasonal imagery."},
+						{"Explain the concept of foreshadowing", "A literary device where hints or clues suggest future events, building anticipation and creating dramatic tension."},
+						{"Who wrote '1984'?", "**George Orwell** published this dystopian novel in 1949, exploring themes of totalitarianism and surveillance."},
+						{"What is magical realism?", "A literary genre where magical elements blend realistically into ordinary settings, common in Latin American literature (e.g., Gabriel García Márquez)."},
+					},
+					"Art": {
+						{"Who painted the Mona Lisa?", "**Leonardo da Vinci** painted this masterpiece between 1503 and 1519."},
+						{"What is Impressionism?", "A 19th-century art movement characterized by visible brush strokes, emphasis on light, and ordinary subject matter (e.g., Monet, Renoir)."},
+						{"Explain the golden ratio in art", "A mathematical proportion (approximately 1.618) believed to create aesthetically pleasing compositions, used by artists like da Vinci and architects throughout history."},
+						{"Who sculpted David?", "**Michelangelo** carved this marble statue of the biblical hero between 1501 and 1504."},
+						{"What is abstract art?", "Art that doesn't represent visual reality accurately, using colors, forms, and gestures to achieve its effect (e.g., Kandinsky, Pollock)."},
+					},
+				}
+
+				// Create all prompts for the second suite with their associated profile_id
+				displayOrder := 0
+				for _, profileName := range secondSuiteProfileNames {
+					profileID, exists := secondSuiteProfileIDs[profileName]
+					if !exists {
+						log.Printf("Profile ID not found for %s in second suite", profileName)
+						continue
+					}
+
+					promptsForProfile := secondSuitePrompts[profileName]
+					for _, prompt := range promptsForProfile {
+						_, err = db.Exec("INSERT INTO prompts (text, solution, suite_id, display_order, type, profile_id) VALUES (?, ?, ?, ?, 'objective', ?)",
+							prompt.Text, prompt.Solution, secondSuiteID, displayOrder, profileID)
+						if err != nil {
+							log.Printf("Error inserting second suite prompt for profile %s: %v", profileName, err)
+						}
+						displayOrder++
+					}
+				}
+				log.Printf("Created %d mock prompts for second suite", displayOrder)
+
+				// Create mock models for the second suite (same tiers as first suite)
+				secondSuiteTiers := []string{
+					"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+					"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional",
+				}
+				var secondSuiteModels []string
+				for i := 0; i < 12; i++ {
+					tier := secondSuiteTiers[i%len(secondSuiteTiers)]
+					num := i/len(secondSuiteTiers) + 1
+					modelName := tier + "-" + strconv.Itoa(num)
+					_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)",
+						modelName, secondSuiteID)
+					if err != nil {
+						log.Printf("Error inserting second suite model: %v", err)
+						continue
+					}
+					secondSuiteModels = append(secondSuiteModels, modelName)
+				}
+				log.Printf("Created %d mock models for second suite", len(secondSuiteModels))
+
+				// Create mock scores for the second suite models
+				// Get all prompts for the second suite
+				promptRows, err := db.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", secondSuiteID)
+				if err != nil {
+					log.Printf("Error querying second suite prompts: %v", err)
+				} else {
+					defer func() {
+						if err := promptRows.Close(); err != nil {
+							log.Printf("Error closing prompt rows: %v", err)
+						}
+					}()
+					var promptIDs []int
+					for promptRows.Next() {
+						var promptID int
+						if err := promptRows.Scan(&promptID); err != nil {
+							log.Printf("Error scanning prompt ID: %v", err)
+							continue
+						}
+						promptIDs = append(promptIDs, promptID)
+					}
+
+					// Get model IDs and create scores
+					for _, modelName := range secondSuiteModels {
+						var modelID int
+						err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, secondSuiteID).Scan(&modelID)
+						if err != nil {
+							log.Printf("Error getting model ID for %s: %v", modelName, err)
+							continue
+						}
+
+						// Create scores with tier-based distribution (similar to first suite)
+						tierIndex := (len(secondSuiteModels) - 1) / len(secondSuiteTiers)
+						for _, promptID := range promptIDs {
+							score := getRandomScoreForTierWrapper(tierIndex)
+							_, err = db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)",
+								modelID, promptID, score)
+							if err != nil {
+								log.Printf("Error inserting score for model %s prompt %d: %v", modelName, promptID, err)
+							}
+						}
+					}
+					log.Printf("Created mock scores for second suite models")
+				}
+			}
+		}
 	}
 
 	// Get all model names
@@ -753,8 +916,10 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	// Generate mock models if both models and results are empty
 	if len(models) == 0 && len(results) == 0 {
 		results = make(map[string]middleware.Result)
-		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
-			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
+		tiers := []string{
+			"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional",
+		}
 		for i := 0; i < 24; i++ {
 			tier := tiers[i%len(tiers)]
 			num := i/len(tiers) + 1
@@ -895,6 +1060,56 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Mock results with even tier distribution updated successfully")
+}
+
+// getRandomScoreForTierWrapper wraps the score generation for the second suite
+func getRandomScoreForTierWrapper(tierIndex int) int {
+	// Use the same logic as getRandomScoreForTier but accessible outside UpdateMockResults
+	tierWeights := []map[int]int{
+		{0: 1, 20: 1, 40: 8, 60: 15, 80: 25, 100: 50},   // cosmic (highest tier)
+		{0: 1, 20: 2, 40: 10, 60: 20, 80: 40, 100: 27},  // divine
+		{0: 2, 20: 5, 40: 15, 60: 30, 80: 35, 100: 13},  // celestial
+		{0: 5, 20: 10, 40: 25, 60: 30, 80: 20, 100: 10}, // ascendant
+		{0: 7, 20: 15, 40: 33, 60: 25, 80: 15, 100: 5},  // ethereal
+		{0: 10, 20: 20, 40: 35, 60: 20, 80: 10, 100: 5}, // mystic
+		{0: 15, 20: 30, 40: 30, 60: 15, 80: 8, 100: 2},  // astral
+		{0: 20, 20: 35, 40: 25, 60: 15, 80: 4, 100: 1},  // spiritual
+		{0: 30, 20: 35, 40: 20, 60: 12, 80: 2, 100: 1},  // primal
+		{0: 40, 20: 35, 40: 15, 60: 8, 80: 2, 100: 0},   // mortal
+		{0: 55, 20: 30, 40: 10, 60: 5, 80: 0, 100: 0},   // primordial (lowest tier)
+	}
+
+	if tierIndex >= len(tierWeights) {
+		tierIndex = len(tierWeights) - 1
+	}
+
+	weightsMap := tierWeights[tierIndex]
+	weightValues := []int{0, 20, 40, 60, 80, 100}
+	weights := []int{
+		weightsMap[0],
+		weightsMap[20],
+		weightsMap[40],
+		weightsMap[60],
+		weightsMap[80],
+		weightsMap[100],
+	}
+
+	// Simple weighted random selection
+	totalWeight := 0
+	for _, w := range weights {
+		totalWeight += w
+	}
+
+	random := rand.Intn(totalWeight)
+	runningTotal := 0
+	for i, w := range weights {
+		runningTotal += w
+		if random < runningTotal {
+			return weightValues[i]
+		}
+	}
+
+	return 0 // fallback
 }
 
 // RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)

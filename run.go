@@ -4,12 +4,11 @@ import (
 	"database/sql"
 	"flag"
 	"io"
+	"llm-tournament/handlers"
+	"llm-tournament/middleware"
 	"log"
 	"net/http"
 	"os"
-
-	"llm-tournament/handlers"
-	"llm-tournament/middleware"
 )
 
 type runDeps struct {

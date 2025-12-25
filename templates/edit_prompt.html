@@ -1,97 +1,81 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <title>Edit Prompt</title>
     <link rel="stylesheet" href="/templates/arena.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
-  </head>
-
-  <body>
+</head>
+<body>
     <div class="arena-shell arena-shell-solo">
-      <main class="arena-main arena-main-solo">
-        <div class="container">
-    <h1>Edit Prompt</h1>
-    <form action="/edit_prompt" method="post" style="text-align: center">
-      <input type="hidden" name="index" value="{{.Index}}" />
-      <label for="prompt">Prompt:</label><br />
-      <textarea name="prompt" rows="10" cols="50" id="prompt">{{.Prompt.Text}}</textarea><br />
-      <label for="solution">Solution:</label><br />
-      <textarea name="solution" rows="5" cols="50" id="solution">{{.Prompt.Solution}}</textarea><br />
-      <label for="profile">Profile:</label><br />
-      <select name="profile" id="profile">
-          <option value="">None</option>
-          {{range .Profiles}}
-              <option value="{{.Name}}" {{if eq .Name $.Prompt.Profile}}selected{{end}}>{{.Name}}</option>
-          {{end}}
-      </select><br />
-      <input type="submit" value="Save" />
-      <input type="submit" form="cancel-form" value="Cancel" />
-    </form>
-    <form
-      id="cancel-form"
-      action="/prompts"
-      method="get"
-      style="text-align: center"
-    ></form>
-    <h2>Preview</h2>
-    <div id="prompt-preview" class="markdown-content">
-      {{.Prompt.Text | markdown}}
+        <main class="arena-main arena-main-solo">
+            <div class="container edit-container">
+                <h1>Edit Prompt</h1>
+                <form action="/edit_prompt" method="post">
+                    <input type="hidden" name="index" value="{{.Index}}" />
+                    <label for="prompt">Prompt:</label>
+                    <textarea name="prompt" rows="12" id="prompt">{{.Prompt.Text}}</textarea>
+                    <label for="solution">Solution:</label>
+                    <textarea name="solution" rows="8" id="solution">{{.Prompt.Solution}}</textarea>
+                    <label for="profile">Profile:</label>
+                    <select name="profile" id="profile">
+                        <option value="">None</option>
+                        {{range .Profiles}}
+                            <option value="{{.Name}}" {{if eq .Name $.Prompt.Profile}}selected{{end}}>{{.Name}}</option>
+                        {{end}}
+                    </select>
+                    <div class="form-actions">
+                        <input type="submit" value="Save" />
+                        <input type="submit" form="cancel-form" value="Cancel" />
+                    </div>
+                </form>
+                <form id="cancel-form" action="/prompts" method="get"></form>
+                <h2>Preview</h2>
+                <div id="prompt-preview" class="markdown-content">
+                    {{.Prompt.Text | markdown}}
+                </div>
+                <br />
+                {{"---" | markdown}}
+                <br />
+                <div id="solution-preview" class="markdown-content" style="font-style: italic; color: green">
+                    {{.Prompt.Solution | markdown}}
+                </div>
+                <script>
+                    const promptTextarea = document.querySelector('textarea[name="prompt"]');
+                    const solutionTextarea = document.querySelector('textarea[name="solution"]');
+                    const promptPreview = document.getElementById("prompt-preview");
+                    const solutionPreview = document.getElementById("solution-preview");
+
+                    function updatePromptPreview() {
+                        const markdownText = promptTextarea.value;
+                        promptPreview.innerHTML = marked.parse(markdownText);
+                    }
+
+                    function updateSolutionPreview() {
+                        const markdownText = solutionTextarea.value;
+                        solutionPreview.innerHTML = marked.parse(markdownText);
+                    }
+
+                    promptTextarea.addEventListener("input", updatePromptPreview);
+                    solutionTextarea.addEventListener("input", updateSolutionPreview);
+                    updatePromptPreview();
+                    updateSolutionPreview();
+                </script>
+                <div class="scroll-buttons">
+                    <button class="scroll-button" onclick="scrollToTop()">↑</button>
+                    <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+                </div>
+                <script>
+                    function scrollToTop() {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+
+                    function scrollToBottom() {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                    }
+                </script>
+            </div>
+        </main>
     </div>
-    <br />
-    {{"---" | markdown}}
-    <br />
-    <div
-      id="solution-preview"
-      class="markdown-content"
-      style="font-style: italic; text-align: left; color: green"
-    >
-      {{.Prompt.Solution | markdown}}
-    </div>
-    <script>
-      // Initial render
-      const promptTextarea = document.querySelector('textarea[name="prompt"]');
-      const solutionTextarea = document.querySelector(
-        'textarea[name="solution"]',
-      );
-      const promptPreview = document.getElementById("prompt-preview");
-      const solutionPreview = document.getElementById("solution-preview");
-
-      function updatePromptPreview() {
-        const markdownText = promptTextarea.value;
-        promptPreview.innerHTML = marked.parse(markdownText);
-      }
-
-      function updateSolutionPreview() {
-        const markdownText = solutionTextarea.value;
-        solutionPreview.innerHTML = marked.parse(markdownText);
-      }
-
-      promptTextarea.addEventListener("input", updatePromptPreview);
-      solutionTextarea.addEventListener("input", updateSolutionPreview);
-
-      // Initial render
-      updatePromptPreview();
-      updateSolutionPreview();
-    </script>
-    <div class="scroll-buttons">
-      <button class="scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
-    </div>
-    <script>
-      function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      function scrollToBottom() {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    </script>
-        </div>
-      </main>
-    </div>
-  </body>
+</body>
 </html>

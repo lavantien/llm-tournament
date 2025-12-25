@@ -6,8 +6,10 @@ import (
 	"log"
 )
 
-var rowsErr = func(rows *sql.Rows) error { return rows.Err() }
-var txCommit = func(tx *sql.Tx) error { return tx.Commit() }
+var (
+	rowsErr  = func(rows *sql.Rows) error { return rows.Err() }
+	txCommit = func(tx *sql.Tx) error { return tx.Commit() }
+)
 
 type Prompt struct {
 	Text     string `json:"text"`

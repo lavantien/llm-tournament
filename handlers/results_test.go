@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -12,9 +14,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
-	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -2143,8 +2142,8 @@ func TestUpdateMockResultsHandler_CreatesProfiles(t *testing.T) {
 		t.Fatalf("failed to query profile count: %v", err)
 	}
 
-	if profileCount != 5 {
-		t.Errorf("expected 5 profiles to be created in database, got %d", profileCount)
+	if profileCount != 9 {
+		t.Errorf("expected 9 profiles to be created in database (5 from first suite + 4 from second suite), got %d", profileCount)
 	}
 
 	// Verify profile names
@@ -2167,7 +2166,7 @@ func TestUpdateMockResultsHandler_CreatesProfiles(t *testing.T) {
 		profiles = append(profiles, name)
 	}
 
-	expectedProfiles := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+	expectedProfiles := []string{"Art", "Geography", "History", "Literature", "Math", "Philosophy", "Programming", "Science", "Writing"}
 	if len(profiles) != len(expectedProfiles) {
 		t.Fatalf("expected %d profiles, got %d", len(expectedProfiles), len(profiles))
 	}
@@ -2464,7 +2463,6 @@ func TestRandomizeScores_UsesTierBasedDistribution(t *testing.T) {
 	}
 }
 
-
 func TestEvaluateResultHandler_RedirectsWhenModelOrPromptMissing(t *testing.T) {
 	mockDS := &MockDataStore{
 		Prompts: []middleware.Prompt{
@@ -2572,19 +2570,19 @@ func TestRandomizeScoresHandler_ErrorCases(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name           string
-		method         string
-		expectStatus   int
+		name         string
+		method       string
+		expectStatus int
 	}{
 		{
-			name:           "GET method not allowed",
-			method:         "GET",
-			expectStatus:   http.StatusMethodNotAllowed,
+			name:         "GET method not allowed",
+			method:       "GET",
+			expectStatus: http.StatusMethodNotAllowed,
 		},
 		{
-			name:           "PUT method not allowed",
-			method:         "PUT",
-			expectStatus:   http.StatusMethodNotAllowed,
+			name:         "PUT method not allowed",
+			method:       "PUT",
+			expectStatus: http.StatusMethodNotAllowed,
 		},
 	}
 
@@ -2614,7 +2612,7 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	// Verify 50 prompts were created (5 profiles × 10 prompts each)
+	// Verify 70 prompts were created (50 from first suite + 20 from second suite)
 	db := middleware.GetDB()
 	var promptCount int
 	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
@@ -2622,8 +2620,8 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 		t.Fatalf("failed to query prompt count: %v", err)
 	}
 
-	if promptCount != 50 {
-		t.Errorf("expected 50 prompts to be created in database, got %d", promptCount)
+	if promptCount != 70 {
+		t.Errorf("expected 70 prompts to be created in database (50 from first suite + 20 from second suite), got %d", promptCount)
 	}
 
 	// Verify prompts have profiles assigned
@@ -2633,22 +2631,22 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 		t.Fatalf("failed to query prompts with profiles: %v", err)
 	}
 
-	if promptsWithProfile != 50 {
-		t.Errorf("expected all 50 prompts to have profiles, got %d", promptsWithProfile)
+	if promptsWithProfile != 70 {
+		t.Errorf("expected all 70 prompts to have profiles, got %d", promptsWithProfile)
 	}
 
-	// Verify 5 profiles exist
+	// Verify 9 profiles exist (5 from first suite + 4 from second suite)
 	var profileCount int
 	err = db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount)
 	if err != nil {
 		t.Fatalf("failed to query profile count: %v", err)
 	}
 
-	if profileCount != 5 {
-		t.Errorf("expected 5 profiles, got %d", profileCount)
+	if profileCount != 9 {
+		t.Errorf("expected 9 profiles, got %d", profileCount)
 	}
 
-	// Verify each profile has exactly 10 prompts
+	// Verify each profile has the correct number of prompts
 	rows, err := db.Query(`
 		SELECT pr.name, COUNT(p.id) as prompt_count
 		FROM profiles pr
@@ -2666,11 +2664,17 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 	}()
 
 	expectedProfiles := map[string]int{
+		// First suite: 5 profiles × 10 prompts each
 		"Math":        10,
 		"Philosophy":  10,
 		"Programming": 10,
 		"Science":     10,
 		"Writing":     10,
+		// Second suite: 4 profiles × 5 prompts each
+		"Art":        5,
+		"Geography":  5,
+		"History":    5,
+		"Literature": 5,
 	}
 
 	for rows.Next() {

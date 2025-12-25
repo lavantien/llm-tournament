@@ -21,7 +21,7 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: lint test run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage screenshots
+.PHONY: lint test testbrief check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage screenshots
 
 all: lint test
 
@@ -63,6 +63,11 @@ lint:
 
 test:
 	$(CGO_PREFIX) go test ./... -v -race -cover
+
+testbrief:
+	go test ./... -race -cover
+
+check: setenv lint testbrief
 
 run:
 	$(CGO_PREFIX) go run .

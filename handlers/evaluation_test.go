@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"llm-tournament/middleware"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
-
-	"llm-tournament/middleware"
 
 	_ "github.com/mattn/go-sqlite3"
 )

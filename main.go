@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
 	"llm-tournament/handlers"
 	"llm-tournament/middleware"
+	"log"
+	"net/http"
 )
 
 var routes = map[string]http.HandlerFunc{
@@ -52,7 +51,7 @@ var routes = map[string]http.HandlerFunc{
 	"/evaluate/prompt":     handlers.EvaluatePromptHandler,
 	"/evaluation/progress": handlers.EvaluationProgressHandler,
 	"/evaluation/cancel":   handlers.CancelEvaluationHandler,
-	"/save_model_response":  handlers.SaveModelResponseHandler,
+	"/save_model_response": handlers.SaveModelResponseHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) {

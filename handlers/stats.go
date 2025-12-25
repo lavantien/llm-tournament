@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"html/template"
+	"llm-tournament/middleware"
 	"log"
 	"net/http"
 	"strings"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"llm-tournament/middleware"
 )
 
 // Calculate tiers based on total scores
@@ -153,6 +153,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		Tiers        map[string][]string
 		TierRanges   map[string]string
 		OrderedTiers []string
+		CurrentPath  string
 	}{
 		PageName:    "Statistics",
 		MaxScore:    maxScore,
@@ -173,6 +174,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 			"mortal",
 			"primordial",
 		},
+		CurrentPath: "/stats",
 	}
 
 	funcMap := template.FuncMap{

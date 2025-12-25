@@ -79,7 +79,6 @@ func TestFileRenderer_Render_Success(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	err := renderer.Render(rr, "import_error.html", nil, nil, "templates/import_error.html")
-
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}

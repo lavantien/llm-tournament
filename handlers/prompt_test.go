@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -12,9 +14,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
-	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )

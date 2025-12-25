@@ -3,12 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"io"
+	"llm-tournament/middleware"
+	"llm-tournament/templates"
 	"log"
 	"net/http"
 	"strconv"
-
-	"llm-tournament/middleware"
-	"llm-tournament/templates"
 )
 
 var readAll = io.ReadAll
@@ -139,6 +138,7 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 		SearchQuery   string
 		Suites        []string
 		CurrentSuite  string
+		CurrentPath   string
 	}{
 		PageName:      pageName,
 		Prompts:       promptTexts,
@@ -149,6 +149,7 @@ func (h *Handler) PromptList(w http.ResponseWriter, r *http.Request) {
 		SearchQuery:   searchQuery,
 		Suites:        suites,
 		CurrentSuite:  currentSuite,
+		CurrentPath:   "/prompts",
 	}, "templates/prompt_list.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)

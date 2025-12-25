@@ -104,53 +104,8 @@
           <input type="submit" value="Filter" />
         </form>
       </div>
-      <div
-        class="title-container"
-        style="display: flex; align-items: center; justify-content: center"
-      >
-        <form
-          action="/prompts/suites/new"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="submit" value="New" class="action-button" />
-        </form>
-        <form
-          action="/prompts/suites/edit"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="hidden" name="suite_name" value="{{.CurrentSuite}}" />
-          <input type="submit" value="Edit" class="action-button" />
-        </form>
-        <form
-          action="/prompts/suites/delete"
-          method="get"
-          style="margin-right: 5px"
-        >
-          <input type="hidden" name="suite_name" value="{{.CurrentSuite}}" />
-          <input type="submit" value="Delete" class="action-button" />
-        </form>
-        <form
-          action="/prompts/suites/select"
-          method="post"
-          style="margin-left: 5px"
-        >
-          <select name="suite_name">
-            {{range $suite := .Suites}}
-            <option
-              value="{{$suite}}"
-              {{if
-              eq
-              $suite
-              $.CurrentSuite}}selected{{end}}
-            >
-              {{$suite}}
-            </option>
-            {{end}}
-          </select>
-          <input type="submit" value="Select" class="action-button" />
-        </form>
+      <div class="title-container">
+        <h1>Prompts</h1>
       </div>
       <div class="search-container">
         <form action="/prompts" method="get" class="search-form">

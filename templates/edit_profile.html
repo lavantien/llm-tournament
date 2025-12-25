@@ -1,71 +1,59 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <title>Edit Profile</title>
     <link rel="stylesheet" href="/templates/arena.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
-  </head>
-
-  <body>
+</head>
+<body>
     <div class="arena-shell arena-shell-solo">
-      <main class="arena-main arena-main-solo">
-        <div class="container">
-    <h1>Edit Profile</h1>
-    <form action="/edit_profile" method="post" style="text-align: center">
-      <input type="hidden" name="index" value="{{.Index}}" />
-      <label for="profile_name">Profile Name:</label><br />
-      <input type="text" name="profile_name" value="{{.Profile.Name}}" /><br />
-      <label for="profile_description">Profile Description:</label><br />
-      <textarea name="profile_description" rows="5" cols="50">{{.Profile.Description}}</textarea><br />
-      <input type="submit" value="Save" />
-      <input type="submit" form="cancel-form" value="Cancel" />
-    </form>
-    <form
-      id="cancel-form"
-      action="/profiles"
-      method="get"
-      style="text-align: center"
-    ></form>
-    <h2>Preview</h2>
-    <div id="profile-preview" class="markdown-content">
-      {{.Profile.Description | markdown}}
+        <main class="arena-main arena-main-solo">
+            <div class="container edit-container">
+                <h1>Edit Profile</h1>
+                <form action="/edit_profile" method="post">
+                    <input type="hidden" name="index" value="{{.Index}}" />
+                    <label for="profile_name">Profile Name:</label>
+                    <input type="text" name="profile_name" value="{{.Profile.Name}}" />
+                    <label for="profile_description">Profile Description:</label>
+                    <textarea name="profile_description" rows="12">{{.Profile.Description}}</textarea>
+                    <div class="form-actions">
+                        <input type="submit" value="Save" />
+                        <input type="submit" form="cancel-form" value="Cancel" />
+                    </div>
+                </form>
+                <form id="cancel-form" action="/profiles" method="get"></form>
+                <h2>Preview</h2>
+                <div id="profile-preview" class="markdown-content">
+                    {{.Profile.Description | markdown}}
+                </div>
+                <script>
+                    const profileDescriptionTextarea = document.querySelector('textarea[name="profile_description"]');
+                    const profilePreview = document.getElementById("profile-preview");
+
+                    function updateProfilePreview() {
+                        const markdownText = profileDescriptionTextarea.value;
+                        profilePreview.innerHTML = marked.parse(markdownText);
+                    }
+
+                    profileDescriptionTextarea.addEventListener("input", updateProfilePreview);
+                    updateProfilePreview();
+                </script>
+                <div class="scroll-buttons">
+                    <button class="scroll-button" onclick="scrollToTop()">↑</button>
+                    <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+                </div>
+                <script>
+                    function scrollToTop() {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+
+                    function scrollToBottom() {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                    }
+                </script>
+            </div>
+        </main>
     </div>
-    <script>
-      // Initial render
-      const profileDescriptionTextarea = document.querySelector(
-        'textarea[name="profile_description"]',
-      );
-      const profilePreview = document.getElementById("profile-preview");
-
-      function updateProfilePreview() {
-        const markdownText = profileDescriptionTextarea.value;
-        profilePreview.innerHTML = marked.parse(markdownText);
-      }
-
-      profileDescriptionTextarea.addEventListener("input", updateProfilePreview);
-
-      // Initial render
-      updateProfilePreview();
-    </script>
-    <div class="scroll-buttons">
-      <button class="scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
-    </div>
-    <script>
-      function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      function scrollToBottom() {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    </script>
-        </div>
-      </main>
-    </div>
-  </body>
+</body>
 </html>

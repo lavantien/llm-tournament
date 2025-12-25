@@ -12,6 +12,65 @@
     </div>
   </div>
 
+  <div class="suite-management" style="position: relative; z-index: 1; display: flex; align-items: center; gap: 8px;">
+    <span class="mono" style="color: rgba(244,248,255,0.64); font-size: 12px;">SUITE</span>
+    <form action="/prompts/suites/select" method="post" style="display: flex; align-items: center; gap: 6px;">
+      <input type="hidden" name="return_to" value="{{.CurrentPath}}" />
+      <select name="suite_name" style="
+        padding:6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.24);
+        color: rgba(244,248,255,0.92);
+        font-size: 12px;
+        cursor: pointer;
+      ">
+        {{range .Suites}}
+        <option value="{{.}}" {{if eq . $.CurrentSuite}}selected{{end}}>{{.}}</option>
+        {{end}}
+      </select>
+      <input type="submit" value="Switch" class="action-button" style="
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.24);
+        color: rgba(244,248,255,0.92);
+        font-size: 12px;
+        cursor: pointer;
+      " />
+    </form>
+    <a href="/prompts/suites/new?return_to={{.CurrentPath}}" class="action-button" style="
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.24);
+      color: rgba(244,248,255,0.92);
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    ">New</a>
+    <a href="/prompts/suites/edit?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="action-button" style="
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.24);
+      color: rgba(244,248,255,0.92);
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    ">Edit</a>
+    <a href="/prompts/suites/delete?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="action-button" style="
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.24);
+      color: rgba(244,248,255,0.92);
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    ">Delete</a>
+  </div>
+
   <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 10px;">
     <span class="mono" style="color: rgba(244,248,255,0.64); font-size: 12px;">PAGE</span>
     <span

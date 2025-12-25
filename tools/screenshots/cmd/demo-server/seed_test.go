@@ -1,12 +1,11 @@
 package main
 
 import (
+	"llm-tournament/middleware"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
 )
 
 func TestSeedDemoData_CreatesCoreRecords(t *testing.T) {

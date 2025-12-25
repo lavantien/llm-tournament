@@ -2,11 +2,10 @@ package middleware
 
 import (
 	"database/sql"
+	"llm-tournament/testutil"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-
-	"llm-tournament/testutil"
 )
 
 func TestGetAllSettings_QueryError(t *testing.T) {

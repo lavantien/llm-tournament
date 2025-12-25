@@ -3,10 +3,9 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"net/http"
-
 	"llm-tournament/handlers"
 	"llm-tournament/middleware"
+	"net/http"
 )
 
 // Config holds application configuration

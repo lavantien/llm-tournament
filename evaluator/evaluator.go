@@ -304,7 +304,6 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
 		FROM prompts
 		WHERE id = ?
 	`, promptID).Scan(&promptText, &solutionNull, &promptType)
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to get prompt: %w", err)
 	}
@@ -358,7 +357,6 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
 		INSERT OR REPLACE INTO scores (model_id, prompt_id, score)
 		VALUES (?, ?, ?)
 	`, modelID, promptID, consensusScore)
-
 	if err != nil {
 		return 0, fmt.Errorf("failed to update score: %w", err)
 	}
@@ -369,7 +367,6 @@ func (e *Evaluator) evaluateModelPromptPair(jobID, modelID, promptID int) (float
 			INSERT INTO evaluation_history (job_id, model_id, prompt_id, judge_name, judge_score, judge_confidence, judge_reasoning, cost_usd)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		`, jobID, modelID, promptID, result.Judge, result.Score, result.Confidence, result.Reasoning, result.CostUSD)
-
 		if err != nil {
 			log.Printf("Failed to save evaluation history: %v", err)
 		}
@@ -385,7 +382,6 @@ func (e *Evaluator) getAPIKeys() (map[string]string, error) {
 		FROM settings
 		WHERE key LIKE 'api_key_%'
 	`)
-
 	if err != nil {
 		return nil, err
 	}

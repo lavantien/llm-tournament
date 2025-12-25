@@ -189,7 +189,6 @@ func TestRenderTemplateSimple_Success(t *testing.T) {
 	data := map[string]string{"Model": "test-model"}
 
 	err := RenderTemplateSimple(rr, "edit_model.html", data)
-
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
@@ -291,7 +290,6 @@ func TestFileRenderer_RenderTemplateSimple(t *testing.T) {
 	data := map[string]string{"Model": "test-model"}
 
 	err := renderer.RenderTemplateSimple(rr, "edit_model.html", data)
-
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}

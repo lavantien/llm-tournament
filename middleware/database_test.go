@@ -86,7 +86,7 @@ func TestInitDB_InvalidPath(t *testing.T) {
 
 	// Create a file
 	filePath := filepath.Join(tmpDir, "notadir")
-	if err := os.WriteFile(filePath, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte("test"), 0o644); err != nil {
 		t.Fatalf("failed to create file: %v", err)
 	}
 
@@ -139,7 +139,7 @@ func TestInitDB_CreateTablesError(t *testing.T) {
 	_ = CloseDB()
 
 	// Make the database file read-only
-	if err := os.Chmod(dbPath, 0444); err != nil {
+	if err := os.Chmod(dbPath, 0o444); err != nil {
 		t.Fatalf("failed to make database read-only: %v", err)
 	}
 

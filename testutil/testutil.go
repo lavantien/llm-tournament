@@ -10,14 +10,19 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var sqlOpen = sql.Open
-var enableForeignKeys = func(db *sql.DB) error {
-	_, err := db.Exec("PRAGMA foreign_keys = ON")
-	return err
-}
-var createTestSchemaFunc = createTestSchema
-var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
-var fatalf = func(t *testing.T, format string, args ...any) { t.Fatalf(format, args...) }
+var (
+	sqlOpen           = sql.Open
+	enableForeignKeys = func(db *sql.DB) error {
+		_, err := db.Exec("PRAGMA foreign_keys = ON")
+		return err
+	}
+)
+
+var (
+	createTestSchemaFunc = createTestSchema
+	lastInsertID         = func(result sql.Result) (int64, error) { return result.LastInsertId() }
+	fatalf               = func(t *testing.T, format string, args ...any) { t.Fatalf(format, args...) }
+)
 
 // Prompt is a local type matching middleware.Prompt for testing
 type Prompt struct {

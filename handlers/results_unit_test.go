@@ -58,7 +58,7 @@ func TestTierAlgorithm(t *testing.T) {
 
 		scoreSums[tierIndex] += totalScore
 
-		t.Logf("Model %d: tier=%d, targetTotal=%d, actualTotal=%d, remaining=%d", 
+		t.Logf("Model %d: tier=%d, targetTotal=%d, actualTotal=%d, remaining=%d",
 			i, tierIndex, targetTotal, totalScore, remaining)
 	}
 

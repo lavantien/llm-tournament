@@ -1,10 +1,9 @@
 package handlers
 
 import (
+	"llm-tournament/middleware"
 	"log"
 	"net/http"
-
-	"llm-tournament/middleware"
 )
 
 // AddModelHandler handles adding a model (backward compatible wrapper)

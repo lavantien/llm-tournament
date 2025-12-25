@@ -1,12 +1,11 @@
 package handlers
 
 import (
+	"llm-tournament/middleware"
+	"llm-tournament/templates"
 	"log"
 	"net/http"
 	"strconv"
-
-	"llm-tournament/middleware"
-	"llm-tournament/templates"
 )
 
 // ProfilesHandler handles the profiles page (backward compatible wrapper)
@@ -48,10 +47,12 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 		PageName    string
 		Profiles    []middleware.Profile
 		SearchQuery string
+		CurrentPath string
 	}{
 		PageName:    pageName,
 		Profiles:    profiles,
 		SearchQuery: searchQuery,
+		CurrentPath: "/profiles",
 	}, "templates/profiles.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)

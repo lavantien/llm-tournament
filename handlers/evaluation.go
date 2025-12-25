@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"llm-tournament/evaluator"
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
-	"encoding/json"
 	"strconv"
 )
 
@@ -188,9 +188,9 @@ func SaveModelResponseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reqBody struct {
-		ModelID       int    `json:"model_id"`
-		PromptID      int    `json:"prompt_id"`
-		ResponseText  string `json:"response_text"`
+		ModelID      int    `json:"model_id"`
+		PromptID     int    `json:"prompt_id"`
+		ResponseText string `json:"response_text"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil || reqBody.ModelID == 0 {
 		http.Error(w, "model_id is required", http.StatusBadRequest)

@@ -27,8 +27,10 @@ type ProfileGroup struct {
 	Color    string `json:"color"`    // Generated color for this profile
 }
 
-var clients = make(map[*websocket.Conn]bool)
-var clientsMutex sync.Mutex
+var (
+	clients      = make(map[*websocket.Conn]bool)
+	clientsMutex sync.Mutex
+)
 
 func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling websocket connection")

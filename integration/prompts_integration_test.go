@@ -2,13 +2,12 @@ package integration
 
 import (
 	"fmt"
+	"llm-tournament/handlers"
+	"llm-tournament/middleware"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
-
-	"llm-tournament/handlers"
-	"llm-tournament/middleware"
 
 	_ "github.com/mattn/go-sqlite3"
 )

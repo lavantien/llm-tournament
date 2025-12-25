@@ -2,10 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"llm-tournament/middleware"
 	"log"
 	"net/http"
-
-	"llm-tournament/middleware"
 )
 
 // DeletePromptSuiteHandler handles delete prompt suite (backward compatible wrapper)
@@ -34,7 +33,11 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		suiteName := r.URL.Query().Get("suite_name")
-		if err := h.Renderer.Render(w, "delete_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/delete_prompt_suite.html"); err != nil {
+		returnTo := r.URL.Query().Get("return_to")
+		if returnTo == "" {
+			returnTo = r.URL.Path
+		}
+		if err := h.Renderer.Render(w, "delete_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName, "CurrentPath": returnTo}, "templates/delete_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
@@ -65,7 +68,11 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Prompt suite '%s' deleted successfully", suiteName)
 		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+		returnTo := r.Form.Get("return_to")
+		if returnTo == "" {
+			returnTo = "/prompts"
+		}
+		http.Redirect(w, r, returnTo, http.StatusSeeOther)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -99,7 +106,11 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Prompt suite '%s' selected successfully", suiteName)
 	h.DataStore.BroadcastResults()
-	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+	returnTo := r.Form.Get("return_to")
+	if returnTo == "" {
+		returnTo = "/prompts"
+	}
+	http.Redirect(w, r, returnTo, http.StatusSeeOther)
 }
 
 // NewPromptSuite handles new prompt suite
@@ -107,7 +118,11 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling new prompt suite")
 	switch r.Method {
 	case "GET":
-		if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, nil, "templates/new_prompt_suite.html"); err != nil {
+		returnTo := r.URL.Query().Get("return_to")
+		if returnTo == "" {
+			returnTo = r.URL.Path
+		}
+		if err := h.Renderer.Render(w, "new_prompt_suite.html", nil, map[string]string{"CurrentPath": returnTo}, "templates/new_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
@@ -134,7 +149,11 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("Prompt suite '%s' created successfully", suiteName)
 		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+		returnTo := r.Form.Get("return_to")
+		if returnTo == "" {
+			returnTo = "/prompts"
+		}
+		http.Redirect(w, r, returnTo, http.StatusSeeOther)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -146,7 +165,11 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		suiteName := r.URL.Query().Get("suite_name")
-		if err := h.Renderer.Render(w, "edit_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName}, "templates/edit_prompt_suite.html"); err != nil {
+		returnTo := r.URL.Query().Get("return_to")
+		if returnTo == "" {
+			returnTo = r.URL.Path
+		}
+		if err := h.Renderer.Render(w, "edit_prompt_suite.html", nil, map[string]string{"SuiteName": suiteName, "CurrentPath": returnTo}, "templates/edit_prompt_suite.html"); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 			return
@@ -175,7 +198,11 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("Prompt suite '%s' edited successfully to '%s'", oldSuiteName, newSuiteName)
 		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/prompts", http.StatusSeeOther)
+		returnTo := r.Form.Get("return_to")
+		if returnTo == "" {
+			returnTo = "/prompts"
+		}
+		http.Redirect(w, r, returnTo, http.StatusSeeOther)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

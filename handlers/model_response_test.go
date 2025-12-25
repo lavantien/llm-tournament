@@ -3,12 +3,12 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"llm-tournament/middleware"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	"llm-tournament/middleware"
 )
 
 // setupModelResponseTestDB creates a test database for model response handler tests

@@ -2,15 +2,14 @@ package handlers
 
 import (
 	"errors"
+	"llm-tournament/middleware"
+	"llm-tournament/testutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
-
-	"llm-tournament/middleware"
-	"llm-tournament/testutil"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -486,21 +485,21 @@ func TestCalculateTiers_DynamicMaxScore(t *testing.T) {
 		expectedTier string
 	}{
 		{
-			name:     "50 prompts - top tier",
-			maxScore: 5000,
-			scores:   map[string]int{"Model1": 4583},
+			name:         "50 prompts - top tier",
+			maxScore:     5000,
+			scores:       map[string]int{"Model1": 4583},
 			expectedTier: "transcendental",
 		},
 		{
-			name:     "10 prompts - top tier (should be 11/12 = 916+)",
-			maxScore: 1000,
-			scores:   map[string]int{"Model1": 916},
+			name:         "10 prompts - top tier (should be 11/12 = 916+)",
+			maxScore:     1000,
+			scores:       map[string]int{"Model1": 916},
 			expectedTier: "transcendental",
 		},
 		{
-			name:     "30 prompts - top tier (should be 11/12 = 2750+)",
-			maxScore: 3000,
-			scores:   map[string]int{"Model1": 2750},
+			name:         "30 prompts - top tier (should be 11/12 = 2750+)",
+			maxScore:     3000,
+			scores:       map[string]int{"Model1": 2750},
 			expectedTier: "transcendental",
 		},
 	}

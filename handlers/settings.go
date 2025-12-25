@@ -51,12 +51,14 @@ func (h *Handler) Settings(w http.ResponseWriter, r *http.Request) {
 		Threshold     float64
 		AutoEvaluate  bool
 		PythonURL     string
+		CurrentPath   string
 	}{
 		PageName:      "Settings",
 		MaskedAPIKeys: maskedKeys,
 		Threshold:     thresholdFloat,
 		AutoEvaluate:  autoEval == "true",
 		PythonURL:     pythonURL,
+		CurrentPath:   "/settings",
 	}
 
 	middleware.RenderTemplate(w, "settings.html", data)
