@@ -15,30 +15,19 @@ const SCORE_LABELS = {
     100: "5/5"
 };
 
-// CSS color variables matching the style.css definitions
-// This is our single source of truth for score colors
-const SCORE_COLORS = {
-    0: '#808080',   // Gray
-    20: '#ffa500',  // Orange
-    40: '#ffcc00',  // Yellow-Orange
-    60: '#ffff00',  // Yellow
-    80: '#ccff00',  // Yellow-Green
-    100: '#00ff00'  // Green
-};
-
 /**
- * Gets the color for a score from CSS variables or fallback
+ * Gets the color for a score from CSS variables
  * @param {number} score - The score value
  * @returns {string} The color as a hex code
  */
 function getScoreColor(score) {
-    // First try to get from CSS variables (they're in body)
+    // Get from CSS variables defined in arena.css/style.css
     const bodyStyles = getComputedStyle(document.body);
     const varName = `--score-color-${score}`;
     const cssColor = bodyStyles.getPropertyValue(varName).trim();
-    
-    // Return CSS variable if available, otherwise use our constants
-    return cssColor || SCORE_COLORS[score] || SCORE_COLORS[0];
+
+    // Return CSS variable color or fallback to gray
+    return cssColor || '#808080';
 }
 
 /**
@@ -69,16 +58,14 @@ function getScoreColorVar(score) {
 }
 
 /**
- * Initialize CSS variables with our score colors
- * Called on page load to ensure variables are always available
+ * Initialize score colors - no longer needed as arena.css defines them
+ * This function exists for backward compatibility but does nothing
  */
 function initScoreColorVariables() {
-    // Set CSS variables based on our SCORE_COLORS constants
-    SCORE_VALUES.forEach(score => {
-        document.body.style.setProperty(`--score-color-${score}`, SCORE_COLORS[score]);
-    });
-    console.log("Score color CSS variables initialized");
+    // CSS variables are now defined in arena.css
+    // No need to override them here
+    console.log("Score color CSS variables loaded from arena.css");
 }
 
-// Initialize score color variables on script load
+// Initialize score color variables on script load (now just logs)
 document.addEventListener('DOMContentLoaded', initScoreColorVariables);

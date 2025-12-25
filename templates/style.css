@@ -879,20 +879,41 @@ body {
         border-bottom: 2px solid var(--profile-color, #333);
         box-shadow: 0 0 4px color-mix(in srgb, var(--profile-color, #333) 40%, transparent);
     }
-    
-    /* Stronger profile group header styling */
+
+    /* Profile group header styling - match score cell dividers */
     th.profile-header-styled.profile-divider-left {
-        border-left: 5px solid white !important;
+        position: relative;
     }
-    
+
+    th.profile-header-styled.profile-divider-left::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: rgba(255, 50, 50, 0.85);
+        z-index: 10;
+    }
+
     th.profile-header-styled.profile-divider-right {
         border-right: 5px solid white !important;
     }
 
     /* Profile divider - for separating profiles in the header row */
     .profile-divider-left {
-        border-left: 4px solid var(--border-color, #333) !important;
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+
+    .profile-divider-left::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: rgba(255, 50, 50, 0.85);
+        z-index: 10;
     }
 
     .profile-divider-right {

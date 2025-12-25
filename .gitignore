@@ -43,3 +43,4 @@ handlers_cov_new
 handlers_one
 middleware_cov
 testutil_cov
+.playwright-mcp

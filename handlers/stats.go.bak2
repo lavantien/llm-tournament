@@ -10,7 +10,6 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"llm-tournament/middleware"
 )
 
 // Calculate tiers based on total scores
@@ -132,30 +131,18 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		totalScores[model] = stats.TotalScore
 	}
 
-	// Get prompt count to calculate dynamic max score
-	db := middleware.GetDB()
-	var promptCount int
-	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
-	if err != nil {
-		log.Printf("Warning: failed to get prompt count: %v, using default 50", err)
-		promptCount = 50
-	}
-	maxScore := promptCount * 100
-
-	// Calculate tiers with dynamic max score
-	tiers, tierRanges := calculateTiersWithMaxScore(totalScores, maxScore)
+	// Calculate tiers
+	tiers, tierRanges := calculateTiers(totalScores)
 
 	// Prepare template data
 	templateData := struct {
 		PageName     string
-		MaxScore     int
 		TotalScores  map[string]ScoreStats
 		Tiers        map[string][]string
 		TierRanges   map[string]string
 		OrderedTiers []string
 	}{
 		PageName:    "Statistics",
-		MaxScore:    maxScore,
 		TotalScores: scoreStats,
 		Tiers:       tiers,
 		TierRanges:  tierRanges,
@@ -192,7 +179,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		"join": strings.Join,
 	}
 
-	err = h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
+	err := h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
@@ -217,50 +204,34 @@ func calculateTiersWithMaxScore(totalScores map[string]int, maxScore int) (map[s
 		"primordial":     {},
 	}
 
-	// Calculate even distribution across 12 tiers
+	// Calculate tier thresholds as percentages of maxScore
 	thresholds := map[string]int{
-		"transcendental": (maxScore * 11) / 12,
-		"cosmic":         (maxScore * 10) / 12,
-		"divine":         (maxScore * 9) / 12,
-		"celestial":      (maxScore * 8) / 12,
-		"ascendant":      (maxScore * 7) / 12,
-		"ethereal":       (maxScore * 6) / 12,
-		"mystic":         (maxScore * 5) / 12,
-		"astral":         (maxScore * 4) / 12,
-		"spiritual":      (maxScore * 3) / 12,
-		"primal":         (maxScore * 2) / 12,
-		"mortal":         (maxScore * 1) / 12,
-	}
-
-	// Calculate percentages for display
-	percentages := map[string]float64{
-		"transcendental": float64(thresholds["transcendental"]) * 100 / float64(maxScore),
-		"cosmic":         float64(thresholds["cosmic"]) * 100 / float64(maxScore),
-		"divine":         float64(thresholds["divine"]) * 100 / float64(maxScore),
-		"celestial":      float64(thresholds["celestial"]) * 100 / float64(maxScore),
-		"ascendant":      float64(thresholds["ascendant"]) * 100 / float64(maxScore),
-		"ethereal":       float64(thresholds["ethereal"]) * 100 / float64(maxScore),
-		"mystic":         float64(thresholds["mystic"]) * 100 / float64(maxScore),
-		"astral":         float64(thresholds["astral"]) * 100 / float64(maxScore),
-		"spiritual":      float64(thresholds["spiritual"]) * 100 / float64(maxScore),
-		"primal":         float64(thresholds["primal"]) * 100 / float64(maxScore),
-		"mortal":         float64(thresholds["mortal"]) * 100 / float64(maxScore),
-		"primordial":     0.0,
+		"transcendental": int(float64(maxScore) * 0.756),
+		"cosmic":         int(float64(maxScore) * 0.672),
+		"divine":         int(float64(maxScore) * 0.54),
+		"celestial":      int(float64(maxScore) * 0.48),
+		"ascendant":      int(float64(maxScore) * 0.42),
+		"ethereal":       int(float64(maxScore) * 0.36),
+		"mystic":         int(float64(maxScore) * 0.30),
+		"astral":         int(float64(maxScore) * 0.24),
+		"spiritual":      int(float64(maxScore) * 0.18),
+		"primal":         int(float64(maxScore) * 0.12),
+		"mortal":         int(float64(maxScore) * 0.06),
 	}
 
 	tierRanges := map[string]string{
-		"transcendental": fmt.Sprintf("%d+ (%.1f%%+)", thresholds["transcendental"], percentages["transcendental"]),
-		"cosmic":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["cosmic"], thresholds["transcendental"]-1, percentages["cosmic"], percentages["transcendental"]),
-		"divine":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["divine"], thresholds["cosmic"]-1, percentages["divine"], percentages["cosmic"]),
-		"celestial":      fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["celestial"], thresholds["divine"]-1, percentages["celestial"], percentages["divine"]),
-		"ascendant":      fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["ascendant"], thresholds["celestial"]-1, percentages["ascendant"], percentages["celestial"]),
-		"ethereal":       fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["ethereal"], thresholds["ascendant"]-1, percentages["ethereal"], percentages["ascendant"]),
-		"mystic":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["mystic"], thresholds["ethereal"]-1, percentages["mystic"], percentages["ethereal"]),
-		"astral":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["astral"], thresholds["mystic"]-1, percentages["astral"], percentages["mystic"]),
-		"spiritual":      fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["spiritual"], thresholds["astral"]-1, percentages["spiritual"], percentages["astral"]),
-		"primal":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["primal"], thresholds["spiritual"]-1, percentages["primal"], percentages["spiritual"]),
-		"mortal":         fmt.Sprintf("%d-%d (%.1f%%-%.1f%%)", thresholds["mortal"], thresholds["primal"]-1, percentages["mortal"], percentages["primal"]),
-		"primordial":     fmt.Sprintf("0-%d (0-%.1f%%)", thresholds["mortal"]-1, percentages["mortal"]),
+		"transcendental": fmt.Sprintf("%d+", thresholds["transcendental"]),
+		"cosmic":         fmt.Sprintf("%d-%d", thresholds["cosmic"], thresholds["transcendental"]-1),
+		"divine":         fmt.Sprintf("%d-%d", thresholds["divine"], thresholds["cosmic"]-1),
+		"celestial":      fmt.Sprintf("%d-%d", thresholds["celestial"], thresholds["divine"]-1),
+		"ascendant":      fmt.Sprintf("%d-%d", thresholds["ascendant"], thresholds["celestial"]-1),
+		"ethereal":       fmt.Sprintf("%d-%d", thresholds["ethereal"], thresholds["ascendant"]-1),
+		"mystic":         fmt.Sprintf("%d-%d", thresholds["mystic"], thresholds["ethereal"]-1),
+		"astral":         fmt.Sprintf("%d-%d", thresholds["astral"], thresholds["mystic"]-1),
+		"spiritual":      fmt.Sprintf("%d-%d", thresholds["spiritual"], thresholds["astral"]-1),
+		"primal":         fmt.Sprintf("%d-%d", thresholds["primal"], thresholds["spiritual"]-1),
+		"mortal":         fmt.Sprintf("%d-%d", thresholds["mortal"], thresholds["primal"]-1),
+		"primordial":     fmt.Sprintf("0-%d", thresholds["mortal"]-1),
 	}
 
 	for model, score := range totalScores {

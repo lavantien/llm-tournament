@@ -44,40 +44,20 @@
   --text-color: var(--text);
   --text-color-dark: #08101a;
 
-  /* Score colors (used by score-utils.js via CSS variables) */
-  --score-color-0: rgba(244, 248, 255, 0.24);
-  --score-color-20: rgba(255, 200, 87, 0.78);
-  --score-color-40: rgba(255, 200, 87, 0.92);
-  --score-color-60: rgba(25, 247, 255, 0.55);
-  --score-color-80: rgba(167, 123, 255, 0.62);
-  --score-color-100: rgba(124, 255, 107, 0.72);
-}
+  /* Score colors - must be defined here since results page only loads arena.css */
+  --score-color-0: #808080;
+  --score-color-20: #ffa500;
+  --score-color-40: #ffcc00;
+  --score-color-60: #ffff00;
+  --score-color-80: #ccff00;
+  --score-color-100: #00ff00;
 
 /* Hide debug/transport data containers used by some pages */
 .hidden-data {
   display: none !important;
 }
 
-/* Score colors */
-.score-0 {
-  background-color: var(--score-color-0);
-}
-.score-20 {
-  background-color: var(--score-color-20);
-}
-.score-40 {
-  background-color: var(--score-color-40);
-}
-.score-60 {
-  background-color: var(--score-color-60);
-}
-.score-80 {
-  background-color: var(--score-color-80);
-}
-.score-100 {
-  background-color: var(--score-color-100);
-}
-
+/* Generic .score-* classes are defined in style.css */
 /* Results grid score cells */
 .score-cell {
   width: 50px;
@@ -85,6 +65,7 @@
   min-width: 50px;
   max-width: 50px;
   box-sizing: border-box;
+  border: none !important;
 }
 
 /* Make score cells feel interactive */
@@ -95,8 +76,44 @@
 
 /* Visual guide between profile groups - extends vertically through entire table */
 .score-cell.profile-group-divider {
-  border-left: 3px solid rgba(255, 255, 255, 0.3);
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.score-cell.profile-group-divider::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(255, 50, 50, 0.9);
+  z-index: 100;
+}
+
+/* Header divider line - rendered separately for header rows */
+.header-divider-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(255, 50, 50, 0.9);
+  z-index: 100;
+}
+
+/* Prompt header divider */
+th.prompt-col.profile-group-divider {
+  position: relative;
+}
+
+th.prompt-col.profile-group-divider .header-divider-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(255, 50, 50, 0.9);
+  z-index: 100;
 }
 
 /* Evaluate page score buttons */
@@ -160,6 +177,55 @@
 }
 .score-button.score-100 {
   background-color: var(--score-color-100);
+}
+
+/* Score cells with score classes - match score-button styling exactly */
+.score-cell.score-0 {
+  background-color: var(--score-color-0);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+}
+
+.score-cell.score-20 {
+  background-color: var(--score-color-20);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+}
+
+.score-cell.score-40 {
+  background-color: var(--score-color-40);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+}
+
+.score-cell.score-60 {
+  background-color: var(--score-color-60);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+}
+
+.score-cell.score-80 {
+  background-color: var(--score-color-80);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+}
+
+.score-cell.score-100 {
+  background-color: var(--score-color-100);
+  color: rgba(8, 12, 20, 0.92);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 36px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
 }
 
 * {

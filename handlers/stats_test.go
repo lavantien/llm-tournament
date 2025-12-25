@@ -477,3 +477,48 @@ func TestStatsHandler_GET_RenderError(t *testing.T) {
 		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
+
+func TestCalculateTiers_DynamicMaxScore(t *testing.T) {
+	tests := []struct {
+		name         string
+		maxScore     int
+		scores       map[string]int
+		expectedTier string
+	}{
+		{
+			name:     "50 prompts - top tier",
+			maxScore: 5000,
+			scores:   map[string]int{"Model1": 4583},
+			expectedTier: "transcendental",
+		},
+		{
+			name:     "10 prompts - top tier (should be 11/12 = 916+)",
+			maxScore: 1000,
+			scores:   map[string]int{"Model1": 916},
+			expectedTier: "transcendental",
+		},
+		{
+			name:     "30 prompts - top tier (should be 11/12 = 2750+)",
+			maxScore: 3000,
+			scores:   map[string]int{"Model1": 2750},
+			expectedTier: "transcendental",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tiers, _ := calculateTiersWithMaxScore(tt.scores, tt.maxScore)
+
+			found := false
+			for _, m := range tiers[tt.expectedTier] {
+				if m == "Model1" {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("model should be in tier %q", tt.expectedTier)
+			}
+		})
+	}
+}

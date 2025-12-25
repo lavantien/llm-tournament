@@ -27,6 +27,7 @@ all: lint test
 
 clean:
 	$(RM)
+	rm data/tournament.db
 
 build:
 ifeq ($(DETECTED_OS),Windows)

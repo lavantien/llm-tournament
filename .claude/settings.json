@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+    ],
+    "deny": [
+      "Bash(cat:*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {

@@ -1889,13 +1889,13 @@ func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
 	// Use default handler which uses real middleware
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	// Verify 15 mock models created
+	// Verify 24 mock models created
 	err = db.QueryRow("SELECT COUNT(*) FROM models").Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query model count after generation: %v", err)
 	}
-	if count != 15 {
-		t.Errorf("expected 15 mock models, got %d", count)
+	if count != 24 {
+		t.Errorf("expected 24 mock models, got %d", count)
 	}
 
 	// Verify model names use tier-based pattern
@@ -2009,7 +2009,7 @@ func TestUpdateMockResultsHandler_GeneratesMockResponses(t *testing.T) {
 	}
 
 	// Should have 15 models * 1 prompt = 15 mock responses
-	expectedResponses := 15 // models count * prompt count
+	expectedResponses := 24 // models count * prompt count
 	if responseCount < expectedResponses {
 		t.Errorf("expected at least %d mock responses, got %d", expectedResponses, responseCount)
 	}
@@ -2052,8 +2052,8 @@ func TestUpdateMockResultsHandler_CreatesModelsInCurrentSuite(t *testing.T) {
 		t.Fatalf("failed to query model count: %v", err)
 	}
 
-	// Should have created 15 mock models
-	expectedModels := 15
+	// Should have created 24 mock models
+	expectedModels := 24
 	if modelCount != expectedModels {
 		t.Errorf("expected %d models in database, got %d", expectedModels, modelCount)
 	}
@@ -2375,6 +2375,96 @@ func TestRandomizeScoresHandler_OnlyRandomizesScores_NotRegenerateData(t *testin
 	}
 }
 
+func TestRandomizeScores_UsesTierBasedDistribution(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("failed to get suite ID: %v", err)
+	}
+
+	// Create prompts
+	for i := 0; i < 50; i++ {
+		_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", fmt.Sprintf("Prompt %d", i), suiteID, i)
+		if err != nil {
+			t.Fatalf("failed to insert prompt: %v", err)
+		}
+	}
+
+	// Create multiple models to test tier distribution
+	for i := 0; i < 12; i++ {
+		_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", fmt.Sprintf("Model%d", i), suiteID)
+		if err != nil {
+			t.Fatalf("failed to insert model: %v", err)
+		}
+	}
+
+	// Run randomize
+	req := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr := httptest.NewRecorder()
+	DefaultHandler.RandomizeScores(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Query scores and verify they're all valid
+	rows, err := db.Query("SELECT score FROM scores")
+	if err != nil {
+		t.Fatalf("failed to query scores: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	validScores := map[int]bool{0: true, 20: true, 40: true, 60: true, 80: true, 100: true}
+	for rows.Next() {
+		var score int
+		if err := rows.Scan(&score); err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+		if !validScores[score] {
+			t.Errorf("invalid score: %d", score)
+		}
+	}
+
+	// Verify models are distributed across tiers (at least 8 of 12 tiers)
+	tierRows, err := db.Query(`
+		SELECT m.name, SUM(s.score) as total
+		FROM models m
+		JOIN scores s ON s.model_id = m.id
+		WHERE m.suite_id = ?
+		GROUP BY m.id
+		ORDER BY total DESC
+	`, suiteID)
+	if err != nil {
+		t.Fatalf("failed to query tier distribution: %v", err)
+	}
+	defer func() { _ = tierRows.Close() }()
+
+	maxScore := 50 * 100
+	tierSize := maxScore / 12
+	tiers := make(map[int]bool)
+
+	for tierRows.Next() {
+		var name string
+		var total int
+		if err := tierRows.Scan(&name, &total); err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+		tier := total / tierSize
+		if tier >= 12 {
+			tier = 11
+		}
+		tiers[tier] = true
+	}
+
+	if len(tiers) < 8 {
+		t.Errorf("expected at least 8 tiers to be populated, got %d", len(tiers))
+	}
+}
+
+
 func TestEvaluateResultHandler_RedirectsWhenModelOrPromptMissing(t *testing.T) {
 	mockDS := &MockDataStore{
 		Prompts: []middleware.Prompt{
@@ -2695,9 +2785,8 @@ func TestUpdateMockResultsHandler_PromptsHaveSolutions(t *testing.T) {
 		if err := rows.Scan(&text, &solution); err != nil {
 			t.Fatalf("failed to scan row: %v", err)
 		}
-		if solution == "" {
-			// Empty string is OK, NULL is not
-		}
+		// Empty string is OK, NULL is not
+		_ = solution // Empty solution is acceptable
 		count++
 	}
 
@@ -2709,5 +2798,183 @@ func TestUpdateMockResultsHandler_PromptsHaveSolutions(t *testing.T) {
 	prompts := middleware.ReadPrompts()
 	if len(prompts) == 0 {
 		t.Error("ReadPrompts returned empty slice")
+	}
+}
+
+func TestResultsHandler_ScoreCellsUseConsistentColors(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Add test prompts and results
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
+		"TestModel": {Scores: []int{0}},
+	})
+
+	req := httptest.NewRequest("GET", "/results", nil)
+	rr := httptest.NewRecorder()
+	ResultsHandler(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Verify score classes exist in CSS file
+	cssPath := "templates/arena.css"
+	cssContent, err := os.ReadFile(cssPath)
+	if err != nil {
+		t.Fatalf("failed to read CSS file: %v", err)
+	}
+
+	// Verify all score classes (score-0 through score-100) are present and reference correct CSS variables
+	validScores := []int{0, 20, 40, 60, 80, 100}
+	for _, score := range validScores {
+		classSelector := fmt.Sprintf(".score-%d {", score)
+		if !strings.Contains(string(cssContent), classSelector) {
+			t.Errorf("CSS class score-%d not found in %s", score, cssPath)
+		}
+
+		// Verify the class references the correct CSS variable
+		varName := fmt.Sprintf("--score-color-%d", score)
+		if !strings.Contains(string(cssContent), varName) {
+			t.Errorf("CSS variable %s not found in %s", varName, cssPath)
+		}
+	}
+
+	// Verify the CSS variables are defined in :root
+	if !strings.Contains(string(cssContent), ":root {") {
+		t.Error(":root selector not found in CSS file")
+	}
+
+	// Verify score cells are rendered with correct classes in the HTML response
+	body := rr.Body.String()
+	if !strings.Contains(body, "score-cell") {
+		t.Error("expected 'score-cell' class in response body")
+	}
+}
+
+func TestRandomizeScores_CoversAllTiers(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	suiteID, err := middleware.GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("failed to get suite ID: %v", err)
+	}
+
+	// Create 36 models and 50 prompts (enough for 12 tier distribution)
+	numModels := 36
+	numPrompts := 50
+
+	// Create prompts
+	for i := 0; i < numPrompts; i++ {
+		_, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", fmt.Sprintf("Prompt %d", i), suiteID, i)
+		if err != nil {
+			t.Fatalf("failed to insert prompt: %v", err)
+		}
+	}
+
+	// Create models
+	for i := 0; i < numModels; i++ {
+		_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", fmt.Sprintf("Model%d", i), suiteID)
+		if err != nil {
+			t.Fatalf("failed to insert model: %v", err)
+		}
+	}
+
+	// Run randomize
+	req := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr := httptest.NewRecorder()
+	DefaultHandler.RandomizeScores(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	// Query all model total scores
+	rows, err := db.Query(`
+		SELECT m.name, SUM(s.score) as total
+		FROM models m
+		JOIN scores s ON s.model_id = m.id
+		WHERE m.suite_id = ?
+		GROUP BY m.id
+		ORDER BY total DESC
+	`, suiteID)
+	if err != nil {
+		t.Fatalf("failed to query scores: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	type modelScore struct {
+		Name  string
+		Total int
+	}
+	var scores []modelScore
+	for rows.Next() {
+		var ms modelScore
+		if err := rows.Scan(&ms.Name, &ms.Total); err != nil {
+			t.Fatalf("failed to scan row: %v", err)
+		}
+		scores = append(scores, ms)
+	}
+
+	// Calculate max possible score
+	maxScore := numPrompts * 100
+
+	// Define 12 tiers (each tier covers approximately 8.33% of the range)
+	// Count how many unique tiers are represented
+	tierSize := maxScore / 12
+	tiersRepresented := make(map[int]bool)
+
+	for _, ms := range scores {
+		tier := ms.Total / tierSize
+		if tier >= 12 {
+			tier = 11 // Cap at highest tier
+		}
+		tiersRepresented[tier] = true
+	}
+
+	// Verify at least 10 of 12 tiers are populated
+	if len(tiersRepresented) < 10 {
+		t.Errorf("Expected at least 10 of 12 tiers to be populated, got %d tiers", len(tiersRepresented))
+		t.Logf("Tiers represented: %v", tiersRepresented)
+		for _, ms := range scores {
+			t.Logf("  %s: %d", ms.Name, ms.Total)
+		}
+	}
+}
+
+func TestClampToValidScore(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    int
+		expected int
+	}{
+		{"exact_zero", 0, 0},
+		{"exact_twenty", 20, 20},
+		{"exact_forty", 40, 40},
+		{"exact_sixty", 60, 60},
+		{"exact_eighty", 80, 80},
+		{"exact_hundred", 100, 100},
+		{"below_zero", -10, 0},
+		{"above_hundred", 150, 100},
+		{"between_0_and_20", 10, 0},
+		{"between_20_and_40", 30, 20},
+		{"between_40_and_60", 50, 40},
+		{"between_60_and_80", 70, 60},
+		{"between_80_and_100", 90, 80},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := clampToValidScore(tt.input)
+			if result != tt.expected {
+				t.Errorf("clampToValidScore(%d) = %d, want %d", tt.input, result, tt.expected)
+			}
+		})
 	}
 }

@@ -755,7 +755,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 		results = make(map[string]middleware.Result)
 		tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
 			"Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
-		for i := 0; i < 15; i++ {
+		for i := 0; i < 24; i++ {
 			tier := tiers[i%len(tiers)]
 			num := i/len(tiers) + 1
 			modelName := tier + "-" + strconv.Itoa(num)
@@ -925,7 +925,7 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error querying models", http.StatusInternalServerError)
 		return
 	}
-	defer modelRows.Close()
+	defer func() { _ = modelRows.Close() }()
 
 	var models []struct {
 		ID   int
@@ -948,7 +948,7 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error querying prompts", http.StatusInternalServerError)
 		return
 	}
-	defer promptRows.Close()
+	defer func() { _ = promptRows.Close() }()
 
 	var promptIDs []int
 	for promptRows.Next() {
@@ -959,16 +959,49 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 		promptIDs = append(promptIDs, id)
 	}
 
-	validScores := []int{0, 20, 40, 60, 80, 100}
 	rng := initRand()
+	numPrompts := len(promptIDs)
+	maxScore := numPrompts * 100
+	numTiers := 12
 
-	for _, model := range models {
-		for _, promptID := range promptIDs {
-			randomScore := validScores[rng.Intn(len(validScores))]
-			db.Exec(
+	for i, model := range models {
+		tierIndex := (i * numTiers) / len(models)
+		if tierIndex >= numTiers {
+			tierIndex = numTiers - 1
+		}
+
+		tierMinPercent := float64(tierIndex) / float64(numTiers)
+		tierMaxPercent := float64(tierIndex+1) / float64(numTiers)
+		tierMidPercent := (tierMinPercent + tierMaxPercent) / 2
+		targetTotal := int(float64(maxScore) * tierMidPercent)
+
+		remaining := targetTotal
+		for j, promptID := range promptIDs {
+			var score int
+			if j == len(promptIDs)-1 {
+				score = clampToValidScore(remaining)
+			} else {
+				promptsRemaining := len(promptIDs) - j - 1
+				minScore := max(0, remaining-promptsRemaining*100)
+				maxScoreVal := min(100, remaining)
+
+				midScore := (minScore + maxScoreVal) / 2
+				randomOffset := rng.Intn(21) - 10
+				score = clampToValidScore(midScore + randomOffset)
+
+				if score > maxScoreVal {
+					score = clampToValidScore(maxScoreVal)
+				}
+				if score < minScore {
+					score = clampToValidScore(minScore)
+				}
+			}
+
+			_, _ = db.Exec(
 				"INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?) "+
 					"ON CONFLICT(model_id, prompt_id) DO UPDATE SET score = excluded.score",
-				model.ID, promptID, randomScore)
+				model.ID, promptID, score)
+			remaining -= score
 		}
 	}
 
@@ -976,5 +1009,21 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+func clampToValidScore(score int) int {
+	minDiff := 1000
+	result := 0
+	for _, vs := range []int{0, 20, 40, 60, 80, 100} {
+		diff := score - vs
+		if diff < 0 {
+			diff = -diff
+		}
+		if diff < minDiff {
+			minDiff = diff
+			result = vs
+		}
+	}
+	return result
 }

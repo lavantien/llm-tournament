@@ -65,7 +65,7 @@
 				
 				<option value="file4">llm-tournament/evaluator/litellm_client.go (100.0%)</option>
 				
-				<option value="file5">llm-tournament/handlers/evaluation.go (100.0%)</option>
+				<option value="file5">llm-tournament/handlers/evaluation.go (96.2%)</option>
 				
 				<option value="file6">llm-tournament/handlers/handler.go (100.0%)</option>
 				
@@ -75,7 +75,7 @@
 				
 				<option value="file9">llm-tournament/handlers/prompt.go (100.0%)</option>
 				
-				<option value="file10">llm-tournament/handlers/results.go (99.0%)</option>
+				<option value="file10">llm-tournament/handlers/results.go (95.0%)</option>
 				
 				<option value="file11">llm-tournament/handlers/settings.go (100.0%)</option>
 				
@@ -99,7 +99,7 @@
 				
 				<option value="file21">llm-tournament/middleware/settings.go (100.0%)</option>
 				
-				<option value="file22">llm-tournament/middleware/socket.go (100.0%)</option>
+				<option value="file22">llm-tournament/middleware/socket.go (99.1%)</option>
 				
 				<option value="file23">llm-tournament/middleware/state.go (100.0%)</option>
 				
@@ -1052,6 +1052,7 @@ import (
         "llm-tournament/middleware"
         "log"
         "net/http"
+        "encoding/json"
         "strconv"
 )
 
@@ -1222,6 +1223,59 @@ func CancelEvaluationHandler(w http.ResponseWriter, r *http.Request) <span class
                 "success": true,
                 "message": "Job cancelled",
         })</span>
+}
+
+// SaveModelResponseHandler saves or updates a model's response for a prompt
+func SaveModelResponseHandler(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        if r.Method != http.MethodPost </span><span class="cov8" title="1">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var reqBody struct {
+                ModelID       int    `json:"model_id"`
+                PromptID      int    `json:"prompt_id"`
+                ResponseText  string `json:"response_text"`
+        }
+        if err := json.NewDecoder(r.Body).Decode(&amp;reqBody); err != nil || reqBody.ModelID == 0 </span><span class="cov8" title="1">{
+                http.Error(w, "model_id is required", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov8" title="1">if reqBody.PromptID == 0 </span><span class="cov8" title="1">{
+                http.Error(w, "prompt_id is required", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov8" title="1">if reqBody.ResponseText == "" </span><span class="cov8" title="1">{
+                http.Error(w, "response_text is required", http.StatusBadRequest)
+                return
+        }</span>
+
+        // Get database connection
+        <span class="cov8" title="1">db := middleware.GetDB()
+
+        // Insert or update the model response
+        query := `
+                INSERT INTO model_responses (model_id, prompt_id, response_text, response_source)
+                VALUES (?, ?, ?, 'manual')
+                ON CONFLICT(model_id, prompt_id) DO UPDATE SET
+                        response_text = excluded.response_text,
+                        updated_at = CURRENT_TIMESTAMP
+        `
+        _, err := db.Exec(query, reqBody.ModelID, reqBody.PromptID, reqBody.ResponseText)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Error saving model response: %v", err)
+                http.Error(w, "Failed to save response", http.StatusInternalServerError)
+                return
+        }</span>
+
+        // Return success
+        <span class="cov8" title="1">w.Header().Set("Content-Type", "application/json")
+        if err := json.NewEncoder(w).Encode(map[string]interface{}{
+                "success": true,
+                "message": "Response saved successfully",
+        }); err != nil </span><span class="cov0" title="0">{
+                log.Printf("Error encoding response: %v", err)
+        }</span>
 }
 </pre>
 		
@@ -2588,11 +2642,6 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
         for model := range results </span><span class="cov8" title="1">{
                 models = append(models, model)
         }</span>
-        <span class="cov8" title="1">if len(models) == 0 </span><span class="cov8" title="1">{
-                // If no results exist, get models from somewhere else if needed
-                // This is just a fallback - you may need to adjust based on your data source
-                models = []string{"Model1", "Model2"} // Example fallback
-        }</span>
         <span class="cov8" title="1">sort.Slice(models, func(i, j int) bool </span><span class="cov8" title="1">{
                 return modelScores[models[i]] &gt; modelScores[models[j]]
         }</span>)
@@ -2656,8 +2705,13 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) <span class="c
                 for _, score := range result.Scores </span><span class="cov8" title="1">{
                         totalScore += score
                 }</span>
-                <span class="cov8" title="1">modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
-                modelTotalScores[model] = totalScore</span>
+                // Avoid division by zero when there are no prompts
+                <span class="cov8" title="1">if len(prompts) &gt; 0 </span><span class="cov8" title="1">{
+                        modelPassPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+                }</span> else<span class="cov8" title="1"> {
+                        modelPassPercentages[model] = 0
+                }</span>
+                <span class="cov8" title="1">modelTotalScores[model] = totalScore</span>
         }
 
         // Log the data we're about to send to the template for debugging
@@ -2848,7 +2902,12 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
         model := r.URL.Query().Get("model")
         promptIndexStr := r.URL.Query().Get("prompt")
 
-        if r.Method == "POST" </span><span class="cov8" title="1">{
+        // Validate required query parameters
+        if model == "" || promptIndexStr == "" </span><span class="cov8" title="1">{
+                http.Redirect(w, r, "/results", http.StatusSeeOther)
+                return
+        }</span>
+        <span class="cov8" title="1">if r.Method == "POST" </span><span class="cov8" title="1">{
                 scoreStr := r.FormValue("score")
                 score, err := strconv.Atoi(scoreStr)
                 if err != nil </span><span class="cov8" title="1">{
@@ -2922,24 +2981,51 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
                 solution = prompts[promptIndex].Solution
         }</span>
 
+        // Get model response if available
+        <span class="cov8" title="1">var modelResponse string
+        db := middleware.GetDB()
+        var modelID int
+        var promptID int
+
+        // Get model_id from model name
+        err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&amp;modelID)
+        if err == nil </span><span class="cov8" title="1">{
+                // Get prompt_id from database using prompt index (1-indexed)
+                err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = 1 ORDER BY display_order LIMIT 1 OFFSET ?", promptIndex).Scan(&amp;promptID)
+                if err == nil </span><span class="cov8" title="1">{
+                        // Get the response for this model/prompt pair
+                        err = db.QueryRow("SELECT response_text FROM model_responses WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&amp;modelResponse)
+                        if err != nil </span><span class="cov8" title="1">{
+                                // No response found, leave empty
+                                modelResponse = ""
+                        }</span>
+                }
+        }
+
         <span class="cov8" title="1">data := struct {
-                PageName     string
-                Model        string
-                PromptIndex  string
-                ScoreOptions map[string]int
-                CurrentScore int
-                PromptText   string
-                Solution     string
-                TotalPrompts int
+                PageName      string
+                Model         string
+                PromptIndex   string
+                ScoreOptions  map[string]int
+                CurrentScore  int
+                PromptText    string
+                Solution      string
+                TotalPrompts  int
+                ModelResponse string
+                ModelID       int
+                PromptID      int
         }{
-                PageName:     templates.PageNameEvaluate,
-                Model:        model,
-                PromptIndex:  promptIndexStr,
-                ScoreOptions: templates.ScoreOptions,
-                CurrentScore: currentScore,
-                PromptText:   promptText,
-                Solution:     solution,
-                TotalPrompts: len(prompts),
+                PageName:      templates.PageNameEvaluate,
+                Model:         model,
+                PromptIndex:   promptIndexStr,
+                ScoreOptions:  templates.ScoreOptions,
+                CurrentScore:  currentScore,
+                PromptText:    promptText,
+                Solution:      solution,
+                TotalPrompts:  len(prompts),
+                ModelResponse: modelResponse,
+                ModelID:       modelID,
+                PromptID:      promptID,
         }
 
         err = h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html")
@@ -3011,8 +3097,42 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
 
         prompts := h.DataStore.ReadPrompts()
 
+        // If no prompts exist, create mock prompts
+        if len(prompts) == 0 </span><span class="cov8" title="1">{
+                db := middleware.GetDB()
+                suiteID, err := middleware.GetCurrentSuiteID()
+                if err != nil || suiteID == 0 </span><span class="cov0" title="0">{
+                        suiteID = 1
+                }</span>
+                <span class="cov8" title="1">mockPrompts := []string{
+                        "What is 2 + 2?",
+                        "Explain recursion in programming",
+                        "What is the capital of France?",
+                        "Write a function to reverse a string",
+                        "What is photosynthesis?",
+                }
+                for i, text := range mockPrompts </span><span class="cov8" title="1">{
+                        _, err = db.Exec("INSERT INTO prompts (text, suite_id, display_order, type) VALUES (?, ?, ?, 'objective')", text, suiteID, i)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Printf("Error inserting mock prompt: %v", err)
+                        }</span>
+                }
+                <span class="cov8" title="1">prompts = h.DataStore.ReadPrompts()
+                log.Printf("Created %d mock prompts", len(prompts))
+
+                // Create mock profiles
+                profiles := []string{"Math", "Philosophy", "Programming", "Science", "Writing"}
+                for _, name := range profiles </span><span class="cov8" title="1">{
+                        _, err = db.Exec("INSERT INTO profiles (name, suite_id) VALUES (?, ?)", name, suiteID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Printf("Error inserting mock profile: %v", err)
+                        }</span>
+                }
+                <span class="cov8" title="1">log.Printf("Created %d mock profiles", len(profiles))</span>
+        }
+
         // Get all model names
-        models := mockData.Models
+        <span class="cov8" title="1">models := mockData.Models
         if len(models) == 0 </span><span class="cov8" title="1">{
                 // If no models passed, use models from existing results
                 for model := range mockData.Results </span><span class="cov8" title="1">{
@@ -3023,8 +3143,22 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
         // Use the client's results directly
         <span class="cov8" title="1">results := mockData.Results
 
+        // Generate mock models if both models and results are empty
+        if len(models) == 0 &amp;&amp; len(results) == 0 </span><span class="cov8" title="1">{
+                results = make(map[string]middleware.Result)
+                tiers := []string{"Cosmic", "Transcendent", "Ethereal", "Celestial", "Infinite",
+                        "Quantum", "Nebular", "Stellar", "Galactic", "Universal", "Dimensional"}
+                for i := 0; i &lt; 15; i++ </span><span class="cov8" title="1">{
+                        tier := tiers[i%len(tiers)]
+                        num := i/len(tiers) + 1
+                        modelName := tier + "-" + strconv.Itoa(num)
+                        models = append(models, modelName)
+                        results[modelName] = middleware.Result{Scores: make([]int, len(prompts))}
+                }</span>
+        }
+
         // Validate that all scores are legitimate values: 0, 20, 40, 60, 80, 100
-        for model, result := range results </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">for model, result := range results </span><span class="cov8" title="1">{
                 for i, score := range result.Scores </span><span class="cov8" title="1">{
                         // Only allow valid score values
                         switch score </span>{
@@ -3050,6 +3184,62 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
                 return
         }</span>
 
+        // Generate mock responses for each model and prompt combination
+        // Get database for inserting mock responses
+        <span class="cov8" title="1">db := middleware.GetDB()
+        suiteID, err := middleware.GetCurrentSuiteID()
+        if err != nil </span><span class="cov8" title="1">{
+                suiteID = 1 // fallback to default suite
+        }</span>
+
+        // Get all prompts for response generation
+        <span class="cov8" title="1">for _, modelName := range models </span><span class="cov8" title="1">{
+                // Get model ID
+                var modelID int
+                err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, suiteID).Scan(&amp;modelID)
+                if err != nil </span><span class="cov8" title="1">{
+                        continue</span> // model might not exist yet
+                }
+
+                // Generate mock response for each prompt
+                <span class="cov8" title="1">for promptIdx := range prompts </span><span class="cov8" title="1">{
+                        var promptID int
+                        err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?",
+                                suiteID, promptIdx).Scan(&amp;promptID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+
+                        // Generate Lorem ipsum mock response
+                        <span class="cov8" title="1">loremPhrases := []string{
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                                "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+                                "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
+                                "Excepteur sint occaecat cupidatat non proident sunt in culpa.",
+                        }
+
+                        // Build 3-5 random sentences
+                        numSentences := 3 + rand.Intn(3)
+                        var responseParts []string
+                        for i := 0; i &lt; numSentences; i++ </span><span class="cov8" title="1">{
+                                responseParts = append(responseParts, loremPhrases[rand.Intn(len(loremPhrases))])
+                        }</span>
+                        <span class="cov8" title="1">mockResponse := strings.Join(responseParts, " ")
+
+                        // Insert or update mock response
+                        _, err = db.Exec(
+                                "INSERT INTO model_responses (model_id, prompt_id, response_text, response_source) "+
+                                        "VALUES (?, ?, ?, 'mock') "+
+                                        "ON CONFLICT(model_id, prompt_id) DO UPDATE SET "+
+                                        "response_text = excluded.response_text, response_source = 'mock', updated_at = CURRENT_TIMESTAMP",
+                                modelID, promptID, mockResponse)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Printf("Error inserting mock response for model %s prompt %d: %v", modelName, promptIdx, err)
+                        }</span>
+                }
+        }
+
         // Broadcast the updated results to all connected clients
         <span class="cov8" title="1">h.DataStore.BroadcastResults()
 
@@ -3064,9 +3254,14 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
                         totalScore += score
                 }</span>
                 <span class="cov8" title="1">totalScores[model] = totalScore
-                passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+                // Avoid division by zero when there are no prompts
+                if len(prompts) &gt; 0 </span><span class="cov8" title="1">{
+                        passPercentages[model] = float64(totalScore) / float64(len(prompts)*100) * 100
+                }</span> else<span class="cov8" title="1"> {
+                        passPercentages[model] = 0
+                }</span>
 
-                log.Printf("Model %s: total score = %d, pass percentage = %.2f%%",
+                <span class="cov8" title="1">log.Printf("Model %s: total score = %d, pass percentage = %.2f%%",
                         model, totalScore, passPercentages[model])</span>
         }
 
@@ -3093,6 +3288,88 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
         }</span>
 
         <span class="cov8" title="1">log.Println("Mock results with even tier distribution updated successfully")</span>
+}
+
+// RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)
+func RandomizeScoresHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        DefaultHandler.RandomizeScores(w, r)
+}</span>
+
+// RandomizeScores randomizes existing scores in the database without creating new models or prompts
+func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        log.Println("Handling randomize scores")
+
+        if r.Method != "POST" </span><span class="cov0" title="0">{
+                http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+                return
+        }</span>
+
+        <span class="cov8" title="1">db := middleware.GetDB()
+        suiteID, err := middleware.GetCurrentSuiteID()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Error getting suite ID: %v", err)
+                http.Error(w, "Error getting suite ID", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">modelRows, err := db.Query("SELECT id, name FROM models WHERE suite_id = ?", suiteID)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Error querying models: %v", err)
+                http.Error(w, "Error querying models", http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov8" title="1">defer modelRows.Close()
+
+        var models []struct {
+                ID   int
+                Name string
+        }
+
+        for modelRows.Next() </span><span class="cov8" title="1">{
+                var m struct {
+                        ID   int
+                        Name string
+                }
+                if err := modelRows.Scan(&amp;m.ID, &amp;m.Name); err != nil </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">models = append(models, m)</span>
+        }
+
+        <span class="cov8" title="1">promptRows, err := db.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Error querying prompts", http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov8" title="1">defer promptRows.Close()
+
+        var promptIDs []int
+        for promptRows.Next() </span><span class="cov8" title="1">{
+                var id int
+                if err := promptRows.Scan(&amp;id); err != nil </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov8" title="1">promptIDs = append(promptIDs, id)</span>
+        }
+
+        <span class="cov8" title="1">validScores := []int{0, 20, 40, 60, 80, 100}
+        rng := initRand()
+
+        for _, model := range models </span><span class="cov8" title="1">{
+                for _, promptID := range promptIDs </span><span class="cov8" title="1">{
+                        randomScore := validScores[rng.Intn(len(validScores))]
+                        db.Exec(
+                                "INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?) "+
+                                        "ON CONFLICT(model_id, prompt_id) DO UPDATE SET score = excluded.score",
+                                model.ID, promptID, randomScore)
+                }</span>
+        }
+
+        <span class="cov8" title="1">h.DataStore.BroadcastResults()
+
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        json.NewEncoder(w).Encode(map[string]string{"status": "success"})</span>
 }
 </pre>
 		
@@ -3665,6 +3942,7 @@ var routes = map[string]http.HandlerFunc{
         "/refresh_results":         handlers.RefreshResultsHandler,
         "/export_results":          handlers.ExportResultsHandler,
         "/update_mock_results":     handlers.UpdateMockResultsHandler,
+        "/randomize_scores":        handlers.RandomizeScoresHandler,
         "/evaluate":                handlers.EvaluateResult,
         "/profiles":                handlers.ProfilesHandler,
         "/add_profile":             handlers.AddProfileHandler,
@@ -3681,6 +3959,7 @@ var routes = map[string]http.HandlerFunc{
         "/evaluate/prompt":     handlers.EvaluatePromptHandler,
         "/evaluation/progress": handlers.EvaluationProgressHandler,
         "/evaluation/cancel":   handlers.CancelEvaluationHandler,
+        "/save_model_response":  handlers.SaveModelResponseHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
@@ -4673,10 +4952,7 @@ func BroadcastResults() <span class="cov8" title="1">{
         for model := range results </span><span class="cov8" title="1">{
                 models = append(models, model)
         }</span>
-        <span class="cov8" title="1">if len(models) == 0 </span><span class="cov8" title="1">{
-                models = []string{"Model1", "Model2"} // Example fallback
-        }</span>
-        <span class="cov8" title="1">sort.Slice(models, func(i, j int) bool </span><span class="cov8" title="1">{
+        <span class="cov8" title="1">sort.Slice(models, func(i, j int) bool </span><span class="cov0" title="0">{
                 return modelTotalScores[models[i]] &gt; modelTotalScores[models[j]]
         }</span>)
 

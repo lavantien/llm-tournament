@@ -619,8 +619,11 @@
         function createScoreCells(model, scores, promptsCount, profileGroups = []) {
             const cells = [];
 
-            // Build a set of column indices that need dividers (start of each profile group except first)
+            // Build a set of column indices that need dividers
             const dividerColumns = new Set();
+            // First column
+            dividerColumns.add(0);
+            // Profile group boundaries (except first group)
             profileGroups.forEach((group, idx) => {
                 if (idx > 0 && group.startCol >= 0) {
                     dividerColumns.add(group.startCol);
@@ -635,7 +638,7 @@
                 const scoreClass = getScoreClass(score);
                 let cellClass = `score-cell ${scoreClass}`;
 
-                // Add visual guide if this column is at a profile group boundary
+                // Add visual guide if this column is at a boundary
                 if (dividerColumns.has(index)) {
                     cellClass += ' profile-group-divider';
                 }
@@ -807,27 +810,41 @@
                     window.profileColumnMap[endCol] = { isEnd: true, color: color };
                 }
             });
-            
+
             // Apply to header columns
             const headerCells = document.querySelectorAll('.prompt-col');
-            
+
             headerCells.forEach(cell => {
                 const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
                 const boundary = columnMap[promptIndex];
-                
-                if (boundary) {
-                    // Clear existing classes
-                    cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
-                    
-                    if (boundary.isStart) {
-                        cell.classList.add('profile-group-start', 'profile-group-divider');
-                        cell.style.borderLeft = `var(--profile-border-width) solid ${boundary.color}`;
-                    }
-                    
-                    if (boundary.isEnd) {
-                        cell.classList.add('profile-group-end');
-                        cell.style.borderRight = `var(--profile-border-width) solid ${boundary.color}`;
-                    }
+
+                // Clear existing classes and inline styles
+                cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end', 'header-divider', 'profile-group-divider');
+                cell.style.borderLeft = '';
+
+                // Remove any existing divider line div
+                const existingDivider = cell.querySelector('.header-divider-line');
+                if (existingDivider) {
+                    existingDivider.remove();
+                }
+
+                // Add divider to first column
+                if (promptIndex === 0) {
+                    cell.classList.add('profile-group-divider', 'header-divider');
+                    const dividerLine = document.createElement('div');
+                    dividerLine.className = 'header-divider-line';
+                    cell.appendChild(dividerLine);
+                }
+                // Add divider at profile boundaries (not first group)
+                else if (boundary && boundary.isStart) {
+                    cell.classList.add('profile-group-start', 'profile-group-divider', 'header-divider');
+                    const dividerLine = document.createElement('div');
+                    dividerLine.className = 'header-divider-line';
+                    cell.appendChild(dividerLine);
+                }
+
+                if (boundary && boundary.isEnd) {
+                    cell.classList.add('profile-group-end');
                 }
             });
         }
@@ -933,28 +950,27 @@
             <!-- Profile grouping row -->
             <tr class="profile-row">
                 <th colspan="3"></th> <!-- For rank, actions, model columns -->
-                {{$first := true}}
                 {{range $index, $group := .ProfileGroups}}
                     {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
-                    <th colspan="{{add (sub .EndCol .StartCol) 1}}" 
-                        class="profile-header profile-header-cell profile-header-styled {{if not $first}}profile-divider-left{{end}}" 
+                    <th colspan="{{add (sub .EndCol .StartCol) 1}}"
+                        class="profile-header profile-header-cell profile-header-styled profile-divider-left"
                         data-profile-id="{{.ID}}"
-                        style="--profile-color: #333;">
+                        style="position: relative; --profile-color: #333;">
+                        <div class="header-divider-line"></div>
                         <div class="profile-header-text">{{.Name}}</div>
                     </th>
-                    {{$first = false}}
                     {{end}}
                 {{end}}
                 <th rowspan="2">Total</th>
             </tr>
-            
+
             <!-- Regular header row with numbers -->
             <tr>
                 <th>#</th>
                 <th>Actions</th>
                 <th>Model</th>
                 {{range $prompt := .OrderedPrompts}}
-                    <th class="prompt-col" 
+                    <th class="prompt-col"
                         data-profile-id="{{$prompt.ProfileID}}"
                         data-prompt-index="{{$prompt.Index}}">
                         {{inc $prompt.Index}}

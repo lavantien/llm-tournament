@@ -128,21 +128,36 @@
             new Chart(document.getElementById('totalScoresChart'), config);
         });
 
+        
         function getTierClass(score) {
-            if (score >= 3780) return 'transcendental';
-            if (score >= 3360) return 'cosmic';
-            if (score >= 2700) return 'divine';
-            if (score >= 2400) return 'celestial';
-            if (score >= 2100) return 'ascendant';
-            if (score >= 1800) return 'ethereal';
-            if (score >= 1500) return 'mystic';
-            if (score >= 1200) return 'astral';
-            if (score >= 900) return 'spiritual';
-            if (score >= 600) return 'primal';
-            if (score >= 300) return 'mortal';
+            const maxScore = {{ .MaxScore }};
+            const thresholds = {
+                transcendental: Math.floor(maxScore * 11 / 12),
+                cosmic: Math.floor(maxScore * 10 / 12),
+                divine: Math.floor(maxScore * 9 / 12),
+                celestial: Math.floor(maxScore * 8 / 12),
+                ascendant: Math.floor(maxScore * 7 / 12),
+                ethereal: Math.floor(maxScore * 6 / 12),
+                mystic: Math.floor(maxScore * 5 / 12),
+                astral: Math.floor(maxScore * 4 / 12),
+                spiritual: Math.floor(maxScore * 3 / 12),
+                primal: Math.floor(maxScore * 2 / 12),
+                mortal: Math.floor(maxScore * 1 / 12),
+            };
+
+            if (score >= thresholds.transcendental) return 'transcendental';
+            if (score >= thresholds.cosmic) return 'cosmic';
+            if (score >= thresholds.divine) return 'divine';
+            if (score >= thresholds.celestial) return 'celestial';
+            if (score >= thresholds.ascendant) return 'ascendant';
+            if (score >= thresholds.ethereal) return 'ethereal';
+            if (score >= thresholds.mystic) return 'mystic';
+            if (score >= thresholds.astral) return 'astral';
+            if (score >= thresholds.spiritual) return 'spiritual';
+            if (score >= thresholds.primal) return 'primal';
+            if (score >= thresholds.mortal) return 'mortal';
             return 'primordial';
         }
-        
         // We now use the getScoreColor function from score-utils.js directly
         // The function has been moved to the shared utility file
     </script>
