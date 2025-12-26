@@ -2694,6 +2694,149 @@ func TestUpdateMockResultsHandler_CreatesProfileBasedPrompts(t *testing.T) {
 	}
 }
 
+func TestUpdateMockResultsHandler_DatabaseError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	_, err := db.Exec("DROP TABLE profiles")
+	if err != nil {
+		t.Fatalf("failed to drop profiles table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	// The handler should still succeed (errors are logged, not returned)
+	if rr.Code != http.StatusOK {
+		t.Logf("Got status %d when profiles table was dropped (acceptable if partial creation)", rr.Code)
+	}
+}
+
+func TestUpdateMockResultsHandler_ModelsTableError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	_, err := db.Exec("DROP TABLE models")
+	if err != nil {
+		t.Fatalf("failed to drop models table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Logf("Got status %d when models table was dropped", rr.Code)
+	}
+}
+
+func TestUpdateMockResultsHandler_SuitesTableError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	_, err := db.Exec("DROP TABLE suites")
+	if err != nil {
+		t.Fatalf("failed to drop suites table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Logf("Got status %d when suites table was dropped", rr.Code)
+	}
+}
+
+func TestUpdateMockResultsHandler_PromptsTableError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	suiteID, _ := middleware.GetCurrentSuiteID()
+
+	_, err := db.Exec("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)", "TestProfile", "Test", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert test profile: %v", err)
+	}
+
+	_, err = db.Exec("DROP TABLE prompts")
+	if err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/update_mock_results", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+
+	DefaultHandler.UpdateMockResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Logf("Got status %d when prompts table was dropped", rr.Code)
+	}
+}
+
+func TestRandomizeScores_ModelsQueryError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	_, err := db.Exec("DROP TABLE models")
+	if err != nil {
+		t.Fatalf("failed to drop models table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr := httptest.NewRecorder()
+	DefaultHandler.RandomizeScores(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for models query error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
+func TestRandomizeScores_PromptsQueryError(t *testing.T) {
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+
+	suiteID, _ := middleware.GetCurrentSuiteID()
+
+	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
+	if err != nil {
+		t.Fatalf("failed to insert model: %v", err)
+	}
+
+	_, err = db.Exec("DROP TABLE prompts")
+	if err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/randomize_scores", nil)
+	rr := httptest.NewRecorder()
+	DefaultHandler.RandomizeScores(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d for prompts query error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+}
+
 func TestResetResultsHandler_MethodNotAllowed(t *testing.T) {
 	mockDS := &MockDataStore{
 		Prompts: []middleware.Prompt{

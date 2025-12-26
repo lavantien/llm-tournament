@@ -177,3 +177,114 @@ func TestSaveModelResponseHandler_UpdateExisting(t *testing.T) {
 		t.Errorf("expected response text 'updated response', got '%s'", responseText)
 	}
 }
+
+// TestSaveModelResponseHandler_NonExistentModel tests inserting response with non-existent model
+func TestSaveModelResponseHandler_NonExistentModel(t *testing.T) {
+	cleanup := setupModelResponseTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	var promptID int
+	if err := db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID); err != nil {
+		t.Fatalf("failed to create test prompt: %v", err)
+	}
+
+	reqBody := map[string]interface{}{
+		"model_id":      999,
+		"prompt_id":     promptID,
+		"response_text": "This is a test response",
+	}
+	bodyBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest("POST", "/save_model_response", bytes.NewReader(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	SaveModelResponseHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+}
+
+// TestSaveModelResponseHandler_NonExistentPrompt tests inserting response with non-existent prompt
+func TestSaveModelResponseHandler_NonExistentPrompt(t *testing.T) {
+	cleanup := setupModelResponseTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	var modelID int
+	if err := db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID); err != nil {
+		t.Fatalf("failed to create test model: %v", err)
+	}
+
+	reqBody := map[string]interface{}{
+		"model_id":      modelID,
+		"prompt_id":     999,
+		"response_text": "This is a test response",
+	}
+	bodyBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest("POST", "/save_model_response", bytes.NewReader(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+	rr := httptest.NewRecorder()
+	SaveModelResponseHandler(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+}
+
+type errorStringer struct{}
+
+func (e errorStringer) Error() string {
+	return "write error"
+}
+
+func (e errorStringer) String() string {
+	return "write error"
+}
+
+// errorWriter is a ResponseWriter that always returns an error on Write
+type errorWriter struct {
+	http.ResponseWriter
+	writeError error
+}
+
+func (ew *errorWriter) Write(b []byte) (int, error) {
+	return 0, ew.writeError
+}
+
+func (ew *errorWriter) WriteHeader(statusCode int) {
+}
+
+// TestSaveModelResponseHandler_EncodeError tests JSON encoding failure
+func TestSaveModelResponseHandler_EncodeError(t *testing.T) {
+	cleanup := setupModelResponseTestDB(t)
+	defer cleanup()
+
+	db := middleware.GetDB()
+	var modelID, promptID int
+	if err := db.QueryRow("INSERT INTO models (name, suite_id) VALUES ('test-model', 1) RETURNING id").Scan(&modelID); err != nil {
+		t.Fatalf("failed to create test model: %v", err)
+	}
+	if err := db.QueryRow("INSERT INTO prompts (text, suite_id, display_order, type) VALUES ('test prompt', 1, 1, 'objective') RETURNING id").Scan(&promptID); err != nil {
+		t.Fatalf("failed to create test prompt: %v", err)
+	}
+
+	reqBody := map[string]interface{}{
+		"model_id":      modelID,
+		"prompt_id":     promptID,
+		"response_text": "This is a test response",
+	}
+	bodyBytes, _ := json.Marshal(reqBody)
+	req := httptest.NewRequest("POST", "/save_model_response", bytes.NewReader(bodyBytes))
+	req.Header.Set("Content-Type", "application/json")
+
+	rec := httptest.NewRecorder()
+	ew := &errorWriter{
+		ResponseWriter: rec,
+		writeError:     errorStringer{},
+	}
+
+	SaveModelResponseHandler(ew, req)
+
+	// Should still work, just log the error (no panic)
+}

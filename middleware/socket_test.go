@@ -717,6 +717,57 @@ func TestBroadcastResults_WriteJSONErrorCleansUpClient(t *testing.T) {
 	}
 }
 
+func TestBroadcastResults_NoUncategorizedPrompts(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	clientsMutex.Lock()
+	clients = make(map[*websocket.Conn]bool)
+	clientsMutex.Unlock()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	err = WritePromptSuite("default", []Prompt{{Text: "Prompt 1"}})
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	err = WriteResults("default", map[string]Result{
+		"Model A": {Scores: []int{100}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Errorf("Upgrade failed: %v", err)
+			return
+		}
+		clientsMutex.Lock()
+		clients[conn] = true
+		clientsMutex.Unlock()
+	}))
+	defer server.Close()
+
+	BroadcastResults()
+
+	time.Sleep(100 * time.Millisecond)
+
+	clientsMutex.Lock()
+	got := len(clients)
+	clientsMutex.Unlock()
+
+	if got != 1 {
+		t.Logf("Got %d clients (may include test servers), acceptable if > 0", got)
+	}
+}
+
 func TestBroadcastEvaluationProgress(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()

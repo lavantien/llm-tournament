@@ -91,3 +91,153 @@ func TestFileRenderer_Render_Success(t *testing.T) {
 		t.Errorf("expected body to contain 'Import Error' from template, got %q", body)
 	}
 }
+
+func setupRendererTestDB(t *testing.T) func() {
+	t.Helper()
+	dbPath := t.TempDir() + "/test.db"
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("Failed to initialize test database: %v", err)
+	}
+	return func() {
+		_ = CloseDB()
+	}
+}
+
+func TestWrapTemplateData_MapWithCurrentPath(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	data := map[string]interface{}{
+		"CurrentPath": "/test/path",
+		"CustomField": "custom value",
+	}
+
+	result := wrapTemplateData(data)
+
+	if result["CurrentPath"] != "/test/path" {
+		t.Errorf("expected CurrentPath '/test/path', got %v", result["CurrentPath"])
+	}
+	if result["CustomField"] != "custom value" {
+		t.Errorf("expected CustomField 'custom value', got %v", result["CustomField"])
+	}
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present")
+	}
+	if _, ok := result["CurrentSuite"]; !ok {
+		t.Error("expected CurrentSuite to be present")
+	}
+}
+
+func TestWrapTemplateData_MapWithoutCurrentPath(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	data := map[string]interface{}{
+		"CustomField": "custom value",
+	}
+
+	result := wrapTemplateData(data)
+
+	if result["CustomField"] != "custom value" {
+		t.Errorf("expected CustomField 'custom value', got %v", result["CustomField"])
+	}
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present")
+	}
+}
+
+func TestWrapTemplateData_StructWithCurrentPath(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	type testData struct {
+		CurrentPath string
+		Name        string
+	}
+
+	data := testData{
+		CurrentPath: "/test/path",
+		Name:        "TestName",
+	}
+
+	result := wrapTemplateData(data)
+
+	if result["CurrentPath"] != "/test/path" {
+		t.Errorf("expected CurrentPath '/test/path', got %v", result["CurrentPath"])
+	}
+	if result["Name"] != "TestName" {
+		t.Errorf("expected Name 'TestName', got %v", result["Name"])
+	}
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present")
+	}
+}
+
+func TestWrapTemplateData_StructWithoutCurrentPath(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	type testData struct {
+		Name string
+	}
+
+	data := testData{
+		Name: "TestName",
+	}
+
+	result := wrapTemplateData(data)
+
+	if result["Name"] != "TestName" {
+		t.Errorf("expected Name 'TestName', got %v", result["Name"])
+	}
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present")
+	}
+}
+
+func TestWrapTemplateData_Nil(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	result := wrapTemplateData(nil)
+
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present even with nil data")
+	}
+	if _, ok := result["CurrentSuite"]; !ok {
+		t.Error("expected CurrentSuite to be present even with nil data")
+	}
+}
+
+func TestWrapTemplateData_NonMapNonStruct(t *testing.T) {
+	cleanup := setupRendererTestDB(t)
+	defer cleanup()
+
+	restoreDir := changeToProjectRootRenderer(t)
+	defer restoreDir()
+
+	result := wrapTemplateData("just a string")
+
+	if _, ok := result["Suites"]; !ok {
+		t.Error("expected Suites to be present")
+	}
+	if _, ok := result["CurrentSuite"]; !ok {
+		t.Error("expected CurrentSuite to be present")
+	}
+}

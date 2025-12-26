@@ -521,3 +521,98 @@ func TestCalculateTiers_DynamicMaxScore(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateTiersWithMaxScore_PrimordialTier(t *testing.T) {
+	tests := []struct {
+		name     string
+		maxScore int
+		score    int
+	}{
+		{
+			name:     "score below mortal threshold",
+			maxScore: 100,
+			score:    1,
+		},
+		{
+			name:     "score below primal threshold",
+			maxScore: 1000,
+			score:    10,
+		},
+		{
+			name:     "zero score",
+			maxScore: 500,
+			score:    0,
+		},
+		{
+			name:     "negative score",
+			maxScore: 1000,
+			score:    -100,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tiers, _ := calculateTiersWithMaxScore(map[string]int{"Model1": tt.score}, tt.maxScore)
+
+			found := false
+			for _, m := range tiers["primordial"] {
+				if m == "Model1" {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("model with score %d should be in primordial tier", tt.score)
+			}
+		})
+	}
+}
+
+func TestCalculateTiersWithMaxScore_AllTiersPopulated(t *testing.T) {
+	maxScore := 1200
+	scores := make(map[string]int)
+	expectedTiers := []string{
+		"transcendental", "cosmic", "divine", "celestial",
+		"ascendant", "ethereal", "mystic", "astral",
+		"spiritual", "primal", "mortal", "primordial",
+	}
+
+	for i, tier := range expectedTiers {
+		score := (maxScore * (11 - i)) / 12
+		if tier == "primordial" {
+			score = 0
+		}
+		scores[tier+"Model"] = score
+	}
+
+	tiers, tierRanges := calculateTiersWithMaxScore(scores, maxScore)
+
+	for _, tierName := range expectedTiers {
+		if len(tiers[tierName]) == 0 {
+			t.Errorf("tier %s should have at least one model", tierName)
+		}
+		if _, ok := tierRanges[tierName]; !ok {
+			t.Errorf("tier %s should have a range defined", tierName)
+		}
+	}
+}
+
+func TestCalculateTiersWithMaxScore_EmptyScores(t *testing.T) {
+	maxScore := 1000
+	tiers, tierRanges := calculateTiersWithMaxScore(map[string]int{}, maxScore)
+
+	expectedTiers := []string{
+		"transcendental", "cosmic", "divine", "celestial",
+		"ascendant", "ethereal", "mystic", "astral",
+		"spiritual", "primal", "mortal", "primordial",
+	}
+
+	for _, tierName := range expectedTiers {
+		if len(tiers[tierName]) != 0 {
+			t.Errorf("tier %s should be empty", tierName)
+		}
+		if _, ok := tierRanges[tierName]; !ok {
+			t.Errorf("tier %s should have a range defined", tierName)
+		}
+	}
+}
