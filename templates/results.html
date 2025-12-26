@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
 
 <head>
     <title>Results</title>
@@ -10,10 +10,9 @@
     <script>
         let socket;
         let connectionRetries = 0;
-        let initialLoad = true; // Flag to track initial load
+        let initialLoad = true;
         let currentSearchQuery = "";
 
-        // Storage for previous state
         let previousState = {
             Results: {},
             Models: [],
@@ -21,42 +20,31 @@
             PassPercentages: {}
         };
 
-        /**
-         * Connects to the WebSocket server and sets up event handlers
-         */
         function connectWebSocket() {
-            // Create WebSocket connection
             socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-            // Handle connection open
             socket.onopen = function (e) {
                 console.log("[open] Connection established");
-                connectionRetries = 0; // Reset retries on successful connection
+                connectionRetries = 0;
                 updateConnectionStatus("Connected", "connected");
             };
 
-            // First load initial data
             fetchInitialData();
 
-            // Handle incoming messages
             socket.onmessage = function (event) {
                 try {
                     const payload = JSON.parse(event.data);
                     console.log('Received WebSocket update:', payload);
         
                     if (payload.type === 'results') {
-                        // Create a safe data object with defaults
                         const safeData = {
                             Results: payload.data.results || {},
                             Models: payload.data.models || [],
                             PassPercentages: payload.data.passPercentages || {},
                             TotalScores: payload.data.totalScores || {}
                         };
-            
-                        // Update the hidden data elements with new values
+             
                         updateHiddenData(safeData);
-
-                        // Update the table with new data
                         updateResults(safeData);
                     }
                 } catch (error) {
@@ -64,7 +52,6 @@
                 }
             };
 
-            // Handle connection close
             socket.onclose = function (event) {
                 if (event.wasClean) {
                     console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
@@ -74,39 +61,28 @@
                 
                 updateConnectionStatus("Disconnected", "disconnected");
                 
-                // Handle reconnection attempts
                 if (connectionRetries < MAX_WS_RETRIES) {
                     connectionRetries++;
                     console.log(`Attempting to reconnect (${connectionRetries}/${MAX_WS_RETRIES})...`);
-                    setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries); // Exponential backoff
+                    setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries);
                 } else {
                     updateConnectionStatus("Connection failed", "failed");
                     console.log("Max retries reached. Connection failed.");
                 }
             };
 
-            // Handle connection errors
             socket.onerror = function (error) {
                 console.log(`[error] ${error.message}`);
                 updateConnectionStatus("Error", "error");
             };
         }
         
-        /**
-         * Updates the connection status display
-         * @param {string} text - Status text to display
-         * @param {string} state - Status state (connected, disconnected, error, failed)
-         */
         function updateConnectionStatus(text, state) {
             const statusElement = document.getElementById("connection-status");
             statusElement.textContent = text;
             statusElement.className = `connection-status connection-status-${state}`;
         }
         
-        /**
-         * Updates the hidden data elements with new values
-         * @param {Object} data - Data object containing Results, Models, etc.
-         */
         function updateHiddenData(data) {
             document.getElementById('results-data').textContent = JSON.stringify(data.Results || {});
             document.getElementById('models-data').textContent = JSON.stringify(data.Models || []);
@@ -114,14 +90,9 @@
             document.getElementById('total-scores-data').textContent = JSON.stringify(data.TotalScores || {});
         }
 
-        /**
-         * Fetches initial data from the DOM hidden elements
-         * @returns {Promise<Object>} Promise resolving to the data payload
-         */
         function fetchInitialData() {
             console.log("Fetching initial data...");
             try {
-                // Get DOM elements
                 const elements = {
                     results: document.getElementById('results-data'),
                     models: document.getElementById('models-data'),
@@ -131,7 +102,6 @@
                     orderedPrompts: document.getElementById('ordered-prompts-data')
                 };
                 
-                // Parse data with fallbacks using the utility function
                 const payload = {
                     Results: safeJsonParse(elements.results?.textContent, {}),
                     Models: safeJsonParse(elements.models?.textContent, []),
@@ -147,12 +117,10 @@
                     profileGroups: payload.ProfileGroups
                 });
                 
-                // Update the UI with the loaded data
                 updateResults(payload);
                 return Promise.resolve(payload);
             } catch (error) {
                 console.error('Error parsing initial data:', error);
-                // Return empty data rather than throwing
                 const emptyPayload = {
                     Results: {},
                     Models: [],
@@ -164,13 +132,9 @@
             }
         }
 
-        /**
-         * Handles search input and filters results accordingly
-         */
         function handleSearch() {
             currentSearchQuery = document.getElementById("modelSearch").value.toLowerCase();
             
-            // Get current data from hidden elements
             const currentData = {
                 Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
                 Models: safeJsonParse(document.getElementById('models-data').textContent, []),
@@ -178,13 +142,9 @@
                 TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {})
             };
             
-            // Update the results with the filtered data
             updateResults(currentData);
         }
 
-        /**
-         * Backs up the current state for potential restoration
-         */
         function backupCurrentState() {
             previousState = {
                 Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
@@ -195,13 +155,9 @@
             
             console.log('Current state backed up');
             
-            // Enable the Previous button
             document.getElementById('restore-previous-btn').disabled = false;
         }
 
-        /**
-         * Restores the previous state
-         */
         function restorePrevious() {
             if (!previousState.Models || previousState.Models.length === 0) {
                 console.log('No previous state to restore');
@@ -210,28 +166,19 @@
             
             console.log('Restoring previous state');
             
-            // Update hidden elements with previous state data
             updateHiddenData(previousState);
             
-            // Send the previous data to the server
             sendDataToServer(previousState)
                 .then(data => {
                     console.log('Previous state restored successfully');
-                    // Update the UI with previous data
                     updateResults(previousState);
                 })
                 .catch(error => {
                     console.error('Error restoring previous state:', error);
-                    // Still update the UI even if the server request fails
                     updateResults(previousState);
                 });
         }
         
-        /**
-         * Sends data to the server
-         * @param {Object} data - Data to send to the server
-         * @returns {Promise} Promise that resolves with the server response
-         */
         function sendDataToServer(data) {
             return fetch('/update_mock_results', {
                 method: 'POST',
@@ -248,42 +195,30 @@
             .then(response => response.json());
         }
 
-        /**
-         * Generates mock scores for all models
-         */
         function generateMockScores() {
             console.log("Generating mock scores...");
 
-            // Confirm with user before proceeding
             if (!confirm('Are you sure you want to generate mock data? This will override all current scores.')) {
                 console.log('Mock data generation cancelled by user');
                 return;
             }
 
-            // Backup current state before generating new random scores
             backupCurrentState();
     
-            // Retrieve the current models list from the hidden element
             const models = safeJsonParse(document.getElementById('models-data').textContent, []);
             if (models.length === 0) {
                 console.log('No existing models - backend will create mock models');
-                // Don't return - allow the request to proceed so backend can create models
             }
             
-            // Get the number of prompts (using Go template injection)
             const promptsCount = {{len .Prompts}} || 0;
             
-            // Prepare new data containers
             let newData = generateTieredScores(models, promptsCount);
             
-            // Update hidden elements with the new data
             updateHiddenData(newData);
             
-            // Send the mock data to the server
             sendDataToServer(newData)
                 .then(data => {
                     console.log('Mock data saved successfully');
-                    // Reload the page to show new prompts and models
                     location.reload();
                 })
                 .catch(error => {
@@ -292,16 +227,11 @@
                 });
         }
 
-        /**
-         * Randomizes scores without changing models or prompts
-         */
         function randomizeScores() {
             console.log("Randomizing scores...");
 
-            // Backup current state before randomizing
             backupCurrentState();
 
-            // Send request to server to randomize scores
             fetch('/randomize_scores', {
                 method: 'POST',
                 headers: {
@@ -316,8 +246,6 @@
             })
             .then(data => {
                 console.log('Scores randomized successfully');
-
-                // Refresh the page to show updated scores
                 location.reload();
             })
             .catch(error => {
@@ -326,22 +254,13 @@
             });
         }
 
-        /**
-         * Generates tiered scores for models
-         * @param {Array<string>} models - Array of model names
-         * @param {number} promptsCount - Number of prompts
-         * @returns {Object} Object containing results, models, scores and percentages
-         */
         function generateTieredScores(models, promptsCount) {
-            // Divide models into 11 tiers
             const groupSize = Math.ceil(models.length / 11);
             
-            // Prepare data containers
             let newResults = {};
             let newTotalScores = {};
             let newPassPercentages = {};
             
-            // Process each model by its tier
             models.forEach((model, index) => {
                 const tierIndex = Math.min(10, Math.floor(index / groupSize));
                 let scores = [];
@@ -358,7 +277,6 @@
                 newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
             });
             
-            // Sort models in descending order based on their total scores
             models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
             
             return {
@@ -369,38 +287,30 @@
             };
         }
         
-        /**
-         * Gets a random score based on tier weighting
-         * @param {number} tierIndex - Index of the tier (0-10)
-         * @returns {number} A score value (0, 20, 40, 60, 80, 100)
-         */
         function getRandomScoreForTier(tierIndex) {
-            // Define tier weights mapping
             const tierWeights = [
-                [1, 1, 8, 15, 25, 50],    // cosmic (highest tier)
-                [1, 2, 10, 20, 40, 27],   // divine
-                [2, 5, 15, 30, 35, 13],   // celestial
-                [5, 10, 25, 30, 20, 10],  // ascendant
-                [7, 15, 33, 25, 15, 5],   // ethereal
-                [10, 20, 35, 20, 10, 5],  // mystic
-                [15, 30, 30, 15, 8, 2],   // astral
-                [20, 35, 25, 15, 4, 1],   // spiritual
-                [30, 35, 20, 12, 2, 1],   // primal
-                [40, 35, 15, 8, 2, 0],    // mortal
-                [55, 30, 10, 5, 0, 0],    // primordial (lowest tier)
-                [17, 16, 16, 16, 16, 16]  // fallback to even distribution
+                [1, 1, 8, 15, 25, 50],
+                [1, 2, 10, 20, 40, 27],
+                [2, 5, 15, 30, 35, 13],
+                [5, 10, 25, 30, 20, 10],
+                [7, 15, 33, 25, 15, 5],
+                [10, 20, 35, 20, 10, 5],
+                [15, 30, 30, 15, 8, 2],
+                [20, 35, 25, 15, 4, 1],
+                [30, 35, 20, 12, 2, 1],
+                [40, 35, 15, 8, 2, 0],
+                [55, 30, 10, 5, 0, 0],
+                [17, 16, 16, 16, 16, 16]
             ];
             
             let weights = tierWeights[tierIndex] || tierWeights[11];
             
-            // Apply some randomness to the weights
-            const jitterFactor = 0.2; // 20% random variation
+            const jitterFactor = 0.2;
             weights = weights.map(w => {
                 const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
                 return Math.max(0, Math.round(w * jitter));
             });
             
-            // Use weighted random selection
             const totalWeight = weights.reduce((a, b) => a + b, 0);
             let random = Math.random() * totalWeight;
             
@@ -411,15 +321,10 @@
                 }
             }
             
-            return 0; // Fallback
+            return 0;
         }
 
-        /**
-         * Updates the results table with the provided data
-         * @param {Object} payload - Data payload containing Results, Models, etc.
-         */
         function updateResults(payload) {
-            // Apply defensive programming to handle potential undefined values
             const results = payload.Results || {};
             const models = payload.Models || [];
             const passPercentages = payload.PassPercentages || {};
@@ -428,17 +333,14 @@
             const orderedPrompts = payload.OrderedPrompts || [];
             const modelFilter = document.getElementById("model_filter").value;
 
-            // Initialize profile headers if needed
             initializeProfileHeaders(profileGroups);
             
-            // Get the table body
             const tbody = getTableBody();
             if (!tbody) {
                 console.error('Could not find or create table body');
                 return;
             }
             
-            // Ensure we have models to display
             const displayModels = ensureModelsExist(models, results);
             
             if (displayModels.length === 0) {
@@ -447,32 +349,20 @@
                 return;
             }
             
-            // Render the models
             renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter, profileGroups);
             
-            // Apply styling to data cells after they've been created
             setTimeout(applyDataCellStyling, 50);
         }
         
-        /**
-         * Initializes profile headers if they don't exist
-         * @param {Array} profileGroups - Array of profile group data
-         */
         function initializeProfileHeaders(profileGroups) {
             if (document.querySelector('.profile-row') === null && profileGroups.length > 0) {
                 createProfileHeaderRow(profileGroups);
             }
             
-            // Apply styling to header columns
             applyHeaderStyling(profileGroups);
         }
         
-        /**
-         * Gets or creates the table body element
-         * @returns {HTMLElement|null} The table body element or null if it couldn't be created
-         */
         function getTableBody() {
-            // Try different selectors
             let tbody = document.querySelector("table.results-table tbody") || 
                          document.querySelector("table tbody");
             
@@ -489,12 +379,6 @@
             return tbody;
         }
         
-        /**
-         * Ensures we have models to display, rebuilding from results if needed
-         * @param {Array} models - Array of model names
-         * @param {Object} results - Results object
-         * @returns {Array} Array of model names
-         */
         function ensureModelsExist(models, results) {
             if (models.length === 0 && Object.keys(results).length > 0) {
                 console.log('Models array is empty, rebuilding from results keys');
@@ -503,32 +387,19 @@
             return models;
         }
         
-        /**
-         * Renders model rows in the table body
-         * @param {HTMLElement} tbody - Table body element
-         * @param {Array} models - Array of model names
-         * @param {Object} results - Results object
-         * @param {Object} totalScores - Total scores by model
-         * @param {Object} passPercentages - Pass percentages by model
-         * @param {string} modelFilter - Model filter string
-         */
         function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter, profileGroups = []) {
             console.log(`Rendering ${models.length} models to table`);
             
-            // Clear the table first
             tbody.innerHTML = '';
             
-            // Create document fragment for batch DOM updates
             const fragment = document.createDocumentFragment();
             let rowCount = 0;
             
             models.forEach((model) => {
-                // Apply both filters
                 if ((modelFilter === "" || model === modelFilter) &&
                     (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
                     rowCount++;
                     
-                    // Create and append the row
                     const row = createModelRow(
                         model,
                         rowCount,
@@ -542,12 +413,10 @@
                 }
             });
             
-            // Batch update the DOM
             tbody.appendChild(fragment);
             
             console.log(`Table updated with ${rowCount} rows`);
             
-            // Force a redraw if needed
             if (rowCount > 0 && tbody.children.length === 0) {
                 console.error("Rows not appearing in table despite being created. Forcing redraw...");
                 const temp = tbody.innerHTML;
@@ -558,20 +427,10 @@
             }
         }
         
-        /**
-         * Creates a row for a model
-         * @param {string} model - Model name
-         * @param {number} rank - Rank number
-         * @param {Object} modelData - Model data object
-         * @param {number} totalScore - Total score
-         * @param {number} passPercentage - Pass percentage
-         * @returns {HTMLElement} The created row element
-         */
         function createModelRow(model, rank, modelData, totalScore, passPercentage, profileGroups = []) {
             const row = document.createElement("tr");
             const promptsCount = {{len .Prompts}} || 0;
             
-            // Create standard cells
             const rankCell = document.createElement("td");
             rankCell.textContent = rank;
             
@@ -587,7 +446,6 @@
             const modelCell = document.createElement("td");
             modelCell.textContent = model;
             
-            // Create score cells
             const scores = modelData?.Scores || modelData?.scores || [];
             while (scores.length < promptsCount) {
                 scores.push(0);
@@ -595,10 +453,8 @@
             
             const scoreCells = createScoreCells(model, scores, promptsCount, profileGroups);
             
-            // Create total score cell with progress bar
             const totalCell = createTotalScoreCell(totalScore, passPercentage);
             
-            // Append all cells to row
             row.appendChild(rankCell);
             row.appendChild(actionsCell);
             row.appendChild(modelCell);
@@ -608,22 +464,11 @@
             return row;
         }
         
-        /**
-         * Creates score cells for a model
-         * @param {string} model - Model name
-         * @param {Array} scores - Array of scores
-         * @param {number} promptsCount - Total number of prompts
-         * @param {Array} profileGroups - Array of profile group data
-         * @returns {Array} Array of score cell elements
-         */
         function createScoreCells(model, scores, promptsCount, profileGroups = []) {
             const cells = [];
 
-            // Build a set of column indices that need dividers
             const dividerColumns = new Set();
-            // First column
             dividerColumns.add(0);
-            // Profile group boundaries (except first group)
             profileGroups.forEach((group, idx) => {
                 if (idx > 0 && group.startCol >= 0) {
                     dividerColumns.add(group.startCol);
@@ -634,28 +479,40 @@
                 const score = scores[index] || 0;
                 const scoreCell = document.createElement("td");
 
-                // Set cell class based on score
-                const scoreClass = getScoreClass(score);
-                let cellClass = `score-cell ${scoreClass}`;
+                let cellClass = 'score-cell';
 
-                // Add visual guide if this column is at a boundary
                 if (dividerColumns.has(index)) {
                     cellClass += ' profile-group-divider';
                 }
 
                 scoreCell.className = cellClass;
                 
-                // Set data attributes for styling and interactivity
+                const scoreColors = {
+                    0: '#808080',
+                    20: '#ffa500',
+                    40: '#ffd700',
+                    60: '#00bfff',
+                    80: '#a77bff',
+                    100: '#7cff6b'
+                };
+                const bgColor = scoreColors[score] || '#808080';
+                scoreCell.style.backgroundColor = bgColor;
+                scoreCell.style.color = 'white';
+                scoreCell.style.width = '48px';
+                scoreCell.style.height = '48px';
+                scoreCell.style.fontWeight = 'bold';
+                scoreCell.style.borderRadius = '8px';
+                scoreCell.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+                scoreCell.textContent = score;
+                
                 scoreCell.setAttribute('data-prompt-index', index.toString());
                 scoreCell.setAttribute('data-score', `Score: ${score}`);
-                scoreCell.setAttribute('tabindex', '0'); // Make cell focusable
+                scoreCell.setAttribute('tabindex', '0');
                 
-                // Attach event listeners
                 scoreCell.addEventListener('click', () => {
                     window.location.href = `/evaluate?model=${model}&prompt=${index}`;
                 });
                 
-                // Add keyboard navigation
                 scoreCell.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                         window.location.href = `/evaluate?model=${model}&prompt=${index}`;
@@ -668,12 +525,6 @@
             return cells;
         }
         
-        /**
-         * Creates a total score cell with progress bar
-         * @param {number} totalScore - Total score
-         * @param {number} passPercentage - Pass percentage
-         * @returns {HTMLElement} The total score cell element
-         */
         function createTotalScoreCell(totalScore, passPercentage) {
             const totalCell = document.createElement("td");
             totalCell.textContent = totalScore;
@@ -692,29 +543,11 @@
             return totalCell;
         }
           
-      // Helper function to log the colors being used for debugging
-      function logScoreColors() {
-          const rootStyles = getComputedStyle(document.documentElement);
-          console.log("Score colors used in chart:");
-          [0, 20, 40, 60, 80, 100].forEach(score => {
-              const varName = `--score-color-${score}`;
-              console.log(`${score}: ${rootStyles.getPropertyValue(varName).trim() || 'Not set'}`);
-          });
-      }
-
-
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Skip the initial data loading attempt which is failing
-            // and rely solely on the connectWebSocket function which will
-            // call fetchInitialData() inside it
             console.log("DOM loaded, connecting to WebSocket...");
-            connectWebSocket(); // Actually call the function
+            connectWebSocket();
         });
-        /**
-         * Creates the profile header row
-         * @param {Array} profileGroups - Array of profile group data
-         */
         function createProfileHeaderRow(profileGroups) {
             const thead = document.querySelector('.results-table thead');
             if (!thead) return;
@@ -722,14 +555,11 @@
             const profileRow = document.createElement('tr');
             profileRow.className = 'profile-row';
             
-            // Add empty cells for non-prompt columns
             const emptyHeader = document.createElement('th');
             emptyHeader.setAttribute('colspan', '3');
             profileRow.appendChild(emptyHeader);
             
-            // Add profile group headers
             profileGroups.forEach((group, index) => {
-                // Only include groups with prompts
                 if (group.StartCol !== -1) {
                     const span = group.EndCol - group.StartCol + 1;
                     const header = createProfileHeader(group, index, profileRow);
@@ -738,44 +568,31 @@
                 }
             });
             
-            // Add total header with rowspan
             const totalHeader = document.createElement('th');
             totalHeader.setAttribute('rowspan', '2');
             totalHeader.textContent = 'Total';
             profileRow.appendChild(totalHeader);
             
-            // Insert at the beginning of thead
             thead.insertBefore(profileRow, thead.firstChild);
         }
         
-        /**
-         * Creates a profile header element
-         * @param {Object} group - Profile group data
-         * @param {number} index - Index of the group
-         * @param {HTMLElement} parentRow - Parent row element
-         * @returns {HTMLElement} The created header element
-         */
         function createProfileHeader(group, index, parentRow) {
             const header = document.createElement('th');
             header.className = 'profile-header profile-header-cell';
             header.setAttribute('data-profile-id', group.ID);
             
-            // Create inner text element
             const textDiv = document.createElement('div');
             textDiv.className = 'profile-header-text';
             textDiv.textContent = group.Name;
             header.appendChild(textDiv);
             
-            // Apply profile-specific styling
             header.classList.add('profile-header-styled');
             header.style.setProperty('--profile-color', '#333');
             
-            // Add divider classes between profile groups
             if (index > 0) {
                 header.classList.add('profile-divider-left');
             }
             
-            // Add divider to the previous header if this isn't the first
             if (index > 0 && parentRow.lastChild && parentRow.lastChild.classList) {
                 parentRow.lastChild.classList.add('profile-divider-right');
             }
@@ -783,59 +600,45 @@
             return header;
         }
 
-        /**
-         * Applies styling to header cells for profile groups
-         * @param {Array} profileGroups - Array of profile group data
-         */
         function applyHeaderStyling(profileGroups) {
-            // Create a mapping from column index to profile boundary information
             const columnMap = {};
             
-            // Store column map in global variable so it can be used later
             window.profileColumnMap = {};
             
-            // Process groups to identify start and end columns
             profileGroups.forEach(group => {
                 const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
                 const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
-                const color = '#333'; // Always use standard color
+                const color = '#333';
                 
                 if (startCol !== -1) {
-                    // Store boundary information
                     columnMap[startCol] = { isStart: true, isEnd: false, color: color };
                     columnMap[endCol] = { isStart: false, isEnd: true, color: color };
                     
-                    // Store in global map
                     window.profileColumnMap[startCol] = { isStart: true, color: color };
                     window.profileColumnMap[endCol] = { isEnd: true, color: color };
                 }
             });
 
-            // Apply to header columns
             const headerCells = document.querySelectorAll('.prompt-col');
 
             headerCells.forEach(cell => {
                 const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
                 const boundary = columnMap[promptIndex];
 
-                // Clear existing classes and inline styles
                 cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end', 'header-divider', 'profile-group-divider');
                 cell.style.borderLeft = '';
 
-                // Remove any existing divider line div
                 const existingDivider = cell.querySelector('.header-divider-line');
                 if (existingDivider) {
                     existingDivider.remove();
                 }
 
-                // Add divider to first column
                 if (promptIndex === 0) {
                     cell.classList.add('profile-group-divider', 'header-divider');
                     const dividerLine = document.createElement('div');
                     dividerLine.className = 'header-divider-line';
                     cell.appendChild(dividerLine);
                 }
-                // Add divider at profile boundaries (not first group)
                 else if (boundary && boundary.isStart) {
                     cell.classList.add('profile-group-start', 'profile-group-divider', 'header-divider');
                     const dividerLine = document.createElement('div');
@@ -849,9 +652,6 @@
             });
         }
 
-        /**
-         * Applies styling to data cells for profile groups
-         */
         function applyDataCellStyling() {
             if (!window.profileColumnMap) {
                 console.error("Profile column map not initialized");
@@ -860,44 +660,33 @@
             
             const columnMap = window.profileColumnMap;
             
-            // Get the table
             const table = document.querySelector('.results-table');
             if (!table) {
                 console.error("Table not found");
                 return;
             }
             
-            // Get all table rows
             const tableRows = table.querySelectorAll('tbody tr');
             
-            // Process each row
             tableRows.forEach(row => {
                 const cells = Array.from(row.querySelectorAll('td'));
-                if (cells.length <= 3) return; // Skip rows with insufficient cells
+                if (cells.length <= 3) return;
                 
-                // Process each content cell (skip first 3 cells: rank, actions, model)
-                for (let i = 3; i < cells.length - 1; i++) { // Exclude the last total column
-                    const columnIndex = i - 3; // Adjust index to match prompt indices
+                for (let i = 3; i < cells.length - 1; i++) {
+                    const columnIndex = i - 3;
                     const boundary = columnMap[columnIndex];
                     
                     if (boundary) {
-                        // Remove existing classes
                         cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
                         
                         if (boundary.isStart) {
                             cells[i].classList.add('profile-group-start', 'profile-group-divider');
-                            // Apply border using CSS variables
-                            cells[i].style.setProperty('--profile-color', '#333');
-                            cells[i].style.borderLeft =
-                                `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
+                            cells[i].style.borderLeft = `${PROFILE_BORDER_WIDTH} solid #333`;
                         }
                         
                         if (boundary.isEnd) {
                             cells[i].classList.add('profile-group-end');
-                            // Apply border using CSS variables
-                            cells[i].style.setProperty('--profile-color', '#333');
-                            cells[i].style.borderRight = 
-                                `var(--profile-border-width) var(--profile-border-style) var(--profile-color)`;
+                            cells[i].style.borderRight = `${PROFILE_BORDER_WIDTH} solid #333`;
                         }
                     }
                 }
@@ -907,21 +696,21 @@
 </head>
 
 <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
         {{template "nav" .}}
-        <main class="arena-main">
-    <div class="glass-panel-enhanced p-4 m-0 flex items-center justify-between gap-3 flex-wrap sticky-header">
-        <h2 class="heading-enhanced">Add Model</h2>
-        <form action="/add_model" method="post" class="flex items-center gap-2 flex-wrap">
-            <input type="text" name="model" placeholder="Enter new model name" class="input-enhanced mr-[5px]" />
-            <input type="submit" value="Add" class="btn-enhanced" />
+        <main class="flex-1 flex flex-col gap-3 overflow-auto">
+    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 sticky-header">
+        <h2 class="card-title text-sm font-semibold flex-shrink-0">Add Model</h2>
+        <form action="/add_model" method="post" class="flex items-center gap-2 flex-1">
+            <input type="text" name="model" placeholder="Enter new model name" class="input input-bordered" />
+            <input type="submit" value="Add" class="btn btn-primary" />
         </form>
-        <span id="connection-status" class="status-enhanced"></span>
+        <span id="connection-status" class="badge badge-info flex-shrink-0"></span>
     </div>
-    <div class="glass-panel-enhanced p-4 m-0 flex items-center justify-between gap-3 flex-wrap title-row">
-        <div class="filter-container">
-            <form action="/results" method="get" id="filter-form" class="flex items-center gap-2 flex-wrap">
-                <select name="model_filter" id="model_filter" aria-label="Filter by model" class="w-60 max-w-full input-enhanced">
+    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 title-row">
+        <div class="filter-container flex items-center gap-2 flex-shrink-0">
+            <form action="/results" method="get" id="filter-form" class="flex items-center gap-2">
+                <select name="model_filter" id="model_filter" aria-label="Filter by model" class="select select-bordered w-60 max-w-full">
                     <option value="">All Models</option>
                     {{range $model := .Models}}
                     <option value="{{$model}}" {{if and ($.ModelFilter) (eq $.ModelFilter $model)}}selected{{end}}>
@@ -929,28 +718,25 @@
                     </option>
                     {{end}}
                 </select>
-                <input type="submit" value="Filter" class="btn-enhanced filter-submit" />
+                <input type="submit" value="Filter" class="btn btn-info filter-submit" />
             </form>
+            <button class="btn btn-primary" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data</button>
+            <button class="btn btn-primary" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores</button>
+            <button class="btn btn-info" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
         </div>
-        <div class="title-container">
-            <button class="btn-enhanced" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data</button>
-            <button class="btn-enhanced" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores</button>
-            <button class="btn-enhanced" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
-        </div>
-        <div class="search-container">
-            <form id="search-form" class="search-form" onsubmit="handleSearch(); return false;">
-                <input type="text" id="modelSearch" placeholder="Search models..." class="input-enhanced w-80 max-w-full" aria-label="Search models" />
-                <button type="submit" class="btn-enhanced search-submit">Search</button>
+        <div class="search-container flex items-center gap-2 flex-1">
+            <form id="search-form" class="search-form flex items-center gap-2" onsubmit="handleSearch(); return false;">
+                <input type="text" id="modelSearch" placeholder="Search models..." class="input input-bordered w-80 max-w-full" aria-label="Search models" />
+                <button type="submit" class="btn btn-primary search-submit">Search</button>
             </form>
         </div>
     </div>
-    <table class="results-table table-enhanced">
+    <table class="table table-zebra results-table table-enhanced">
         <thead>
-            <!-- Profile grouping row -->
             <tr class="profile-row">
-                <th colspan="3"></th> <!-- For rank, actions, model columns -->
+                <th colspan="3"></th>
                 {{range $index, $group := .ProfileGroups}}
-                    {{if ne .StartCol -1}} <!-- Only include groups that have prompts -->
+                    {{if ne .StartCol -1}}
                     <th colspan="{{add (sub .EndCol .StartCol) 1}}"
                         class="profile-header profile-header-cell profile-header-styled profile-divider-left"
                         data-profile-id="{{.ID}}"
@@ -963,7 +749,6 @@
                 <th rowspan="2">Total</th>
             </tr>
 
-            <!-- Regular header row with numbers -->
             <tr>
                 <th>#</th>
                 <th>Actions</th>
@@ -978,30 +763,27 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Table content will be populated by JavaScript -->
         </tbody>
     </table>
-    <div class="glass-panel-enhanced p-4 m-0 flex items-center justify-between gap-3 flex-wrap sticky-footer">
-        <div class="results-management flex items-center gap-2 flex-wrap">
-            <h2 class="heading-enhanced">Manage Results</h2>
-            <form action="/reset_results" method="get" class="mr-[5px]">
-                <input type="submit" value="Reset Results" class="btn-enhanced" />
-            </form>
-            <form action="/confirm_refresh_results" method="get" class="mr-[5px]">
-                <input type="submit" value="Refresh Results" class="btn-enhanced" />
-            </form>
-            <form action="/export_results" method="post" class="mr-[5px]">
-                <input type="submit" value="Export Results" class="btn-enhanced" />
-            </form>
-            <form action="/import_results" method="post" enctype="multipart/form-data" class="flex items-center gap-2 flex-wrap">
-                <input type="file" name="results_file" class="mr-[5px]" />
-                <input type="submit" value="Import Results" class="btn-enhanced" />
-            </form>
-        </div>
+    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 sticky-footer">
+        <h2 class="text-sm font-semibold flex-shrink-0">Manage Results</h2>
+        <form action="/reset_results" method="get">
+            <input type="submit" value="Reset Results" class="btn btn-primary" />
+        </form>
+        <form action="/confirm_refresh_results" method="get">
+            <input type="submit" value="Refresh Results" class="btn btn-primary" />
+        </form>
+        <form action="/export_results" method="post">
+            <input type="submit" value="Export Results" class="btn btn-primary" />
+        </form>
+        <form action="/import_results" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
+            <input type="file" name="results_file" class="file-input file-input-bordered" />
+            <input type="submit" value="Import Results" class="btn btn-primary" />
+        </form>
     </div>
-    <div class="scroll-buttons">
-        <button class="btn-enhanced scroll-button" onclick="scrollToTop()">↑</button>
-        <button class="btn-enhanced scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
     </div>
     <script>
         function scrollToTop() {
@@ -1015,7 +797,6 @@
             });
         }
         
-        // Add keyboard navigation for the table
         document.addEventListener('keydown', function(e) {
             if (document.activeElement && document.activeElement.classList.contains('score-cell')) {
                 const currentCell = document.activeElement;
@@ -1048,25 +829,15 @@
             }
         });
     </script>
-    <div id="hidden-data" class="hidden-data">
+    <div id="hidden-data" class="hidden">
         <span id="results-data">{{.Results | json}}</span>
         <span id="models-data">{{.Models | json}}</span>
         <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
         <span id="total-scores-data">{{.TotalScores | json}}</span>
         <span id="profile-groups-data">{{.ProfileGroups | json}}</span>
         <span id="ordered-prompts-data">{{.OrderedPrompts | json}}</span>
-        <span id="debug-data" class="debug-data">
-            Results: {{.Results | json}}<br />
-            Models: {{.Models | json}}<br />
-            PassPercentages: {{.PassPercentages | json}}<br />
-            TotalScores: {{.TotalScores | json}}<br />
-            ProfileGroups: {{.ProfileGroups | json}}<br />
-            OrderedPrompts: {{.OrderedPrompts | json}}
-        </span>
     </div>
-    <!-- Fallback data for debugging -->
     <script>
-        // This ensures we have at least some data even if the template rendering fails
         window.fallbackData = {
             Results: {},
             Models: [],

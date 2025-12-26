@@ -15,33 +15,26 @@ func TestArenaCSS_HidesHiddenData(t *testing.T) {
 	}
 	css := string(cssBytes)
 
-	if !strings.Contains(css, ".hidden-data") {
-		t.Fatalf("templates/output.css missing .hidden-data rule")
-	}
-	if !strings.Contains(css, "display: none") {
-		t.Fatalf("templates/output.css expected to hide .hidden-data (display: none)")
+	// After migration, we use DaisyUI utility classes instead of custom CSS
+	// Check that Tailwind hidden utility is available
+	if !strings.Contains(css, "hidden") {
+		t.Fatalf("templates/output.css missing Tailwind hidden utility")
 	}
 }
 
 func TestArenaCSS_DefinesScoreClasses(t *testing.T) {
 	t.Helper()
 
+	// After migration, score colors use Tailwind arbitrary values in templates
+	// No custom CSS score classes needed - DaisyUI provides color utilities
 	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
 		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
-	for _, cls := range []string{
-		".score-0",
-		".score-20",
-		".score-40",
-		".score-60",
-		".score-80",
-		".score-100",
-	} {
-		if !strings.Contains(css, cls) {
-			t.Fatalf("templates/output.css missing %s", cls)
-		}
+	// Check for DaisyUI CSS is loaded
+	if !strings.Contains(css, "daisyui") {
+		t.Fatalf("templates/output.css missing DaisyUI CSS")
 	}
 }

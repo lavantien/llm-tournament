@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
   <head>
     <title>Prompt List</title>
     <link rel="stylesheet" href="/templates/output.css" />
@@ -8,127 +8,116 @@
   </head>
 
   <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
       {{template "nav" .}}
-      <main class="arena-main">
-    <div class="glass-panel p-4 m-0 sticky-header">
-      <div class="flex-grow-1 text-left flex items-center">
-        <h2 class="text-sm tracking-wide text-text/88">Add Prompt</h2>
+      <main class="flex-1 flex flex-col gap-3 overflow-auto">
+    <div class="card bg-base-100 shadow-lg p-4 m-0 sticky-header flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <h2 class="text-sm tracking-wide text-base-content/88">Add Prompt</h2>
         <input
           type="checkbox"
           id="select-all-prompts"
-          class="ml-2.5"
+          class="ml-2.5 checkbox"
         />
-        <label for="select-all-prompts" class="ml-2 text-text-muted">Select All</label>
-        <span id="selected-count" class="ml-2 text-text-muted">(0 selected)</span>
+        <label for="select-all-prompts" class="ml-2 label-text text-base-content/64">Select All</label>
+        <span id="selected-count" class="ml-2 label-text text-base-content/64">(0 selected)</span>
       </div>
-      <div class="flex items-center justify-center flex-1">
-        <form
-          action="/add_prompt"
-          method="post"
-          class="flex items-center flex-wrap gap-2"
-        >
-          <textarea
-            name="prompt"
-            placeholder="Enter new prompt"
-            class="input-enhanced w-64 min-w-[280px] h-20 resize-y"
-            aria-label="Enter new prompt"
-          ></textarea>
-          <textarea
-            name="solution"
-            placeholder="Enter solution"
-            class="input-enhanced w-64 min-w-[280px] h-20 resize-y"
-            aria-label="Enter solution"
-          ></textarea>
-          <select name="profile" class="input-enhanced self-start" aria-label="Select profile">
-            <option value="">None</option>
-            {{range .Profiles}}
-            <option value="{{.Name}}">{{.Name}}</option>
-            {{end}}
-          </select>
-          <input type="submit" value="Add" class="btn-enhanced" />
-        </form>
-      </div>
-      <div class="flex-grow-1 text-right flex items-center justify-end gap-2">
+      <form
+        action="/add_prompt"
+        method="post"
+        class="flex items-center gap-2 flex-1 justify-center"
+      >
+        <textarea
+          name="prompt"
+          placeholder="Enter new prompt"
+          class="textarea textarea-bordered w-64 min-w-[280px] h-20 resize-y"
+          aria-label="Enter new prompt"
+        ></textarea>
+        <textarea
+          name="solution"
+          placeholder="Enter solution"
+          class="textarea textarea-bordered w-64 min-w-[280px] h-20 resize-y"
+          aria-label="Enter solution"
+        ></textarea>
+        <select name="profile" class="select select-bordered" aria-label="Select profile">
+          <option value="">None</option>
+          {{range .Profiles}}
+          <option value="{{.Name}}">{{.Name}}</option>
+          {{end}}
+        </select>
+        <input type="submit" value="Add" class="btn btn-primary" />
+      </form>
+      <div class="flex items-center gap-2 flex-shrink-0">
         <form
           action="/update_prompts_order"
           method="post"
         >
           <input type="hidden" name="order" id="prompts-order-input" value="" />
-          <input type="submit" value="Save Order" class="btn-enhanced" title="Save the current order of prompts" />
+          <input type="submit" value="Save Order" class="btn btn-primary" title="Save the current order of prompts" />
         </form>
         <a
           id="bulk-delete-button"
-          class="btn-delete"
-          style="--btn-delete-bg: linear-gradient(180deg, rgba(220, 38, 38, 0.85), rgba(180, 20, 20, 0.65)); --btn-delete-border: rgba(255, 77, 77, 0.6);"
+          class="btn btn-error"
         >Bulk Delete</a>
-        >
       </div>
     </div>
-    <div class="glass-panel p-4 m-0 title-row">
-      <div class="filter-container">
-        <form action="/prompts" method="get" class="flex items-center gap-2 flex-wrap">
-          <select name="order_filter" id="order_filter" class="input-enhanced" aria-label="Filter by order">
-            <option value="">All Orders</option>
-            {{range $index := .PromptIndices}}
-            <option value="{{$index}}">{{$index}}</option>
-            {{end}}
-          </select>
-          <select name="profile_filter" id="profile_filter" class="input-enhanced" aria-label="Filter by profile">
-            <option value="">All Profiles</option>
-            {{range .Profiles}}
-            <option value="{{.Name}}">{{.Name}}</option>
-            {{end}}
-          </select>
-          <input type="submit" value="Filter" class="btn-enhanced" />
-        </form>
-      </div>
-      <div class="title-container justify-center">
-        <h1 class="text-base tracking-wide">Prompts</h1>
-      </div>
-      <div class="search-container">
-        <form action="/prompts" method="get" class="search-form flex items-center gap-2">
-          <input
-            type="text"
-            name="search_query"
-            id="search_query"
-            value="{{.SearchQuery}}"
-            placeholder="Search prompts..."
-            class="input-enhanced w-80 max-w-full"
-            aria-label="Search prompts"
-          />
-          <input type="submit" value="Search" class="btn-enhanced" />
-        </form>
-      </div>
+    <div class="card bg-base-100 shadow-lg p-4 m-0 title-row flex items-center gap-3">
+      <form action="/prompts" method="get" class="flex items-center gap-2 flex-shrink-0">
+        <select name="order_filter" id="order_filter" class="select select-bordered" aria-label="Filter by order">
+          <option value="">All Orders</option>
+          {{range $index := .PromptIndices}}
+          <option value="{{$index}}">{{$index}}</option>
+          {{end}}
+        </select>
+        <select name="profile_filter" id="profile_filter" class="select select-bordered" aria-label="Filter by profile">
+          <option value="">All Profiles</option>
+          {{range .Profiles}}
+          <option value="{{.Name}}">{{.Name}}</option>
+          {{end}}
+        </select>
+        <input type="submit" value="Filter" class="btn btn-primary" />
+      </form>
+      <h1 class="text-base tracking-wide flex-shrink-0">Prompts</h1>
+      <form action="/prompts" method="get" class="search-form flex items-center gap-2 flex-1">
+        <input
+          type="text"
+          name="search_query"
+          id="search_query"
+          value="{{.SearchQuery}}"
+          placeholder="Search prompts..."
+          class="input input-bordered w-80 max-w-full"
+          aria-label="Search prompts"
+        />
+        <input type="submit" value="Search" class="btn btn-primary" />
+      </form>
     </div>
     <ul id="prompt-list" class="flex flex-col gap-3">
       {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
       $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.ProfileFilter
       "") (eq $prompt.Profile $.ProfileFilter)) (or (eq $.SearchQuery "")
       (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
-      <li draggable="true" data-index="{{$index}}" class="glass-panel p-3 m-0">
+      <li draggable="true" data-index="{{$index}}" class="card bg-base-100 shadow-lg p-3 m-0">
         <div class="flex items-center justify-between w-full gap-3">
           <input
             type="checkbox"
-            class="prompt-checkbox"
+            class="prompt-checkbox checkbox"
             data-index="{{$index}}"
-            class="w-4 h-4 mr-2.5"
           />
           <h3 class="flex-shrink-0 mr-2.5 text-sm font-semibold">
             {{inc $index}}.{{if
-            $prompt.Profile}}&nbsp;<span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-20 text-green-400">({{$prompt.Profile}})</span>{{end}}
+            $prompt.Profile}}&nbsp;<span class="badge badge-success badge-outline badge-sm">{{$prompt.Profile}}</span>{{end}}
           </h3>
           <div class="markdown-content flex-1 mr-2.5 text-sm">
             {{$prompt.Text | markdown}}
           </div>
           <div
-            class="flex-shrink-0 w-1/5 italic text-left text-green-400 markdown-content text-sm"
+            class="flex-shrink-0 w-1/5 italic text-left text-success markdown-content text-sm"
           >
             {{$prompt.Solution | markdown}}
           </div>
           <div class="prompt-actions flex-shrink-0 flex gap-1.5 ml-2.5">
             <button
-              class="btn-icon action-button copy-button"
+              class="btn btn-ghost btn-sm"
               onclick="copyPrompt('{{$prompt.Text}}')"
               title="Copy prompt to clipboard"
               aria-label="Copy prompt"
@@ -136,21 +125,21 @@
               📋
             </button>
             <a
-              class="btn-icon action-button edit-button"
+              class="btn btn-ghost btn-sm"
               href="/edit_prompt?index={{$index}}"
               title="Edit this prompt"
               aria-label="Edit prompt"
             >✏️</a
             >
             <a
-              class="btn-icon action-button delete-button"
+              class="btn btn-ghost btn-sm"
               href="/delete_prompt?index={{$index}}"
               title="Delete this prompt"
               aria-label="Delete prompt"
             >🗑️</a
             >
             <a
-              class="btn-icon action-button move-button"
+              class="btn btn-ghost btn-sm"
               href="/move_prompt?index={{$index}}"
               title="Move this prompt"
               aria-label="Move prompt"
@@ -160,28 +149,26 @@
         </div>
       </li>
       {{end}} {{end}} {{else}}
-      <p class="text-center text-text-muted">No prompts available.</p>
+      <p class="text-center text-base-content/64">No prompts available.</p>
       {{end}}
     </ul>
-    <div class="glass-panel p-4 m-0 sticky-footer">
-      <div class="flex items-center gap-3 flex-wrap">
-        <h2 class="text-sm tracking-wide text-text/88">Manage Prompts</h2>
-        <form action="/reset_prompts" method="get">
-          <input type="submit" value="Reset Prompts" class="btn-enhanced" />
-        </form>
-        <form action="/export_prompts" method="post">
-          <input type="submit" value="Export Prompts" class="btn-enhanced" />
-        </form>
-        <form
-          action="/import_prompts"
-          method="post"
-          enctype="multipart/form-data"
-          class="flex items-center gap-2"
-        >
-          <input type="file" name="prompts_file" class="input-enhanced" aria-label="Select prompts file to import" />
-          <input type="submit" value="Import Prompts" class="btn-enhanced" />
-        </form>
-      </div>
+    <div class="card bg-base-100 shadow-lg p-4 m-0 sticky-footer flex items-center gap-3">
+      <h2 class="text-sm tracking-wide text-base-content/88 flex-shrink-0">Manage Prompts</h2>
+      <form action="/reset_prompts" method="get">
+        <input type="submit" value="Reset Prompts" class="btn btn-primary" />
+      </form>
+      <form action="/export_prompts" method="post">
+        <input type="submit" value="Export Prompts" class="btn btn-primary" />
+      </form>
+      <form
+        action="/import_prompts"
+        method="post"
+        enctype="multipart/form-data"
+        class="flex items-center gap-2"
+      >
+        <input type="file" name="prompts_file" class="file-input file-input-bordered" aria-label="Select prompts file to import" />
+        <input type="submit" value="Import Prompts" class="btn btn-primary" />
+      </form>
     </div>
     <script>
       function copyPrompt(text) {
@@ -213,7 +200,7 @@
 
       promptList.addEventListener("dragstart", (e) => {
         draggedItem = e.target;
-        e.dataTransfer.setData("text/plain", ""); // Required for Firefox
+        e.dataTransfer.setData("text/plain", "");
       });
 
       promptList.addEventListener("dragover", (e) => {
@@ -308,9 +295,9 @@
         }
       }
     </script>
-    <div class="scroll-buttons">
-      <button class="btn-enhanced scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="btn-enhanced scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+      <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+      <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
     </div>
     <script>
       function scrollToTop() {
@@ -328,7 +315,7 @@
         });
       }
     </script>
-    <div style="display: none">
+    <div class="hidden">
       <span id="prompts-data">{{.Prompts | json}}</span>
     </div>
       </main>

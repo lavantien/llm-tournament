@@ -18,9 +18,9 @@ Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-
 
 ## Visual Direction
 
-**"Neon Glass Foundry" → "Cyberpunk Clean"**
+**"Neon Glass Foundry" → "Clean Coffee"**
 
-- **Base**: DaisyUI `cyberpunk` theme (dark backgrounds with neon accents)
+- **Base**: DaisyUI `coffee` theme (warm, earthy tones with good contrast)
 - **Panels**: DaisyUI `.card` components (no glass glow effects)
 - **Buttons**: DaisyUI `.btn` variants (`.btn-primary`, `.btn-info`, `.btn-error`, `.btn-ghost`, `.btn-square`)
 - **Inputs**: DaisyUI `.input`, `.select`, `.textarea`, `.checkbox` components
@@ -51,11 +51,11 @@ Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-
 
 ## Color Palette
 
-### DaisyUI Cyberpunk Theme
+### DaisyUI Coffee Theme
 
-DaisyUI `cyberpunk` theme provides:
-- Dark backgrounds (`bg-base-200`, `bg-base-300`)
-- Neon accents (cyan, magenta, violet)
+DaisyUI `coffee` theme provides:
+- Warm, earthy tones with good contrast
+- Brown and cream color palette
 - High contrast for readability
 - Built-in hover and focus states
 - Semantic color names (`primary`, `secondary`, `accent`, `success`, `info`, `warning`, `error`)
@@ -323,18 +323,18 @@ All templates are Go `html/template` files. We verify:
 
 ### 3. Body Background Strategy
 
-**Decision**: Use DaisyUI `cyberpunk` theme via `data-theme` attribute
+**Decision**: Use DaisyUI `coffee` theme via `data-theme` attribute
 
 **Implementation**:
 ```html
-<html data-theme="cyberpunk">
+<html data-theme="coffee">
   <body class="bg-base-200 min-w-[1320px]">
     <!-- Content -->
   </body>
 </html>
 ```
 
-**Rationale**: Built-in themes are zero-maintenance and provide consistent color palettes. Cyberpunk matches our dark + neon aesthetic.
+**Rationale**: Built-in themes are zero-maintenance and provide consistent color palettes. Coffee theme provides warm, earthy tones with good readability.
 
 ### 4. Glass Panel Strategy
 
@@ -403,7 +403,7 @@ Upon completion, we will have achieved:
 1. **0 lines of custom CSS** (except Tailwind/DaisyUI imports)
 2. **100% DaisyUI v5 + Tailwind v4** styling
 3. **All tests passing** with coverage ≥ 99%
-4. **Visual consistency** across all pages using DaisyUI cyberpunk theme
+4. **Visual consistency** across all pages using DaisyUI coffee theme
 5. **Maintainable codebase** using industry-standard tools
 6. **No CSS maintenance burden** (DaisyUI handles complexity)
 7. **Zero pseudo-elements** (no `::before` or `::after` for effects)
@@ -421,7 +421,7 @@ Upon completion, we will have achieved:
 **Mitigation**:
 - Accept trade-offs documented in requirements contract
 - Use `shadow-lg`, `shadow-xl` for depth
-- Maintain dark aesthetic with cyberpunk theme
+- Maintain consistent aesthetic with coffee theme
 - User acceptance testing before finalizing
 
 ### Risk: Learning Curve (Low)

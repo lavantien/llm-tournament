@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
 
 <head>
     <title>Model Statistics</title>
@@ -9,13 +9,11 @@
     <script src="/templates/score-utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Stacked Score Breakdown Chart
             const scoreData = {{.TotalScores | json}};
             const models = Object.keys(scoreData);
             
             console.log("Stats page data:", scoreData);
 
-            // Create array with models and all their data
             let modelsData = [];
             for (const model of models) {
                 modelsData.push({
@@ -29,10 +27,8 @@
                 });
             }
 
-            // Sort the models in descending order based on total scores
             modelsData.sort((a, b) => b.totalScore - a.totalScore);
 
-            // Extract sorted data
             const sortedModels = modelsData.map(item => item.name);
             const sortedCount20 = modelsData.map(item => item.count20);
             const sortedCount40 = modelsData.map(item => item.count40);
@@ -40,15 +36,12 @@
             const sortedCount80 = modelsData.map(item => item.count80);
             const sortedCount100 = modelsData.map(item => item.count100);
 
-            // Log the colors we'll be using for debugging
             console.log("Available score colors:");
             SCORE_VALUES.forEach(score => {
                 console.log(`${score}: ${getScoreColor(score)}`);
             });
             
-            // Create datasets with standardized labeling and colors
             const datasets = SCORE_VALUES.map(score => {
-                // Use our utility function from score-utils.js
                 const bgColor = getScoreColor(score);
                 
                 return {
@@ -85,7 +78,6 @@
                         },
                         legend: {
                             labels: {
-                                // Generate colored boxes for legend
                                 generateLabels: (chart) => {
                                     const datasets = chart.data.datasets;
                                     return datasets.map((dataset, i) => {
@@ -158,43 +150,43 @@
             if (score >= thresholds.mortal) return 'mortal';
             return 'primordial';
         }
-        // We now use the getScoreColor function from score-utils.js directly
-        // The function has been moved to the shared utility file
     </script>
 </head>
 
 <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
         {{template "nav" .}}
-        <main class="arena-main">
-            <div class="container">
-        <h1>Model Performance Statistics</h1>
+        <main class="flex-1 flex flex-col gap-3 overflow-auto">
+            <div class="card bg-base-100 shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">Model Performance Statistics</h1>
 
-        <div class="tier-list">
-            <h2>Tier List</h2>
-            <table class="tier-table">
-                <thead>
-                    <tr>
-                        <th>Tier</th>
-                        <th>Score Range</th>
-                        <th>Models</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers $tier}}
-                    <tr class="tier-row {{$tier | tierClass}}">
-                        <td class="tier-header"><b>{{$tier | formatTierName}}</b></td>
-                        <td><i>{{index $.TierRanges $tier}}</i></td>
-                        <td>{{join $models " --- "}}</td>
-                    </tr>
-                    {{end}} {{end}}
-                </tbody>
-            </table>
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Tier List</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>Tier</th>
+                            <th>Score Range</th>
+                            <th>Models</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers $tier}}
+                        <tr>
+                            <td class="font-bold">{{$tier | formatTierName}}</td>
+                            <td class="italic">{{index $.TierRanges $tier}}</td>
+                            <td>{{join $models " --- "}}</td>
+                        </tr>
+                        {{end}} {{end}}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="chart-container">
-            <h2>Total Scores</h2>
-            <div class="chart-wrapper">
+        <div class="card bg-base-200 shadow-md p-4">
+            <h2 class="text-xl font-semibold mb-4">Total Scores</h2>
+            <div class="h-96">
                 <canvas id="totalScoresChart"></canvas>
             </div>
         </div>

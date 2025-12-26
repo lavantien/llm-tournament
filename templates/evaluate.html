@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
 
 <head>
     <title>Evaluate</title>
@@ -9,52 +9,95 @@
 </head>
 
 <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
         {{template "nav" .}}
-        <main class="arena-main">
-            <div class="evaluation-form">
-        <h2 style="text-align: center;">{{.Model}}</h2>
-        <h3 style="text-align: center;">Prompt {{inc (atoi .PromptIndex)}} of {{.TotalPrompts}}</h3>
+        <main class="flex-1 flex flex-col gap-3 overflow-auto">
+            <div class="card bg-base-100 shadow-lg p-4">
+        <h2 class="text-center text-xl font-bold">{{.Model}}</h2>
+        <h3 class="text-center text-base font-medium">Prompt {{inc (atoi .PromptIndex)}} of {{.TotalPrompts}}</h3>
 
         <form action="/evaluate?model={{.Model}}&prompt={{.PromptIndex}}" method="post">
             <input type="hidden" name="score" id="selectedScore" value="{{.CurrentScore}}">
 
-            <div class="score-buttons">
+            <div class="flex flex-wrap gap-2 justify-center py-4">
                 {{range $label, $value := .ScoreOptions}}
-                <button type="button" class="score-button score-{{$value}}" 
-                        onclick="selectScoreButton('{{$value}}')" 
+                {{if eq $value 0}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #808080; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
                         data-score="{{$value}}">
                     {{$label}}
                 </button>
                 {{end}}
+                {{if eq $value 20}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #ffa500; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
+                        data-score="{{$value}}">
+                    {{$label}}
+                </button>
+                {{end}}
+                {{if eq $value 40}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #ffd700; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
+                        data-score="{{$value}}">
+                    {{$label}}
+                </button>
+                {{end}}
+                {{if eq $value 60}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #00bfff; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
+                        data-score="{{$value}}">
+                    {{$label}}
+                </button>
+                {{end}}
+                {{if eq $value 80}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #a77bff; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
+                        data-score="{{$value}}">
+                    {{$label}}
+                </button>
+                {{end}}
+                {{if eq $value 100}}
+                <button type="button" class="w-12 h-12 flex items-center justify-center font-bold rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                        style="background-color: #7cff6b; color: white;"
+                        onclick="selectScoreButton('{{$value}}')"
+                        data-score="{{$value}}">
+                    {{$label}}
+                </button>
+                {{end}}
+                {{end}}
             </div>
 
-            <div class="evaluation-buttons">
-                <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>⬅️</a>
-                <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="action-button" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>➡️</a>
+            <div class="flex items-center justify-center gap-2 py-4">
+                <a href="/evaluate?model={{.Model}}&prompt={{if gt (atoi .PromptIndex) 0}}{{sub (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="btn btn-info" {{if eq (atoi .PromptIndex) 0}}style="visibility: hidden;"{{end}}>⬅️</a>
+                <a href="/evaluate?model={{.Model}}&prompt={{if lt (atoi .PromptIndex) (sub .TotalPrompts 1)}}{{add (atoi .PromptIndex) 1}}{{else}}{{.PromptIndex}}{{end}}" class="btn btn-info" {{if eq (atoi .PromptIndex) (sub .TotalPrompts 1)}}style="visibility: hidden;"{{end}}>➡️</a>
                 <span>_</span>
-                <button type="button" class="action-button" onclick="copyPromptText()">📋</button>
+                <button type="button" class="btn btn-primary" onclick="copyPromptText()">📋</button>
                 <span>_</span>
-                <button type="submit" class="action-button">✅</button>
-                <a href="/results" class="action-button">❌</a>
+                <button type="submit" class="btn btn-success">✅</button>
+                <a href="/results" class="btn btn-error">❌</a>
             </div>
         </form>
 
-        <div class="prompt-markdown">
-          <h4>Prompt:</h4>
+        <div class="card bg-base-200 shadow-md p-4 my-4">
+          <h4 class="font-semibold mb-2">Prompt:</h4>
           <div class="markdown-content">{{.PromptText}}</div>
       </div>
-      <hr/>
-      <div class="solution-markdown">
-          <h4>Solution:</h4>
+      <hr class="divider"/>
+      <div class="card bg-base-200 shadow-md p-4 my-4">
+          <h4 class="font-semibold mb-2">Solution:</h4>
           <div class="markdown-content">{{.Solution}}</div>
       </div>
-      <hr/>
-      <div class="model-response-section">
-          <h4>Model Response:</h4>
-          <textarea id="modelResponse" rows="10" placeholder="Model's response will appear here...">{{.ModelResponse}}</textarea>
-          <div style="margin-top: 10px;">
-              <button type="button" class="action-button" onclick="saveModelResponse()">💾 Save Response</button>
+      <hr class="divider"/>
+      <div class="card bg-base-200 shadow-md p-4 my-4">
+          <h4 class="font-semibold mb-2">Model Response:</h4>
+          <textarea id="modelResponse" rows="10" placeholder="Model's response will appear here..." class="textarea textarea-bordered w-full">{{.ModelResponse}}</textarea>
+          <div class="mt-2">
+              <button type="button" class="btn btn-primary" onclick="saveModelResponse()">💾 Save Response</button>
               <span id="save-status"></span>
           </div>
       </div>
@@ -63,50 +106,43 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/templates/score-utils.js"></script>
     <script>
-      // Store raw markdown text
       let rawPromptMarkdown = '';
       let rawSolutionMarkdown = '';
       
       function selectScoreButton(score) {
         document.getElementById('selectedScore').value = score;
-        document.querySelectorAll('.score-button').forEach(b => b.style.border = 'none');
-        document.querySelector(`.score-button[data-score="${score}"]`).style.border = '10px solid #000';
+        document.querySelectorAll('[data-score]').forEach(b => b.style.border = 'none');
+        document.querySelector(`button[data-score="${score}"]`).style.border = '4px solid white';
       }
       
       document.addEventListener('DOMContentLoaded', function() {
-        // Store the original markdown before converting
-        const promptMarkdownElement = document.querySelector('.prompt-markdown .markdown-content');
-        const solutionMarkdownElement = document.querySelector('.solution-markdown .markdown-content');
+        const promptMarkdownElement = document.querySelector('.markdown-content:first-of-type');
+        const solutionMarkdownElement = document.querySelector('.markdown-content:nth-of-type(2)');
         
         rawPromptMarkdown = promptMarkdownElement.textContent;
         rawSolutionMarkdown = solutionMarkdownElement.textContent;
         
-        // Convert markdown to HTML for prompt and solution
         const markdownElements = document.querySelectorAll('.markdown-content');
         markdownElements.forEach(function(el) {
           el.innerHTML = marked.parse(el.textContent);
         });
         
-        // Set initial border for the currently selected score button
         const currentScore = document.getElementById('selectedScore').value;
         const currentButton = document.querySelector(
-          `.score-button[data-score="${currentScore}"]`,
+          `button[data-score="${currentScore}"]`,
         );
         if (currentButton) {
-          currentButton.style.border = '10px solid #000';
+          currentButton.style.border = '4px solid white';
         }
       });
       
       function copyPromptText() {
-        // Copy the stored raw markdown to clipboard
         navigator.clipboard.writeText(rawPromptMarkdown)
           .then(() => {
-            // Visual feedback for successful copy
             const copyButton = document.querySelector('button[onclick="copyPromptText()"]');
             const originalText = copyButton.textContent;
             copyButton.textContent = 'Copied!';
             
-            // Reset button text after 2 seconds
             setTimeout(() => {
               copyButton.textContent = "📋";
             }, 2000);

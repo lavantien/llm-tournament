@@ -17,7 +17,7 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 
 **UI Stack**
 - Tailwind CSS v4.1.18 + DaisyUI v5.0.0 (0% custom CSS)
-- Built-in DaisyUI components and themes (cyberpunk)
+- Built-in DaisyUI components and themes (coffee)
 - Industry-standard utility-first styling approach
 - Zero maintenance custom CSS codebase
 

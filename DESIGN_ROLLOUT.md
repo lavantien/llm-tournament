@@ -143,11 +143,11 @@ npm run screenshots
 - **Status**: `.status`, `.status-success`, `.status-error`
 - **Buttons Group**: `.btn-group`
 
-### Built-in Theme: `cyberpunk`
+### Built-in Theme: `coffee`
 
-The `cyberpunk` theme provides:
-- Dark backgrounds matching our aesthetic
-- Neon accent colors (cyan, magenta, violet)
+The `coffee` theme provides:
+- Warm, earthy tones matching our aesthetic
+- Brown and cream color palette
 - High contrast for readability
 - Built-in hover and focus states
 
@@ -191,17 +191,17 @@ The `cyberpunk` theme provides:
 **Rationale:** DaisyUI doesn't have semantic score colors. Arbitrary values allow full color control without custom CSS.
 
 ### 2. Body Background Strategy
-**Decision:** Use DaisyUI `cyberpunk` theme via `data-theme` attribute
+**Decision:** Use DaisyUI `coffee` theme via `data-theme` attribute
 
 ```html
-<html data-theme="cyberpunk">
+<html data-theme="coffee">
   <body class="bg-base-200 min-w-[1320px]">
     <!-- Content -->
   </body>
 </html>
 ```
 
-**Rationale:** Built-in themes are zero-maintenance and provide consistent color palettes. Cyberpunk matches our dark + neon aesthetic.
+**Rationale:** Built-in themes are zero-maintenance and provide consistent color palettes. Coffee theme provides warm, earthy tones with good readability.
 
 ### 3. Glass Panel Strategy
 **Decision:** Remove all glow effects, use standard DaisyUI `.card` components
@@ -260,10 +260,9 @@ export default {
   ],
   daisyui: {
     themes: [
-      "cyberpunk",  // Built-in dark theme with neon accents
-      "dark",        // Fallback dark theme
+      "coffee",     // Built-in warm, earthy theme
     ],
-    darkTheme: "cyberpunk",
+    darkTheme: "coffee",
   },
 }
 ```
@@ -274,7 +273,7 @@ export default {
 - Removed custom animations (Tailwind v4 has built-ins)
 - Removed safelist (no longer needed - all classes are built-in)
 - Added DaisyUI plugin
-- Configured cyberpunk theme
+- Configured coffee theme
 
 ### `postcss.config.js`
 ```javascript
@@ -292,7 +291,7 @@ export default {
 ```css
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: cyberpunk --default, dark --prefersdark;
+  themes: coffee;
 }
 ```
 
@@ -493,7 +492,7 @@ Upon completion, we will have achieved:
 1. **0 lines of custom CSS** (except Tailwind/DaisyUI imports)
 2. **100% DaisyUI v5 + Tailwind v4** styling
 3. **All tests passing** with coverage ≥ 99%
-4. **Visual consistency** across all pages using DaisyUI cyberpunk theme
+4. **Visual consistency** across all pages using DaisyUI coffee theme
 5. **Maintainable codebase** using industry-standard tools
 6. **No CSS maintenance burden** (DaisyUI handles complexity)
 7. **Zero pseudo-elements** (no `::before` or `::after` for effects)

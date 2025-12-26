@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="coffee">
 <head>
     <title>Import Results</title>
     <link rel="stylesheet" href="/templates/output.css">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
-    <div class="arena-shell arena-shell-solo">
-        <main class="arena-main arena-main-solo">
-            <div class="container">
-    <h1>Import Results</h1>
-    <form action="/import_results" method="post" enctype="multipart/form-data" style="text-align: center;">
-        <p>Select a JSON file containing results to import.</p>
-        <p>Expected format: a map of model names to result objects with "scores" arrays.</p>
-        <input type="file" name="results_file" accept=".json" />
-        <input type="submit" value="Import" />
-    </form>
-    <p style="text-align: center;">There was an error importing the file. Please check the file format and try again.</p>
-    <form action="/results" method="get" style="text-align: center;">
-        <input type="submit" value="Go Back">
-    </form>
-    <div class="scroll-buttons">
-        <button class="scroll-button" onclick="scrollToTop()">↑</button>
-        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
+        <main class="flex justify-center items-start flex-1">
+            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+                <div class="card-body">
+                    <h1 class="card-title text-center">Import Results</h1>
+                    <form action="/import_results" method="post" enctype="multipart/form-data" class="text-center">
+                        <p>Select a JSON file containing results to import.</p>
+                        <p>Expected format: a map of model names to result objects with "scores" arrays.</p>
+                        <input type="file" name="results_file" accept=".json" class="file-input file-input-bordered" />
+                        <button type="submit" value="Import" class="btn btn-primary">Import</button>
+                    </form>
+                    <div class="alert alert-warning text-center">There was an error importing file. Please check file format and try again.</div>
+                    <form action="/results" method="get" class="text-center">
+                        <button type="submit" class="btn btn-ghost">Go Back</button>
+                    </form>
+                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
     <script>
         function scrollToTop() {
@@ -33,8 +38,5 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
     </script>
-            </div>
-        </main>
-    </div>
 </body>
 </html>

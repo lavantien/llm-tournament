@@ -96,52 +96,48 @@ async function main() {
 
   try {
     await capturePage(page, `${url}/results`, path.join(assetsDir, "ui-results.png"), {
-      waitForSelector: ".arena-shell",
+      waitForSelector: ".table",
       waitForFunction: () => {
-        const cell =
-          document.querySelector(".score-cell.score-100") ||
-          document.querySelector(".score-cell.score-80") ||
-          document.querySelector(".score-cell.score-60") ||
-          document.querySelector(".score-cell.score-40") ||
-          document.querySelector(".score-cell.score-20") ||
-          document.querySelector(".score-cell.score-0");
-        if (!cell) return false;
-        const bg = getComputedStyle(cell).backgroundColor;
-        return bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent";
+        const cells = document.querySelectorAll("td");
+        for (const cell of cells) {
+          const bg = getComputedStyle(cell).backgroundColor;
+          if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent" && bg !== "rgba(255, 255, 255, 0)") {
+            return true;
+          }
+        }
+        return false;
       },
     });
 
     await capturePage(page, `${url}/prompts`, path.join(assetsDir, "ui-prompts.png"), {
-      waitForSelector: ".arena-shell",
+      waitForSelector: ".card",
     });
     await capturePage(page, `${url}/profiles`, path.join(assetsDir, "ui-profiles.png"), {
-      waitForSelector: ".arena-shell",
+      waitForSelector: ".card",
     });
     await capturePage(page, `${url}/stats`, path.join(assetsDir, "ui-stats.png"), {
       waitForSelector: "canvas",
     });
     await capturePage(page, `${url}/settings`, path.join(assetsDir, "ui-settings.png"), {
-      waitForSelector: ".arena-shell",
+      waitForSelector: ".card",
     });
 
-    // Pick a stable model + prompt for the Evaluate and Edit Prompt screenshots.
+    // Pick a stable model + prompt for Evaluate screenshot.
     await capturePage(
       page,
       `${url}/evaluate?model=${encodeURIComponent("gpt-5.2")}&prompt=0`,
       path.join(assetsDir, "ui-evaluate.png"),
       {
-        waitForSelector: ".evaluation-form",
+        waitForSelector: ".card",
         beforeScreenshot: async (p) => {
-          await p.click(".score-button.score-80", { timeout: 30_000 });
-          await p.waitForTimeout(150);
+          const buttons = p.locator("button[data-score]").all();
+          if (buttons.length > 0) {
+            await buttons[3].click({ timeout: 30_000 });
+            await p.waitForTimeout(150);
+          }
         },
       }
     );
-
-    await page.goto(`${url}/edit_prompt?index=0`, { waitUntil: "domcontentloaded" });
-    await ensureStableRendering(page);
-    await page.waitForSelector(".container", { timeout: 30_000 });
-    await page.locator(".container").screenshot({ path: path.join(assetsDir, "ui-edit-prompt.png") });
   } finally {
     await context.close();
     await browser.close();

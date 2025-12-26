@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
   <head>
     <title>Bulk Delete Prompts</title>
     <link rel="stylesheet" href="/templates/output.css" />
@@ -8,59 +8,63 @@
   </head>
 
   <body>
-    <div class="arena-shell arena-shell-solo">
-      <main class="arena-main arena-main-solo">
-        <div class="container">
-    <h1>Bulk Delete Prompts</h1>
-    <form
-      id="bulk-delete-form"
-      action="/bulk_delete_prompts"
-      method="post"
-      style="text-align: center"
-    >
-      <input type="hidden" name="indices" value="{{.Indices}}" />
-      <input type="submit" value="Delete" />
-      <input type="submit" form="cancel-form" value="Cancel" />
-    </form>
-    <form id="cancel-form" action="/prompts" method="get"></form>
-    <p style="text-align: center">
-      Are you sure you want to delete the following prompts?
-    </p>
-    <h2>Preview</h2>
-    <div id="preview" class="markdown-content">
-      {{range $index, $prompt := .Prompts}} {{$prompt.Text | markdown}}
-      <div style="font-style: italic; text-align: left; color: green">
-        {{$prompt.Solution | markdown}}
-      </div>
-      {{"---" | markdown}} {{end}}
-      <br />
-    </div>
-    <script>
-      document
-        .getElementById("bulk-delete-form")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-          const indices = JSON.parse(
-            document.querySelector('input[name="indices"]').value,
-          );
-          fetch("/bulk_delete_prompts", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ indices: indices }),
-          }).then((response) => {
-            if (response.ok) {
-              window.location.href = "/prompts";
-            } else {
-              console.error("Error deleting prompts");
-            }
-          });
-        });
-    </script>
-    <div class="scroll-buttons">
-      <button class="scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
+      <main class="flex justify-center items-start flex-1">
+        <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+          <div class="card-body">
+            <h1 class="card-title text-center">Bulk Delete Prompts</h1>
+            <form
+              id="bulk-delete-form"
+              action="/bulk_delete_prompts"
+              method="post"
+              class="text-center"
+            >
+              <input type="hidden" name="indices" value="{{.Indices}}" />
+              <button type="submit" class="btn btn-error">Delete</button>
+              <button type="submit" form="cancel-form" class="btn btn-ghost">Cancel</button>
+            </form>
+            <form id="cancel-form" action="/prompts" method="get"></form>
+            <p class="text-center">
+              Are you sure you want to delete following prompts?
+            </p>
+            <div class="divider">Preview</div>
+            <div id="preview" class="prose text-base-content">
+              {{range $index, $prompt := .Prompts}} {{$prompt.Text | markdown}}
+              <div class="italic text-left text-success">
+                {{$prompt.Solution | markdown}}
+              </div>
+              {{"---" | markdown}} {{end}}
+            </div>
+            <script>
+              document
+                .getElementById("bulk-delete-form")
+                .addEventListener("submit", function (event) {
+                  event.preventDefault();
+                  const indices = JSON.parse(
+                    document.querySelector('input[name="indices"]').value,
+                  );
+                  fetch("/bulk_delete_prompts", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ indices: indices }),
+                  }).then((response) => {
+                    if (response.ok) {
+                      window.location.href = "/prompts";
+                    } else {
+                      console.error("Error deleting prompts");
+                    }
+                  });
+                });
+            </script>
+            <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+              <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+              <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
     <script>
       function scrollToTop() {
@@ -74,8 +78,5 @@
         });
       }
     </script>
-        </div>
-      </main>
-    </div>
   </body>
 </html>

@@ -1,62 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="coffee">
 <head>
     <title>Settings - LLM Tournament</title>
     <link rel="stylesheet" href="/templates/output.css">
 </head>
 <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
         {{template "nav" .}}
-        <main class="arena-main">
-            <div class="container">
-        <h1>⚙️ Settings</h1>
+        <main class="flex-1 flex flex-col gap-3 overflow-auto">
+            <div class="w-full max-w-[1320px] mx-auto">
+                <div class="card bg-base-100 shadow-lg">
+                    <div class="card-body">
+                        <h1 class="card-title">⚙️ Settings</h1>
 
-        <form action="/settings/update" method="POST">
-            <h2>API Keys</h2>
-            <p class="help-text">API keys are encrypted before storage. Only the last 4 characters are shown.</p>
+                        <form action="/settings/update" method="POST" class="form-control">
+                            <h2 class="text-lg font-semibold mb-2">API Keys</h2>
+                            <p class="text-sm text-base-content/70 mb-4">API keys are encrypted before storage. Only the last 4 characters are shown.</p>
 
-            <div class="form-group">
-                <label for="api_key_anthropic">Anthropic API Key:</label>
-                <input type="password" id="api_key_anthropic" name="api_key_anthropic"
-                       placeholder="{{index .MaskedAPIKeys "api_key_anthropic"}}" class="form-control">
-            </div>
+                            <div class="form-control">
+                                <label class="label" for="api_key_anthropic">Anthropic API Key:</label>
+                                <input type="password" id="api_key_anthropic" name="api_key_anthropic"
+                                       placeholder="{{index .MaskedAPIKeys "api_key_anthropic"}}" class="input input-bordered w-full" />
+                            </div>
 
-            <div class="form-group">
-                <label for="api_key_openai">OpenAI API Key:</label>
-                <input type="password" id="api_key_openai" name="api_key_openai"
-                       placeholder="{{index .MaskedAPIKeys "api_key_openai"}}" class="form-control">
-            </div>
+                            <div class="form-control">
+                                <label class="label" for="api_key_openai">OpenAI API Key:</label>
+                                <input type="password" id="api_key_openai" name="api_key_openai"
+                                       placeholder="{{index .MaskedAPIKeys "api_key_openai"}}" class="input input-bordered w-full" />
+                            </div>
 
-            <div class="form-group">
-                <label for="api_key_google">Google API Key:</label>
-                <input type="password" id="api_key_google" name="api_key_google"
-                       placeholder="{{index .MaskedAPIKeys "api_key_google"}}" class="form-control">
-            </div>
+                            <div class="form-control">
+                                <label class="label" for="api_key_google">Google API Key:</label>
+                                <input type="password" id="api_key_google" name="api_key_google"
+                                       placeholder="{{index .MaskedAPIKeys "api_key_google"}}" class="input input-bordered w-full" />
+                            </div>
 
-            <h2>Evaluation Settings</h2>
+                            <div class="divider"></div>
 
-            <div class="form-group">
-                <label for="cost_alert_threshold_usd">Cost Alert Threshold (USD):</label>
-                <input type="number" id="cost_alert_threshold_usd" name="cost_alert_threshold_usd"
-                       value="{{.Threshold}}" step="10" min="10" max="10000" class="form-control">
-            </div>
+                            <h2 class="text-lg font-semibold mb-2">Evaluation Settings</h2>
 
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="auto_evaluate_new_models" name="auto_evaluate_new_models"
-                           {{if .AutoEvaluate}}checked{{end}}>
-                    Auto-evaluate new models when added
-                </label>
-            </div>
+                            <div class="form-control">
+                                <label class="label" for="cost_alert_threshold_usd">Cost Alert Threshold (USD):</label>
+                                <input type="number" id="cost_alert_threshold_usd" name="cost_alert_threshold_usd"
+                                       value="{{.Threshold}}" step="10" min="10" max="10000" class="input input-bordered w-full" />
+                            </div>
 
-            <div class="form-group">
-                <label for="python_service_url">Python Service URL:</label>
-                <input type="text" id="python_service_url" name="python_service_url"
-                       value="{{.PythonURL}}" class="form-control">
-            </div>
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <input type="checkbox" id="auto_evaluate_new_models" name="auto_evaluate_new_models"
+                                           {{if .AutoEvaluate}}checked{{end}} class="checkbox checkbox-sm" />
+                                    Auto-evaluate new models when added
+                                </label>
+                            </div>
 
-            <button type="submit" class="btn btn-primary">Save Settings</button>
-        </form>
+                            <div class="form-control">
+                                <label class="label" for="python_service_url">Python Service URL:</label>
+                                <input type="text" id="python_service_url" name="python_service_url"
+                                       value="{{.PythonURL}}" class="input input-bordered w-full" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

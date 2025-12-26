@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="coffee">
 <head>
     <title>Move Prompt</title>
     <link rel="stylesheet" href="/templates/output.css">
@@ -7,38 +7,43 @@
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
 </head>
 <body>
-    <div class="arena-shell arena-shell-solo">
-        <main class="arena-main arena-main-solo">
-            <div class="container">
-    <h1>Move Prompt</h1>
-    <form action="/move_prompt" method="post" style="text-align: center;">
-        <input type="hidden" name="index" value="{{.Index}}">
-        <select name="new_index">
-            {{range $i, $p := .Prompts}}
-                {{if or (eq $p.Profile $.SourceProfile) 
-                        (and (gt $i 0) (eq (index $.Prompts (sub $i 1)).Profile $.SourceProfile))
-                        (and (lt $i (sub (len $.Prompts) 1)) (eq (index $.Prompts (add $i 1)).Profile $.SourceProfile))}}
-                    <option value="{{$i}}" {{if eq $i $.Index}}selected{{end}}>{{inc $i}}</option>
-                {{end}}
-            {{end}}
-        </select>
-        <input type="submit" value="Confirm">
-        <input type="submit" form="cancel-form" value="Cancel">
-    </form>
-    <p style="text-align: center;"><small>Only showing positions that maintain profile group contiguity</small></p>
-    <form id="cancel-form" action="/prompts" method="get" style="text-align: center;"></form>
-    <p style="text-align: center;">Select the new position for the prompt:</p>
-    <div id="preview" class="markdown-content" style="text-align: left;">
-        {{.Prompt | markdown}}
-    </div>
-    <script>
-        const preview = document.getElementById('preview');
-        const initialMarkdownText = `{{.Prompt}}`;
-        preview.innerHTML = marked.parse(initialMarkdownText);
-    </script>
-    <div class="scroll-buttons">
-        <button class="scroll-button" onclick="scrollToTop()">↑</button>
-        <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
+        <main class="flex justify-center items-start flex-1">
+            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+                <div class="card-body">
+                    <h1 class="card-title text-center">Move Prompt</h1>
+                    <form action="/move_prompt" method="post" class="text-center">
+                        <input type="hidden" name="index" value="{{.Index}}">
+                        <select name="new_index" class="select select-bordered">
+                            {{range $i, $p := .Prompts}}
+                                {{if or (eq $p.Profile $.SourceProfile)
+                                        (and (gt $i 0) (eq (index $.Prompts (sub $i 1)).Profile $.SourceProfile))
+                                        (and (lt $i (sub (len $.Prompts) 1)) (eq (index $.Prompts (add $i 1)).Profile $.SourceProfile))}}
+                                    <option value="{{$i}}" {{if eq $i $.Index}}selected{{end}}>{{inc $i}}</option>
+                                {{end}}
+                            {{end}}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Confirm</button>
+                        <button type="submit" form="cancel-form" class="btn btn-ghost">Cancel</button>
+                    </form>
+                    <p class="text-center text-sm">Only showing positions that maintain profile group contiguity</p>
+                    <form id="cancel-form" action="/prompts" method="get" class="text-center"></form>
+                    <p class="text-center">Select new position for prompt:</p>
+                    <div id="preview" class="prose text-base-content text-left">
+                        {{.Prompt | markdown}}
+                    </div>
+                    <script>
+                        const preview = document.getElementById('preview');
+                        const initialMarkdownText = `{{.Prompt}}`;
+                        preview.innerHTML = marked.parse(initialMarkdownText);
+                    </script>
+                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
     <script>
         function scrollToTop() {
@@ -49,8 +54,5 @@
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
     </script>
-            </div>
-        </main>
-    </div>
 </body>
 </html>

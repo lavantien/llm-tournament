@@ -1,39 +1,43 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
 <head>
     <title>Edit Prompt Suite</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
 </head>
 <body>
-    <div class="arena-shell arena-shell-solo">
-        <main class="arena-main arena-main-solo">
-            <div class="container edit-container">
-                <h1>Edit Prompt Suite</h1>
-                <form action="/prompts/suites/edit?return_to={{.CurrentPath}}" method="post">
-                    <p>Current Suite Name: "{{.SuiteName}}"</p>
-                    <label for="new_suite_name">New Suite Name:</label>
-                    <input type="text" id="new_suite_name" name="new_suite_name" value="{{.SuiteName}}" required />
-                    <input type="hidden" name="suite_name" value="{{.SuiteName}}" />
-                    <input type="submit" value="Save" />
-                    <input type="submit" form="cancel-form" value="Cancel" />
-                </form>
-                <form id="cancel-form" action="{{.CurrentPath}}" method="get"></form>
-                <div class="scroll-buttons">
-                    <button class="scroll-button" onclick="scrollToTop()">↑</button>
-                    <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
+        <main class="flex justify-center items-start flex-1">
+            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+                <div class="card-body">
+                    <h1 class="card-title">Edit Prompt Suite</h1>
+                    <form action="/prompts/suites/edit?return_to={{.CurrentPath}}" method="post" class="form-control">
+                        <p>Current Suite Name: "{{.SuiteName}}"</p>
+                        <label class="label" for="new_suite_name">New Suite Name:</label>
+                        <input type="text" id="new_suite_name" name="new_suite_name" value="{{.SuiteName}}" required class="input input-bordered" />
+                        <input type="hidden" name="suite_name" value="{{.SuiteName}}" />
+                        <div class="card-actions justify-start">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" form="cancel-form" class="btn btn-ghost">Cancel</button>
+                        </div>
+                    </form>
+                    <form id="cancel-form" action="{{.CurrentPath}}" method="get"></form>
+                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+                    </div>
                 </div>
-                <script>
-                    function scrollToTop() {
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-
-                    function scrollToBottom() {
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-                    }
-                </script>
             </div>
         </main>
     </div>
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        }
+    </script>
 </body>
 </html>

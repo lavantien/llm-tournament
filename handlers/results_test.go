@@ -3084,60 +3084,6 @@ func TestUpdateMockResultsHandler_PromptsHaveSolutions(t *testing.T) {
 	}
 }
 
-func TestResultsHandler_ScoreCellsUseConsistentColors(t *testing.T) {
-	restoreDir := changeToProjectRootResults(t)
-	defer restoreDir()
-
-	cleanup := setupResultsTestDB(t)
-	defer cleanup()
-
-	// Add test prompts and results
-	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Test prompt"}})
-	_ = middleware.WriteResults("default", map[string]middleware.Result{
-		"TestModel": {Scores: []int{0}},
-	})
-
-	req := httptest.NewRequest("GET", "/results", nil)
-	rr := httptest.NewRecorder()
-	ResultsHandler(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
-	}
-
-	// Verify score classes exist in CSS file
-	cssPath := "templates/output.css"
-	cssContent, err := os.ReadFile(cssPath)
-	if err != nil {
-		t.Fatalf("failed to read CSS file: %v", err)
-	}
-
-	// Verify all score classes (score-0 through score-100) are present and reference correct CSS variables
-	validScores := []int{0, 20, 40, 60, 80, 100}
-	for _, score := range validScores {
-		classSelector := fmt.Sprintf(".score-%d {", score)
-		if !strings.Contains(string(cssContent), classSelector) {
-			t.Errorf("CSS class score-%d not found in %s", score, cssPath)
-		}
-
-		// Verify the class references the correct CSS variable
-		varName := fmt.Sprintf("--score-color-%d", score)
-		if !strings.Contains(string(cssContent), varName) {
-			t.Errorf("CSS variable %s not found in %s", varName, cssPath)
-		}
-	}
-
-	// Verify the CSS variables are defined in :root
-	if !strings.Contains(string(cssContent), ":root {") {
-		t.Error(":root selector not found in CSS file")
-	}
-
-	// Verify score cells are rendered with correct classes in the HTML response
-	body := rr.Body.String()
-	if !strings.Contains(body, "score-cell") {
-		t.Error("expected 'score-cell' class in response body")
-	}
-}
 
 func TestRandomizeScores_CoversAllTiers(t *testing.T) {
 	cleanup := setupResultsTestDB(t)

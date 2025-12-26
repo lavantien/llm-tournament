@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="coffee">
   <head>
     <title>Profiles</title>
     <link rel="stylesheet" href="/templates/output.css" />
@@ -7,113 +7,119 @@
   </head>
 
   <body>
-    <div class="arena-shell">
+    <div class="flex flex-col min-h-screen bg-base-200 p-3">
       {{template "nav" .}}
-      <main class="arena-main">
-    <div class="glass-panel-enhanced p-4 m-0 sticky-header">
-      <div class="flex-grow-1 text-left flex items-center">
-        <h2 class="text-sm tracking-wide text-text/88">Add Profile</h2>
-      </div>
-      <div class="flex items-center justify-center flex-1">
-        <form
-          action="/add_profile"
-          method="post"
-          class="flex items-center flex-wrap gap-3"
-        >
-          <textarea
-            name="profile_name"
-            placeholder="Enter profile name"
-            rows="2"
-            class="input-enhanced w-56 min-w-[224px] h-16 resize-y"
-            aria-label="Enter profile name"
-          ></textarea>
-          <textarea
-            name="profile_description"
-            placeholder="Enter profile description"
-            rows="2"
-            class="input-enhanced w-56 min-w-[224px] h-16 resize-y"
-            aria-label="Enter profile description"
-          ></textarea>
-          <input type="submit" value="Add" class="btn-enhanced" />
-        </form>
-      </div>
-      <div class="flex-grow-1 text-right flex items-center justify-end">
-        &nbsp;
-      </div>
-    </div>
-    <div class="glass-panel p-4 m-0 title-row">
-      <div class="filter-container search-container">
-        <form action="/profiles" method="get" class="search-form flex items-center gap-2" style="margin-left: 0px">
-          <input
-            type="text"
-            name="search_query"
-            id="search_query"
-            value="{{.SearchQuery}}"
-            placeholder="Search profiles..."
-            class="input-enhanced w-80 max-w-full"
-            aria-label="Search profiles"
-          />
-          <input type="submit" value="Search" class="btn-enhanced" />
-        </form>
-      </div>
-      <div class="title-container justify-center">
-        <h1 class="text-base tracking-wide">Profiles</h1>
-      </div>
-      <div class="search-container">&nbsp;</div>
-    </div>
-    <ul id="profile-list" class="flex flex-col gap-3">
-      {{if .Profiles}} {{range $index, $profile := .Profiles}} {{if or (eq
-      $.SearchQuery "") (contains (tolower $profile.Name) (tolower $.SearchQuery)) (contains (tolower $profile.Description) (tolower $.SearchQuery))}}
-      <li class="glass-panel p-3 m-0">
-        <div class="flex items-center justify-between w-full gap-3">
-          <h3 class="flex-shrink-0 mr-2.5 text-sm font-semibold">
-            {{inc $index}}.
-          </h3>
-          <div class="flex items-center flex-1 mr-2.5 gap-2">
-            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-20 text-green-400 whitespace-nowrap">{{$profile.Name}}</span>
-            <div class="text-sm flex-1">{{$profile.Description}}</div>
-          </div>
-          <div class="profile-actions flex-shrink-0 flex gap-1.5 ml-2.5">
-            <button
-              class="btn-icon action-button copy-button"
-              onclick="copyProfileDescription('{{$profile.Description}}')"
-              title="Copy profile description to clipboard"
-              aria-label="Copy profile description"
+      <main class="flex-1 flex flex-col gap-3 overflow-auto">
+        <div class="card bg-base-100 shadow-lg p-4">
+          <div class="card-body">
+            <h2 class="text-sm tracking-wide text-base-content/80">Add Profile</h2>
+            <form
+              action="/add_profile"
+              method="post"
+              class="flex items-center flex-wrap gap-3 justify-between"
             >
-              📋
-            </button>
-            <a
-              class="btn-icon action-button edit-button"
-              href="/edit_profile?index={{$index}}"
-              title="Edit this profile"
-              aria-label="Edit profile"
-            >✏️</a
-            >
-            <a
-              class="btn-icon action-button delete-button"
-              href="/delete_profile?index={{$index}}"
-              title="Delete this profile"
-              aria-label="Delete profile"
-            >🗑️</a
-            >
+              <div class="flex gap-3 flex-1">
+                <div class="form-control flex-1">
+                  <textarea
+                    name="profile_name"
+                    placeholder="Enter profile name"
+                    rows="2"
+                    class="textarea textarea-bordered h-16"
+                    aria-label="Enter profile name"
+                  ></textarea>
+                </div>
+                <div class="form-control flex-1">
+                  <textarea
+                    name="profile_description"
+                    placeholder="Enter profile description"
+                    rows="2"
+                    class="textarea textarea-bordered h-16"
+                    aria-label="Enter profile description"
+                  ></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Add</button>
+            </form>
           </div>
         </div>
-      </li>
-      {{end}} {{end}} {{else}}
-      <p class="text-center text-text-muted">No profiles available.</p>
-      {{end}}
-    </ul>
-    <div class="glass-panel p-4 m-0 sticky-footer">
-      <div class="flex items-center gap-3 flex-wrap">
-        <h2 class="text-sm tracking-wide text-text/88">Manage Profiles</h2>
-        <form action="/reset_profiles" method="get">
-          <input type="submit" value="Reset Profiles" class="btn-enhanced" />
-        </form>
-      </div>
-    </div>
-    <div class="scroll-buttons">
-      <button class="btn-enhanced scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="btn-enhanced scroll-button" onclick="scrollToBottom()">↓</button>
+
+        <div class="card bg-base-100 shadow-lg p-4">
+          <div class="card-body">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <form action="/profiles" method="get" class="flex items-center gap-2 flex-1">
+                <input
+                  type="text"
+                  name="search_query"
+                  id="search_query"
+                  value="{{.SearchQuery}}"
+                  placeholder="Search profiles..."
+                  class="input input-bordered w-full max-w-[320px]"
+                  aria-label="Search profiles"
+                />
+                <button type="submit" class="btn btn-info">Search</button>
+              </form>
+              <h1 class="text-base tracking-wide">Profiles</h1>
+            </div>
+          </div>
+        </div>
+
+        <ul id="profile-list" class="flex flex-col gap-3">
+          {{if .Profiles}} {{range $index, $profile := .Profiles}} {{if or (eq
+          $.SearchQuery "") (contains (tolower $profile.Name) (tolower $.SearchQuery)) (contains (tolower $profile.Description) (tolower $.SearchQuery))}}
+          <li class="card bg-base-100 shadow-lg p-3">
+            <div class="flex items-center justify-between w-full gap-3">
+              <h3 class="flex-shrink-0 mr-2.5 text-sm font-semibold">
+                {{inc $index}}.
+              </h3>
+              <div class="flex items-center flex-1 mr-2.5 gap-2">
+                <span class="badge badge-success badge-outline whitespace-nowrap">{{$profile.Name}}</span>
+                <div class="text-sm flex-1">{{$profile.Description}}</div>
+              </div>
+              <div class="flex flex-shrink-0 gap-1.5 ml-2.5">
+                <button
+                  class="btn btn-info"
+                  onclick="copyProfileDescription('{{$profile.Description}}')"
+                  title="Copy profile description to clipboard"
+                  aria-label="Copy profile description"
+                >
+                  📋
+                </button>
+                <a
+                  class="btn btn-info"
+                  href="/edit_profile?index={{$index}}"
+                  title="Edit this profile"
+                  aria-label="Edit profile"
+                >✏️</a>
+                <a
+                  class="btn btn-info"
+                  href="/delete_profile?index={{$index}}"
+                  title="Delete this profile"
+                  aria-label="Delete profile"
+                >🗑️</a>
+              </div>
+            </div>
+          </li>
+          {{end}} {{end}} {{else}}
+          <p class="text-center text-base-content/60">No profiles available.</p>
+          {{end}}
+        </ul>
+
+        <div class="card bg-base-100 shadow-lg p-4">
+          <div class="card-body">
+            <div class="flex items-center gap-3 flex-wrap">
+              <h2 class="text-sm tracking-wide text-base-content/80">Manage Profiles</h2>
+              <form action="/reset_profiles" method="get">
+                <button type="submit" class="btn btn-error">Reset Profiles</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+          <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+          <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+        </div>
+      </main>
     </div>
     <script>
       function scrollToTop() {
@@ -121,10 +127,8 @@
       }
 
       function scrollToBottom() {
-        const footerHeight =
-          document.querySelector(".sticky-footer").offsetHeight;
-        const scrollHeight =
-          document.body.scrollHeight - window.innerHeight - footerHeight;
+        const footerHeight = 0; // No footer height calculation needed with DaisyUI
+        const scrollHeight = document.body.scrollHeight - window.innerHeight - footerHeight;
         window.scrollTo({
           top: scrollHeight,
           behavior: "smooth",
@@ -142,7 +146,5 @@
         );
       }
     </script>
-      </main>
-    </div>
   </body>
 </html>

@@ -16,18 +16,20 @@ const SCORE_LABELS = {
 };
 
 /**
- * Gets the color for a score from CSS variables
+ * Gets the color for a score
  * @param {number} score - The score value
  * @returns {string} The color as a hex code
  */
 function getScoreColor(score) {
-    // Get from CSS variables defined in arena.css/style.css
-    const bodyStyles = getComputedStyle(document.body);
-    const varName = `--score-color-${score}`;
-    const cssColor = bodyStyles.getPropertyValue(varName).trim();
-
-    // Return CSS variable color or fallback to gray
-    return cssColor || '#808080';
+    const scoreColors = {
+        0: '#808080',
+        20: '#ffa500',
+        40: '#ffd700',
+        60: '#00bfff',
+        80: '#a77bff',
+        100: '#7cff6b'
+    };
+    return scoreColors[score] || '#808080';
 }
 
 /**

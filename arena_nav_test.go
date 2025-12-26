@@ -15,10 +15,15 @@ func TestArenaNav_RendersTopbarAndSidebar(t *testing.T) {
 	}
 	s := string(b)
 
-	if !strings.Contains(s, "arena-topbar") {
-		t.Fatalf("templates/nav.html must include an element with class arena-topbar")
+	// Check for DaisyUI components instead of custom classes
+	if !strings.Contains(s, "card bg-base-100 shadow-lg") {
+		t.Fatalf("templates/nav.html must include DaisyUI card component for topbar")
 	}
-	if !strings.Contains(s, "arena-sidebar") {
-		t.Fatalf("templates/nav.html must include an element with class arena-sidebar")
+	if !strings.Contains(s, "card bg-base-100 shadow-lg") {
+		t.Fatalf("templates/nav.html must include DaisyUI card component for sidebar")
+	}
+	// Check for menu component (DaisyUI)
+	if !strings.Contains(s, `class="menu`) {
+		t.Fatalf("templates/nav.html must include DaisyUI menu component")
 	}
 }
