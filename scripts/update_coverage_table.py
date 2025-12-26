@@ -5,6 +5,47 @@ Update coverage table in README.md based on test results
 import sys
 import re
 import subprocess
+import os
+
+def get_package_coverage(packages, repo_root):
+    """Run go test on each package and extract statement coverage"""
+    coverage_map = {}
+    
+    # Use NUL on Windows, /dev/null on Unix-like systems
+    null_device = 'NUL' if os.name == 'nt' else '/dev/null'
+    
+    for pkg in packages:
+        try:
+            # Use relative path from repo root
+            if pkg == '.':
+                pkg_path = '.'
+            else:
+                pkg_path = f'./{pkg}'
+            
+            result = subprocess.run(
+                ['go', 'test', pkg_path, f'-coverprofile={null_device}'],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=repo_root
+            )
+            
+            # Parse coverage: "ok  llm-tournament/handlers	1.572s	coverage: 98.8% of statements"
+            match = re.search(r'coverage:\s+([0-9]+\.[0-9]+)%', result.stdout)
+            if match:
+                coverage_map[pkg] = float(match.group(1))
+            else:
+                # Check for "coverage: [no statements]"
+                if '[no statements]' in result.stdout:
+                    coverage_map[pkg] = None
+                else:
+                    coverage_map[pkg] = 0.0
+        except subprocess.TimeoutExpired:
+            coverage_map[pkg] = None
+        except Exception:
+            coverage_map[pkg] = 0.0
+    
+    return coverage_map
 
 def main():
     if len(sys.argv) < 3:
@@ -13,114 +54,53 @@ def main():
 
     coverage_file = sys.argv[1]
     readme_path = sys.argv[2]
+    
+    # Get repository root (script is in scripts/, so parent dir is repo root)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(script_dir)
+    
+    # Get absolute path for readme
+    if not os.path.isabs(readme_path):
+        readme_path = os.path.join(repo_root, readme_path)
 
-    # Get function-level coverage using go tool cover
-    result = subprocess.run(
-        ['go', 'tool', 'cover', '-func', coverage_file],
-        capture_output=True,
-        text=True,
-        check=True
-    )
-
-    lines = result.stdout.strip().split('\n')
-
-    # Parse coverage data
-    package_coverage = {}
-    package_func_count = {}
-
-    for line in lines:
-        # Parse: llm-tournament/main.go:12:	funcName	100.0%
-        match = re.match(r'^(llm-tournament(?:/[^:]+)?):\d+:\s+(\S+)\s+([0-9]+\.[0-9]+)%', line)
-        if match:
-            pkg_path = match.group(1)
-            func_name = match.group(2)
-            coverage = float(match.group(3))
-
-            # Normalize package path
-            if pkg_path.startswith('llm-tournament/'):
-                pkg = pkg_path[len('llm-tournament/'):]
-
-                # Check if it's a subpackage or main package file
-                if '/' in pkg:
-                    # Subpackage: llm-tournament/evaluator/evaluator.go -> evaluator
-                    parts = pkg.split('/')
-                    pkg_name = '/'.join(parts[:-1])  # Remove filename
-                else:
-                    # Main package: llm-tournament/app.go -> main
-                    pkg_name = 'main'
-            else:
-                pkg_name = 'main'
-
-            # Accumulate coverage to calculate average
-            if pkg_name not in package_coverage:
-                package_coverage[pkg_name] = 0
-                package_func_count[pkg_name] = 0
-            package_coverage[pkg_name] += coverage
-            package_func_count[pkg_name] += 1
-
-    # Add missing packages with known values
-    if "integration" not in package_coverage:
-        package_coverage["integration"] = None  # No statements
-    if "templates" not in package_coverage:
-        package_coverage["templates"] = 100.0  # Cached 100%
-
-    # Calculate average coverage per package
-    for pkg_name in package_coverage:
-        if package_func_count.get(pkg_name, 0) > 0:
-            package_coverage[pkg_name] = package_coverage[pkg_name] / package_func_count[pkg_name]
+    # Packages to check
+    packages = ['.', 'evaluator', 'handlers', 'integration', 'middleware', 'templates', 'testutil', 'tools/screenshots/cmd/demo-server']
+    
+    # Get statement-level coverage for each package
+    package_coverage = get_package_coverage(packages, repo_root)
 
     # Generate ordered table output
     ordered_packages = [
-        "main",
-        "evaluator",
-        "handlers",
-        "integration",
-        "middleware",
-        "templates",
-        "testutil",
-        "tools/screenshots/cmd/demo-server"
+        (".", "llm-tournament"),
+        ("evaluator", "llm-tournament/evaluator"),
+        ("handlers", "llm-tournament/handlers"),
+        ("integration", "llm-tournament/integration"),
+        ("middleware", "llm-tournament/middleware"),
+        ("templates", "llm-tournament/templates"),
+        ("testutil", "llm-tournament/testutil"),
+        ("tools/screenshots/cmd/demo-server", "llm-tournament/tools/screenshots/cmd/demo-server")
     ]
 
-    total_coverage = 0
+    total_coverage = 0.0
     total_packages = 0
 
     table_lines = []
     table_lines.append("| Package | Coverage |")
     table_lines.append("| --- | ---: |")
 
-    for pkg in ordered_packages:
-        if pkg in package_coverage:
-            coverage = package_coverage[pkg]
-            if pkg == "main":
-                pkg_name = "llm-tournament"
-            else:
-                pkg_name = f"llm-tournament/{pkg}"
+    for pkg_key, pkg_name in ordered_packages:
+        if pkg_key in package_coverage:
+            coverage = package_coverage[pkg_key]
             if coverage is None:
                 coverage_str = "-"
             else:
                 coverage_str = f"{coverage:.1f}%"
                 total_coverage += coverage
-            total_packages += 1  # Count all packages, not just those with coverage
+                total_packages += 1
             table_lines.append(f"| {pkg_name} | {coverage_str} |")
 
-    # Add missing packages with known values
-    if "integration" not in package_coverage:
-        package_coverage["integration"] = None  # No statements
-    if "templates" not in package_coverage:
-        package_coverage["templates"] = 100.0  # Cached 100%
-
     if total_packages > 0:
-        # Calculate actual average across all packages
-        real_total = 0
-        real_count = 0
-        for pkg in ordered_packages:
-            if pkg in package_coverage and package_coverage[pkg] is not None:
-                real_total += package_coverage[pkg]
-                real_count += 1
-        if real_count > 0:
-            avg_coverage = real_total / real_count
-        else:
-            avg_coverage = 0.0
+        avg_coverage = total_coverage / total_packages
     else:
         avg_coverage = 0.0
 
