@@ -34,6 +34,7 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 - [API Reference](#api-reference)
 - [Project Structure](#project-structure)
 - [Environment Variables](#environment-variables)
+- [Documentation Guidelines](#documentation-guidelines)
 - [License](#license)
 
 ## UI Design
@@ -401,9 +402,10 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | llm-tournament/integration | - |
 | llm-tournament/middleware | 100.0% |
 | llm-tournament/templates | 100.0% |
-| llm-tournament/testutil | 99.6% |
+| llm-tournament/testutil | 100.0% |
 | llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
-| **Total** | **99.9%** |
+| **Total** | **100.0%** |
+
 
 ## Troubleshooting
 
@@ -473,6 +475,40 @@ Generate encryption key:
 - `python -c "import secrets; print(secrets.token_hex(32))"`
 
 See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md) for detailed configuration.
+
+## Documentation Guidelines
+
+When editing documentation files, be aware that several files are automatically validated by tests and CI scripts. See [DOCUMENTATION_ENFORCEMENT.md](DOCUMENTATION_ENFORCEMENT.md) for:
+
+- List of enforced documentation files (README.md, DESIGN_CONCEPT.md, design_preview.html)
+- Required sections and formats for each file
+- How to update documentation without breaking automation
+- Troubleshooting common mistakes
+
+**Quick reference:**
+- `README.md` - Coverage table enforced by `scripts/update_coverage_table.py`
+- `DESIGN_CONCEPT.md` - Section headers enforced by `design_preview_test.go`
+- `design_preview.html` - Required elements enforced by `design_preview_test.go`
+
+**Pre-commit hook (recommended):**
+```bash
+# Install automatic documentation verification before commits
+cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+This will automatically run `make verify-docs` when you commit documentation changes.
+
+**To verify documentation changes:**
+```bash
+# Run specific enforcement test
+CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v
+
+# Update coverage table after editing README
+make update-coverage-table
+
+# Run full test suite
+make test
+```
 
 ## License
 

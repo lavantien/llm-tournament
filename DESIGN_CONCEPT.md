@@ -49,7 +49,9 @@ Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-
 - **Fallbacks**: `system-ui, Segoe UI, Roboto, Arial, sans-serif` and `ui-monospace, Consolas, Menlo, monospace`
 - **Sizing**: Same as original (`text-xs`, `text-sm`, `text-base`)
 
-## Color System (DaisyUI Cyberpunk Theme)
+## Color Palette
+
+### DaisyUI Cyberpunk Theme
 
 DaisyUI `cyberpunk` theme provides:
 - Dark backgrounds (`bg-base-200`, `bg-base-300`)
@@ -85,9 +87,11 @@ Dynamic score cells use Tailwind arbitrary values:
 - **Tables**: `.table`, `.table-zebra` for data grids
 - **Status Indicators**: `.badge`, `.badge-success`, `.badge-error`, `.animate-ping`
 
-## UI Components (DaisyUI v5)
+## UI Elements
 
-### Cards & Panels
+### DaisyUI v5 Components
+
+#### Cards & Panels
 
 - `.card` - Glass panel replacement (no glow)
 - `.card-body` - Content wrapper

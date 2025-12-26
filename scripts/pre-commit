@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Git pre-commit hook for documentation enforcement
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+set -e
+
+echo "Running documentation verification..."
+
+# Detect what changed
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+DOCS_CHANGED=false
+if echo "$STAGED_FILES" | grep -qE "(README\.md|DESIGN_CONCEPT\.md|design_preview\.html|DOCUMENTATION_ENFORCEMENT\.md)$"; then
+    DOCS_CHANGED=true
+fi
+
+if [ "$DOCS_CHANGED" = true ]; then
+    echo "Documentation files changed, running verification..."
+    make verify-docs
+    echo "Documentation verification passed!"
+else
+    echo "No documentation files staged for commit."
+fi
+
+# Run lint if Go files changed
+if echo "$STAGED_FILES" | grep -qE "\.go$"; then
+    echo "Go files changed, running linter..."
+    make lint
+fi
+
+exit 0
