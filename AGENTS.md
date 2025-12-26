@@ -46,6 +46,11 @@ E.g. Go Verification
 go mod tidy && golangci-lint fmt && golangci-lint run --no-config --timeout=5m && CGO_ENABLED=1 go test ./... -race -cover --coverprofile=coverage.out && go tool cover -func coverage.out && CGO_ENABLED=1 go test -bench
 ```
 
+And for UI tasks:
+
+- If there's a `make screenshots` run it and check the output images in `./assets/` to verify the work with Vision MCP
+- If there's no such mechanism for self-verification, make such script using Playwright and do the check with Vision MCP
+
 ### Context Hygiene
 
 If a conversation exceeds 64 turns or context becomes stale:
