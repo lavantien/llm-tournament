@@ -887,7 +887,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 						// Create scores with tier-based distribution (similar to first suite)
 						tierIndex := (len(secondSuiteModels) - 1) / len(secondSuiteTiers)
 						for _, promptID := range promptIDs {
-							score := getRandomScoreForTierWrapper(tierIndex)
+							score := GetRandomScoreForTierWrapper(tierIndex)
 							_, err = db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)",
 								modelID, promptID, score)
 							if err != nil {
@@ -1062,23 +1062,25 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Mock results with even tier distribution updated successfully")
 }
 
-// getRandomScoreForTierWrapper wraps the score generation for the second suite
-func getRandomScoreForTierWrapper(tierIndex int) int {
-	// Use the same logic as getRandomScoreForTier but accessible outside UpdateMockResults
+// GetRandomScoreForTierWrapper generates a score using weighted random selection for the specified tier
+func GetRandomScoreForTierWrapper(tierIndex int) int {
 	tierWeights := []map[int]int{
-		{0: 1, 20: 1, 40: 8, 60: 15, 80: 25, 100: 50},   // cosmic (highest tier)
-		{0: 1, 20: 2, 40: 10, 60: 20, 80: 40, 100: 27},  // divine
-		{0: 2, 20: 5, 40: 15, 60: 30, 80: 35, 100: 13},  // celestial
-		{0: 5, 20: 10, 40: 25, 60: 30, 80: 20, 100: 10}, // ascendant
-		{0: 7, 20: 15, 40: 33, 60: 25, 80: 15, 100: 5},  // ethereal
-		{0: 10, 20: 20, 40: 35, 60: 20, 80: 10, 100: 5}, // mystic
-		{0: 15, 20: 30, 40: 30, 60: 15, 80: 8, 100: 2},  // astral
-		{0: 20, 20: 35, 40: 25, 60: 15, 80: 4, 100: 1},  // spiritual
-		{0: 30, 20: 35, 40: 20, 60: 12, 80: 2, 100: 1},  // primal
-		{0: 40, 20: 35, 40: 15, 60: 8, 80: 2, 100: 0},   // mortal
-		{0: 55, 20: 30, 40: 10, 60: 5, 80: 0, 100: 0},   // primordial (lowest tier)
+		{0: 1, 20: 1, 40: 8, 60: 15, 80: 25, 100: 50},
+		{0: 1, 20: 2, 40: 10, 60: 20, 80: 40, 100: 27},
+		{0: 2, 20: 5, 40: 15, 60: 30, 80: 35, 100: 13},
+		{0: 5, 20: 10, 40: 25, 60: 30, 80: 20, 100: 10},
+		{0: 7, 20: 15, 40: 33, 60: 25, 80: 15, 100: 5},
+		{0: 10, 20: 20, 40: 35, 60: 20, 80: 10, 100: 5},
+		{0: 15, 20: 30, 40: 30, 60: 15, 80: 8, 100: 2},
+		{0: 20, 20: 35, 40: 25, 60: 15, 80: 4, 100: 1},
+		{0: 30, 20: 35, 40: 20, 60: 12, 80: 2, 100: 1},
+		{0: 40, 20: 35, 40: 15, 60: 8, 80: 2, 100: 0},
+		{0: 55, 20: 30, 40: 10, 60: 5, 80: 0, 100: 0},
 	}
 
+	if tierIndex < 0 {
+		tierIndex = 0
+	}
 	if tierIndex >= len(tierWeights) {
 		tierIndex = len(tierWeights) - 1
 	}
@@ -1094,7 +1096,6 @@ func getRandomScoreForTierWrapper(tierIndex int) int {
 		weightsMap[100],
 	}
 
-	// Simple weighted random selection
 	totalWeight := 0
 	for _, w := range weights {
 		totalWeight += w
@@ -1109,7 +1110,7 @@ func getRandomScoreForTierWrapper(tierIndex int) int {
 		}
 	}
 
-	return 0 // fallback
+	return 0
 }
 
 // RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)
@@ -1181,9 +1182,6 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 
 	for i, model := range models {
 		tierIndex := (i * numTiers) / len(models)
-		if tierIndex >= numTiers {
-			tierIndex = numTiers - 1
-		}
 
 		tierMinPercent := float64(tierIndex) / float64(numTiers)
 		tierMaxPercent := float64(tierIndex+1) / float64(numTiers)

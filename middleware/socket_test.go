@@ -721,52 +721,72 @@ func TestBroadcastResults_NoUncategorizedPrompts(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
 
-	clientsMutex.Lock()
-	clients = make(map[*websocket.Conn]bool)
-	clientsMutex.Unlock()
-
 	err := InitDB(dbPath)
 	if err != nil {
 		t.Fatalf("InitDB failed: %v", err)
 	}
 
-	err = WritePromptSuite("default", []Prompt{{Text: "Prompt 1"}})
+	prompts := []Prompt{
+		{Text: "Test Prompt 1"},
+		{Text: "Test Prompt 2"},
+		{Text: "Test Prompt 3"},
+	}
+	err = WritePromptSuite("default", prompts)
 	if err != nil {
 		t.Fatalf("WritePromptSuite failed: %v", err)
 	}
 
 	err = WriteResults("default", map[string]Result{
-		"Model A": {Scores: []int{100}},
+		"Model A": {Scores: []int{100, 80, 60}},
+		"Model B": {Scores: []int{40, 20, 0}},
 	})
 	if err != nil {
 		t.Fatalf("WriteResults failed: %v", err)
 	}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			t.Errorf("Upgrade failed: %v", err)
-			return
-		}
-		clientsMutex.Lock()
-		clients[conn] = true
-		clientsMutex.Unlock()
-	}))
-	defer server.Close()
-
-	BroadcastResults()
-
-	time.Sleep(100 * time.Millisecond)
-
 	clientsMutex.Lock()
-	got := len(clients)
+	clients = make(map[*websocket.Conn]bool)
 	clientsMutex.Unlock()
 
-	if got != 1 {
-		t.Logf("Got %d clients (may include test servers), acceptable if > 0", got)
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer func() { _ = conn.Close() }()
+
+	waitForWebSocketClientRegistration(t, 1)
+
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+
+	go BroadcastResults()
+
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatalf("failed to read message: %v", err)
+	}
+
+	var payload struct {
+		Type string `json:"type"`
+		Data struct {
+			ProfileGroups []ProfileGroup `json:"profileGroups"`
+		} `json:"data"`
+	}
+	err = json.Unmarshal(msg, &payload)
+	if err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+	if payload.Type != "results" {
+		t.Fatalf("expected type 'results', got %q", payload.Type)
+	}
+
+	if len(payload.Data.ProfileGroups) != 1 {
+		t.Errorf("expected 1 profile group (no uncategorized), got %d", len(payload.Data.ProfileGroups))
 	}
 }
+
 
 func TestBroadcastEvaluationProgress(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
