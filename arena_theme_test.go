@@ -35,8 +35,8 @@ func TestArenaTheme_AllTemplatesUseArenaCSS(t *testing.T) {
 		}
 		s := string(b)
 
-		if !strings.Contains(s, `href="/templates/arena.css"`) {
-			t.Errorf("%s must reference /templates/arena.css", filepath.Join("templates", e.Name()))
+		if !strings.Contains(s, `href="/templates/arena.css"`) && !strings.Contains(s, `href="/templates/output.css"`) {
+			t.Errorf("%s must reference /templates/arena.css or /templates/output.css", filepath.Join("templates", e.Name()))
 		}
 	}
 }

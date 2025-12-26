@@ -4,92 +4,38 @@
     <img
       src="/assets/logo.webp"
       alt="LLM Tournament Logo"
-      style="width: 38px; height: 38px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);"
+      class="w-[38px] h-[38px] rounded-[10px] border border-white/12"
     />
-    <div style="display: flex; flex-direction: column; line-height: 1.1;">
-      <div style="font-weight: 700; letter-spacing: 0.02em;">LLM Tournament</div>
-      <div class="mono" style="font-size: 12px; color: rgba(244,248,255,0.64);">offline • ssr • sqlite</div>
+    <div class="flex flex-col" style="line-height: 1.1;">
+      <div class="font-bold tracking-wide">LLM Tournament</div>
+      <div class="mono text-xs text-text-muted">offline • ssr • sqlite</div>
     </div>
   </div>
 
   <div class="suite-management" style="position: relative; z-index: 1; display: flex; align-items: center; gap: 8px;">
-    <span class="mono" style="color: rgba(244,248,255,0.64); font-size: 12px;">SUITE</span>
-    <form action="/prompts/suites/select" method="post" style="display: flex; align-items: center; gap: 6px;">
+    <span class="mono text-text-muted text-xs">SUITE</span>
+    <form action="/prompts/suites/select" method="post" class="flex items-center gap-[6px]">
       <input type="hidden" name="return_to" value="{{.CurrentPath}}" />
-      <select name="suite_name" style="
-        padding:6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.24);
-        color: rgba(244,248,255,0.92);
-        font-size: 12px;
-        cursor: pointer;
-      ">
+      <select name="suite_name" class="px-[10px] py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs cursor-pointer">
         {{range .Suites}}
         <option value="{{.}}" {{if eq . $.CurrentSuite}}selected{{end}}>{{.}}</option>
         {{end}}
       </select>
-      <input type="submit" value="Switch" class="action-button" style="
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.24);
-        color: rgba(244,248,255,0.92);
-        font-size: 12px;
-        cursor: pointer;
-      " />
+      <input type="submit" value="Switch" class="btn-gradient px-3 py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs" />
     </form>
-    <a href="/prompts/suites/new?return_to={{.CurrentPath}}" class="action-button" style="
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.24);
-      color: rgba(244,248,255,0.92);
-      font-size: 12px;
-      text-decoration: none;
-      cursor: pointer;
-    ">New</a>
-    <a href="/prompts/suites/edit?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="action-button" style="
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.24);
-      color: rgba(244,248,255,0.92);
-      font-size: 12px;
-      text-decoration: none;
-      cursor: pointer;
-    ">Edit</a>
-    <a href="/prompts/suites/delete?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="action-button" style="
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.24);
-      color: rgba(244,248,255,0.92);
-      font-size: 12px;
-      text-decoration: none;
-      cursor: pointer;
-    ">Delete</a>
+    <a href="/prompts/suites/new?return_to={{.CurrentPath}}" class="btn-gradient px-3 py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs no-underline">New</a>
+    <a href="/prompts/suites/edit?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn-gradient px-3 py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs no-underline">Edit</a>
+    <a href="/prompts/suites/delete?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn-gradient px-3 py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs no-underline">Delete</a>
   </div>
 
   <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 10px;">
-    <span class="mono" style="color: rgba(244,248,255,0.64); font-size: 12px;">PAGE</span>
-    <span
-      class="mono"
-      style="
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.24);
-        color: rgba(244,248,255,0.92);
-        font-size: 12px;
-      "
-      >{{.PageName}}</span
-    >
+    <span class="mono text-text-muted text-xs">PAGE</span>
+    <span class="mono px-[10px] py-[6px] rounded-full border border-stroke bg-black/24 text-text text-xs">{{.PageName}}</span>
   </div>
 </header>
 
 <aside class="arena-sidebar glass-panel">
-  <div class="mono" style="position: relative; z-index: 1; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(244,248,255,0.46); margin: 2px 8px 10px 8px;">
+  <div class="mono relative z-[1] text-xs tracking-[0.14em] uppercase text-text-faint mx-2 my-[2px] mb-2.5 mt-2">
     Navigation
   </div>
 

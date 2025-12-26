@@ -9,26 +9,26 @@ import (
 func TestArenaCSS_HidesHiddenData(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	if !strings.Contains(css, ".hidden-data") {
-		t.Fatalf("templates/arena.css missing .hidden-data rule")
+		t.Fatalf("templates/output.css missing .hidden-data rule")
 	}
 	if !strings.Contains(css, "display: none") {
-		t.Fatalf("templates/arena.css expected to hide .hidden-data (display: none)")
+		t.Fatalf("templates/output.css expected to hide .hidden-data (display: none)")
 	}
 }
 
 func TestArenaCSS_DefinesScoreClasses(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
@@ -41,7 +41,7 @@ func TestArenaCSS_DefinesScoreClasses(t *testing.T) {
 		".score-100",
 	} {
 		if !strings.Contains(css, cls) {
-			t.Fatalf("templates/arena.css missing %s", cls)
+			t.Fatalf("templates/output.css missing %s", cls)
 		}
 	}
 }

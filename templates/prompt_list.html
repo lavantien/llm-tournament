@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Prompt List</title>
-    <link rel="stylesheet" href="/templates/arena.css" />
+    <link rel="stylesheet" href="/templates/output.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
@@ -11,203 +11,175 @@
     <div class="arena-shell">
       {{template "nav" .}}
       <main class="arena-main">
-    <div class="sticky-header">
-      <div
-        style="
-          flex-grow: 1;
-          text-align: left;
-          display: flex;
-          align-items: center;
-        "
-      >
-        <h2>Add Prompt</h2>
+    <div class="glass-panel p-4 m-0 sticky-header">
+      <div class="flex-grow-1 text-left flex items-center">
+        <h2 class="text-sm tracking-wide text-text/88">Add Prompt</h2>
         <input
           type="checkbox"
           id="select-all-prompts"
-          style="margin-left: 10px"
+          class="ml-2.5"
         />
-        <label for="select-all-prompts">Select All</label>
-        <span id="selected-count" style="margin-left: 10px">(0)</span>
+        <label for="select-all-prompts" class="ml-2 text-text-muted">Select All</label>
+        <span id="selected-count" class="ml-2 text-text-muted">(0 selected)</span>
       </div>
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-grow: 1;
-        "
-      >
+      <div class="flex items-center justify-center flex-1">
         <form
           action="/add_prompt"
           method="post"
-          style="display: flex; align-items: center; margin-right: 5px"
+          class="flex items-center flex-wrap gap-2"
         >
           <textarea
             name="prompt"
             placeholder="Enter new prompt"
-            style="margin-right: 5px"
+            class="input-enhanced w-64 min-w-[280px] h-20 resize-y"
+            aria-label="Enter new prompt"
           ></textarea>
           <textarea
             name="solution"
             placeholder="Enter solution"
-            style="margin-right: 5px"
+            class="input-enhanced w-64 min-w-[280px] h-20 resize-y"
+            aria-label="Enter solution"
           ></textarea>
-          <select name="profile" style="margin-right: 5px">
+          <select name="profile" class="input-enhanced self-start" aria-label="Select profile">
             <option value="">None</option>
             {{range .Profiles}}
             <option value="{{.Name}}">{{.Name}}</option>
             {{end}}
           </select>
-          <input type="submit" value="Add" />
+          <input type="submit" value="Add" class="btn-enhanced" />
         </form>
       </div>
-      <div
-        style="
-          flex-grow: 1;
-          text-align: right;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-        "
-      >
+      <div class="flex-grow-1 text-right flex items-center justify-end gap-2">
         <form
           action="/update_prompts_order"
           method="post"
-          style="margin-right: 5px"
         >
           <input type="hidden" name="order" id="prompts-order-input" value="" />
-          <input type="submit" value="Confirm Order" />
+          <input type="submit" value="Save Order" class="btn-enhanced" title="Save the current order of prompts" />
         </form>
         <a
           id="bulk-delete-button"
-          class="action-button"
-          style="margin-right: 5px"
-          >Bulk Delete</a
+          class="btn-delete"
+          style="--btn-delete-bg: linear-gradient(180deg, rgba(220, 38, 38, 0.85), rgba(180, 20, 20, 0.65)); --btn-delete-border: rgba(255, 77, 77, 0.6);"
+        >Bulk Delete</a>
         >
       </div>
     </div>
-    <div class="title-row">
+    <div class="glass-panel p-4 m-0 title-row">
       <div class="filter-container">
-        <form action="/prompts" method="get">
-          <select name="order_filter" id="order_filter">
+        <form action="/prompts" method="get" class="flex items-center gap-2 flex-wrap">
+          <select name="order_filter" id="order_filter" class="input-enhanced" aria-label="Filter by order">
             <option value="">All Orders</option>
             {{range $index := .PromptIndices}}
             <option value="{{$index}}">{{$index}}</option>
             {{end}}
           </select>
-          <select name="profile_filter" id="profile_filter">
+          <select name="profile_filter" id="profile_filter" class="input-enhanced" aria-label="Filter by profile">
             <option value="">All Profiles</option>
             {{range .Profiles}}
             <option value="{{.Name}}">{{.Name}}</option>
             {{end}}
           </select>
-          <input type="submit" value="Filter" />
+          <input type="submit" value="Filter" class="btn-enhanced" />
         </form>
       </div>
-      <div class="title-container">
-        <h1>Prompts</h1>
+      <div class="title-container justify-center">
+        <h1 class="text-base tracking-wide">Prompts</h1>
       </div>
       <div class="search-container">
-        <form action="/prompts" method="get" class="search-form">
+        <form action="/prompts" method="get" class="search-form flex items-center gap-2">
           <input
             type="text"
             name="search_query"
             id="search_query"
             value="{{.SearchQuery}}"
             placeholder="Search prompts..."
-            class="search-input"
+            class="input-enhanced w-80 max-w-full"
             aria-label="Search prompts"
           />
-          <input type="submit" value="Search" class="search-submit" />
+          <input type="submit" value="Search" class="btn-enhanced" />
         </form>
       </div>
     </div>
-    <ul id="prompt-list">
+    <ul id="prompt-list" class="flex flex-col gap-3">
       {{if .Prompts}} {{range $index, $prompt := .Prompts}} {{if and (or (eq
       $.OrderFilter 0) (eq $.OrderFilter (inc $index))) (or (eq $.ProfileFilter
       "") (eq $prompt.Profile $.ProfileFilter)) (or (eq $.SearchQuery "")
       (contains (tolower $prompt.Text) (tolower $.SearchQuery)))}}
-      <li draggable="true" data-index="{{$index}}">
-        <div
-          style="
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-          "
-        >
+      <li draggable="true" data-index="{{$index}}" class="glass-panel p-3 m-0">
+        <div class="flex items-center justify-between w-full gap-3">
           <input
             type="checkbox"
             class="prompt-checkbox"
             data-index="{{$index}}"
-            style="margin-right: 10px"
+            class="w-4 h-4 mr-2.5"
           />
-          <h3 style="flex: 0 0 auto; margin-right: 10px">
+          <h3 class="flex-shrink-0 mr-2.5 text-sm font-semibold">
             {{inc $index}}.{{if
-            $prompt.Profile}}&nbsp;({{$prompt.Profile}}){{end}}&nbsp;&nbsp;
+            $prompt.Profile}}&nbsp;<span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-20 text-green-400">({{$prompt.Profile}})</span>{{end}}
           </h3>
-          <div class="markdown-content" style="flex: 1; margin-right: 10px">
-            {{$prompt.Text | markdown}}&nbsp;&nbsp;&nbsp;
+          <div class="markdown-content flex-1 mr-2.5 text-sm">
+            {{$prompt.Text | markdown}}
           </div>
           <div
-            style="
-              flex: 0 0 20%;
-              font-style: italic;
-              text-align: left;
-              margin-left: auto;
-              color: green;
-            "
-            class="markdown-content"
+            class="flex-shrink-0 w-1/5 italic text-left text-green-400 markdown-content text-sm"
           >
-            {{$prompt.Solution | markdown}}&nbsp;&nbsp;&nbsp;
+            {{$prompt.Solution | markdown}}
           </div>
-          <div class="prompt-actions" style="flex: 0 0 auto; margin-left: 10px">
+          <div class="prompt-actions flex-shrink-0 flex gap-1.5 ml-2.5">
             <button
-              class="action-button copy-button"
+              class="btn-icon action-button copy-button"
               onclick="copyPrompt('{{$prompt.Text}}')"
+              title="Copy prompt to clipboard"
+              aria-label="Copy prompt"
             >
               📋
             </button>
             <a
-              class="action-button edit-button"
+              class="btn-icon action-button edit-button"
               href="/edit_prompt?index={{$index}}"
-              >✏️</a
+              title="Edit this prompt"
+              aria-label="Edit prompt"
+            >✏️</a
             >
             <a
-              class="action-button delete-button"
+              class="btn-icon action-button delete-button"
               href="/delete_prompt?index={{$index}}"
-              >🗑️</a
+              title="Delete this prompt"
+              aria-label="Delete prompt"
+            >🗑️</a
             >
             <a
-              class="action-button move-button"
+              class="btn-icon action-button move-button"
               href="/move_prompt?index={{$index}}"
-              >🔀</a
+              title="Move this prompt"
+              aria-label="Move prompt"
+            >🔀</a
             >
           </div>
         </div>
       </li>
       {{end}} {{end}} {{else}}
-      <p style="text-align: center">No prompts available.</p>
+      <p class="text-center text-text-muted">No prompts available.</p>
       {{end}}
     </ul>
-    <div class="sticky-footer">
-      <div style="display: flex; align-items: center">
-        <h2>Manage Prompts</h2>
-        &nbsp;&nbsp;&nbsp;
-        <form action="/reset_prompts" method="get" style="margin-right: 5px">
-          <input type="submit" value="Reset Prompts" />
+    <div class="glass-panel p-4 m-0 sticky-footer">
+      <div class="flex items-center gap-3 flex-wrap">
+        <h2 class="text-sm tracking-wide text-text/88">Manage Prompts</h2>
+        <form action="/reset_prompts" method="get">
+          <input type="submit" value="Reset Prompts" class="btn-enhanced" />
         </form>
-        <form action="/export_prompts" method="post" style="margin-right: 5px">
-          <input type="submit" value="Export Prompts" />
+        <form action="/export_prompts" method="post">
+          <input type="submit" value="Export Prompts" class="btn-enhanced" />
         </form>
         <form
           action="/import_prompts"
           method="post"
           enctype="multipart/form-data"
-          style="display: flex; align-items: center"
+          class="flex items-center gap-2"
         >
-          <input type="file" name="prompts_file" style="margin-right: 5px" />
-          <input type="submit" value="Import Prompts" />
+          <input type="file" name="prompts_file" class="input-enhanced" aria-label="Select prompts file to import" />
+          <input type="submit" value="Import Prompts" class="btn-enhanced" />
         </form>
       </div>
     </div>
@@ -291,7 +263,7 @@
         let selectedCount = 0;
 
         function updateSelectedCount() {
-          selectedCountSpan.textContent = `(${selectedCount})`;
+          selectedCountSpan.textContent = `(${selectedCount} selected)`;
         }
 
         selectAllCheckbox.addEventListener("change", function () {
@@ -337,8 +309,8 @@
       }
     </script>
     <div class="scroll-buttons">
-      <button class="scroll-button" onclick="scrollToTop()">↑</button>
-      <button class="scroll-button" onclick="scrollToBottom()">↓</button>
+      <button class="btn-enhanced scroll-button" onclick="scrollToTop()">↑</button>
+      <button class="btn-enhanced scroll-button" onclick="scrollToBottom()">↓</button>
     </div>
     <script>
       function scrollToTop() {

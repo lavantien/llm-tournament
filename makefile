@@ -21,15 +21,16 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: lint test testbrief cover check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage screenshots
+.PHONY: lint test testbrief cover check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage screenshots build-css watch-css clean-css
 
 all: lint test
 
 clean:
 	$(RM)
 	rm data/tournament.db
+	rm -f templates/output.css templates/output.css.map
 
-build:
+build: build-css
 ifeq ($(DETECTED_OS),Windows)
 	$(MKDIR)
 	$(CGO_PREFIX) go build -o ./release/llm-tournament.exe .
@@ -84,3 +85,12 @@ update-coverage:
 
 screenshots:
 	npm run screenshots
+
+build-css:
+	npm run build:css
+
+watch-css:
+	npm run watch:css
+
+clean-css:
+	rm -f templates/output.css templates/output.css.map

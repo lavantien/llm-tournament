@@ -3106,7 +3106,7 @@ func TestResultsHandler_ScoreCellsUseConsistentColors(t *testing.T) {
 	}
 
 	// Verify score classes exist in CSS file
-	cssPath := "templates/arena.css"
+	cssPath := "templates/output.css"
 	cssContent, err := os.ReadFile(cssPath)
 	if err != nil {
 		t.Fatalf("failed to read CSS file: %v", err)

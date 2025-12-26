@@ -11,18 +11,18 @@ func cssBlock(t *testing.T, css, selector string) string {
 
 	start := strings.Index(css, selector)
 	if start < 0 {
-		t.Fatalf("templates/arena.css missing selector %q", selector)
+		t.Fatalf("templates/output.css missing selector %q", selector)
 	}
 
 	open := strings.Index(css[start:], "{")
 	if open < 0 {
-		t.Fatalf("templates/arena.css selector %q missing '{'", selector)
+		t.Fatalf("templates/output.css selector %q missing '{'", selector)
 	}
 	open += start
 
 	close := strings.Index(css[open:], "}")
 	if close < 0 {
-		t.Fatalf("templates/arena.css selector %q missing closing '}'", selector)
+		t.Fatalf("templates/output.css selector %q missing closing '}'", selector)
 	}
 	close += open
 
@@ -32,45 +32,45 @@ func cssBlock(t *testing.T, css, selector string) string {
 func TestArenaCSS_DefinesCompactSidebarWidthVariable(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	if !strings.Contains(css, "--sidebar-width:") {
-		t.Fatalf("templates/arena.css must define --sidebar-width for a thinner nav rail")
+		t.Fatalf("templates/output.css must define --sidebar-width for a thinner nav rail")
 	}
 
 	shell := cssBlock(t, css, ".arena-shell")
 	if !strings.Contains(shell, "grid-template-columns: var(--sidebar-width) 1fr") {
-		t.Fatalf("templates/arena.css .arena-shell must use --sidebar-width in grid-template-columns")
+		t.Fatalf("templates/output.css .arena-shell must use --sidebar-width in grid-template-columns")
 	}
 }
 
 func TestArenaCSS_StylesDropdownsAndFileInputs(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	if !strings.Contains(css, "select") {
-		t.Fatalf("templates/arena.css must style <select> dropdowns")
+		t.Fatalf("templates/output.css must style <select> dropdowns")
 	}
 	if !strings.Contains(css, `input[type="file"]`) {
-		t.Fatalf("templates/arena.css must style file inputs (input[type=\"file\"])")
+		t.Fatalf("templates/output.css must style file inputs (input[type=\"file\"])")
 	}
 }
 
 func TestArenaCSS_ProvidesCompactHeaderAndToolbarLayouts(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
@@ -87,73 +87,73 @@ func TestArenaCSS_ProvidesCompactHeaderAndToolbarLayouts(t *testing.T) {
 
 	titleRow := cssBlock(t, css, ".title-row")
 	if !strings.Contains(titleRow, "display: flex") {
-		t.Fatalf("templates/arena.css .title-row must be a flex row so controls can share a line when space allows")
+		t.Fatalf("templates/output.css .title-row must be a flex row so controls can share a line when space allows")
 	}
 }
 
 func TestArenaCSS_ScrollButtonsUseSidebarSpace(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	block := cssBlock(t, css, ".scroll-buttons")
 	if !strings.Contains(block, "left:") {
-		t.Fatalf("templates/arena.css .scroll-buttons must be anchored on the left to utilize sidebar space")
+		t.Fatalf("templates/output.css .scroll-buttons must be anchored on the left to utilize sidebar space")
 	}
 	if strings.Contains(block, "right:") {
-		t.Fatalf("templates/arena.css .scroll-buttons should not be anchored on the right anymore")
+		t.Fatalf("templates/output.css .scroll-buttons should not be anchored on the right anymore")
 	}
 }
 
 func TestArenaCSS_StatsChartsHaveUsableHeight(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	wrapper := cssBlock(t, css, ".chart-wrapper")
 	if !strings.Contains(wrapper, "min-height:") && !strings.Contains(wrapper, "height:") {
-		t.Fatalf("templates/arena.css .chart-wrapper must define a height so Chart.js can render visible bars")
+		t.Fatalf("templates/output.css .chart-wrapper must define a height so Chart.js can render visible bars")
 	}
 }
 
 func TestArenaCSS_SidebarFurtherCompacted(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	if !strings.Contains(css, "--sidebar-width: 140px") {
-		t.Fatalf("templates/arena.css must further reduce --sidebar-width (expected 140px)")
+		t.Fatalf("templates/output.css must further reduce --sidebar-width (expected 140px)")
 	}
 }
 
 func TestArenaCSS_EvaluatePageCentersScoreAndActions(t *testing.T) {
 	t.Helper()
 
-	cssBytes, err := os.ReadFile("templates/arena.css")
+	cssBytes, err := os.ReadFile("templates/output.css")
 	if err != nil {
-		t.Fatalf("read templates/arena.css: %v", err)
+		t.Fatalf("read templates/output.css: %v", err)
 	}
 	css := string(cssBytes)
 
 	scoreButtons := cssBlock(t, css, ".evaluation-form .score-buttons")
 	if !strings.Contains(scoreButtons, "justify-content: center") {
-		t.Fatalf("templates/arena.css .evaluation-form .score-buttons must center score selection")
+		t.Fatalf("templates/output.css .evaluation-form .score-buttons must center score selection")
 	}
 
 	evalButtons := cssBlock(t, css, ".evaluation-buttons")
 	if !strings.Contains(evalButtons, "justify-content: center") {
-		t.Fatalf("templates/arena.css .evaluation-buttons must be centered")
+		t.Fatalf("templates/output.css .evaluation-buttons must be centered")
 	}
 }
