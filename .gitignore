@@ -37,6 +37,6 @@ node_modules/
 nul
 $coverageFile
 coverage
-*_cov*
-*coverage.html
+coverage*.html
+coverage.out
 .playwright-mcp
