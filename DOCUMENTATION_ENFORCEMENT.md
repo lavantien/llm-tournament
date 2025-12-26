@@ -123,10 +123,22 @@ The CI pipeline (`.github/workflows/ci.yml`) includes:
 
 Before committing documentation changes:
 
-1. Run the relevant enforcement test:
+1. Run relevant enforcement test:
    ```bash
    CGO_ENABLED=1 go test -run <test_name> -v
    ```
+
+2. If updating coverage-related sections:
+   ```bash
+   make update-coverage-table
+   ```
+
+3. Run full test suite:
+   ```bash
+   make test
+   ```
+
+**Note:** All scripts in `scripts/` directory work from any directory. They automatically find the repository root and required files, so you don't need to be in the repo root when running them.
 
 2. If updating coverage-related sections:
    ```bash

@@ -115,3 +115,5 @@ When adding a new script to this directory:
 - **Cross-platform:** Python scripts (`.py`) work on all platforms
 
 Makefile automatically detects OS and calls appropriate scripts.
+
+**Important:** All scripts are designed to work from any directory. They automatically locate the repository root and required files using relative paths to their own location. This ensures they work correctly in CI environments, even when the working directory varies.
