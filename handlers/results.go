@@ -1110,7 +1110,9 @@ func GetRandomScoreForTierWrapper(tierIndex int) int {
 		}
 	}
 
-	return 0
+	// Unreachable: random is always in [0, totalWeight), loop always finds a match
+	// Keeping this would require explicit error handling which doesn't apply here
+	panic("unreachable: random should always be less than totalWeight")
 }
 
 // RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)
