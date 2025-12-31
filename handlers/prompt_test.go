@@ -1494,6 +1494,33 @@ func TestImportResultsHandler_GET(t *testing.T) {
 	}
 }
 
+func TestImportResultsHandler_GET_WithReturnTo(t *testing.T) {
+	mockRenderer := &dataCaptureRenderer{}
+
+	handler := &Handler{
+		DataStore: &MockDataStore{},
+		Renderer:  mockRenderer,
+	}
+
+	// Test with return_to query parameter
+	req := httptest.NewRequest("GET", "/import_results?return_to=/profiles", nil)
+	rr := httptest.NewRecorder()
+	handler.ImportResults(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+
+	dataMap, ok := mockRenderer.CapturedData.(map[string]string)
+	if !ok {
+		t.Fatalf("expected map[string]string, got %T", mockRenderer.CapturedData)
+	}
+
+	if dataMap["ReturnURL"] != "/profiles" {
+		t.Errorf("expected ReturnURL \"/profiles\", got %q", dataMap["ReturnURL"])
+	}
+}
+
 func TestImportPromptsHandler_GET(t *testing.T) {
 	restoreDir := changeToProjectRootPrompts(t)
 	defer restoreDir()

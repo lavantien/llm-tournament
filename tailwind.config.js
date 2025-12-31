@@ -1,17 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./templates/**/*.html",
-    "./tools/screenshots/**/*.html",
-  ],
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('daisyui'),
-  ],
+  content: ["./templates/**/*.html", "./tools/screenshots/**/*.html"],
+  plugins: [require("@tailwindcss/forms"), require("daisyui")],
   daisyui: {
-    themes: [
-      "coffee",
-    ],
+    themes: ["coffee"],
     darkTheme: "coffee",
   },
-}
+};

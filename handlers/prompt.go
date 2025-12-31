@@ -380,7 +380,13 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) {
 		h.DataStore.BroadcastResults()
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 	case http.MethodGet:
-		if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", nil); err != nil {
+		if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", func() map[string]string {
+			returnURL := r.URL.Query().Get("return_to")
+			if returnURL == "" {
+				returnURL = "/results"
+			}
+			return map[string]string{"ReturnURL": returnURL}
+		}()); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}

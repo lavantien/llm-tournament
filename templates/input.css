@@ -1,10 +1,86 @@
 @import "tailwindcss";
 
 @theme {
-    --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
 }
 
 @plugin "daisyui" {
-    themes: coffee;
+  themes: coffee;
 }
 
+/* Results table styling with fixed cell sizes */
+.results-table-container {
+  overflow-x: auto;
+}
+
+.results-table {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 1px;
+}
+
+/* Reset DaisyUI table padding for compact rows */
+.results-table td,
+.results-table th {
+  padding: 1px 8px !important;
+  line-height: 1 !important;
+  font-size: 12px !important;
+  height: 26px !important;
+  border-bottom: none !important;
+  border-top: none !important;
+}
+
+/* Score cells - exactly 26px x 26px */
+.results-table td.score-cell {
+  width: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  text-align: center;
+  vertical-align: middle;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+/* Profile group dividers - vertical line separator */
+.results-table td.profile-group-divider {
+  border-left: 2px solid #333 !important;
+}
+
+/* Spacer cells between profile groups */
+.results-table td.score-cell-spacer,
+.results-table th.score-cell-spacer-header {
+  width: 3px !important;
+  min-width: 3px !important;
+  max-width: 3px !important;
+  height: 26px !important;
+  padding: 0 !important;
+  border: none !important;
+  background-color: transparent !important;
+}
+
+.results-table td.score-cell > div {
+  width: 26px !important;
+  height: 26px !important;
+  box-sizing: border-box;
+}
+
+/* Fixed columns: actions */
+.results-table td:nth-child(2),
+.results-table th:nth-child(2) {
+  width: 80px;
+}
+
+/* No wrap for dynamic columns */
+.results-table td:nth-child(3),
+.results-table th:nth-child(3),
+.results-table td:last-child,
+.results-table th:last-child {
+  white-space: nowrap;
+}

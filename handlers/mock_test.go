@@ -190,3 +190,22 @@ func (m *MockDataStoreWithError) WriteResults(suiteName string, results map[stri
 	}
 	return m.MockDataStore.WriteResults(suiteName, results)
 }
+
+// dataCaptureRenderer is a mock renderer that captures data passed to RenderTemplateSimple
+type dataCaptureRenderer struct {
+	RenderError  error
+	CapturedData interface{}
+}
+
+func (m *dataCaptureRenderer) Render(w http.ResponseWriter, name string, funcMap template.FuncMap, data interface{}, files ...string) error {
+	if m.RenderError != nil {
+		return m.RenderError
+	}
+	_, _ = w.Write([]byte("mock rendered"))
+	return nil
+}
+
+func (m *dataCaptureRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl string, data interface{}) error {
+	m.CapturedData = data
+	return m.Render(w, tmpl, nil, data, "templates/"+tmpl)
+}

@@ -5,13 +5,16 @@ This directory contains utility scripts for development, testing, and automation
 ## Development Scripts
 
 ### update-badge.sh / update-badge.ps1
+
 **Purpose:** Update the coverage badge SVG in the repository root
 
 **Usage:**
+
 - Linux/Mac: `./scripts/update-badge.sh`
 - Windows: `powershell -ExecutionPolicy Bypass -File scripts\update-badge.ps1`
 
 **What it does:**
+
 - Runs tests with coverage
 - Extracts coverage percentage
 - Downloads and saves SVG badge from shields.io
@@ -20,14 +23,17 @@ This directory contains utility scripts for development, testing, and automation
 **Automated:** Runs on CI via `make update-coverage`
 
 ### update-coverage-table.sh / update-coverage-table.ps1
+
 **Purpose:** Update the coverage table in README.md
 
 **Usage:**
+
 - Linux/Mac: `bash scripts/update-coverage-table.sh`
 - Windows: `powershell -ExecutionPolicy Bypass -File scripts\update-coverage-table.ps1`
 - Or via Makefile: `make update-coverage-table`
 
 **What it does:**
+
 - Runs tests with coverage
 - Parses `go tool cover -func` output
 - Calculates per-package coverage
@@ -36,11 +42,13 @@ This directory contains utility scripts for development, testing, and automation
 **Automated:** Runs on CI via `make update-coverage-table` and commits changes
 
 ### update_coverage_table.py
+
 **Purpose:** Python script that does the actual coverage table update
 
 **Usage:** Called by the shell/PowerShell wrapper scripts
 
 **What it does:**
+
 - Parses coverage data from `go tool cover -func`
 - Calculates average coverage per package
 - Updates README.md coverage section via regex replacement
@@ -48,9 +56,11 @@ This directory contains utility scripts for development, testing, and automation
 **Enforced:** See [DOCUMENTATION_ENFORCEMENT.md](../DOCUMENTATION_ENFORCEMENT.md) for required format
 
 ### pre-commit
+
 **Purpose:** Git pre-commit hook for documentation and code quality checks
 
 **Usage:**
+
 ```bash
 # Install as git hook
 cp scripts/pre-commit .git/hooks/pre-commit
@@ -60,6 +70,7 @@ chmod +x .git/hooks/pre-commit
 ```
 
 **What it does:**
+
 - Checks if documentation files (README.md, DESIGN_CONCEPT.md, design_preview.html) are staged
 - If yes, runs `make verify-docs`
 - Checks if Go files are staged
@@ -70,21 +81,25 @@ chmod +x .git/hooks/pre-commit
 ## Makefile Targets Related to Scripts
 
 ### make update-coverage
+
 - Runs tests with coverage
 - Generates coverage.html
 - Updates coverage badge SVG
 
 ### make update-coverage-table
+
 - Runs tests with coverage
 - Generates coverage.html
 - Updates coverage table in README.md
 
 ### make verify-docs
+
 - Runs documentation enforcement tests
 - Validates README.md coverage table format
 - Checks DESIGN_CONCEPT.md and design_preview.html structure
 
 ### make screenshots
+
 - Builds CSS
 - Runs Playwright screenshot generation
 - Generates UI screenshots in assets/

@@ -1,41 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html data-theme="coffee">
-<head>
+  <head>
     <title>Import Error</title>
-    <link rel="stylesheet" href="/templates/output.css">
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-</head>
-<body>
+    <link rel="stylesheet" href="/templates/output.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        <main class="flex justify-center items-start flex-1">
-            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
-                <div class="card-body">
-                    <h1 class="card-title">Import Error</h1>
-                    <div class="alert alert-error text-center">There was an error importing file. Please check the file format and try again.</div>
-                    <form action="/prompts" method="get" class="text-center">
-                        <button type="submit" class="btn btn-ghost">Go Back</button>
-                    </form>
-                    <script>
-                        function goBack() {
-                            window.history.back();
-                        }
-                    </script>
-                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
-                    </div>
-                </div>
+      <main class="flex justify-center items-start flex-1">
+        <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+          <div class="card-body">
+            <h1 class="card-title">Import Error</h1>
+            <div class="alert alert-error text-center">
+              There was an error importing file. Please check the file format
+              and try again.
             </div>
-        </main>
+            <form action="/prompts" method="get" class="text-center">
+              <button type="submit" class="btn btn-ghost">Go Back</button>
+            </form>
+            <script>
+              function goBack() {
+                window.history.back();
+              }
+            </script>
+            <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+              <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+              <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
     <script>
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

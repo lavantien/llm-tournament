@@ -10,74 +10,74 @@
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
       {{template "nav" .}}
       <main class="flex-1 flex flex-col gap-3 overflow-auto">
-        <div class="card bg-base-100 shadow-lg p-4">
-          <div class="card-body">
-            <h2 class="text-sm tracking-wide text-base-content/80">Add Profile</h2>
-            <form
-              action="/add_profile"
-              method="post"
-              class="flex items-center flex-wrap gap-3 justify-between"
-            >
-              <div class="flex gap-3 flex-1">
-                <div class="form-control flex-1">
-                  <textarea
-                    name="profile_name"
-                    placeholder="Enter profile name"
-                    rows="2"
-                    class="textarea textarea-bordered h-16"
-                    aria-label="Enter profile name"
-                  ></textarea>
-                </div>
-                <div class="form-control flex-1">
-                  <textarea
-                    name="profile_description"
-                    placeholder="Enter profile description"
-                    rows="2"
-                    class="textarea textarea-bordered h-16"
-                    aria-label="Enter profile description"
-                  ></textarea>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary">Add</button>
-            </form>
-          </div>
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center gap-2 flex-nowrap"
+        >
+          <form
+            action="/add_profile"
+            method="post"
+            class="flex items-center gap-2 flex-1"
+          >
+            <textarea
+              name="profile_name"
+              placeholder="Enter profile name"
+              rows="2"
+              class="textarea textarea-bordered h-16 w-64"
+              aria-label="Enter profile name"
+            ></textarea>
+            <textarea
+              name="profile_description"
+              placeholder="Enter profile description"
+              rows="2"
+              class="textarea textarea-bordered h-16 w-96"
+              aria-label="Enter profile description"
+            ></textarea>
+            <button type="submit" class="btn btn-primary btn-xs">Add</button>
+          </form>
         </div>
 
-        <div class="card bg-base-100 shadow-lg p-4">
-          <div class="card-body">
-            <div class="flex items-center justify-between gap-3 flex-wrap">
-              <form action="/profiles" method="get" class="flex items-center gap-2 flex-1">
-                <input
-                  type="text"
-                  name="search_query"
-                  id="search_query"
-                  value="{{.SearchQuery}}"
-                  placeholder="Search profiles..."
-                  class="input input-bordered w-full max-w-[320px]"
-                  aria-label="Search profiles"
-                />
-                <button type="submit" class="btn btn-info">Search</button>
-              </form>
-              <h1 class="text-base tracking-wide">Profiles</h1>
-            </div>
-          </div>
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 flex-nowrap"
+        >
+          <form
+            action="/profiles"
+            method="get"
+            class="flex items-center gap-2 flex-1"
+          >
+            <input
+              type="text"
+              name="search_query"
+              id="search_query"
+              value="{{.SearchQuery}}"
+              placeholder="Search profiles..."
+              class="input input-bordered w-full max-w-[320px]"
+              aria-label="Search profiles"
+            />
+            <button type="submit" class="btn btn-primary btn-xs">Search</button>
+          </form>
+          <h1 class="text-base font-semibold">Profiles</h1>
         </div>
 
         <ul id="profile-list" class="flex flex-col gap-3">
           {{if .Profiles}} {{range $index, $profile := .Profiles}} {{if or (eq
-          $.SearchQuery "") (contains (tolower $profile.Name) (tolower $.SearchQuery)) (contains (tolower $profile.Description) (tolower $.SearchQuery))}}
+          $.SearchQuery "") (contains (tolower $profile.Name) (tolower
+          $.SearchQuery)) (contains (tolower $profile.Description) (tolower
+          $.SearchQuery))}}
           <li class="card bg-base-100 shadow-lg p-3">
             <div class="flex items-center justify-between w-full gap-3">
               <h3 class="flex-shrink-0 mr-2.5 text-sm font-semibold">
                 {{inc $index}}.
               </h3>
               <div class="flex items-center flex-1 mr-2.5 gap-2">
-                <span class="badge badge-success badge-outline whitespace-nowrap">{{$profile.Name}}</span>
+                <span
+                  class="badge badge-success badge-outline whitespace-nowrap"
+                  >{{$profile.Name}}</span
+                >
                 <div class="text-sm flex-1">{{$profile.Description}}</div>
               </div>
               <div class="flex flex-shrink-0 gap-1.5 ml-2.5">
                 <button
-                  class="btn btn-info"
+                  class="btn btn-ghost"
                   onclick="copyProfileDescription('{{$profile.Description}}')"
                   title="Copy profile description to clipboard"
                   aria-label="Copy profile description"
@@ -85,17 +85,19 @@
                   📋
                 </button>
                 <a
-                  class="btn btn-info"
+                  class="btn btn-ghost"
                   href="/edit_profile?index={{$index}}"
                   title="Edit this profile"
                   aria-label="Edit profile"
-                >✏️</a>
+                  >✏️</a
+                >
                 <a
-                  class="btn btn-info"
+                  class="btn btn-ghost"
                   href="/delete_profile?index={{$index}}"
                   title="Delete this profile"
                   aria-label="Delete profile"
-                >🗑️</a>
+                  >🗑️</a
+                >
               </div>
             </div>
           </li>
@@ -104,15 +106,17 @@
           {{end}}
         </ul>
 
-        <div class="card bg-base-100 shadow-lg p-4">
-          <div class="card-body">
-            <div class="flex items-center gap-3 flex-wrap">
-              <h2 class="text-sm tracking-wide text-base-content/80">Manage Profiles</h2>
-              <form action="/reset_profiles" method="get">
-                <button type="submit" class="btn btn-error">Reset Profiles</button>
-              </form>
-            </div>
-          </div>
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 flex-nowrap"
+        >
+          <h2 class="text-sm font-semibold flex-shrink-0">Manage Profiles</h2>
+          <form action="/reset_profiles" method="get">
+            <input
+              type="submit"
+              value="Reset Profiles"
+              class="btn btn-primary btn-xs"
+            />
+          </form>
         </div>
 
         <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
@@ -128,7 +132,8 @@
 
       function scrollToBottom() {
         const footerHeight = 0; // No footer height calculation needed with DaisyUI
-        const scrollHeight = document.body.scrollHeight - window.innerHeight - footerHeight;
+        const scrollHeight =
+          document.body.scrollHeight - window.innerHeight - footerHeight;
         window.scrollTo({
           top: scrollHeight,
           behavior: "smooth",
@@ -142,7 +147,7 @@
           },
           function (err) {
             console.error("Async: Could not copy text: ", err);
-          }
+          },
         );
       }
     </script>

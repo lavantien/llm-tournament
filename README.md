@@ -10,12 +10,14 @@
 A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with both manual scoring and optional automated evaluation.
 
 **Highlights**
+
 - SQLite-backed, single-binary Go server with SSR templates + WebSockets (`:8080`)
 - Prompt suites, profiles, models, results grid, and analytics
 - Optional Python FastAPI "judge service" for automated evaluation (`:8001`)
 - Encrypted API key storage (AES-256-GCM) via `ENCRYPTION_KEY`
 
 **UI Stack**
+
 - Tailwind CSS v4.1.18 + DaisyUI v5.0.0 (0% custom CSS)
 - Built-in DaisyUI components and themes (coffee)
 - Industry-standard utility-first styling approach
@@ -44,6 +46,7 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 The UI has been migrated to use **100% pure Tailwind v4 + DaisyUI v5** components. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete design specifications and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for detailed migration plan.
 
 **Key Design Decisions:**
+
 - Zero custom CSS - all styling uses Tailwind utilities or DaisyUI semantic components
 - Built-in DaisyUI `cyberpunk` theme provides dark backgrounds with neon accents
 - Tailwind v4 built-in animations (`animate-spin`, `animate-ping`, `animate-pulse`) replace custom keyframes
@@ -52,6 +55,7 @@ The UI has been migrated to use **100% pure Tailwind v4 + DaisyUI v5** component
 - Industry-standard approach using well-maintained tools (Tailwind + DaisyUI)
 
 **Trade-offs:**
+
 - No glass glow overlay effects (cleaner appearance)
 - No grid overlay texture (cleaner background)
 - Simpler animations (less dramatic, more performant)
@@ -126,6 +130,7 @@ npm run screenshots
 ## Features
 
 ### Automated Evaluation
+
 - Multi-judge consensus scoring using Claude Opus 4.5, GPT-5.2, and Gemini 3 Pro with extended thinking
 - Dual evaluation modes: objective (semantic matching) and creative (quality assessment)
 - Async job queue with 3 concurrent workers and job persistence
@@ -134,6 +139,7 @@ npm run screenshots
 - Complete audit trail with judge reasoning and confidence scores
 
 ### Manual Evaluation
+
 - Real-time scoring on 0-100 scale (increments: 0, 20, 40, 60, 80, 100)
 - Automatic model ranking with live leaderboard updates
 - WebSocket-based instant updates across all clients
@@ -141,18 +147,21 @@ npm run screenshots
 - Drag-and-drop prompt reordering and bulk operations
 
 ### Suite Management
+
 - Independent prompt suites with isolated profiles, prompts, and results
 - JSON import/export for suites and evaluation results
 - Duplicate cleanup and SQLite migration support
 - One-click suite switching
 
 ### Analytics
+
 - 12-tier classification system: Transcendental (≥3780) to Primordial (<300)
 - Interactive visualizations using Chart.js
 - Score distributions and tier-based model grouping
 - Performance comparisons across models and prompt types
 
 ### Interface
+
 - Markdown editor with live preview
 - Advanced search and filtering
 - Copy-to-clipboard functionality
@@ -169,6 +178,7 @@ Go Server (:8080)              Python Service (:8001)
 ```
 
 **High-Level System Context**
+
 ```mermaid
 graph LR
     subgraph Client Side
@@ -191,6 +201,7 @@ graph LR
 ```
 
 **Layered Architecture Flow**
+
 ```mermaid
 graph TD
     subgraph "Go Monolith Layers"
@@ -221,38 +232,38 @@ Evaluation Flow: Job Queue → Python Service → AI Judges → Consensus → Sc
 
 ### Bird's-Eye View
 
-* This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth, plus an optional Python FastAPI "judge service" for automated scoring.
-* The repo is organized by "layer": surface (templates) → HTTP handlers → middleware (DB/state/render/ws/encryption) → evaluator (async jobs + Python client) → `python_service` (judge logic).
-* The fastest "index" is to URL handler map in `main.go:60`, and the DB schema is centralized in `middleware/database.go:58`.
-* **UI Migration**: All styling now uses Tailwind v4 + DaisyUI v5 components with zero custom CSS. See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
+- This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth, plus an optional Python FastAPI "judge service" for automated scoring.
+- The repo is organized by "layer": surface (templates) → HTTP handlers → middleware (DB/state/render/ws/encryption) → evaluator (async jobs + Python client) → `python_service` (judge logic).
+- The fastest "index" is to URL handler map in `main.go:60`, and the DB schema is centralized in `middleware/database.go:58`.
+- **UI Migration**: All styling now uses Tailwind v4 + DaisyUI v5 components with zero custom CSS. See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
 ### Where To Look In 5 Seconds
 
-* **HTTP routes / feature entrypoint:** `main.go:60` (every user-visible feature starts as a path here).
-* **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
-* **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `settings`, `evaluation_jobs`, `evaluation_history`, etc.).
-* **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/settings/suites/evaluation).
-* **WebSocket messages:** `middleware/socket.go:33` (server-side `/ws`, broadcasting and client tracking).
-* **Automated evaluation pipeline:** `handlers/evaluation.go:25` `evaluator/job_queue.go:11` (workers/jobs) `evaluator/litellm_client.go:12` (HTTP to Python) `python_service/main.py:87` (FastAPI endpoints).
-* **UI Components:** Tailwind v4 + DaisyUI v5. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete component mapping.
-* **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `evaluator/*_test.go`, `integration/prompts_integration_test.go`.
+- **HTTP routes / feature entrypoint:** `main.go:60` (every user-visible feature starts as a path here).
+- **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
+- **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `settings`, `evaluation_jobs`, `evaluation_history`, etc.).
+- **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/settings/suites/evaluation).
+- **WebSocket messages:** `middleware/socket.go:33` (server-side `/ws`, broadcasting and client tracking).
+- **Automated evaluation pipeline:** `handlers/evaluation.go:25` `evaluator/job_queue.go:11` (workers/jobs) `evaluator/litellm_client.go:12` (HTTP to Python) `python_service/main.py:87` (FastAPI endpoints).
+- **UI Components:** Tailwind v4 + DaisyUI v5. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete component mapping.
+- **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `evaluator/*_test.go`, `integration/prompts_integration_test.go`.
 
 ### Common Feature Map
 
-* **Prompt suites:** `main.go:76` `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
-* **Prompts CRUD/order:** `main.go:62`/`main.go:66`/`main.go:73` `handlers/prompt.go:1` (+ reorder over WS in `middleware/socket.go:71`)
-* **Models CRUD:** `main.go:63` `handlers/models.go`
-* **Manual scoring/results UI:** `main.go:80`/`main.go:81` `handlers/results.go` (+ `templates/results.html`)
-* **Stats/analytics:** `main.go:93` `handlers/stats.go` (+ `templates/stats.html`)
-* **Settings + encrypted keys:** `main.go:95` `handlers/settings.go` (+ crypto in `middleware/encryption.go:13`)
-* **Automated evaluation:** `main.go:98` `handlers/evaluation.go:25` (jobs stored in `evaluation_jobs` in `middleware/database.go:115`)
+- **Prompt suites:** `main.go:76` `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
+- **Prompts CRUD/order:** `main.go:62`/`main.go:66`/`main.go:73` `handlers/prompt.go:1` (+ reorder over WS in `middleware/socket.go:71`)
+- **Models CRUD:** `main.go:63` `handlers/models.go`
+- **Manual scoring/results UI:** `main.go:80`/`main.go:81` `handlers/results.go` (+ `templates/results.html`)
+- **Stats/analytics:** `main.go:93` `handlers/stats.go` (+ `templates/stats.html`)
+- **Settings + encrypted keys:** `main.go:95` `handlers/settings.go` (+ crypto in `middleware/encryption.go:13`)
+- **Automated evaluation:** `main.go:98` `handlers/evaluation.go:25` (jobs stored in `evaluation_jobs` in `middleware/database.go:115`)
 
 ### Search Cheats (copy/paste)
 
-* Find a feature by URL: `rg -n '"/evaluate/all"|"/results"|"/settings"' main.go`
-* Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
-* Find everything touching a table: `rg -n "evaluation_jobs|evaluation_history|model_responses" -S .`
-* Find a websocket message type: `rg -n "update_prompts_order|results" middleware/templates -S`
+- Find a feature by URL: `rg -n '"/evaluate/all"|"/results"|"/settings"' main.go`
+- Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
+- Find everything touching a table: `rg -n "evaluation_jobs|evaluation_history|model_responses" -S .`
+- Find a websocket message type: `rg -n "update_prompts_order|results" middleware/templates -S`
 
 ## Tech Stack
 
@@ -351,6 +362,7 @@ npm install
 ```
 
 This installs:
+
 - Tailwind CSS v4.1.18
 - DaisyUI v5.0.0
 - PostCSS and build tools
@@ -394,18 +406,17 @@ curl http://localhost:8001/health
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
-| Package | Coverage |
-| --- | ---: |
-| llm-tournament | 100.0% |
-| llm-tournament/evaluator | 100.0% |
-| llm-tournament/handlers | 98.8% |
-| llm-tournament/integration | - |
-| llm-tournament/middleware | 100.0% |
-| llm-tournament/templates | 100.0% |
-| llm-tournament/testutil | 99.6% |
-| llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
-| **Total** | **99.8%** |
-
+| Package                                          |  Coverage |
+| ------------------------------------------------ | --------: |
+| llm-tournament                                   |    100.0% |
+| llm-tournament/evaluator                         |    100.0% |
+| llm-tournament/handlers                          |     98.8% |
+| llm-tournament/integration                       |         - |
+| llm-tournament/middleware                        |    100.0% |
+| llm-tournament/templates                         |    100.0% |
+| llm-tournament/testutil                          |     99.6% |
+| llm-tournament/tools/screenshots/cmd/demo-server |    100.0% |
+| **Total**                                        | **99.8%** |
 
 ## Troubleshooting
 
@@ -456,6 +467,7 @@ llm-tournament/
 ```
 
 **UI-Specific:**
+
 - `templates/input.css` - Tailwind + DaisyUI imports only (zero custom CSS)
 - `templates/output.css` - Generated CSS file (PostCSS output)
 - `templates/*.html` - All HTML templates using DaisyUI components
@@ -466,6 +478,7 @@ llm-tournament/
 - ENCRYPTION_KEY (64-char hex / 32 bytes; required for encrypted API key storage and automated evaluation)
 
 Python judge service (optional):
+
 - HOST (default `0.0.0.0`)
 - PORT (default `8001`)
 
@@ -486,11 +499,13 @@ When editing documentation files, be aware that several files are automatically 
 - Troubleshooting common mistakes
 
 **Quick reference:**
+
 - `README.md` - Coverage table enforced by `scripts/update_coverage_table.py`
 - `DESIGN_CONCEPT.md` - Section headers enforced by `design_preview_test.go`
 - `design_preview.html` - Required elements enforced by `design_preview_test.go`
 
 **Pre-commit hook (recommended):**
+
 ```bash
 # Install automatic documentation verification before commits
 cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
@@ -499,6 +514,7 @@ cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 This will automatically run `make verify-docs` when you commit documentation changes.
 
 **To verify documentation changes:**
+
 ```bash
 # Run specific enforcement test
 CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v

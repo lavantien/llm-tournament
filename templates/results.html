@@ -1,852 +1,1210 @@
 <!doctype html>
 <html data-theme="coffee">
-
-<head>
+  <head>
     <title>Results</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="/templates/constants.js"></script>
     <script src="/templates/utils.js"></script>
     <script>
-        let socket;
-        let connectionRetries = 0;
-        let initialLoad = true;
-        let currentSearchQuery = "";
+      let socket;
+      let connectionRetries = 0;
+      let initialLoad = true;
+      let currentSearchQuery = "";
 
-        let previousState = {
-            Results: {},
-            Models: [],
-            TotalScores: {},
-            PassPercentages: {}
-        };
+      let previousState = {
+          Results: {},
+          Models: [],
+          TotalScores: {},
+          PassPercentages: {}
+      };
 
-        function connectWebSocket() {
-            socket = new WebSocket("ws://" + window.location.host + "/ws");
+      function connectWebSocket() {
+          socket = new WebSocket("ws://" + window.location.host + "/ws");
 
-            socket.onopen = function (e) {
-                console.log("[open] Connection established");
-                connectionRetries = 0;
-                updateConnectionStatus("Connected", "connected");
-            };
+          socket.onopen = function (e) {
+              console.log("[open] Connection established");
+              connectionRetries = 0;
+              updateConnectionStatus("Connected", "connected");
+          };
 
-            fetchInitialData();
+          fetchInitialData();
 
-            socket.onmessage = function (event) {
-                try {
-                    const payload = JSON.parse(event.data);
-                    console.log('Received WebSocket update:', payload);
-        
-                    if (payload.type === 'results') {
-                        const safeData = {
-                            Results: payload.data.results || {},
-                            Models: payload.data.models || [],
-                            PassPercentages: payload.data.passPercentages || {},
-                            TotalScores: payload.data.totalScores || {}
-                        };
-             
-                        updateHiddenData(safeData);
-                        updateResults(safeData);
-                    }
-                } catch (error) {
-                    console.error('Error parsing WebSocket message:', error, event.data);
-                }
-            };
+          socket.onmessage = function (event) {
+              try {
+                  const payload = JSON.parse(event.data);
+                  console.log('Received WebSocket update:', payload);
 
-            socket.onclose = function (event) {
-                if (event.wasClean) {
-                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-                } else {
-                    console.log("[close] Connection died");
-                }
-                
-                updateConnectionStatus("Disconnected", "disconnected");
-                
-                if (connectionRetries < MAX_WS_RETRIES) {
-                    connectionRetries++;
-                    console.log(`Attempting to reconnect (${connectionRetries}/${MAX_WS_RETRIES})...`);
-                    setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries);
-                } else {
-                    updateConnectionStatus("Connection failed", "failed");
-                    console.log("Max retries reached. Connection failed.");
-                }
-            };
+                  if (payload.type === 'results') {
+                      const safeData = {
+                          Results: payload.data.results || {},
+                          Models: payload.data.models || [],
+                          PassPercentages: payload.data.passPercentages || {},
+                          TotalScores: payload.data.totalScores || {}
+                      };
 
-            socket.onerror = function (error) {
-                console.log(`[error] ${error.message}`);
-                updateConnectionStatus("Error", "error");
-            };
-        }
-        
-        function updateConnectionStatus(text, state) {
-            const statusElement = document.getElementById("connection-status");
-            statusElement.textContent = text;
-            statusElement.className = `connection-status connection-status-${state}`;
-        }
-        
-        function updateHiddenData(data) {
-            document.getElementById('results-data').textContent = JSON.stringify(data.Results || {});
-            document.getElementById('models-data').textContent = JSON.stringify(data.Models || []);
-            document.getElementById('pass-percentages-data').textContent = JSON.stringify(data.PassPercentages || {});
-            document.getElementById('total-scores-data').textContent = JSON.stringify(data.TotalScores || {});
-        }
+                      updateHiddenData(safeData);
+                      updateResults(safeData);
+                  }
+              } catch (error) {
+                  console.error('Error parsing WebSocket message:', error, event.data);
+              }
+          };
 
-        function fetchInitialData() {
-            console.log("Fetching initial data...");
-            try {
-                const elements = {
-                    results: document.getElementById('results-data'),
-                    models: document.getElementById('models-data'),
-                    passPercentages: document.getElementById('pass-percentages-data'),
-                    totalScores: document.getElementById('total-scores-data'),
-                    profileGroups: document.getElementById('profile-groups-data'),
-                    orderedPrompts: document.getElementById('ordered-prompts-data')
-                };
-                
-                const payload = {
-                    Results: safeJsonParse(elements.results?.textContent, {}),
-                    Models: safeJsonParse(elements.models?.textContent, []),
-                    PassPercentages: safeJsonParse(elements.passPercentages?.textContent, {}),
-                    TotalScores: safeJsonParse(elements.totalScores?.textContent, {}),
-                    ProfileGroups: safeJsonParse(elements.profileGroups?.textContent, []),
-                    OrderedPrompts: safeJsonParse(elements.orderedPrompts?.textContent, [])
-                };
-                
-                console.log('Data loaded from DOM elements:', { 
-                    models_length: payload.Models.length,
-                    firstModelData: payload.Models.length > 0 ? payload.Results[payload.Models[0]] : null,
-                    profileGroups: payload.ProfileGroups
-                });
-                
-                updateResults(payload);
-                return Promise.resolve(payload);
-            } catch (error) {
-                console.error('Error parsing initial data:', error);
-                const emptyPayload = {
-                    Results: {},
-                    Models: [],
-                    PassPercentages: {},
-                    TotalScores: {}
-                };
-                updateResults(emptyPayload);
-                return Promise.resolve(emptyPayload);
-            }
-        }
+          socket.onclose = function (event) {
+              if (event.wasClean) {
+                  console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+              } else {
+                  console.log("[close] Connection died");
+              }
 
-        function handleSearch() {
-            currentSearchQuery = document.getElementById("modelSearch").value.toLowerCase();
-            
-            const currentData = {
-                Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
-                Models: safeJsonParse(document.getElementById('models-data').textContent, []),
-                PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {}),
-                TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {})
-            };
-            
-            updateResults(currentData);
-        }
+              updateConnectionStatus("Disconnected", "disconnected");
 
-        function backupCurrentState() {
-            previousState = {
-                Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
-                Models: safeJsonParse(document.getElementById('models-data').textContent, []),
-                TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {}),
-                PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {})
-            };
-            
-            console.log('Current state backed up');
-            
-            document.getElementById('restore-previous-btn').disabled = false;
-        }
+              if (connectionRetries < MAX_WS_RETRIES) {
+                  connectionRetries++;
+                  console.log(`Attempting to reconnect (${connectionRetries}/${MAX_WS_RETRIES})...`);
+                  setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries);
+              } else {
+                  updateConnectionStatus("Connection failed", "failed");
+                  console.log("Max retries reached. Connection failed.");
+              }
+          };
 
-        function restorePrevious() {
-            if (!previousState.Models || previousState.Models.length === 0) {
-                console.log('No previous state to restore');
-                return;
-            }
-            
-            console.log('Restoring previous state');
-            
-            updateHiddenData(previousState);
-            
-            sendDataToServer(previousState)
-                .then(data => {
-                    console.log('Previous state restored successfully');
-                    updateResults(previousState);
-                })
-                .catch(error => {
-                    console.error('Error restoring previous state:', error);
-                    updateResults(previousState);
-                });
-        }
-        
-        function sendDataToServer(data) {
-            return fetch('/update_mock_results', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    results: data.Results,
-                    models: data.Models,
-                    passPercentages: data.PassPercentages,
-                    totalScores: data.TotalScores
-                })
-            })
-            .then(response => response.json());
-        }
+          socket.onerror = function (error) {
+              console.log(`[error] ${error.message}`);
+              updateConnectionStatus("Error", "error");
+          };
+      }
 
-        function generateMockScores() {
-            console.log("Generating mock scores...");
+      function updateConnectionStatus(text, state) {
+          const statusElement = document.getElementById("connection-status");
+          const statusText = statusElement.querySelector(".status-text");
+          statusText.textContent = text;
 
-            if (!confirm('Are you sure you want to generate mock data? This will override all current scores.')) {
-                console.log('Mock data generation cancelled by user');
-                return;
-            }
+          // Update badge class based on state
+          statusElement.classList.remove("badge-success", "badge-warning", "badge-error", "badge-info");
+          if (state === "connected") {
+              statusElement.classList.add("badge-success");
+          } else if (state === "disconnected") {
+              statusElement.classList.add("badge-warning");
+          } else if (state === "failed" || state === "error") {
+              statusElement.classList.add("badge-error");
+          } else {
+              statusElement.classList.add("badge-info");
+          }
+      }
 
-            backupCurrentState();
-    
-            const models = safeJsonParse(document.getElementById('models-data').textContent, []);
-            if (models.length === 0) {
-                console.log('No existing models - backend will create mock models');
-            }
-            
-            const promptsCount = {{len .Prompts}} || 0;
-            
-            let newData = generateTieredScores(models, promptsCount);
-            
-            updateHiddenData(newData);
-            
-            sendDataToServer(newData)
-                .then(data => {
-                    console.log('Mock data saved successfully');
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Error saving mock data:', error);
-                    alert('Failed to generate mock data. Please try again.');
-                });
-        }
+      function updateHiddenData(data) {
+          document.getElementById('results-data').textContent = JSON.stringify(data.Results || {});
+          document.getElementById('models-data').textContent = JSON.stringify(data.Models || []);
+          document.getElementById('pass-percentages-data').textContent = JSON.stringify(data.PassPercentages || {});
+          document.getElementById('total-scores-data').textContent = JSON.stringify(data.TotalScores || {});
+      }
 
-        function randomizeScores() {
-            console.log("Randomizing scores...");
+      function fetchInitialData() {
+          console.log("Fetching initial data...");
+          try {
+              const elements = {
+                  results: document.getElementById('results-data'),
+                  models: document.getElementById('models-data'),
+                  passPercentages: document.getElementById('pass-percentages-data'),
+                  totalScores: document.getElementById('total-scores-data'),
+                  profileGroups: document.getElementById('profile-groups-data'),
+                  orderedPrompts: document.getElementById('ordered-prompts-data')
+              };
 
-            backupCurrentState();
+              const payload = {
+                  Results: safeJsonParse(elements.results?.textContent, {}),
+                  Models: safeJsonParse(elements.models?.textContent, []),
+                  PassPercentages: safeJsonParse(elements.passPercentages?.textContent, {}),
+                  TotalScores: safeJsonParse(elements.totalScores?.textContent, {}),
+                  ProfileGroups: safeJsonParse(elements.profileGroups?.textContent, []),
+                  OrderedPrompts: safeJsonParse(elements.orderedPrompts?.textContent, [])
+              };
 
-            fetch('/randomize_scores', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to randomize scores');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Scores randomized successfully');
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error randomizing scores:', error);
-                alert('Failed to randomize scores. Please try again.');
-            });
-        }
+              console.log('Data loaded from DOM elements:', {
+                  models_length: payload.Models.length,
+                  firstModelData: payload.Models.length > 0 ? payload.Results[payload.Models[0]] : null,
+                  profileGroups: payload.ProfileGroups
+              });
 
-        function generateTieredScores(models, promptsCount) {
-            const groupSize = Math.ceil(models.length / 11);
-            
-            let newResults = {};
-            let newTotalScores = {};
-            let newPassPercentages = {};
-            
-            models.forEach((model, index) => {
-                const tierIndex = Math.min(10, Math.floor(index / groupSize));
-                let scores = [];
-                let total = 0;
-                
-                for (let i = 0; i < promptsCount; i++) {
-                    let score = getRandomScoreForTier(tierIndex);
-                    scores.push(score);
-                    total += score;
-                }
-                
-                newResults[model] = { Scores: scores };
-                newTotalScores[model] = total;
-                newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
-            });
-            
-            models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
-            
-            return {
-                Results: newResults,
-                Models: models,
-                TotalScores: newTotalScores,
-                PassPercentages: newPassPercentages
-            };
-        }
-        
-        function getRandomScoreForTier(tierIndex) {
-            const tierWeights = [
-                [1, 1, 8, 15, 25, 50],
-                [1, 2, 10, 20, 40, 27],
-                [2, 5, 15, 30, 35, 13],
-                [5, 10, 25, 30, 20, 10],
-                [7, 15, 33, 25, 15, 5],
-                [10, 20, 35, 20, 10, 5],
-                [15, 30, 30, 15, 8, 2],
-                [20, 35, 25, 15, 4, 1],
-                [30, 35, 20, 12, 2, 1],
-                [40, 35, 15, 8, 2, 0],
-                [55, 30, 10, 5, 0, 0],
-                [17, 16, 16, 16, 16, 16]
-            ];
-            
-            let weights = tierWeights[tierIndex] || tierWeights[11];
-            
-            const jitterFactor = 0.2;
-            weights = weights.map(w => {
-                const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
-                return Math.max(0, Math.round(w * jitter));
-            });
-            
-            const totalWeight = weights.reduce((a, b) => a + b, 0);
-            let random = Math.random() * totalWeight;
-            
-            for (let i = 0; i < weights.length; i++) {
-                random -= weights[i];
-                if (random <= 0) {
-                    return SCORE_VALUES[i];
-                }
-            }
-            
-            return 0;
-        }
+              updateResults(payload);
+              return Promise.resolve(payload);
+          } catch (error) {
+              console.error('Error parsing initial data:', error);
+              const emptyPayload = {
+                  Results: {},
+                  Models: [],
+                  PassPercentages: {},
+                  TotalScores: {}
+              };
+              updateResults(emptyPayload);
+              return Promise.resolve(emptyPayload);
+          }
+      }
 
-        function updateResults(payload) {
-            const results = payload.Results || {};
-            const models = payload.Models || [];
-            const passPercentages = payload.PassPercentages || {};
-            const totalScores = payload.TotalScores || {};
-            const profileGroups = payload.ProfileGroups || [];
-            const orderedPrompts = payload.OrderedPrompts || [];
-            const modelFilter = document.getElementById("model_filter").value;
+      function handleSearch() {
+          currentSearchQuery = document.getElementById("modelSearch").value.toLowerCase();
 
-            initializeProfileHeaders(profileGroups);
-            
-            const tbody = getTableBody();
-            if (!tbody) {
-                console.error('Could not find or create table body');
-                return;
-            }
-            
-            const displayModels = ensureModelsExist(models, results);
-            
-            if (displayModels.length === 0) {
-                console.error('No models available to display');
-                tbody.innerHTML = '<tr><td colspan="100" class="no-models-message">No models available</td></tr>';
-                return;
-            }
-            
-            renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter, profileGroups);
-            
-            setTimeout(applyDataCellStyling, 50);
-        }
-        
-        function initializeProfileHeaders(profileGroups) {
-            if (document.querySelector('.profile-row') === null && profileGroups.length > 0) {
-                createProfileHeaderRow(profileGroups);
-            }
-            
-            applyHeaderStyling(profileGroups);
-        }
-        
-        function getTableBody() {
-            let tbody = document.querySelector("table.results-table tbody") || 
-                         document.querySelector("table tbody");
-            
-            if (!tbody) {
-                console.log('Table body not found, creating one');
-                const table = document.querySelector("table.results-table") || document.querySelector("table");
-                if (table) {
-                    const newTbody = document.createElement("tbody");
-                    table.appendChild(newTbody);
-                    tbody = newTbody;
-                }
-            }
-            
-            return tbody;
-        }
-        
-        function ensureModelsExist(models, results) {
-            if (models.length === 0 && Object.keys(results).length > 0) {
-                console.log('Models array is empty, rebuilding from results keys');
-                return Object.keys(results);
-            }
-            return models;
-        }
-        
-        function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter, profileGroups = []) {
-            console.log(`Rendering ${models.length} models to table`);
-            
-            tbody.innerHTML = '';
-            
-            const fragment = document.createDocumentFragment();
-            let rowCount = 0;
-            
-            models.forEach((model) => {
-                if ((modelFilter === "" || model === modelFilter) &&
-                    (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
-                    rowCount++;
-                    
-                    const row = createModelRow(
-                        model,
-                        rowCount,
-                        results[model],
-                        totalScores[model] || 0,
-                        passPercentages[model] || 0,
-                        profileGroups
-                    );
-                    
-                    fragment.appendChild(row);
-                }
-            });
-            
-            tbody.appendChild(fragment);
-            
-            console.log(`Table updated with ${rowCount} rows`);
-            
-            if (rowCount > 0 && tbody.children.length === 0) {
-                console.error("Rows not appearing in table despite being created. Forcing redraw...");
-                const temp = tbody.innerHTML;
-                tbody.innerHTML = '';
-                setTimeout(() => {
-                    tbody.innerHTML = temp;
-                }, 10);
-            }
-        }
-        
-        function createModelRow(model, rank, modelData, totalScore, passPercentage, profileGroups = []) {
-            const row = document.createElement("tr");
-            const promptsCount = {{len .Prompts}} || 0;
-            
-            const rankCell = document.createElement("td");
-            rankCell.textContent = rank;
-            
-            const actionsCell = document.createElement("td");
-            actionsCell.className = "model-actions";
-            actionsCell.innerHTML = `
-                <div class="prompt-actions">
-                    <a class="action-button edit-button" href="/edit_model?model=${model}">✏️</a>
-                    <a class="action-button delete-button" href="/delete_model?model=${model}">🗑️</a>
-                </div>
-            `;
-            
-            const modelCell = document.createElement("td");
-            modelCell.textContent = model;
-            
-            const scores = modelData?.Scores || modelData?.scores || [];
-            while (scores.length < promptsCount) {
-                scores.push(0);
-            }
-            
-            const scoreCells = createScoreCells(model, scores, promptsCount, profileGroups);
-            
-            const totalCell = createTotalScoreCell(totalScore, passPercentage);
-            
-            row.appendChild(rankCell);
-            row.appendChild(actionsCell);
-            row.appendChild(modelCell);
-            scoreCells.forEach(cell => row.appendChild(cell));
-            row.appendChild(totalCell);
-            
-            return row;
-        }
-        
-        function createScoreCells(model, scores, promptsCount, profileGroups = []) {
-            const cells = [];
+          const currentData = {
+              Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
+              Models: safeJsonParse(document.getElementById('models-data').textContent, []),
+              PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {}),
+              TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {})
+          };
 
-            const dividerColumns = new Set();
-            dividerColumns.add(0);
-            profileGroups.forEach((group, idx) => {
-                if (idx > 0 && group.startCol >= 0) {
-                    dividerColumns.add(group.startCol);
-                }
-            });
+          updateResults(currentData);
+      }
 
-            for (let index = 0; index < promptsCount; index++) {
-                const score = scores[index] || 0;
-                const scoreCell = document.createElement("td");
+      function backupCurrentState() {
+          previousState = {
+              Results: safeJsonParse(document.getElementById('results-data').textContent, {}),
+              Models: safeJsonParse(document.getElementById('models-data').textContent, []),
+              TotalScores: safeJsonParse(document.getElementById('total-scores-data').textContent, {}),
+              PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {})
+          };
 
-                let cellClass = 'score-cell';
+          console.log('Current state backed up');
 
-                if (dividerColumns.has(index)) {
-                    cellClass += ' profile-group-divider';
-                }
+          document.getElementById('restore-previous-btn').disabled = false;
+      }
 
-                scoreCell.className = cellClass;
-                
-                const scoreColors = {
-                    0: '#808080',
-                    20: '#ffa500',
-                    40: '#ffd700',
-                    60: '#00bfff',
-                    80: '#a77bff',
-                    100: '#7cff6b'
-                };
-                const bgColor = scoreColors[score] || '#808080';
-                scoreCell.style.backgroundColor = bgColor;
-                scoreCell.style.color = 'white';
-                scoreCell.style.width = '48px';
-                scoreCell.style.height = '48px';
-                scoreCell.style.fontWeight = 'bold';
-                scoreCell.style.borderRadius = '8px';
-                scoreCell.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
-                scoreCell.textContent = score;
-                
-                scoreCell.setAttribute('data-prompt-index', index.toString());
-                scoreCell.setAttribute('data-score', `Score: ${score}`);
-                scoreCell.setAttribute('tabindex', '0');
-                
-                scoreCell.addEventListener('click', () => {
-                    window.location.href = `/evaluate?model=${model}&prompt=${index}`;
-                });
-                
-                scoreCell.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        window.location.href = `/evaluate?model=${model}&prompt=${index}`;
-                    }
-                });
-                
-                cells.push(scoreCell);
-            }
-            
-            return cells;
-        }
-        
-        function createTotalScoreCell(totalScore, passPercentage) {
-            const totalCell = document.createElement("td");
-            totalCell.textContent = totalScore;
-            totalCell.className = "progress-bar-wrapper";
-            
-            const progressDiv = document.createElement("div");
-            progressDiv.className = "progress-bar-container progress-bar-standard-width";
-            
-            const progressBar = document.createElement("div");
-            progressBar.className = "progress-bar";
-            progressBar.style.setProperty('--progress-width', `${passPercentage}%`);
-            
-            progressDiv.appendChild(progressBar);
-            totalCell.appendChild(progressDiv);
-            
-            return totalCell;
-        }
-          
+      function restorePrevious() {
+          if (!previousState.Models || previousState.Models.length === 0) {
+              console.log('No previous state to restore');
+              return;
+          }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM loaded, connecting to WebSocket...");
-            connectWebSocket();
-        });
-        function createProfileHeaderRow(profileGroups) {
-            const thead = document.querySelector('.results-table thead');
-            if (!thead) return;
-            
-            const profileRow = document.createElement('tr');
-            profileRow.className = 'profile-row';
-            
-            const emptyHeader = document.createElement('th');
-            emptyHeader.setAttribute('colspan', '3');
-            profileRow.appendChild(emptyHeader);
-            
-            profileGroups.forEach((group, index) => {
-                if (group.StartCol !== -1) {
-                    const span = group.EndCol - group.StartCol + 1;
-                    const header = createProfileHeader(group, index, profileRow);
-                    header.setAttribute('colspan', span);
-                    profileRow.appendChild(header);
-                }
-            });
-            
-            const totalHeader = document.createElement('th');
-            totalHeader.setAttribute('rowspan', '2');
-            totalHeader.textContent = 'Total';
-            profileRow.appendChild(totalHeader);
-            
-            thead.insertBefore(profileRow, thead.firstChild);
-        }
-        
-        function createProfileHeader(group, index, parentRow) {
-            const header = document.createElement('th');
-            header.className = 'profile-header profile-header-cell';
-            header.setAttribute('data-profile-id', group.ID);
-            
-            const textDiv = document.createElement('div');
-            textDiv.className = 'profile-header-text';
-            textDiv.textContent = group.Name;
-            header.appendChild(textDiv);
-            
-            header.classList.add('profile-header-styled');
-            header.style.setProperty('--profile-color', '#333');
-            
-            if (index > 0) {
-                header.classList.add('profile-divider-left');
-            }
-            
-            if (index > 0 && parentRow.lastChild && parentRow.lastChild.classList) {
-                parentRow.lastChild.classList.add('profile-divider-right');
-            }
-            
-            return header;
-        }
+          console.log('Restoring previous state');
 
-        function applyHeaderStyling(profileGroups) {
-            const columnMap = {};
-            
-            window.profileColumnMap = {};
-            
-            profileGroups.forEach(group => {
-                const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
-                const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
-                const color = '#333';
-                
-                if (startCol !== -1) {
-                    columnMap[startCol] = { isStart: true, isEnd: false, color: color };
-                    columnMap[endCol] = { isStart: false, isEnd: true, color: color };
-                    
-                    window.profileColumnMap[startCol] = { isStart: true, color: color };
-                    window.profileColumnMap[endCol] = { isEnd: true, color: color };
-                }
-            });
+          updateHiddenData(previousState);
 
-            const headerCells = document.querySelectorAll('.prompt-col');
+          sendDataToServer(previousState)
+              .then(data => {
+                  console.log('Previous state restored successfully');
+                  updateResults(previousState);
+              })
+              .catch(error => {
+                  console.error('Error restoring previous state:', error);
+                  updateResults(previousState);
+              });
+      }
 
-            headerCells.forEach(cell => {
-                const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
-                const boundary = columnMap[promptIndex];
+      function sendDataToServer(data) {
+          return fetch('/update_mock_results', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                  results: data.Results,
+                  models: data.Models,
+                  passPercentages: data.PassPercentages,
+                  totalScores: data.TotalScores
+              })
+          })
+          .then(response => response.json());
+      }
 
-                cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end', 'header-divider', 'profile-group-divider');
-                cell.style.borderLeft = '';
+      function generateMockScores() {
+          console.log("Generating mock scores...");
 
-                const existingDivider = cell.querySelector('.header-divider-line');
-                if (existingDivider) {
-                    existingDivider.remove();
-                }
+          if (!confirm('Are you sure you want to generate mock data? This will override all current scores.')) {
+              console.log('Mock data generation cancelled by user');
+              return;
+          }
 
-                if (promptIndex === 0) {
-                    cell.classList.add('profile-group-divider', 'header-divider');
-                    const dividerLine = document.createElement('div');
-                    dividerLine.className = 'header-divider-line';
-                    cell.appendChild(dividerLine);
-                }
-                else if (boundary && boundary.isStart) {
-                    cell.classList.add('profile-group-start', 'profile-group-divider', 'header-divider');
-                    const dividerLine = document.createElement('div');
-                    dividerLine.className = 'header-divider-line';
-                    cell.appendChild(dividerLine);
-                }
+          backupCurrentState();
 
-                if (boundary && boundary.isEnd) {
-                    cell.classList.add('profile-group-end');
-                }
-            });
-        }
+          const models = safeJsonParse(document.getElementById('models-data').textContent, []);
+          if (models.length === 0) {
+              console.log('No existing models - backend will create mock models');
+          }
 
-        function applyDataCellStyling() {
-            if (!window.profileColumnMap) {
-                console.error("Profile column map not initialized");
-                return;
-            }
-            
-            const columnMap = window.profileColumnMap;
-            
-            const table = document.querySelector('.results-table');
-            if (!table) {
-                console.error("Table not found");
-                return;
-            }
-            
-            const tableRows = table.querySelectorAll('tbody tr');
-            
-            tableRows.forEach(row => {
-                const cells = Array.from(row.querySelectorAll('td'));
-                if (cells.length <= 3) return;
-                
-                for (let i = 3; i < cells.length - 1; i++) {
-                    const columnIndex = i - 3;
-                    const boundary = columnMap[columnIndex];
-                    
-                    if (boundary) {
-                        cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
-                        
-                        if (boundary.isStart) {
-                            cells[i].classList.add('profile-group-start', 'profile-group-divider');
-                            cells[i].style.borderLeft = `${PROFILE_BORDER_WIDTH} solid #333`;
-                        }
-                        
-                        if (boundary.isEnd) {
-                            cells[i].classList.add('profile-group-end');
-                            cells[i].style.borderRight = `${PROFILE_BORDER_WIDTH} solid #333`;
-                        }
-                    }
-                }
-            });
-        }
+          const promptsCount = {{len .Prompts}} || 0;
+
+          let newData = generateTieredScores(models, promptsCount);
+
+          updateHiddenData(newData);
+
+          sendDataToServer(newData)
+              .then(data => {
+                  console.log('Mock data saved successfully');
+                  location.reload();
+              })
+              .catch(error => {
+                  console.error('Error saving mock data:', error);
+                  alert('Failed to generate mock data. Please try again.');
+              });
+      }
+
+      function randomizeScores() {
+          console.log("Randomizing scores...");
+
+          backupCurrentState();
+
+          fetch('/randomize_scores', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Failed to randomize scores');
+              }
+              return response.json();
+          })
+          .then(data => {
+              console.log('Scores randomized successfully');
+              location.reload();
+          })
+          .catch(error => {
+              console.error('Error randomizing scores:', error);
+              alert('Failed to randomize scores. Please try again.');
+          });
+      }
+
+      function generateTieredScores(models, promptsCount) {
+          const groupSize = Math.ceil(models.length / 11);
+
+          let newResults = {};
+          let newTotalScores = {};
+          let newPassPercentages = {};
+
+          models.forEach((model, index) => {
+              const tierIndex = Math.min(10, Math.floor(index / groupSize));
+              let scores = [];
+              let total = 0;
+
+              for (let i = 0; i < promptsCount; i++) {
+                  let score = getRandomScoreForTier(tierIndex);
+                  scores.push(score);
+                  total += score;
+              }
+
+              newResults[model] = { Scores: scores };
+              newTotalScores[model] = total;
+              newPassPercentages[model] = (total / (promptsCount * 100)) * 100;
+          });
+
+          models.sort((a, b) => newTotalScores[b] - newTotalScores[a]);
+
+          return {
+              Results: newResults,
+              Models: models,
+              TotalScores: newTotalScores,
+              PassPercentages: newPassPercentages
+          };
+      }
+
+      function getRandomScoreForTier(tierIndex) {
+          const tierWeights = [
+              [1, 1, 8, 15, 25, 50],
+              [1, 2, 10, 20, 40, 27],
+              [2, 5, 15, 30, 35, 13],
+              [5, 10, 25, 30, 20, 10],
+              [7, 15, 33, 25, 15, 5],
+              [10, 20, 35, 20, 10, 5],
+              [15, 30, 30, 15, 8, 2],
+              [20, 35, 25, 15, 4, 1],
+              [30, 35, 20, 12, 2, 1],
+              [40, 35, 15, 8, 2, 0],
+              [55, 30, 10, 5, 0, 0],
+              [17, 16, 16, 16, 16, 16]
+          ];
+
+          let weights = tierWeights[tierIndex] || tierWeights[11];
+
+          const jitterFactor = 0.2;
+          weights = weights.map(w => {
+              const jitter = 1 + (Math.random() * jitterFactor * 2 - jitterFactor);
+              return Math.max(0, Math.round(w * jitter));
+          });
+
+          const totalWeight = weights.reduce((a, b) => a + b, 0);
+          let random = Math.random() * totalWeight;
+
+          for (let i = 0; i < weights.length; i++) {
+              random -= weights[i];
+              if (random <= 0) {
+                  return SCORE_VALUES[i];
+              }
+          }
+
+          return 0;
+      }
+
+      function updateResults(payload) {
+          const results = payload.Results || {};
+          const models = payload.Models || [];
+          const passPercentages = payload.PassPercentages || {};
+          const totalScores = payload.TotalScores || {};
+          const profileGroups = payload.ProfileGroups || [];
+          const orderedPrompts = payload.OrderedPrompts || [];
+          const modelFilter = document.getElementById("model_filter").value;
+
+          initializeProfileHeaders(profileGroups);
+
+          const tbody = getTableBody();
+          if (!tbody) {
+              console.error('Could not find or create table body');
+              return;
+          }
+
+          const displayModels = ensureModelsExist(models, results);
+
+          if (displayModels.length === 0) {
+              console.error('No models available to display');
+              tbody.innerHTML = '<tr><td colspan="100" class="no-models-message">No models available</td></tr>';
+              return;
+          }
+
+          renderModelRows(tbody, displayModels, results, totalScores, passPercentages, modelFilter, profileGroups);
+
+          setTimeout(applyDataCellStyling, 50);
+      }
+
+      function initializeProfileHeaders(profileGroups) {
+          const profileRow = document.querySelector('.profile-row');
+          if (profileRow === null && profileGroups.length > 0) {
+              createProfileHeaderRow(profileGroups);
+          } else if (profileRow !== null && profileGroups.length > 1) {
+              // Profile row exists (from server), update colspans to account for spacers
+              updateProfileHeaderColspans(profileGroups);
+          }
+          // Always add spacers to prompt number row
+          if (profileGroups.length > 1) {
+              addSpacersToPromptNumberRow(profileGroups);
+          }
+
+          applyHeaderStyling(profileGroups);
+      }
+
+      function updateProfileHeaderColspans(profileGroups) {
+          const profileRow = document.querySelector('.profile-row');
+          if (!profileRow) return;
+
+          // Get all profile header cells (with profile-header class), skipping the empty cell and Total
+          const headers = Array.from(profileRow.querySelectorAll('.profile-header'));
+
+          console.log('Updating profile header colspans, headers.length =', headers.length, 'profileGroups.length =', profileGroups.length);
+
+          headers.forEach((header, index) => {
+              if (index < profileGroups.length) {
+                  const group = profileGroups[index];
+                  // Handle both lowercase and uppercase property names
+                  const startCol = group.startCol != null ? group.startCol : (group.StartCol != null ? group.StartCol : -1);
+                  const endCol = group.endCol != null ? group.endCol : (group.EndCol != null ? group.EndCol : -1);
+                  const scoreColumns = (endCol - startCol + 1);
+                  let colspan = scoreColumns;
+
+                  // Add spacer column to colspan if not the last group
+                  if (index < profileGroups.length - 1) {
+                      colspan += 1;  // +1 for spacer column
+                  }
+
+                  header.setAttribute('colspan', colspan);
+                  console.log('Header', index, 'colspan set to', colspan);
+              }
+          });
+      }
+
+      function getTableBody() {
+          let tbody = document.querySelector("table.results-table tbody") ||
+                       document.querySelector("table tbody");
+
+          if (!tbody) {
+              console.log('Table body not found, creating one');
+              const table = document.querySelector("table.results-table") || document.querySelector("table");
+              if (table) {
+                  const newTbody = document.createElement("tbody");
+                  table.appendChild(newTbody);
+                  tbody = newTbody;
+              }
+          }
+
+          return tbody;
+      }
+
+      function ensureModelsExist(models, results) {
+          if (models.length === 0 && Object.keys(results).length > 0) {
+              console.log('Models array is empty, rebuilding from results keys');
+              return Object.keys(results);
+          }
+          return models;
+      }
+
+      function updateTableColgroup(promptsCount, profileGroups = []) {
+          const table = document.querySelector('.results-table');
+          if (!table) return;
+
+          // Remove existing colgroup if any
+          const existingColgroup = table.querySelector('colgroup');
+          if (existingColgroup) {
+              existingColgroup.remove();
+          }
+
+          // Create new colgroup
+          const colgroup = document.createElement('colgroup');
+
+          // Rank column (50px)
+          const rankCol = document.createElement('col');
+          rankCol.style.width = '50px';
+          colgroup.appendChild(rankCol);
+
+          // Actions column (80px)
+          const actionsCol = document.createElement('col');
+          actionsCol.style.width = '80px';
+          colgroup.appendChild(actionsCol);
+
+          // Model name column (200px - fixed width)
+          const modelCol = document.createElement('col');
+          modelCol.style.width = '200px';
+          colgroup.appendChild(modelCol);
+
+          // Build set of columns where spacers should be inserted (after each profile group except last)
+          const spacerAfterIndices = new Set();
+          if (profileGroups.length > 1) {
+              for (let i = 1; i < profileGroups.length; i++) {
+                  const group = profileGroups[i];
+                  if (group.startCol > 0) {
+                      spacerAfterIndices.add(group.startCol - 1);
+                  }
+              }
+          }
+
+          // Score columns with spacers between groups
+          let spacerCount = 0;
+          for (let i = 0; i < promptsCount; i++) {
+              const scoreCol = document.createElement('col');
+              scoreCol.style.width = '26px';
+              colgroup.appendChild(scoreCol);
+
+              // Insert spacer after this column if it's the end of a profile group
+              if (spacerAfterIndices.has(i)) {
+                  const spacerCol = document.createElement('col');
+                  spacerCol.style.width = '3px';
+                  colgroup.appendChild(spacerCol);
+                  spacerCount++;
+              }
+          }
+
+          // Total column (100px)
+          const totalCol = document.createElement('col');
+          totalCol.style.width = '100px';
+          colgroup.appendChild(totalCol);
+
+          // Calculate total table width: rank + actions + model + scores + spacers + total + border-spacing
+          const borderSpacingCols = 3 + promptsCount + spacerCount + 1; // number of gaps between columns
+          const tableWidth = 50 + 80 + 200 + (promptsCount * 26) + (spacerCount * 3) + 100 + borderSpacingCols * 1;
+
+          // Set explicit table width for table-layout: fixed to work correctly
+          table.style.width = tableWidth + 'px';
+          table.style.tableLayout = 'fixed';
+
+          // Insert colgroup at the start of table
+          table.insertBefore(colgroup, table.firstChild);
+
+          console.log(`Table width set to ${tableWidth}px for ${promptsCount} score columns with ${spacerCount} spacers`);
+      }
+
+      function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter, profileGroups = []) {
+          console.log(`Rendering ${models.length} models to table`);
+
+          tbody.innerHTML = '';
+
+          const fragment = document.createDocumentFragment();
+          let rowCount = 0;
+
+          models.forEach((model) => {
+              if ((modelFilter === "" || model === modelFilter) &&
+                  (currentSearchQuery === "" || model.toLowerCase().includes(currentSearchQuery))) {
+                  rowCount++;
+
+                  const row = createModelRow(
+                      model,
+                      rowCount,
+                      results[model],
+                      totalScores[model] || 0,
+                      passPercentages[model] || 0,
+                      profileGroups
+                  );
+
+                  fragment.appendChild(row);
+              }
+          });
+
+          tbody.appendChild(fragment);
+
+          console.log(`Table updated with ${rowCount} rows`);
+
+          if (rowCount > 0 && tbody.children.length === 0) {
+              console.error("Rows not appearing in table despite being created. Forcing redraw...");
+              const temp = tbody.innerHTML;
+              tbody.innerHTML = '';
+              setTimeout(() => {
+                  tbody.innerHTML = temp;
+              }, 10);
+          }
+      }
+
+      function createModelRow(model, rank, modelData, totalScore, passPercentage, profileGroups = []) {
+          const row = document.createElement("tr");
+          const promptsCount = {{len .Prompts}} || 0;
+
+          const rankCell = document.createElement("td");
+          rankCell.textContent = rank;
+
+          const actionsCell = document.createElement("td");
+          actionsCell.className = "model-actions";
+          actionsCell.innerHTML = `
+              <div class="prompt-actions">
+                  <a class="action-button edit-button" href="/edit_model?model=${model}">✏️</a>
+                  <a class="action-button delete-button" href="/delete_model?model=${model}">🗑️</a>
+              </div>
+          `;
+
+          const modelCell = document.createElement("td");
+          modelCell.textContent = model;
+
+          const scores = modelData?.Scores || modelData?.scores || [];
+          while (scores.length < promptsCount) {
+              scores.push(0);
+          }
+
+          const scoreCells = createScoreCells(model, scores, promptsCount, profileGroups);
+
+          const totalCell = createTotalScoreCell(totalScore, passPercentage);
+
+          row.appendChild(rankCell);
+          row.appendChild(actionsCell);
+          row.appendChild(modelCell);
+          scoreCells.forEach(cell => row.appendChild(cell));
+          row.appendChild(totalCell);
+
+          return row;
+      }
+
+      function createScoreCells(model, scores, promptsCount, profileGroups = []) {
+          const cells = [];
+
+          const dividerColumns = new Set();
+          dividerColumns.add(0);
+          profileGroups.forEach((group, idx) => {
+              if (idx > 0 && group.startCol >= 0) {
+                  dividerColumns.add(group.startCol);
+              }
+          });
+
+          for (let index = 0; index < promptsCount; index++) {
+              const score = scores[index] || 0;
+              const scoreCell = document.createElement("td");
+
+              let cellClass = 'score-cell';
+
+              if (dividerColumns.has(index)) {
+                  cellClass += ' profile-group-divider';
+              }
+
+
+              const scoreColors = {
+                  0: '#808080',
+                  20: '#ffa500',
+                  40: '#ffd700',
+                  60: '#00bfff',
+                  80: '#a77bff',
+                  100: '#7cff6b'
+              };
+              const bgColor = scoreColors[score] || '#808080';
+
+              // Create inner div for score display with Tailwind classes
+              const scoreDiv = document.createElement('div');
+              scoreDiv.className = 'w-[26px] h-[26px] flex items-center justify-center font-bold text-[10px] rounded shadow-sm flex-shrink-0';
+              scoreDiv.style.backgroundColor = bgColor;
+              scoreDiv.style.color = 'white';
+              scoreDiv.textContent = score;
+
+              scoreCell.className = cellClass + ' text-center hover:scale-105 hover:brightness-110 transition-all cursor-pointer';
+              // Inline styles to override any CSS and enforce exact size
+              scoreCell.style.width = "26px";
+              scoreCell.style.minWidth = "26px";
+              scoreCell.style.maxWidth = "26px";
+              scoreCell.style.height = "26px";
+              scoreCell.style.padding = "0";
+              scoreCell.appendChild(scoreDiv);
+
+              scoreCell.setAttribute('data-prompt-index', index.toString());
+              scoreCell.setAttribute('data-score', `Score: ${score}`);
+              scoreCell.setAttribute('tabindex', '0');
+
+              scoreCell.addEventListener('click', () => {
+                  window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+              });
+
+              scoreCell.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                      window.location.href = `/evaluate?model=${model}&prompt=${index}`;
+                  }
+              });
+
+              cells.push(scoreCell);
+
+              // Insert spacer cell after each profile group (except the last)
+              if (index + 1 < promptsCount && dividerColumns.has(index + 1)) {
+                  const spacerCell = document.createElement("td");
+                  spacerCell.className = "score-cell-spacer";
+                  spacerCell.style.width = "3px";
+                  spacerCell.style.minWidth = "3px";
+                  spacerCell.style.maxWidth = "3px";
+                  spacerCell.style.height = "26px";
+                  spacerCell.style.padding = "0";
+                  spacerCell.style.border = "none";
+                  spacerCell.style.backgroundColor = "transparent";
+                  cells.push(spacerCell);
+              }
+          }
+
+          return cells;
+      }
+
+      function createTotalScoreCell(totalScore, passPercentage) {
+          const totalCell = document.createElement("td");
+          totalCell.textContent = totalScore;
+          totalCell.className = "progress-bar-wrapper";
+
+          const progressDiv = document.createElement("div");
+          progressDiv.className = "progress-bar-container progress-bar-standard-width";
+
+          const progressBar = document.createElement("div");
+          progressBar.className = "progress-bar";
+          progressBar.style.setProperty('--progress-width', `${passPercentage}%`);
+
+          progressDiv.appendChild(progressBar);
+          totalCell.appendChild(progressDiv);
+
+          return totalCell;
+      }
+
+
+      document.addEventListener('DOMContentLoaded', () => {
+          console.log("DOM loaded, connecting to WebSocket...");
+          const promptsCount = {{len .Prompts}} || 0;
+
+          // Parse profile groups first
+          let profileGroups = [];
+          const profileGroupsData = document.getElementById('profile-groups-data');
+          if (profileGroupsData) {
+              try {
+                  profileGroups = JSON.parse(profileGroupsData.textContent);
+                  console.log("Parsed profile groups:", profileGroups);
+              } catch (e) {
+                  console.error("Failed to parse profile groups data:", e);
+              }
+          }
+
+          // Update colgroup with profile groups for spacer columns
+          updateTableColgroup(promptsCount, profileGroups);
+
+          // Initialize profile headers
+          if (profileGroups.length > 0) {
+              console.log("initializeProfileHeaders function:", typeof initializeProfileHeaders);
+              initializeProfileHeaders(profileGroups);
+              console.log("profileColumnMap after init:", window.profileColumnMap);
+              // Apply dividers to data cells
+              setTimeout(applyDataCellStyling, 100);
+          }
+
+          connectWebSocket();
+      });
+      function createProfileHeaderRow(profileGroups) {
+          const thead = document.querySelector('.results-table thead');
+          if (!thead) return;
+
+          const profileRow = document.createElement('tr');
+          profileRow.className = 'profile-row';
+
+          const emptyHeader = document.createElement('th');
+          emptyHeader.setAttribute('colspan', '3');
+          profileRow.appendChild(emptyHeader);
+
+          profileGroups.forEach((group, index) => {
+              if (group.StartCol !== -1) {
+                  // Calculate colspan: number of columns in this profile group
+                  // Each profile group has (EndCol - StartCol + 1) score columns
+                  // Plus 1 spacer column after the group (except for the last group)
+                  const scoreColumns = group.EndCol - group.StartCol + 1;
+                  let colspan = scoreColumns;
+
+                  // Add spacer column to colspan if not the last group
+                  if (index < profileGroups.length - 1) {
+                      colspan += 1;  // +1 for spacer column
+                  }
+
+                  const header = createProfileHeader(group, index, profileRow);
+                  header.setAttribute('colspan', colspan);
+                  profileRow.appendChild(header);
+              }
+          });
+
+          const totalHeader = document.createElement('th');
+          totalHeader.setAttribute('rowspan', '2');
+          totalHeader.textContent = 'Total';
+          profileRow.appendChild(totalHeader);
+
+          thead.insertBefore(profileRow, thead.firstChild);
+      }
+
+      function addSpacersToPromptNumberRow(profileGroups) {
+          const thead = document.querySelector('.results-table thead');
+          if (!thead) return;
+
+          // Find the prompt number row (second row in thead)
+          const rows = thead.querySelectorAll('tr');
+          const promptRow = rows[1]; // Second row
+          if (!promptRow) return;
+
+          // Check if spacers already exist - if so, don't add them again
+          const existingSpacers = promptRow.querySelectorAll('.score-cell-spacer-header');
+          if (existingSpacers.length > 0) {
+              console.log('Spacers already exist, skipping');
+              return;
+          }
+
+          // Get all prompt header cells
+          const promptCells = Array.from(promptRow.querySelectorAll('.prompt-col'));
+          if (promptCells.length === 0) return;
+
+          console.log('addSpacersToPromptNumberRow: profileGroups.length =', profileGroups.length, 'promptCells.length =', promptCells.length);
+
+          // Build set of indices where spacers should be inserted (after each profile group except last)
+          const spacerAfterIndices = new Set();
+          if (profileGroups.length > 1) {
+              for (let i = 1; i < profileGroups.length; i++) {
+                  const group = profileGroups[i];
+                  const startCol = group.startCol != null ? group.startCol : (group.StartCol != null ? group.StartCol : -1);
+                  if (startCol > 0) {
+                      spacerAfterIndices.add(startCol - 1);
+                  }
+              }
+          }
+
+          console.log('spacerAfterIndices:', Array.from(spacerAfterIndices));
+
+          // Insert spacers after the appropriate prompt cells
+          // We need to iterate in reverse order to avoid index shifting issues
+          const indices = Array.from(spacerAfterIndices).sort((a, b) => b - a);
+          indices.forEach(index => {
+              if (index < promptCells.length) {
+                  const cell = promptCells[index];
+                  const spacerCell = document.createElement('th');
+                  spacerCell.className = 'score-cell-spacer-header';
+                  spacerCell.style.width = '3px';
+                  spacerCell.style.minWidth = '3px';
+                  spacerCell.style.maxWidth = '3px';
+                  spacerCell.style.height = '26px';
+                  spacerCell.style.padding = '0';
+                  spacerCell.style.border = 'none';
+                  spacerCell.style.backgroundColor = 'transparent';
+                  cell.parentNode.insertBefore(spacerCell, cell.nextSibling);
+                  console.log('Inserted spacer after index', index);
+              }
+          });
+
+          console.log('Done inserting spacers, total cells now:', promptRow.children.length);
+      }
+
+      function createProfileHeader(group, index, parentRow) {
+          const header = document.createElement('th');
+          header.className = 'profile-header profile-header-cell';
+          header.setAttribute('data-profile-id', group.ID);
+
+          const textDiv = document.createElement('div');
+          textDiv.className = 'profile-header-text';
+          textDiv.textContent = group.Name;
+          header.appendChild(textDiv);
+
+          header.classList.add('profile-header-styled');
+          header.style.setProperty('--profile-color', '#333');
+
+          if (index > 0) {
+              header.classList.add('profile-divider-left');
+          }
+
+          if (index > 0 && parentRow.lastChild && parentRow.lastChild.classList) {
+              parentRow.lastChild.classList.add('profile-divider-right');
+          }
+
+          return header;
+      }
+
+      function applyHeaderStyling(profileGroups) {
+          const columnMap = {};
+
+          window.profileColumnMap = {};
+
+          profileGroups.forEach(group => {
+              const startCol = group.startCol !== undefined ? group.startCol : (group.StartCol !== undefined ? group.StartCol : -1);
+              const endCol = group.endCol !== undefined ? group.endCol : (group.EndCol !== undefined ? group.EndCol : -1);
+              const color = '#333';
+
+              if (startCol !== -1) {
+                  columnMap[startCol] = { isStart: true, isEnd: false, color: color };
+                  columnMap[endCol] = { isStart: false, isEnd: true, color: color };
+
+                  window.profileColumnMap[startCol] = { isStart: true, color: color };
+                  window.profileColumnMap[endCol] = { isEnd: true, color: color };
+              }
+          });
+
+          const headerCells = document.querySelectorAll('.prompt-col');
+
+          headerCells.forEach(cell => {
+              const promptIndex = parseInt(cell.getAttribute('data-prompt-index'));
+              const boundary = columnMap[promptIndex];
+
+              cell.classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end', 'header-divider', 'profile-group-divider');
+              cell.style.borderLeft = '';
+
+              const existingDivider = cell.querySelector('.header-divider-line');
+              if (existingDivider) {
+                  existingDivider.remove();
+              }
+
+              if (promptIndex === 0) {
+                  cell.classList.add('profile-group-divider', 'header-divider');
+                  const dividerLine = document.createElement('div');
+                  dividerLine.className = 'header-divider-line';
+                  cell.appendChild(dividerLine);
+              }
+              else if (boundary && boundary.isStart) {
+                  cell.classList.add('profile-group-start', 'profile-group-divider', 'header-divider');
+                  const dividerLine = document.createElement('div');
+                  dividerLine.className = 'header-divider-line';
+                  cell.appendChild(dividerLine);
+              }
+
+              if (boundary && boundary.isEnd) {
+                  cell.classList.add('profile-group-end');
+              }
+          });
+      }
+
+      function applyDataCellStyling() {
+          if (!window.profileColumnMap) {
+              console.error("Profile column map not initialized");
+              return;
+          }
+
+          const columnMap = window.profileColumnMap;
+
+          const table = document.querySelector('.results-table');
+          if (!table) {
+              console.error("Table not found");
+              return;
+          }
+
+          const tableRows = table.querySelectorAll('tbody tr');
+
+          tableRows.forEach(row => {
+              const cells = Array.from(row.querySelectorAll('td'));
+              if (cells.length <= 3) return;
+
+              for (let i = 3; i < cells.length - 1; i++) {
+                  const columnIndex = i - 3;
+                  const boundary = columnMap[columnIndex];
+
+                  if (boundary) {
+                      cells[i].classList.remove('profile-start', 'profile-end', 'profile-group-start', 'profile-group-end');
+
+                      if (boundary.isStart) {
+                          cells[i].classList.add('profile-group-start', 'profile-group-divider');
+                          cells[i].style.borderLeft = `${PROFILE_BORDER_WIDTH} solid #333`;
+                      }
+
+                      if (boundary.isEnd) {
+                          cells[i].classList.add('profile-group-end');
+                          cells[i].style.borderRight = `${PROFILE_BORDER_WIDTH} solid #333`;
+                      }
+                  }
+              }
+          });
+      }
     </script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        {{template "nav" .}}
-        <main class="flex-1 flex flex-col gap-3 overflow-auto">
-    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 sticky-header">
-        <h2 class="card-title text-sm font-semibold flex-shrink-0">Add Model</h2>
-        <form action="/add_model" method="post" class="flex items-center gap-2 flex-1">
-            <input type="text" name="model" placeholder="Enter new model name" class="input input-bordered" />
+      {{template "nav" .}}
+      <main class="flex-1 flex flex-col gap-3 overflow-auto">
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 sticky-header flex-nowrap"
+        >
+          <form
+            action="/add_model"
+            method="post"
+            class="flex items-center gap-2 flex-1"
+          >
+            <input
+              type="text"
+              name="model"
+              placeholder="Enter new model name"
+              class="input input-bordered"
+            />
             <input type="submit" value="Add" class="btn btn-primary" />
-        </form>
-        <span id="connection-status" class="badge badge-info flex-shrink-0"></span>
-    </div>
-    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 title-row">
-        <div class="filter-container flex items-center gap-2 flex-shrink-0">
-            <form action="/results" method="get" id="filter-form" class="flex items-center gap-2">
-                <select name="model_filter" id="model_filter" aria-label="Filter by model" class="select select-bordered w-60 max-w-full">
-                    <option value="">All Models</option>
-                    {{range $model := .Models}}
-                    <option value="{{$model}}" {{if and ($.ModelFilter) (eq $.ModelFilter $model)}}selected{{end}}>
-                        {{$model}}
-                    </option>
-                    {{end}}
-                </select>
-                <input type="submit" value="Filter" class="btn btn-info filter-submit" />
-            </form>
-            <button class="btn btn-primary" id="generate-mock-btn" onclick="generateMockScores()">Generate Mock Data</button>
-            <button class="btn btn-primary" id="randomize-scores-btn" onclick="randomizeScores()">Randomize Scores</button>
-            <button class="btn btn-info" id="restore-previous-btn" onclick="restorePrevious()" disabled>Previous</button>
+          </form>
+          <span
+            id="connection-status"
+            class="badge badge-success flex-shrink-0"
+          >
+            <span class="relative flex h-3 w-3">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-3 w-3 bg-success"
+              ></span>
+            </span>
+            <span class="ml-1 status-text"></span>
+          </span>
         </div>
-        <div class="search-container flex items-center gap-2 flex-1">
-            <form id="search-form" class="search-form flex items-center gap-2" onsubmit="handleSearch(); return false;">
-                <input type="text" id="modelSearch" placeholder="Search models..." class="input input-bordered w-80 max-w-full" aria-label="Search models" />
-                <button type="submit" class="btn btn-primary search-submit">Search</button>
-            </form>
-        </div>
-    </div>
-    <table class="table table-zebra results-table table-enhanced">
-        <thead>
-            <tr class="profile-row">
-                <th colspan="3"></th>
-                {{range $index, $group := .ProfileGroups}}
-                    {{if ne .StartCol -1}}
-                    <th colspan="{{add (sub .EndCol .StartCol) 1}}"
-                        class="profile-header profile-header-cell profile-header-styled profile-divider-left"
-                        data-profile-id="{{.ID}}"
-                        style="position: relative; --profile-color: #333;">
-                        <div class="header-divider-line"></div>
-                        <div class="profile-header-text">{{.Name}}</div>
-                    </th>
-                    {{end}}
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 title-row flex-nowrap"
+        >
+          <div
+            class="filter-container flex items-center gap-2 flex-shrink-0 flex-nowrap"
+          >
+            <form
+              action="/results"
+              method="get"
+              id="filter-form"
+              class="flex items-center gap-2 flex-nowrap"
+            >
+              <select
+                name="model_filter"
+                id="model_filter"
+                aria-label="Filter by model"
+                class="select select-bordered w-60 max-w-full"
+              >
+                <option value="">All Models</option>
+                {{range $model := .Models}}
+                <option
+                  value="{{$model}}"
+                  {{if
+                  and
+                  ($.ModelFilter)
+                  (eq
+                  $.ModelFilter
+                  $model)}}selected{{end}}
+                >
+                  {{$model}}
+                </option>
                 {{end}}
+              </select>
+              <input
+                type="submit"
+                value="Filter"
+                class="btn btn-info filter-submit"
+              />
+            </form>
+            <button
+              class="btn btn-primary"
+              id="generate-mock-btn"
+              onclick="generateMockScores()"
+            >
+              Generate Mock Data
+            </button>
+            <button
+              class="btn btn-primary"
+              id="randomize-scores-btn"
+              onclick="randomizeScores()"
+            >
+              Randomize Scores
+            </button>
+            <button
+              class="btn btn-info"
+              id="restore-previous-btn"
+              onclick="restorePrevious()"
+              disabled
+            >
+              Previous
+            </button>
+          </div>
+          <div
+            class="search-container flex items-center gap-2 flex-1 flex-nowrap"
+          >
+            <form
+              id="search-form"
+              class="search-form flex items-center gap-2 flex-nowrap"
+              onsubmit="
+                handleSearch();
+                return false;
+              "
+            >
+              <input
+                type="text"
+                id="modelSearch"
+                placeholder="Search models..."
+                class="input input-bordered w-80 max-w-full"
+                aria-label="Search models"
+              />
+              <button type="submit" class="btn btn-primary search-submit">
+                Search
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="results-table-container">
+          <table class="table table-zebra results-table table-enhanced">
+            <thead>
+              <tr class="profile-row">
+                <th colspan="3"></th>
+                {{range $index, $group := .ProfileGroups}} {{if ne .StartCol
+                -1}}
+                <th
+                  colspan="{{add (sub .EndCol .StartCol) 1}}"
+                  class="profile-header profile-header-cell profile-header-styled profile-divider-left"
+                  data-profile-id="{{.ID}}"
+                  style="position: relative; --profile-color: #333"
+                >
+                  <div class="header-divider-line"></div>
+                  <div class="profile-header-text">{{.Name}}</div>
+                </th>
+                {{end}} {{end}}
                 <th rowspan="2">Total</th>
-            </tr>
+              </tr>
 
-            <tr>
+              <tr>
                 <th>#</th>
                 <th>Actions</th>
                 <th>Model</th>
                 {{range $prompt := .OrderedPrompts}}
-                    <th class="prompt-col"
-                        data-profile-id="{{$prompt.ProfileID}}"
-                        data-prompt-index="{{$prompt.Index}}">
-                        {{inc $prompt.Index}}
-                    </th>
+                <th
+                  class="prompt-col"
+                  data-profile-id="{{$prompt.ProfileID}}"
+                  data-prompt-index="{{$prompt.Index}}"
+                >
+                  {{inc $prompt.Index}}
+                </th>
                 {{end}}
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    <div class="card bg-base-100 shadow-lg p-4 m-0 flex items-center justify-between gap-3 sticky-footer">
-        <h2 class="text-sm font-semibold flex-shrink-0">Manage Results</h2>
-        <form action="/reset_results" method="get">
-            <input type="submit" value="Reset Results" class="btn btn-primary" />
-        </form>
-        <form action="/confirm_refresh_results" method="get">
-            <input type="submit" value="Refresh Results" class="btn btn-primary" />
-        </form>
-        <form action="/export_results" method="post">
-            <input type="submit" value="Export Results" class="btn btn-primary" />
-        </form>
-        <form action="/import_results" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
-            <input type="file" name="results_file" class="file-input file-input-bordered" />
-            <input type="submit" value="Import Results" class="btn btn-primary" />
-        </form>
-    </div>
-    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
-    </div>
-    <script>
-        function scrollToTop() {
-            window.scrollTo({top: 0, behavior: "smooth"});
-        }
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div
+          class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 sticky-footer flex-nowrap"
+        >
+          <h2 class="text-sm font-semibold flex-shrink-0">Manage Results</h2>
+          <form action="/reset_results" method="get">
+            <input
+              type="submit"
+              value="Reset Results"
+              class="btn btn-primary btn-xs"
+            />
+          </form>
+          <form action="/confirm_refresh_results" method="get">
+            <input
+              type="submit"
+              value="Refresh Results"
+              class="btn btn-primary btn-xs"
+            />
+          </form>
+          <form action="/export_results" method="post">
+            <input
+              type="submit"
+              value="Export Results"
+              class="btn btn-primary btn-xs"
+            />
+          </form>
+          <form
+            action="/import_results?return_to=/results"
+            method="post"
+            enctype="multipart/form-data"
+            class="flex items-center gap-2 flex-nowrap"
+          >
+            <input
+              type="file"
+              name="results_file"
+              class="file-input file-input-bordered file-input-xs"
+            />
+            <input
+              type="submit"
+              value="Import Results"
+              class="btn btn-primary btn-xs"
+            />
+          </form>
+        </div>
+        <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+          <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+          <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+        </div>
+        <script>
+          function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
 
-        function scrollToBottom() {
+          function scrollToBottom() {
             window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: "smooth",
+              top: document.body.scrollHeight,
+              behavior: "smooth",
             });
-        }
-        
-        document.addEventListener('keydown', function(e) {
-            if (document.activeElement && document.activeElement.classList.contains('score-cell')) {
-                const currentCell = document.activeElement;
-                const currentRow = currentCell.parentElement;
-                const currentIndex = Array.from(currentRow.children).indexOf(currentCell);
-                
-                let nextCell;
-                
-                switch(e.key) {
-                    case 'ArrowRight':
-                        nextCell = currentRow.children[currentIndex + 1];
-                        break;
-                    case 'ArrowLeft':
-                        nextCell = currentRow.children[currentIndex - 1];
-                        break;
-                    case 'ArrowUp':
-                        const prevRow = currentRow.previousElementSibling;
-                        if (prevRow) nextCell = prevRow.children[currentIndex];
-                        break;
-                    case 'ArrowDown':
-                        const nextRow = currentRow.nextElementSibling;
-                        if (nextRow) nextCell = nextRow.children[currentIndex];
-                        break;
-                }
-                
-                if (nextCell && nextCell.classList.contains('score-cell')) {
-                    e.preventDefault();
-                    nextCell.focus();
-                }
+          }
+
+          document.addEventListener("keydown", function (e) {
+            if (
+              document.activeElement &&
+              document.activeElement.classList.contains("score-cell")
+            ) {
+              const currentCell = document.activeElement;
+              const currentRow = currentCell.parentElement;
+              const currentIndex = Array.from(currentRow.children).indexOf(
+                currentCell,
+              );
+
+              let nextCell;
+
+              switch (e.key) {
+                case "ArrowRight":
+                  nextCell = currentRow.children[currentIndex + 1];
+                  break;
+                case "ArrowLeft":
+                  nextCell = currentRow.children[currentIndex - 1];
+                  break;
+                case "ArrowUp":
+                  const prevRow = currentRow.previousElementSibling;
+                  if (prevRow) nextCell = prevRow.children[currentIndex];
+                  break;
+                case "ArrowDown":
+                  const nextRow = currentRow.nextElementSibling;
+                  if (nextRow) nextCell = nextRow.children[currentIndex];
+                  break;
+              }
+
+              if (nextCell && nextCell.classList.contains("score-cell")) {
+                e.preventDefault();
+                nextCell.focus();
+              }
             }
-        });
-    </script>
-    <div id="hidden-data" class="hidden">
-        <span id="results-data">{{.Results | json}}</span>
-        <span id="models-data">{{.Models | json}}</span>
-        <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
-        <span id="total-scores-data">{{.TotalScores | json}}</span>
-        <span id="profile-groups-data">{{.ProfileGroups | json}}</span>
-        <span id="ordered-prompts-data">{{.OrderedPrompts | json}}</span>
-    </div>
-    <script>
-        window.fallbackData = {
+          });
+        </script>
+        <div id="hidden-data" class="hidden">
+          <span id="results-data">{{.Results | json}}</span>
+          <span id="models-data">{{.Models | json}}</span>
+          <span id="pass-percentages-data">{{.PassPercentages | json}}</span>
+          <span id="total-scores-data">{{.TotalScores | json}}</span>
+          <span id="profile-groups-data">{{.ProfileGroups | json}}</span>
+          <span id="ordered-prompts-data">{{.OrderedPrompts | json}}</span>
+        </div>
+        <script>
+          window.fallbackData = {
             Results: {},
             Models: [],
             PassPercentages: {},
-            TotalScores: {}
-        };
-    </script>
-        </main>
+            TotalScores: {},
+          };
+        </script>
+      </main>
     </div>
-</body>
-
+  </body>
 </html>

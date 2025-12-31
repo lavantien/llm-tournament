@@ -31,16 +31,16 @@ Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-
 
 ## Trade-offs Accepted (Zero Custom CSS)
 
-| Original Feature | Built-in Solution | Trade-off |
-|-----------------|-------------------|-----------|
-| **Glass panel glow effects** | DaisyUI `.card` with `shadow-lg` | No glow overlay, cleaner appearance |
-| **3-layer body background gradients** | DaisyUI `cyberpunk` theme | Different gradient pattern, similar dark aesthetic |
-| **Grid overlay texture** | Removed entirely | No grid texture, clean background |
-| **Custom animations** (`slowGlow`, `shimmer`, `pulse-connected`) | Tailwind `animate-pulse`, `animate-ping`, `animate-spin` | Simpler animations, less dramatic |
-| **Complex gradient borders** (cyan→magenta→violet) | DaisyUI `.btn-primary`, `.btn-info`, `.btn-accent` | Single color per button variant |
-| **Custom button hover effects** | DaisyUI `.btn` with built-in hover states | Simpler hover transitions |
-| **Dynamic score colors** (CSS variables) | Tailwind arbitrary values `bg-[#color]` | More verbose HTML but flexible |
-| **Pseudo-element glows** | Removed entirely | 0% custom CSS requirement |
+| Original Feature                                                 | Built-in Solution                                        | Trade-off                                          |
+| ---------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| **Glass panel glow effects**                                     | DaisyUI `.card` with `shadow-lg`                         | No glow overlay, cleaner appearance                |
+| **3-layer body background gradients**                            | DaisyUI `cyberpunk` theme                                | Different gradient pattern, similar dark aesthetic |
+| **Grid overlay texture**                                         | Removed entirely                                         | No grid texture, clean background                  |
+| **Custom animations** (`slowGlow`, `shimmer`, `pulse-connected`) | Tailwind `animate-pulse`, `animate-ping`, `animate-spin` | Simpler animations, less dramatic                  |
+| **Complex gradient borders** (cyan→magenta→violet)               | DaisyUI `.btn-primary`, `.btn-info`, `.btn-accent`       | Single color per button variant                    |
+| **Custom button hover effects**                                  | DaisyUI `.btn` with built-in hover states                | Simpler hover transitions                          |
+| **Dynamic score colors** (CSS variables)                         | Tailwind arbitrary values `bg-[#color]`                  | More verbose HTML but flexible                     |
+| **Pseudo-element glows**                                         | Removed entirely                                         | 0% custom CSS requirement                          |
 
 ## Typography
 
@@ -54,6 +54,7 @@ Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-
 ### DaisyUI Coffee Theme
 
 DaisyUI `coffee` theme provides:
+
 - Warm, earthy tones with good contrast
 - Brown and cream color palette
 - High contrast for readability
@@ -63,12 +64,33 @@ DaisyUI `coffee` theme provides:
 ### Score Theming (Arbitrary Values)
 
 Dynamic score cells use Tailwind arbitrary values:
+
 ```html
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffa500] text-white shadow-sm">20</div>
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffcc00] text-white shadow-sm">40</div>
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffff00] text-white shadow-sm">60</div>
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ccff00] text-white shadow-sm">80</div>
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#00ff00] text-white shadow-sm">100</div>
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffa500] text-white shadow-sm"
+>
+  20
+</div>
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffcc00] text-white shadow-sm"
+>
+  40
+</div>
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ffff00] text-white shadow-sm"
+>
+  60
+</div>
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#ccff00] text-white shadow-sm"
+>
+  80
+</div>
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[#00ff00] text-white shadow-sm"
+>
+  100
+</div>
 ```
 
 ## Layout Structure
@@ -262,6 +284,7 @@ All templates are Go `html/template` files. We verify:
 ### Migration Order (Easiest → Hardest)
 
 **Tier 1 - Simplest**:
+
 - `nav.html` - Buttons and menu
 - `delete_prompt.html` - Form with confirm
 - `delete_prompt_suite.html` - Form with confirm
@@ -272,6 +295,7 @@ All templates are Go `html/template` files. We verify:
 - `import_prompts.html`, `import_results.html`, `move_prompt.html` - Forms
 
 **Tier 2 - Medium**:
+
 - `new_prompt_suite.html` - Form with multiple inputs
 - `edit_prompt_suite.html` - Form components
 - `edit_prompt.html` - Form with textarea
@@ -283,12 +307,14 @@ All templates are Go `html/template` files. We verify:
 - `import_error.html` - Alert component
 
 **Tier 3 - Higher**:
+
 - `profiles.html` - Tables, forms, badges, progress
 - `prompt_list.html` - Tables, drag-drop, filtering
 - `results.html` - Large tables, badges, status
 - `settings.html` - All form types
 
 **Tier 4 - Hardest**:
+
 - `stats.html` - Charts with DaisyUI colors
 - `evaluate.html` - Complex score theming, evaluation forms
 - `design_preview.html` - Layout with multiple panels
@@ -300,6 +326,7 @@ All templates are Go `html/template` files. We verify:
 **Decision**: All styling must use Tailwind v4 utilities or DaisyUI v5 components. No custom CSS allowed.
 
 **Implementation**:
+
 - Delete 1,065 lines from `templates/input.css`
 - Keep only imports: `@import "tailwindcss";` and `@plugin "daisyui" { themes: ... };`
 - No `@layer base`, `@layer components`, `@layer utilities` with custom styles
@@ -312,10 +339,13 @@ All templates are Go `html/template` files. We verify:
 **Decision**: Use Tailwind arbitrary values with dynamic color injection from Go templates
 
 **Implementation**:
+
 ```html
 <!-- Go template provides score value -->
-<div class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[{{.ScoreColor}}] text-white shadow-sm">
-    {{.Score}}
+<div
+  class="w-12 h-12 flex items-center justify-center font-bold rounded-lg bg-[{{.ScoreColor}}] text-white shadow-sm"
+>
+  {{.Score}}
 </div>
 ```
 
@@ -326,6 +356,7 @@ All templates are Go `html/template` files. We verify:
 **Decision**: Use DaisyUI `coffee` theme via `data-theme` attribute
 
 **Implementation**:
+
 ```html
 <html data-theme="coffee">
   <body class="bg-base-200 min-w-[1320px]">
@@ -341,6 +372,7 @@ All templates are Go `html/template` files. We verify:
 **Decision**: Remove all glow effects, use standard DaisyUI `.card` components
 
 **Implementation**:
+
 ```html
 <!-- Original (removed) -->
 <div class="glass-panel">...</div>
@@ -370,12 +402,14 @@ All templates are Go `html/template` files. We verify:
 **Decision**: Maintain original layout structure, replace custom classes with DaisyUI utilities
 
 **Preserved**:
+
 - `arena-shell` → `flex`, `grid`, `gap`, `p` utilities
 - `arena-topbar` → `.flex`, `.justify-between`, `.items-center`
 - `arena-sidebar` → `.flex`, `.flex-col`
 - `arena-main` → `.flex`, `.flex-col`, `.gap`
 
 **Replaced**:
+
 - `.glass-panel` → `.card`
 - `.btn-gradient` → `.btn btn-primary`
 - `.input-enhanced` → `.input input-bordered`
@@ -384,17 +418,17 @@ All templates are Go `html/template` files. We verify:
 
 ## Migration Impact
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| **Custom CSS lines** | 1,065 | 0 (imports only) | -100% (success) |
-| **CSS complexity** | Custom gradients, keyframes, pseudo-elements | Zero custom CSS | Total elimination |
-| **Component classes** | 25+ custom semantic classes | 0 custom classes | DaisyUI + Tailwind |
-| **Design tokens** | 12+ CSS variables | DaisyUI theme tokens | Industry standard |
-| **Animations** | 3 custom keyframes | Tailwind built-ins | Better performance |
-| **Bundle size** | ~20KB custom CSS | ~15KB DaisyUI (tree-shaked) | -25% reduction |
-| **Maintenance burden** | High (custom CSS) | Low (DaisyUI) | Significant improvement |
-| **Visual identity** | Unique glass + neon design | Standard DaisyUI cyberpunk | Clean, consistent |
-| **Class complexity** | Semantic custom names | DaisyUI + Tailwind utilities | More verbose, industry-standard |
+| Metric                 | Before                                       | After                        | Change                          |
+| ---------------------- | -------------------------------------------- | ---------------------------- | ------------------------------- |
+| **Custom CSS lines**   | 1,065                                        | 0 (imports only)             | -100% (success)                 |
+| **CSS complexity**     | Custom gradients, keyframes, pseudo-elements | Zero custom CSS              | Total elimination               |
+| **Component classes**  | 25+ custom semantic classes                  | 0 custom classes             | DaisyUI + Tailwind              |
+| **Design tokens**      | 12+ CSS variables                            | DaisyUI theme tokens         | Industry standard               |
+| **Animations**         | 3 custom keyframes                           | Tailwind built-ins           | Better performance              |
+| **Bundle size**        | ~20KB custom CSS                             | ~15KB DaisyUI (tree-shaked)  | -25% reduction                  |
+| **Maintenance burden** | High (custom CSS)                            | Low (DaisyUI)                | Significant improvement         |
+| **Visual identity**    | Unique glass + neon design                   | Standard DaisyUI cyberpunk   | Clean, consistent               |
+| **Class complexity**   | Semantic custom names                        | DaisyUI + Tailwind utilities | More verbose, industry-standard |
 
 ## Success Metrics
 
@@ -419,6 +453,7 @@ Upon completion, we will have achieved:
 **Risk**: Significant visual changes from glass glow → standard DaisyUI cards
 
 **Mitigation**:
+
 - Accept trade-offs documented in requirements contract
 - Use `shadow-lg`, `shadow-xl` for depth
 - Maintain consistent aesthetic with coffee theme
@@ -429,6 +464,7 @@ Upon completion, we will have achieved:
 **Risk**: Team needs to learn DaisyUI component API
 
 **Mitigation**:
+
 - Comprehensive component mapping documentation
 - DaisyUI docs available at https://daisyui.com/docs/v5/
 - Built-in Tailwind utilities unchanged
@@ -438,6 +474,7 @@ Upon completion, we will have achieved:
 **Risk**: Testing 24 templates with Go SSR + httptest
 
 **Mitigation**:
+
 - Automated integration tests
 - Visual regression screenshots
 - Incremental page verification (easiest → hardest)
@@ -447,6 +484,7 @@ Upon completion, we will have achieved:
 **Risk**: DaisyUI adds ~15KB vs ~20KB custom CSS
 
 **Mitigation**:
+
 - Tree-shaking removes unused component styles
 - Overall size decrease from custom CSS
 - Only use needed DaisyUI components
@@ -458,7 +496,7 @@ If migration fails or visual results are unacceptable:
 1. **Revert `tailwind.config.js`** to previous version from git
 2. **Revert `templates/input.css`** from git (full custom CSS restored)
 3. **Revert all template changes** to use custom classes via git
-4. **Remove `daisyui` from `package.json` devDependencies
+4. \*\*Remove `daisyui` from `package.json` devDependencies
 5. **Run `npm run build:css`** to regenerate output.css
 6. **Run full test suite** to verify rollback success
 

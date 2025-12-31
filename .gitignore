@@ -40,3 +40,7 @@ coverage
 *coverage*.html
 coverage.out
 .playwright-mcp
+ui-profiles-*
+ui-prompts-*
+ui-results-*
+

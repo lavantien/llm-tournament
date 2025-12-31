@@ -56,11 +56,18 @@ async function ensureStableRendering(page) {
   });
 }
 
-async function capturePage(page, url, destPath, { waitForSelector, waitForFunction, beforeScreenshot } = {}) {
+async function capturePage(
+  page,
+  url,
+  destPath,
+  { waitForSelector, waitForFunction, beforeScreenshot } = {},
+) {
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await ensureStableRendering(page);
-  if (waitForSelector) await page.waitForSelector(waitForSelector, { timeout: 30_000 });
-  if (waitForFunction) await page.waitForFunction(waitForFunction, { timeout: 30_000 });
+  if (waitForSelector)
+    await page.waitForSelector(waitForSelector, { timeout: 30_000 });
+  if (waitForFunction)
+    await page.waitForFunction(waitForFunction, { timeout: 30_000 });
   if (beforeScreenshot) await beforeScreenshot(page);
   await page.waitForTimeout(350); // allow charts/websocket status to paint
   await page.screenshot({ path: destPath, fullPage: false });
@@ -70,7 +77,9 @@ async function main() {
   const root = repoRoot();
   const assetsDir = path.join(root, "assets");
 
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "llm-tournament-shots-"));
+  const tmpDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), "llm-tournament-shots-"),
+  );
   const dbPath = path.join(tmpDir, "demo.db");
 
   const env = {
@@ -80,8 +89,16 @@ async function main() {
 
   const server = spawn(
     "go",
-    ["run", "./tools/screenshots/cmd/demo-server", "-db", dbPath, "-addr", "127.0.0.1:0", "-seed=true"],
-    { cwd: root, env, stdio: ["ignore", "pipe", "inherit"] }
+    [
+      "run",
+      "./tools/screenshots/cmd/demo-server",
+      "-db",
+      dbPath,
+      "-addr",
+      "127.0.0.1:0",
+      "-seed=true",
+    ],
+    { cwd: root, env, stdio: ["ignore", "pipe", "inherit"] },
   );
 
   const url = await readFirstUrlLine(server.stdout);
@@ -95,32 +112,62 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await capturePage(page, `${url}/results`, path.join(assetsDir, "ui-results.png"), {
-      waitForSelector: ".table",
-      waitForFunction: () => {
-        const cells = document.querySelectorAll("td");
-        for (const cell of cells) {
-          const bg = getComputedStyle(cell).backgroundColor;
-          if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent" && bg !== "rgba(255, 255, 255, 0)") {
-            return true;
+    await capturePage(
+      page,
+      `${url}/results`,
+      path.join(assetsDir, "ui-results.png"),
+      {
+        waitForSelector: ".table",
+        waitForFunction: () => {
+          const cells = document.querySelectorAll("td div");
+          for (const cell of cells) {
+            const bg = getComputedStyle(cell).backgroundColor;
+            if (
+              bg &&
+              bg !== "rgba(0, 0, 0, 0)" &&
+              bg !== "transparent" &&
+              bg !== "rgba(255, 255, 255, 0)"
+            ) {
+              return true;
+            }
           }
-        }
-        return false;
+          return false;
+        },
       },
-    });
+    );
 
-    await capturePage(page, `${url}/prompts`, path.join(assetsDir, "ui-prompts.png"), {
-      waitForSelector: ".card",
-    });
-    await capturePage(page, `${url}/profiles`, path.join(assetsDir, "ui-profiles.png"), {
-      waitForSelector: ".card",
-    });
-    await capturePage(page, `${url}/stats`, path.join(assetsDir, "ui-stats.png"), {
-      waitForSelector: "canvas",
-    });
-    await capturePage(page, `${url}/settings`, path.join(assetsDir, "ui-settings.png"), {
-      waitForSelector: ".card",
-    });
+    await capturePage(
+      page,
+      `${url}/prompts`,
+      path.join(assetsDir, "ui-prompts.png"),
+      {
+        waitForSelector: ".card",
+      },
+    );
+    await capturePage(
+      page,
+      `${url}/profiles`,
+      path.join(assetsDir, "ui-profiles.png"),
+      {
+        waitForSelector: ".card",
+      },
+    );
+    await capturePage(
+      page,
+      `${url}/stats`,
+      path.join(assetsDir, "ui-stats.png"),
+      {
+        waitForSelector: "canvas",
+      },
+    );
+    await capturePage(
+      page,
+      `${url}/settings`,
+      path.join(assetsDir, "ui-settings.png"),
+      {
+        waitForSelector: ".card",
+      },
+    );
 
     // Pick a stable model + prompt for Evaluate screenshot.
     await capturePage(
@@ -136,7 +183,7 @@ async function main() {
             await p.waitForTimeout(150);
           }
         },
-      }
+      },
     );
   } finally {
     await context.close();

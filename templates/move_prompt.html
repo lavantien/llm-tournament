@@ -1,58 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html data-theme="coffee">
-<head>
+  <head>
     <title>Move Prompt</title>
-    <link rel="stylesheet" href="/templates/output.css">
+    <link rel="stylesheet" href="/templates/output.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-</head>
-<body>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        <main class="flex justify-center items-start flex-1">
-            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
-                <div class="card-body">
-                    <h1 class="card-title text-center">Move Prompt</h1>
-                    <form action="/move_prompt" method="post" class="text-center">
-                        <input type="hidden" name="index" value="{{.Index}}">
-                        <select name="new_index" class="select select-bordered">
-                            {{range $i, $p := .Prompts}}
-                                {{if or (eq $p.Profile $.SourceProfile)
-                                        (and (gt $i 0) (eq (index $.Prompts (sub $i 1)).Profile $.SourceProfile))
-                                        (and (lt $i (sub (len $.Prompts) 1)) (eq (index $.Prompts (add $i 1)).Profile $.SourceProfile))}}
-                                    <option value="{{$i}}" {{if eq $i $.Index}}selected{{end}}>{{inc $i}}</option>
-                                {{end}}
-                            {{end}}
-                        </select>
-                        <button type="submit" class="btn btn-primary">Confirm</button>
-                        <button type="submit" form="cancel-form" class="btn btn-ghost">Cancel</button>
-                    </form>
-                    <p class="text-center text-sm">Only showing positions that maintain profile group contiguity</p>
-                    <form id="cancel-form" action="/prompts" method="get" class="text-center"></form>
-                    <p class="text-center">Select new position for prompt:</p>
-                    <div id="preview" class="prose text-base-content text-left">
-                        {{.Prompt | markdown}}
-                    </div>
-                    <script>
-                        const preview = document.getElementById('preview');
-                        const initialMarkdownText = `{{.Prompt}}`;
-                        preview.innerHTML = marked.parse(initialMarkdownText);
-                    </script>
-                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
-                    </div>
-                </div>
+      <main class="flex justify-center items-start flex-1">
+        <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+          <div class="card-body">
+            <h1 class="card-title text-center">Move Prompt</h1>
+            <form action="/move_prompt" method="post" class="text-center">
+              <input type="hidden" name="index" value="{{.Index}}" />
+              <select name="new_index" class="select select-bordered">
+                {{range $i, $p := .Prompts}} {{if or (eq $p.Profile
+                $.SourceProfile) (and (gt $i 0) (eq (index $.Prompts (sub $i
+                1)).Profile $.SourceProfile)) (and (lt $i (sub (len $.Prompts)
+                1)) (eq (index $.Prompts (add $i 1)).Profile $.SourceProfile))}}
+                <option value="{{$i}}" {{if eq $i $.Index}}selected{{end}}>
+                  {{inc $i}}
+                </option>
+                {{end}} {{end}}
+              </select>
+              <button type="submit" class="btn btn-primary">Confirm</button>
+              <button type="submit" form="cancel-form" class="btn btn-ghost">
+                Cancel
+              </button>
+            </form>
+            <p class="text-center text-sm">
+              Only showing positions that maintain profile group contiguity
+            </p>
+            <form
+              id="cancel-form"
+              action="/prompts"
+              method="get"
+              class="text-center"
+            ></form>
+            <p class="text-center">Select new position for prompt:</p>
+            <div id="preview" class="prose text-base-content text-left">
+              {{.Prompt | markdown}}
             </div>
-        </main>
+            <script>
+              const preview = document.getElementById("preview");
+              const initialMarkdownText = `{{.Prompt}}`;
+              preview.innerHTML = marked.parse(initialMarkdownText);
+            </script>
+            <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+              <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+              <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
     <script>
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

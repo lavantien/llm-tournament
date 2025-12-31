@@ -1,198 +1,197 @@
 <!doctype html>
 <html data-theme="coffee">
-
-<head>
+  <head>
     <title>Model Statistics</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="/templates/score-utils.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const scoreData = {{.TotalScores | json}};
-            const models = Object.keys(scoreData);
-            
-            console.log("Stats page data:", scoreData);
+      document.addEventListener('DOMContentLoaded', function () {
+          const scoreData = {{.TotalScores | json}};
+          const models = Object.keys(scoreData);
 
-            let modelsData = [];
-            for (const model of models) {
-                modelsData.push({
-                    name: model,
-                    totalScore: scoreData[model].TotalScore,
-                    count20: scoreData[model].Count20 * 20,
-                    count40: scoreData[model].Count40 * 40,
-                    count60: scoreData[model].Count60 * 60,
-                    count80: scoreData[model].Count80 * 80,
-                    count100: scoreData[model].Count100 * 100
-                });
-            }
+          console.log("Stats page data:", scoreData);
 
-            modelsData.sort((a, b) => b.totalScore - a.totalScore);
+          let modelsData = [];
+          for (const model of models) {
+              modelsData.push({
+                  name: model,
+                  totalScore: scoreData[model].TotalScore,
+                  count20: scoreData[model].Count20 * 20,
+                  count40: scoreData[model].Count40 * 40,
+                  count60: scoreData[model].Count60 * 60,
+                  count80: scoreData[model].Count80 * 80,
+                  count100: scoreData[model].Count100 * 100
+              });
+          }
 
-            const sortedModels = modelsData.map(item => item.name);
-            const sortedCount20 = modelsData.map(item => item.count20);
-            const sortedCount40 = modelsData.map(item => item.count40);
-            const sortedCount60 = modelsData.map(item => item.count60);
-            const sortedCount80 = modelsData.map(item => item.count80);
-            const sortedCount100 = modelsData.map(item => item.count100);
+          modelsData.sort((a, b) => b.totalScore - a.totalScore);
 
-            console.log("Available score colors:");
-            SCORE_VALUES.forEach(score => {
-                console.log(`${score}: ${getScoreColor(score)}`);
-            });
-            
-            const datasets = SCORE_VALUES.map(score => {
-                const bgColor = getScoreColor(score);
-                
-                return {
-                    label: `${getScoreLabel(score)} (${score} points)`,
-                    data: modelsData.map(item => item[`count${score}`] || 0),
-                    backgroundColor: bgColor,
-                    borderWidth: 1
-                };
-            });
-            
-            const data = {
-                labels: sortedModels,
-                datasets: datasets
-            };
+          const sortedModels = modelsData.map(item => item.name);
+          const sortedCount20 = modelsData.map(item => item.count20);
+          const sortedCount40 = modelsData.map(item => item.count40);
+          const sortedCount60 = modelsData.map(item => item.count60);
+          const sortedCount80 = modelsData.map(item => item.count80);
+          const sortedCount100 = modelsData.map(item => item.count100);
 
-            const config = {
-                type: 'bar',
-                data: data,
-                options: {
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Total Scores by Model'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    const percentage = context.parsed.y / (modelsData.find(m => m.name === context.chart.data.labels[context.dataIndex])?.totalScore || 1) * 100;
-                                    return `${label}: ${value} points (${percentage.toFixed(1)}%)`;
-                                }
-                            }
-                        },
-                        legend: {
-                            labels: {
-                                generateLabels: (chart) => {
-                                    const datasets = chart.data.datasets;
-                                    return datasets.map((dataset, i) => {
-                                        return {
-                                            text: dataset.label,
-                                            fillStyle: dataset.backgroundColor,
-                                            strokeStyle: dataset.backgroundColor,
-                                            lineWidth: 0,
-                                            hidden: !chart.isDatasetVisible(i),
-                                            index: i
-                                        };
-                                    });
-                                }
-                            }
-                        }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            stacked: true,
-                            ticks: {
-                                autoSkip: false,
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Total Score'
-                            }
-                        }
-                    }
-                }
-            };
+          console.log("Available score colors:");
+          SCORE_VALUES.forEach(score => {
+              console.log(`${score}: ${getScoreColor(score)}`);
+          });
 
-            new Chart(document.getElementById('totalScoresChart'), config);
-        });
+          const datasets = SCORE_VALUES.map(score => {
+              const bgColor = getScoreColor(score);
 
-        
-        function getTierClass(score) {
-            const maxScore = {{ .MaxScore }};
-            const thresholds = {
-                transcendental: Math.floor(maxScore * 11 / 12),
-                cosmic: Math.floor(maxScore * 10 / 12),
-                divine: Math.floor(maxScore * 9 / 12),
-                celestial: Math.floor(maxScore * 8 / 12),
-                ascendant: Math.floor(maxScore * 7 / 12),
-                ethereal: Math.floor(maxScore * 6 / 12),
-                mystic: Math.floor(maxScore * 5 / 12),
-                astral: Math.floor(maxScore * 4 / 12),
-                spiritual: Math.floor(maxScore * 3 / 12),
-                primal: Math.floor(maxScore * 2 / 12),
-                mortal: Math.floor(maxScore * 1 / 12),
-            };
+              return {
+                  label: `${getScoreLabel(score)} (${score} points)`,
+                  data: modelsData.map(item => item[`count${score}`] || 0),
+                  backgroundColor: bgColor,
+                  borderWidth: 1
+              };
+          });
 
-            if (score >= thresholds.transcendental) return 'transcendental';
-            if (score >= thresholds.cosmic) return 'cosmic';
-            if (score >= thresholds.divine) return 'divine';
-            if (score >= thresholds.celestial) return 'celestial';
-            if (score >= thresholds.ascendant) return 'ascendant';
-            if (score >= thresholds.ethereal) return 'ethereal';
-            if (score >= thresholds.mystic) return 'mystic';
-            if (score >= thresholds.astral) return 'astral';
-            if (score >= thresholds.spiritual) return 'spiritual';
-            if (score >= thresholds.primal) return 'primal';
-            if (score >= thresholds.mortal) return 'mortal';
-            return 'primordial';
-        }
+          const data = {
+              labels: sortedModels,
+              datasets: datasets
+          };
+
+          const config = {
+              type: 'bar',
+              data: data,
+              options: {
+                  plugins: {
+                      title: {
+                          display: true,
+                          text: 'Total Scores by Model'
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: (context) => {
+                                  const label = context.dataset.label || '';
+                                  const value = context.parsed.y;
+                                  const percentage = context.parsed.y / (modelsData.find(m => m.name === context.chart.data.labels[context.dataIndex])?.totalScore || 1) * 100;
+                                  return `${label}: ${value} points (${percentage.toFixed(1)}%)`;
+                              }
+                          }
+                      },
+                      legend: {
+                          labels: {
+                              generateLabels: (chart) => {
+                                  const datasets = chart.data.datasets;
+                                  return datasets.map((dataset, i) => {
+                                      return {
+                                          text: dataset.label,
+                                          fillStyle: dataset.backgroundColor,
+                                          strokeStyle: dataset.backgroundColor,
+                                          lineWidth: 0,
+                                          hidden: !chart.isDatasetVisible(i),
+                                          index: i
+                                      };
+                                  });
+                              }
+                          }
+                      }
+                  },
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                      x: {
+                          stacked: true,
+                          ticks: {
+                              autoSkip: false,
+                              maxRotation: 45,
+                              minRotation: 45
+                          }
+                      },
+                      y: {
+                          stacked: true,
+                          beginAtZero: true,
+                          title: {
+                              display: true,
+                              text: 'Total Score'
+                          }
+                      }
+                  }
+              }
+          };
+
+          new Chart(document.getElementById('totalScoresChart'), config);
+      });
+
+
+      function getTierClass(score) {
+          const maxScore = {{ .MaxScore }};
+          const thresholds = {
+              transcendental: Math.floor(maxScore * 11 / 12),
+              cosmic: Math.floor(maxScore * 10 / 12),
+              divine: Math.floor(maxScore * 9 / 12),
+              celestial: Math.floor(maxScore * 8 / 12),
+              ascendant: Math.floor(maxScore * 7 / 12),
+              ethereal: Math.floor(maxScore * 6 / 12),
+              mystic: Math.floor(maxScore * 5 / 12),
+              astral: Math.floor(maxScore * 4 / 12),
+              spiritual: Math.floor(maxScore * 3 / 12),
+              primal: Math.floor(maxScore * 2 / 12),
+              mortal: Math.floor(maxScore * 1 / 12),
+          };
+
+          if (score >= thresholds.transcendental) return 'transcendental';
+          if (score >= thresholds.cosmic) return 'cosmic';
+          if (score >= thresholds.divine) return 'divine';
+          if (score >= thresholds.celestial) return 'celestial';
+          if (score >= thresholds.ascendant) return 'ascendant';
+          if (score >= thresholds.ethereal) return 'ethereal';
+          if (score >= thresholds.mystic) return 'mystic';
+          if (score >= thresholds.astral) return 'astral';
+          if (score >= thresholds.spiritual) return 'spiritual';
+          if (score >= thresholds.primal) return 'primal';
+          if (score >= thresholds.mortal) return 'mortal';
+          return 'primordial';
+      }
     </script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        {{template "nav" .}}
-        <main class="flex-1 flex flex-col gap-3 overflow-auto">
-            <div class="card bg-base-100 shadow-lg p-6">
-        <h1 class="text-2xl font-bold mb-4">Model Performance Statistics</h1>
+      {{template "nav" .}}
+      <main class="flex-1 flex flex-col gap-3 overflow-auto">
+        <div class="card bg-base-100 shadow-lg p-6">
+          <h1 class="text-2xl font-bold mb-4">Model Performance Statistics</h1>
 
-        <div class="mb-8">
+          <div class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Tier List</h2>
             <div class="overflow-x-auto">
-                <table class="table table-zebra">
-                    <thead>
-                        <tr>
-                            <th>Tier</th>
-                            <th>Score Range</th>
-                            <th>Models</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{range $tier := .OrderedTiers}} {{with $models := index $.Tiers $tier}}
-                        <tr>
-                            <td class="font-bold">{{$tier | formatTierName}}</td>
-                            <td class="italic">{{index $.TierRanges $tier}}</td>
-                            <td>{{join $models " --- "}}</td>
-                        </tr>
-                        {{end}} {{end}}
-                    </tbody>
-                </table>
+              <table class="table table-zebra">
+                <thead>
+                  <tr>
+                    <th>Tier</th>
+                    <th>Score Range</th>
+                    <th>Models</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{range $tier := .OrderedTiers}} {{with $models := index
+                  $.Tiers $tier}}
+                  <tr>
+                    <td class="font-bold">{{$tier | formatTierName}}</td>
+                    <td class="italic">{{index $.TierRanges $tier}}</td>
+                    <td>{{join $models " --- "}}</td>
+                  </tr>
+                  {{end}} {{end}}
+                </tbody>
+              </table>
             </div>
-        </div>
+          </div>
 
-        <div class="card bg-base-200 shadow-md p-4">
+          <div class="card bg-base-200 shadow-md p-4">
             <h2 class="text-xl font-semibold mb-4">Total Scores</h2>
             <div class="h-96">
-                <canvas id="totalScoresChart"></canvas>
+              <canvas id="totalScoresChart"></canvas>
             </div>
+          </div>
         </div>
-            </div>
-        </main>
+      </main>
     </div>
-</body>
-
+  </body>
 </html>

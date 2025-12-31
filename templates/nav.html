@@ -1,42 +1,42 @@
 {{define "nav"}}
-<header class="card bg-base-100 shadow-lg flex justify-between items-center gap-3 p-4 mb-3">
-  <div class="flex items-center gap-3 flex-shrink-0">
+<header class="card bg-base-100 shadow-lg flex flex-row justify-between items-center gap-2 p-2 mb-3 flex-nowrap">
+  <div class="flex items-center gap-2 flex-shrink-0">
     <img
       src="/assets/logo.webp"
       alt="LLM Tournament Logo"
-      class="w-[38px] h-[38px] rounded-[10px] border border-base-content/12"
+      class="w-[32px] h-[32px] rounded-[8px] border border-base-content/12"
     />
-    <div class="flex items-center" style="line-height: 1.1;">
-      <div class="font-bold tracking-wide">LLM Tournament</div>
-      <div class="font-mono text-xs text-base-content/60 ml-2">offline • ssr • sqlite</div>
+    <div class="flex flex-col" style="line-height: 1.1;">
+      <div class="font-bold text-sm">LLM Tournament</div>
+      <div class="font-mono text-[10px] text-base-content/60">offline • ssr • sqlite</div>
     </div>
   </div>
 
-  <ul class="menu bg-transparent menu-horizontal flex-row px-4 flex-1 justify-center">
-    <li><a class="{{if eqs .PageName "Results"}}active{{end}}" href="/results">Results</a></li>
-    <li><a class="{{if eqs .PageName "Statistics"}}active{{end}}" href="/stats">Stats</a></li>
-    <li><a class="{{if eqs .PageName "Prompts"}}active{{end}}" href="/prompts">Prompts</a></li>
-    <li><a class="{{if eqs .PageName "Profiles"}}active{{end}}" href="/profiles">Profiles</a></li>
-    <li><a class="{{if eqs .PageName "Evaluate"}}active{{end}}" href="/evaluate">Evaluate</a></li>
-    <li><a class="{{if eqs .PageName "Settings"}}active{{end}}" href="/settings">Settings</a></li>
+  <ul class="menu bg-transparent menu-horizontal flex-row px-2 flex-1 justify-center gap-1">
+    <li><a class="{{if eqs .PageName "Results"}}active{{end}}" href="/results" class="text-xs">Results</a></li>
+    <li><a class="{{if eqs .PageName "Statistics"}}active{{end}}" href="/stats" class="text-xs">Stats</a></li>
+    <li><a class="{{if eqs .PageName "Prompts"}}active{{end}}" href="/prompts" class="text-xs">Prompts</a></li>
+    <li><a class="{{if eqs .PageName "Profiles"}}active{{end}}" href="/profiles" class="text-xs">Profiles</a></li>
+    <li><a class="{{if eqs .PageName "Evaluate"}}active{{end}}" href="/evaluate" class="text-xs">Evaluate</a></li>
+    <li><a class="{{if eqs .PageName "Settings"}}active{{end}}" href="/settings" class="text-xs">Settings</a></li>
   </ul>
 
-  <div class="flex items-center gap-2 flex-shrink-0">
-    <span class="font-mono text-xs text-base-content/60">SUITE</span>
+  <div class="flex items-center gap-1 flex-shrink-0 flex-nowrap">
+    <span class="font-mono text-[10px] text-base-content/60">SUITE</span>
     <form action="/prompts/suites/select" method="post" class="flex items-center gap-1">
       <input type="hidden" name="return_to" value="{{.CurrentPath}}" />
-      <select name="suite_name" class="select select-bordered select-xs px-2 py-1 rounded-full">
+      <select name="suite_name" class="select select-bordered select-xs px-1 py-0.5 rounded-full text-[10px]">
         {{range .Suites}}
         <option value="{{.}}" {{if eq . $.CurrentSuite}}selected{{end}}>{{.}}</option>
         {{end}}
       </select>
-      <button type="submit" class="btn btn-primary btn-xs rounded-full">Switch</button>
+      <button type="submit" class="btn btn-primary btn-xs rounded-full text-[10px] h-6 min-h-6 px-2">Switch</button>
     </form>
-    <a href="/prompts/suites/new?return_to={{.CurrentPath}}" class="btn btn-primary btn-xs rounded-full no-underline">New</a>
-    <a href="/prompts/suites/edit?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn btn-info btn-xs rounded-full no-underline">Edit</a>
-    <a href="/prompts/suites/delete?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn btn-error btn-xs rounded-full no-underline">Delete</a>
-    <span class="font-mono text-xs text-base-content/60 ml-2">PAGE</span>
-    <span class="font-mono px-2 py-1 rounded-full border border-base-content/14 bg-black/24 text-xs">{{.PageName}}</span>
+    <a href="/prompts/suites/new?return_to={{.CurrentPath}}" class="btn btn-primary btn-xs rounded-full no-underline text-[10px] h-6 min-h-6 px-2">New</a>
+    <a href="/prompts/suites/edit?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn btn-info btn-xs rounded-full no-underline text-[10px] h-6 min-h-6 px-2">Edit</a>
+    <a href="/prompts/suites/delete?suite_name={{.CurrentSuite}}&return_to={{.CurrentPath}}" class="btn btn-error btn-xs rounded-full no-underline text-[10px] h-6 min-h-6 px-2">Delete</a>
+    <span class="font-mono text-[10px] text-base-content/60 ml-1">PAGE</span>
+    <span class="font-mono px-1 py-0.5 rounded-full border border-base-content/14 bg-black/24 text-[10px]">{{.PageName}}</span>
   </div>
 </header>
 {{end}}

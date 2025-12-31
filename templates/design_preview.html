@@ -18,25 +18,52 @@
   </head>
   <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-      <header class="card bg-base-100 shadow-lg mb-3 flex items-center justify-between p-3">
+      <header
+        class="card bg-base-100 shadow-lg mb-3 flex items-center justify-between p-3"
+      >
         <div class="flex items-center gap-3">
-          <img src="/assets/logo.webp" alt="LLM Tournament Logo" class="w-10 h-10 rounded-lg border border-base-content/10" />
+          <img
+            src="/assets/logo.webp"
+            alt="LLM Tournament Logo"
+            class="w-10 h-10 rounded-lg border border-base-content/10"
+          />
           <div>
             <div class="font-bold tracking-wide">LLM Tournament Arena</div>
-            <div class="text-xs font-mono text-base-content/60">offline • high-density • ssr</div>
+            <div class="text-xs font-mono text-base-content/60">
+              offline • high-density • ssr
+            </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 bg-base-200 rounded-full px-4 py-2 border border-base-content/10" aria-label="Search">
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" class="opacity-80">
-            <path fill="currentColor" d="M10 18a8 8 0 1 1 5.293-14.293A8 8 0 0 1 10 18m0-2a6 6 0 1 0-4.243-10.243A6 6 0 0 0 10 16m9.707 4.293L15.4 16l1.4-1.4l4.307 4.307z" />
+        <div
+          class="flex items-center gap-2 bg-base-200 rounded-full px-4 py-2 border border-base-content/10"
+          aria-label="Search"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            class="opacity-80"
+          >
+            <path
+              fill="currentColor"
+              d="M10 18a8 8 0 1 1 5.293-14.293A8 8 0 0 1 10 18m0-2a6 6 0 1 0-4.243-10.243A6 6 0 0 0 10 16m9.707 4.293L15.4 16l1.4-1.4l4.307 4.307z"
+            />
           </svg>
-          <input placeholder="Search models, prompts, suites, job IDs…" value="" class="bg-transparent border-none outline-none text-sm w-full" />
+          <input
+            placeholder="Search models, prompts, suites, job IDs…"
+            value=""
+            class="bg-transparent border-none outline-none text-sm w-full"
+          />
           <span class="kbd kbd-xs">CTRL K</span>
         </div>
 
         <div class="flex items-center gap-2">
-          <div class="badge badge-info badge-outline" title="WebSocket status (mock)">
+          <div
+            class="badge badge-info badge-outline"
+            title="WebSocket status (mock)"
+          >
             <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
             <span class="ml-1">WS: CONNECTED</span>
           </div>
@@ -48,31 +75,53 @@
 
       <div class="flex gap-3">
         <aside class="w-[280px] flex flex-col gap-3">
-          <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest px-2 mt-2">Navigation</div>
-          <a class="btn btn-primary justify-between" href="#" aria-current="page">
-            <span>Results</span><span class="font-mono opacity-60 text-xs">LIVE</span>
+          <div
+            class="text-xs font-mono text-base-content/50 uppercase tracking-widest px-2 mt-2"
+          >
+            Navigation
+          </div>
+          <a
+            class="btn btn-primary justify-between"
+            href="#"
+            aria-current="page"
+          >
+            <span>Results</span
+            ><span class="font-mono opacity-60 text-xs">LIVE</span>
           </a>
           <a class="btn btn-ghost justify-between" href="#">
-            <span>Stats</span><span class="font-mono opacity-60 text-xs">CHART</span>
+            <span>Stats</span
+            ><span class="font-mono opacity-60 text-xs">CHART</span>
           </a>
           <a class="btn btn-ghost justify-between" href="#">
-            <span>Prompts</span><span class="font-mono opacity-60 text-xs">CRUD</span>
+            <span>Prompts</span
+            ><span class="font-mono opacity-60 text-xs">CRUD</span>
           </a>
           <a class="btn btn-ghost justify-between" href="#">
-            <span>Profiles</span><span class="font-mono opacity-60 text-xs">WS</span>
+            <span>Profiles</span
+            ><span class="font-mono opacity-60 text-xs">WS</span>
           </a>
 
-          <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest px-2 mt-4">Hotkeys</div>
+          <div
+            class="text-xs font-mono text-base-content/50 uppercase tracking-widest px-2 mt-4"
+          >
+            Hotkeys
+          </div>
           <div class="card bg-base-200 shadow-sm p-3">
-            <div class="flex justify-between gap-2 text-sm font-mono text-base-content/60 pb-2 border-b border-base-content/10">
+            <div
+              class="flex justify-between gap-2 text-sm font-mono text-base-content/60 pb-2 border-b border-base-content/10"
+            >
               <span>CTRL</span><span>+ <b>K</b></span>
               <span class="opacity-65 text-right">Command Palette</span>
             </div>
-            <div class="flex justify-between gap-2 text-sm font-mono text-base-content/60 py-2 border-b border-base-content/10">
+            <div
+              class="flex justify-between gap-2 text-sm font-mono text-base-content/60 py-2 border-b border-base-content/10"
+            >
               <span>CTRL</span><span>+ <b>ENTER</b></span>
               <span class="opacity-65 text-right">Run Evaluation</span>
             </div>
-            <div class="flex justify-between gap-2 text-sm font-mono text-base-content/60 pt-2">
+            <div
+              class="flex justify-between gap-2 text-sm font-mono text-base-content/60 pt-2"
+            >
               <span>ALT</span><span>+ <b>1…4</b></span>
               <span class="opacity-65 text-right">Switch Tabs</span>
             </div>
@@ -83,56 +132,89 @@
           <section class="card bg-base-100 shadow-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-base font-semibold tracking-wide">Tournament Telemetry</h2>
-                <p class="text-xs font-mono text-base-content/60 mt-1">suite: "arena-v1" • judges: 3 • queue: 2 jobs</p>
+                <h2 class="text-base font-semibold tracking-wide">
+                  Tournament Telemetry
+                </h2>
+                <p class="text-xs font-mono text-base-content/60 mt-1">
+                  suite: "arena-v1" • judges: 3 • queue: 2 jobs
+                </p>
               </div>
               <div class="flex gap-2">
-                <span class="badge badge-warning"><b>IN PROGRESS</b> • 63%</span>
+                <span class="badge badge-warning"
+                  ><b>IN PROGRESS</b> • 63%</span
+                >
                 <span class="badge badge-outline"><b>$0.05</b> • last run</span>
               </div>
             </div>
             <div class="grid grid-cols-4 gap-2 mt-4">
               <div class="card bg-base-200 shadow-sm p-3">
-                <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest">Models</div>
+                <div
+                  class="text-xs font-mono text-base-content/50 uppercase tracking-widest"
+                >
+                  Models
+                </div>
                 <div class="mt-2 flex items-baseline justify-between">
                   <strong class="font-mono text-lg">12</strong>
                   <span class="text-xs text-base-content/60">active</span>
                 </div>
               </div>
               <div class="card bg-base-200 shadow-sm p-3">
-                <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest">Prompts</div>
+                <div
+                  class="text-xs font-mono text-base-content/50 uppercase tracking-widest"
+                >
+                  Prompts
+                </div>
                 <div class="mt-2 flex items-baseline justify-between">
                   <strong class="font-mono text-lg">48</strong>
                   <span class="text-xs text-base-content/60">in suite</span>
                 </div>
               </div>
               <div class="card bg-base-200 shadow-sm p-3">
-                <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest">Pass Rate</div>
+                <div
+                  class="text-xs font-mono text-base-content/50 uppercase tracking-widest"
+                >
+                  Pass Rate
+                </div>
                 <div class="mt-2 flex items-baseline justify-between">
                   <strong class="font-mono text-lg">71%</strong>
                   <span class="text-xs text-base-content/60">rolling</span>
                 </div>
               </div>
               <div class="card bg-base-200 shadow-sm p-3">
-                <div class="text-xs font-mono text-base-content/50 uppercase tracking-widest">WS Clients</div>
+                <div
+                  class="text-xs font-mono text-base-content/50 uppercase tracking-widest"
+                >
+                  WS Clients
+                </div>
                 <div class="mt-2 flex items-baseline justify-between">
                   <strong class="font-mono text-lg">1</strong>
                   <span class="text-xs text-base-content/60">connected</span>
                 </div>
               </div>
             </div>
-            <div class="flex justify-between gap-2 mt-4 text-xs font-mono text-base-content/40">
+            <div
+              class="flex justify-between gap-2 mt-4 text-xs font-mono text-base-content/40"
+            >
               <span>Last broadcast: 00:00:03 ago</span>
               <span>Density mode: ultra</span>
-              <span>Open at <span class="font-mono">/templates/design_preview.html</span></span>
+              <span
+                >Open at
+                <span class="font-mono"
+                  >/templates/design_preview.html</span
+                ></span
+              >
             </div>
           </section>
 
           <section class="card bg-base-100 shadow-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-base font-semibold tracking-wide">Leaderboard (Dense Table)</h2>
-                <p class="text-xs font-mono text-base-content/60 mt-1">sorted by total score • hover rows</p>
+                <h2 class="text-base font-semibold tracking-wide">
+                  Leaderboard (Dense Table)
+                </h2>
+                <p class="text-xs font-mono text-base-content/60 mt-1">
+                  sorted by total score • hover rows
+                </p>
               </div>
               <button class="btn btn-ghost">Filter</button>
             </div>
@@ -154,11 +236,19 @@
                       <span class="text-base-content/40">•</span>
                       <span class="text-base-content/60">local</span>
                     </td>
-                    <td><span class="badge badge-primary badge-outline"><b>DIVINE</b></span></td>
+                    <td>
+                      <span class="badge badge-primary badge-outline"
+                        ><b>DIVINE</b></span
+                      >
+                    </td>
                     <td class="text-right font-mono">2870</td>
                     <td class="text-right font-mono">78%</td>
                     <td class="text-left">
-                      <progress class="progress progress-primary w-full" value="82" max="100"></progress>
+                      <progress
+                        class="progress progress-primary w-full"
+                        value="82"
+                        max="100"
+                      ></progress>
                     </td>
                   </tr>
                   <tr>
@@ -167,11 +257,19 @@
                       <span class="text-base-content/40">•</span>
                       <span class="text-base-content/60">judge</span>
                     </td>
-                    <td><span class="badge badge-info badge-outline"><b>CELESTIAL</b></span></td>
+                    <td>
+                      <span class="badge badge-info badge-outline"
+                        ><b>CELESTIAL</b></span
+                      >
+                    </td>
                     <td class="text-right font-mono">2450</td>
                     <td class="text-right font-mono">73%</td>
                     <td class="text-left">
-                      <progress class="progress progress-info w-full" value="74" max="100"></progress>
+                      <progress
+                        class="progress progress-info w-full"
+                        value="74"
+                        max="100"
+                      ></progress>
                     </td>
                   </tr>
                   <tr>
@@ -180,11 +278,19 @@
                       <span class="text-base-content/40">•</span>
                       <span class="text-base-content/60">judge</span>
                     </td>
-                    <td><span class="badge badge-secondary badge-outline"><b>ASCENDANT</b></span></td>
+                    <td>
+                      <span class="badge badge-secondary badge-outline"
+                        ><b>ASCENDANT</b></span
+                      >
+                    </td>
                     <td class="text-right font-mono">2190</td>
                     <td class="text-right font-mono">69%</td>
                     <td class="text-left">
-                      <progress class="progress progress-secondary w-full" value="66" max="100"></progress>
+                      <progress
+                        class="progress progress-secondary w-full"
+                        value="66"
+                        max="100"
+                      ></progress>
                     </td>
                   </tr>
                   <tr>
@@ -193,11 +299,19 @@
                       <span class="text-base-content/40">•</span>
                       <span class="text-base-content/60">cpu</span>
                     </td>
-                    <td><span class="badge badge-warning badge-outline"><b>MORTAL</b></span></td>
+                    <td>
+                      <span class="badge badge-warning badge-outline"
+                        ><b>MORTAL</b></span
+                      >
+                    </td>
                     <td class="text-right font-mono">480</td>
                     <td class="text-right font-mono">41%</td>
                     <td class="text-left">
-                      <progress class="progress progress-warning w-full" value="38" max="100"></progress>
+                      <progress
+                        class="progress progress-warning w-full"
+                        value="38"
+                        max="100"
+                      ></progress>
                     </td>
                   </tr>
                   <tr>
@@ -206,11 +320,19 @@
                       <span class="text-base-content/40">•</span>
                       <span class="text-base-content/60">sandbox</span>
                     </td>
-                    <td><span class="badge badge-error badge-outline"><b>PRIMORDIAL</b></span></td>
+                    <td>
+                      <span class="badge badge-error badge-outline"
+                        ><b>PRIMORDIAL</b></span
+                      >
+                    </td>
                     <td class="text-right font-mono">210</td>
                     <td class="text-right font-mono">12%</td>
                     <td class="text-left">
-                      <progress class="progress progress-error w-full" value="10" max="100"></progress>
+                      <progress
+                        class="progress progress-error w-full"
+                        value="10"
+                        max="100"
+                      ></progress>
                     </td>
                   </tr>
                 </tbody>
@@ -221,8 +343,12 @@
           <section class="card bg-base-100 shadow-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-base font-semibold tracking-wide">Charts (Dark Neon)</h2>
-                <p class="text-xs font-mono text-base-content/60 mt-1">Chart.js themed for glass surfaces</p>
+                <h2 class="text-base font-semibold tracking-wide">
+                  Charts (Dark Neon)
+                </h2>
+                <p class="text-xs font-mono text-base-content/60 mt-1">
+                  Chart.js themed for glass surfaces
+                </p>
               </div>
               <span class="badge badge-outline"><b>48</b> prompts</span>
             </div>
@@ -234,8 +360,12 @@
           <section class="card bg-base-100 shadow-lg p-4">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-base font-semibold tracking-wide">Consensus Matrix</h2>
-                <p class="text-xs font-mono text-base-content/60 mt-1">judge verdicts + confidence • expandable reasoning</p>
+                <h2 class="text-base font-semibold tracking-wide">
+                  Consensus Matrix
+                </h2>
+                <p class="text-xs font-mono text-base-content/60 mt-1">
+                  judge verdicts + confidence • expandable reasoning
+                </p>
               </div>
               <button class="btn btn-primary" id="toggleLog">Toggle Log</button>
             </div>
@@ -244,38 +374,67 @@
                 <div class="flex flex-col gap-2">
                   <div class="flex justify-between items-center">
                     <span class="font-mono">Claude</span>
-                    <span class="badge badge-success badge-outline"><b>PASS</b> • 0.86</span>
+                    <span class="badge badge-success badge-outline"
+                      ><b>PASS</b> • 0.86</span
+                    >
                   </div>
-                  <progress class="progress progress-success w-full" value="86" max="100"></progress>
+                  <progress
+                    class="progress progress-success w-full"
+                    value="86"
+                    max="100"
+                  ></progress>
                   <div class="flex justify-between items-center">
                     <span class="font-mono">GPT</span>
-                    <span class="badge badge-success badge-outline"><b>PASS</b> • 0.79</span>
+                    <span class="badge badge-success badge-outline"
+                      ><b>PASS</b> • 0.79</span
+                    >
                   </div>
-                  <progress class="progress progress-success w-full" value="79" max="100"></progress>
+                  <progress
+                    class="progress progress-success w-full"
+                    value="79"
+                    max="100"
+                  ></progress>
                   <div class="flex justify-between items-center">
                     <span class="font-mono">Gemini</span>
-                    <span class="badge badge-warning badge-outline"><b>EDGE</b> • 0.61</span>
+                    <span class="badge badge-warning badge-outline"
+                      ><b>EDGE</b> • 0.61</span
+                    >
                   </div>
-                  <progress class="progress progress-warning w-full" value="61" max="100"></progress>
+                  <progress
+                    class="progress progress-warning w-full"
+                    value="61"
+                    max="100"
+                  ></progress>
                 </div>
               </div>
 
               <div class="card bg-base-200 shadow-sm p-3">
                 <div class="flex items-center gap-2">
-                  <span class="badge badge-primary badge-outline"><b>CONSENSUS</b> • weighted median</span>
-                  <span class="badge badge-outline"><b class="font-mono">80</b> / 100</span>
+                  <span class="badge badge-primary badge-outline"
+                    ><b>CONSENSUS</b> • weighted median</span
+                  >
+                  <span class="badge badge-outline"
+                    ><b class="font-mono">80</b> / 100</span
+                  >
                 </div>
                 <div class="mt-2">
-                  <progress class="progress progress-primary w-full" value="80" max="100"></progress>
+                  <progress
+                    class="progress progress-primary w-full"
+                    value="80"
+                    max="100"
+                  ></progress>
                 </div>
                 <div class="mt-2 text-base-content/60 text-sm">
-                  Industrial glass surfaces + neon edges keep data readable while
-                  making state changes feel alive.
+                  Industrial glass surfaces + neon edges keep data readable
+                  while making state changes feel alive.
                 </div>
               </div>
             </div>
 
-            <div id="previewLog" class="card bg-base-200 shadow-sm p-3 mt-2 font-mono text-sm text-base-content/60 leading-relaxed hidden">
+            <div
+              id="previewLog"
+              class="card bg-base-200 shadow-sm p-3 mt-2 font-mono text-sm text-base-content/60 leading-relaxed hidden"
+            >
               <div class="flex gap-2 py-1 border-b border-base-content/10">
                 <span class="text-base-content/50">00:00:01</span>
                 <span>Job <b>#EVAL-1042</b> started (suite arena-v1)</span>
@@ -349,12 +508,18 @@
           scales: {
             x: {
               grid: { color: grid },
-              ticks: { color: tick, font: { family: "'JetBrains Mono', monospace" } },
+              ticks: {
+                color: tick,
+                font: { family: "'JetBrains Mono', monospace" },
+              },
             },
             y: {
               beginAtZero: true,
               grid: { color: grid },
-              ticks: { color: tick, font: { family: "'JetBrains Mono', monospace" } },
+              ticks: {
+                color: tick,
+                font: { family: "'JetBrains Mono', monospace" },
+              },
             },
           },
         },
@@ -362,7 +527,7 @@
 
       document.getElementById("toggleLog").addEventListener("click", () => {
         const el = document.getElementById("previewLog");
-        el.classList.toggle('hidden');
+        el.classList.toggle("hidden");
       });
     </script>
   </body>

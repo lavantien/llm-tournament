@@ -1,38 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html data-theme="coffee">
-<head>
+  <head>
     <title>Import Prompts</title>
-    <link rel="stylesheet" href="/templates/output.css">
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-</head>
-<body>
+    <link rel="stylesheet" href="/templates/output.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+  </head>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        <main class="flex justify-center items-start flex-1">
-            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
-                <div class="card-body">
-                    <h1 class="card-title text-center">Import Prompts</h1>
-                    <form action="/import_prompts" method="post" enctype="multipart/form-data" class="text-center">
-                        <p>Select a JSON file containing prompts to import.</p>
-                        <p>Expected format: an array of prompt objects with "text", "solution", and "profile" fields.</p>
-                        <input type="file" name="prompts_file" accept=".json" class="file-input file-input-bordered" />
-                        <button type="submit" class="btn btn-primary">Import</button>
-                    </form>
-                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
-                    </div>
-                </div>
+      <main class="flex justify-center items-start flex-1">
+        <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+          <div class="card-body">
+            <h1 class="card-title text-center">Import Prompts</h1>
+            <form
+              action="/import_prompts"
+              method="post"
+              enctype="multipart/form-data"
+              class="text-center"
+            >
+              <p>Select a JSON file containing prompts to import.</p>
+              <p>
+                Expected format: an array of prompt objects with "text",
+                "solution", and "profile" fields.
+              </p>
+              <input
+                type="file"
+                name="prompts_file"
+                accept=".json"
+                class="file-input file-input-bordered"
+              />
+              <button type="submit" class="btn btn-primary">Import</button>
+            </form>
+            <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+              <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+              <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
             </div>
-        </main>
+          </div>
+        </div>
+      </main>
     </div>
     <script>
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

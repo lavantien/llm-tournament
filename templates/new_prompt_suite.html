@@ -1,41 +1,60 @@
 <!doctype html>
 <html data-theme="coffee">
-<head>
+  <head>
     <title>New Prompt Suite</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
-</head>
-<body>
+  </head>
+  <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
-        <main class="flex justify-center items-start flex-1">
-            <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
-                <div class="card-body">
-                    <h1 class="card-title">New Prompt Suite</h1>
-                    <form action="/prompts/suites/new?return_to={{.CurrentPath}}" method="post" class="form-control">
-                        <label class="label" for="suite_name">Suite Name:</label>
-                        <input type="text" id="suite_name" name="suite_name" required class="input input-bordered" />
-                        <div class="card-actions justify-start">
-                            <button type="submit" class="btn btn-primary">Create</button>
-                            <button type="submit" form="cancel-form" class="btn btn-ghost">Cancel</button>
-                        </div>
-                    </form>
-                    <form id="cancel-form" action="{{.CurrentPath}}" method="get"></form>
-                    <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-                        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-                        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
-                    </div>
-                </div>
+      <main class="flex justify-center items-start flex-1">
+        <div class="card bg-base-100 shadow-lg w-full max-w-[1320px]">
+          <div class="card-body">
+            <h1 class="card-title">New Prompt Suite</h1>
+            <form
+              action="/prompts/suites/new?return_to={{.CurrentPath}}"
+              method="post"
+              class="form-control"
+            >
+              <label class="label" for="suite_name">Suite Name:</label>
+              <input
+                type="text"
+                id="suite_name"
+                name="suite_name"
+                required
+                class="input input-bordered"
+              />
+              <div class="card-actions justify-start">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" form="cancel-form" class="btn btn-ghost">
+                  Cancel
+                </button>
+              </div>
+            </form>
+            <form
+              id="cancel-form"
+              action="{{.CurrentPath}}"
+              method="get"
+            ></form>
+            <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+              <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+              <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
             </div>
-        </main>
+          </div>
+        </div>
+      </main>
     </div>
     <script>
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-        function scrollToBottom() {
-            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-        }
+      function scrollToBottom() {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

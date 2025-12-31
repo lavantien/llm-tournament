@@ -5,12 +5,12 @@
 // Score-related constants
 const SCORE_VALUES = [0, 20, 40, 60, 80, 100];
 const SCORE_LABELS = {
-    0: "Incorrect",
-    20: "Minimal",
-    40: "Partial",
-    60: "Mostly Correct",
-    80: "Correct",
-    100: "Perfect"
+  0: "Incorrect",
+  20: "Minimal",
+  40: "Partial",
+  60: "Mostly Correct",
+  80: "Correct",
+  100: "Perfect",
 };
 
 // Default styles
