@@ -3,6 +3,7 @@
 ## Non-Negotiables
 
 - Strict TDD is mandatory: Write failing test first (test-as-documentation, one-at-a-time, regression-proof, table-driven, test-doubles) -> minimal code to pass -> refactor -> using linters & formatters.
+- Always research the latest and up-to-date information and official documentation before implement any thing to prevent hallucinated syntax.
 - Adversarial Cooperation: Rigorously check against linters and hostile unit tests or security exploits. If complexity requires, utilize parallel Tasks, Consensus Voting, Synthetic and Fuzzy Test Case Generation with high-quality examples and high volume variations.
 - Only trust independent verification: Never claim "done" without test output and command evidence.
 - Commits & Comments: No watermarks. No `Co-Authored-By` lines. Only plain simple text, maybe with unordered dash list or numbered list, avoid em/en dashes or bolting or italicizing or emojis. For comments, always in my humble voice and stay as unconfrontational as possible and phrase most things as constructive questions.
