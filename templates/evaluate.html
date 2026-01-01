@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="/templates/score-utils.js"></script>
+    <script src="/templates/utils.js"></script>
   </head>
 
   <body>
@@ -247,6 +248,11 @@
           }
         </script>
       </main>
+
+      <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+      </div>
     </div>
   </body>
 </html>

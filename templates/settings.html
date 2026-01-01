@@ -3,6 +3,7 @@
 <head>
     <title>Settings - LLM Tournament</title>
     <link rel="stylesheet" href="/templates/output.css">
+    <script src="/templates/utils.js"></script>
 </head>
 <body>
     <div class="flex flex-col min-h-screen bg-base-200 p-3">
@@ -65,6 +66,11 @@
                 </div>
             </div>
         </main>
+
+        <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+            <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+            <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+        </div>
     </div>
 </body>
 </html>

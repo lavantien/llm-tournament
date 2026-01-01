@@ -6,6 +6,7 @@
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="/templates/score-utils.js"></script>
+    <script src="/templates/utils.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
           const scoreData = {{.TotalScores | json}};
@@ -192,6 +193,11 @@
           </div>
         </div>
       </main>
+
+      <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
+        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
+        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+      </div>
     </div>
   </body>
 </html>
