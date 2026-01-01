@@ -406,17 +406,18 @@ curl http://localhost:8001/health
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
-| Package                                          |  Coverage |
-| ------------------------------------------------ | --------: |
-| llm-tournament                                   |    100.0% |
-| llm-tournament/evaluator                         |    100.0% |
-| llm-tournament/handlers                          |     98.8% |
-| llm-tournament/integration                       |         - |
-| llm-tournament/middleware                        |    100.0% |
-| llm-tournament/templates                         |    100.0% |
-| llm-tournament/testutil                          |     99.6% |
-| llm-tournament/tools/screenshots/cmd/demo-server |    100.0% |
-| **Total**                                        | **99.8%** |
+| Package | Coverage |
+| --- | ---: |
+| llm-tournament | 100.0% |
+| llm-tournament/evaluator | 100.0% |
+| llm-tournament/handlers | 98.8% |
+| llm-tournament/integration | - |
+| llm-tournament/middleware | 100.0% |
+| llm-tournament/templates | 100.0% |
+| llm-tournament/testutil | 99.6% |
+| llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
+| **Total** | **99.8%** |
+
 
 ## Troubleshooting
 
