@@ -146,6 +146,14 @@ async function main() {
     );
     await capturePage(
       page,
+      `${url}/edit_prompt?index=0`,
+      path.join(assetsDir, "ui-edit-prompt.png"),
+      {
+        waitForSelector: ".card",
+      },
+    );
+    await capturePage(
+      page,
       `${url}/profiles`,
       path.join(assetsDir, "ui-profiles.png"),
       {
