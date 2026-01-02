@@ -100,7 +100,7 @@ verify-docs:
 	@echo "Verifying documentation enforcement..."
 	@$(CGO_PREFIX) go test -run TestDesignConceptAndPreview_ExistAndStructured -v
 	@echo "Checking README.md coverage table format..."
-	@python3 -c "import re, sys; f=open('README.md'); c=f.read(); f.close(); m=re.search(r'### Coverage.*?Package-level statement coverage from.*?\n\n\| Package \| Coverage \|\n\| --- \| ---: \|', c, re.DOTALL); sys.exit(0 if m else 1)" || (echo "ERROR: README.md Coverage section format is invalid" && exit 1)
+	@python3 -c "import re, sys; f=open('README.md'); c=f.read(); f.close(); m=re.search(r'###(?:\s+[\d.]+\s+)?Coverage.*?Package-level statement coverage from.*?\n\n\| Package \| Coverage \|\n\| --- \| ---: \|', c, re.DOTALL); sys.exit(0 if m else 1)" || (echo "ERROR: README.md Coverage section format is invalid" && exit 1)
 	@echo "Documentation verification passed!"
 
 build-css:

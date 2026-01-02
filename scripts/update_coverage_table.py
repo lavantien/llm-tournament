@@ -10,10 +10,10 @@ import os
 def get_package_coverage(packages, repo_root):
     """Run go test on each package and extract statement coverage"""
     coverage_map = {}
-    
+
     # Use NUL on Windows, /dev/null on Unix-like systems
     null_device = 'NUL' if os.name == 'nt' else '/dev/null'
-    
+
     for pkg in packages:
         try:
             # Use relative path from repo root
@@ -21,7 +21,7 @@ def get_package_coverage(packages, repo_root):
                 pkg_path = '.'
             else:
                 pkg_path = f'./{pkg}'
-            
+
             result = subprocess.run(
                 ['go', 'test', pkg_path, f'-coverprofile={null_device}'],
                 capture_output=True,
@@ -29,7 +29,7 @@ def get_package_coverage(packages, repo_root):
                 timeout=60,
                 cwd=repo_root
             )
-            
+
             # Parse coverage: "ok  llm-tournament/handlers	1.572s	coverage: 98.8% of statements"
             match = re.search(r'coverage:\s+([0-9]+\.[0-9]+)%', result.stdout)
             if match:
@@ -44,8 +44,26 @@ def get_package_coverage(packages, repo_root):
             coverage_map[pkg] = None
         except Exception:
             coverage_map[pkg] = 0.0
-    
+
     return coverage_map
+
+def get_total_coverage(repo_root, coverage_file):
+    """Get actual total coverage from go tool cover -func"""
+    try:
+        result = subprocess.run(
+            ['go', 'tool', 'cover', '-func', coverage_file],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            cwd=repo_root
+        )
+        # Parse "total:statements:	99.3%"
+        match = re.search(r'total:.*?\s+([0-9]+\.[0-9]+)%', result.stdout)
+        if match:
+            return float(match.group(1))
+    except Exception:
+        pass
+    return None
 
 def main():
     if len(sys.argv) < 3:
@@ -69,6 +87,21 @@ def main():
     # Get statement-level coverage for each package
     package_coverage = get_package_coverage(packages, repo_root)
 
+    # Get actual total coverage from go tool cover -func (weighted by statement count)
+    total_coverage = get_total_coverage(repo_root, coverage_file)
+    if total_coverage is None:
+        # Fallback to simple average if go tool cover fails
+        total_coverage = 0.0
+        total_packages = 0
+        for pkg_key in packages:
+            if pkg_key in package_coverage:
+                cov = package_coverage[pkg_key]
+                if cov is not None:
+                    total_coverage += cov
+                    total_packages += 1
+        if total_packages > 0:
+            total_coverage = total_coverage / total_packages
+
     # Generate ordered table output
     ordered_packages = [
         (".", "llm-tournament"),
@@ -81,9 +114,6 @@ def main():
         ("tools/screenshots/cmd/demo-server", "llm-tournament/tools/screenshots/cmd/demo-server")
     ]
 
-    total_coverage = 0.0
-    total_packages = 0
-
     table_lines = []
     table_lines.append("| Package | Coverage |")
     table_lines.append("| --- | ---: |")
@@ -95,16 +125,9 @@ def main():
                 coverage_str = "-"
             else:
                 coverage_str = f"{coverage:.1f}%"
-                total_coverage += coverage
-                total_packages += 1
             table_lines.append(f"| {pkg_name} | {coverage_str} |")
 
-    if total_packages > 0:
-        avg_coverage = total_coverage / total_packages
-    else:
-        avg_coverage = 0.0
-
-    table_lines.append(f"| **Total** | **{avg_coverage:.1f}%** |")
+    table_lines.append(f"| **Total** | **{total_coverage:.1f}%** |")
 
     new_table = '\n'.join(table_lines)
 
@@ -112,9 +135,9 @@ def main():
     with open(readme_path, 'r') as f:
         content = f.read()
 
-    # Find and replace coverage section
-    pattern = r'### Coverage.*?(?=\n\n##)'
-    replacement = f"""### Coverage
+    # Find and replace coverage section (handles numbered or unnumbered subsections)
+    pattern = r'###(?:\s+[\d.]+\s+)?Coverage.*?(?=\n\n##|\n\[)'
+    replacement = f"""### 9.2 Coverage
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
@@ -126,7 +149,12 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
     with open(readme_path, 'w') as f:
         f.write(new_content)
 
-    print(f"Updated README.md successfully with {total_packages} packages and {avg_coverage:.1f}% coverage")
+    # Count packages with actual coverage (excluding "no statements" ones)
+    packages_with_coverage = sum(1 for pkg in ordered_packages
+                                  if pkg[0] in package_coverage
+                                  and package_coverage[pkg[0]] is not None)
+
+    print(f"Updated README.md successfully with {packages_with_coverage} packages and {total_coverage:.1f}% coverage")
 
 if __name__ == '__main__':
     main()
