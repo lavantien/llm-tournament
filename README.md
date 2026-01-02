@@ -464,25 +464,39 @@ A **Profile** is a group of models that you want to evaluate together.
 
 ### 7.5 Task: Run Manual Evaluation
 
+The **Evaluate** page lets you score models one prompt at a time.
+
 1. Go to **Evaluate** in the sidebar
-2. Select your **Profile** (group of models to test)
-3. Select your **Prompts** to evaluate
-4. For each model response:
-   - Read the model's output
-   - Click a score button (0, 20, 40, 60, 80, 100)
-   - The leaderboard updates automatically
-5. Use **Save State** to backup your progress
+2. You'll see:
+   - The current **model name** at the top
+   - The **prompt number** (e.g., "Prompt 3 of 10")
+   - The **prompt text** and **expected solution**
+   - The **model's response** (which you can save)
+   - **Score buttons** (0, 20, 40, 60, 80, 100)
+3. To score:
+   - Click a score button to select it
+   - Click ✅ to submit and move to the next prompt
+   - Use ⬅️➡️ to navigate between prompts without scoring
+4. Click ❌ to exit to the **Results** page
 
 ![Evaluate](assets/ui-evaluate.png)
 
-### 7.6 Task: View Results and Analytics
+### 7.6 Task: View and Edit Results
 
-1. **Results Grid** (Main tab):
-   - Shows all model × prompt combinations
-   - Color-coded scores (green=high, red=low)
-   - Click any cell to see full response
+The **Results** page shows your scoring grid and lets you edit individual scores.
 
-2. **Stats** (Sidebar link):
+1. **Results Grid** overview:
+   - Rows show each model
+   - Columns show each prompt
+   - Cells show scores with color coding (green=high, red=low)
+   - Total scores and progress bars on the right
+
+2. **Edit a score**:
+   - Click any score cell to go to the Evaluate page for that model×prompt combination
+   - Update your score and click ✅
+   - Click ❌ to return to Results
+
+3. **Stats** (sidebar link):
    - View score distributions
    - See model tier rankings
    - Compare performance across categories
@@ -492,24 +506,33 @@ A **Profile** is a group of models that you want to evaluate together.
 
 ### 7.7 Task: Configure Automated Evaluation
 
+Automated evaluation uses AI judges (Claude, GPT, Gemini) to score responses via a Python service.
+
 1. Go to **Settings**
 2. Add your AI provider API keys (Claude, GPT, Gemini)
-3. Enable **Automated Evaluation**
-4. Configure judge models and consensus settings
-5. Start the Python judge service (see Installation section)
+3. Set the **Cost Alert Threshold** to limit spending
+4. Enable **Auto-evaluate new models** if desired
+5. Set the **Python Service URL** (default: `http://localhost:8001`)
+6. Start the Python judge service (see Installation section)
 
 ![Settings](assets/ui-settings.png)
 
 ### 7.8 Task: Run Automated Evaluation
 
-1. Navigate to **Evaluate** → **Automated** tab
-2. Choose evaluation scope:
-   - **All Models × All Prompts** - Full tournament
-   - **Single Model** - Test one model against all prompts
-   - **Single Prompt** - Compare all models on one prompt
-3. Click **Start Evaluation**
-4. Monitor progress in real-time
-5. Results automatically populate the Results grid
+Automated evaluation is triggered via API endpoints:
+
+```bash
+# Evaluate all models × all prompts
+POST /evaluate/all
+
+# Evaluate one model × all prompts
+POST /evaluate/model?id={model_id}
+
+# Evaluate all models × one prompt
+POST /evaluate/prompt?id={prompt_id}
+```
+
+Use a tool like `curl` or integrate these endpoints into your workflow. Results automatically populate the Results grid as evaluation progresses.
 
 ### 7.9 Task: Import/Export Your Suite
 
@@ -522,9 +545,11 @@ A **Profile** is a group of models that you want to evaluate together.
 
 | Action | Shortcut |
 |--------|----------|
+| Submit score (Evaluate page) | Enter (when score selected) |
+| Navigate between prompts (Evaluate) | ⬅️➡️ buttons or links |
+| Navigate between cells (Results grid) | Arrow keys when cell is focused |
 | Save current form | Ctrl/Cmd + S |
-| Navigate between prompts | Arrow keys (in Evaluate mode) |
-| Quick score | Number keys 0-5 (0=0, 1=20, ..., 5=100) |
+| Scroll to top/bottom | ↑↓ buttons (bottom-left corner) |
 
 ### 7.11 Tips for Efficient Usage
 
