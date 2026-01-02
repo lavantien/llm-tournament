@@ -17,21 +17,15 @@ NC='\033[0m' # No Color
 
 get_coverage_color() {
     local coverage=$1
-
-    # The "Mythical" tier
-    if (( $(echo "$coverage >= 90" | bc -l) )); then
-        echo "blueviolet"
-    elif (( $(echo "$coverage >= 80" | bc -l) )); then
-        echo "brightgreen"
-    elif (( $(echo "$coverage >= 60" | bc -l) )); then
-        echo "green"
-    elif (( $(echo "$coverage >= 40" | bc -l) )); then
-        echo "yellow"
-    elif (( $(echo "$coverage >= 20" | bc -l) )); then
-        echo "orange"
-    else
-        echo "red"
-    fi
+    echo "$coverage" | awk '
+    {
+        if ($1 >= 90) { print "blueviolet"; exit }
+        else if ($1 >= 80) { print "brightgreen"; exit }
+        else if ($1 >= 60) { print "green"; exit }
+        else if ($1 >= 40) { print "yellow"; exit }
+        else if ($1 >= 20) { print "orange"; exit }
+        else { print "red"; exit }
+    }'
 }
 
 get_coverage_percentage() {

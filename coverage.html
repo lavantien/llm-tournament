@@ -2107,12 +2107,12 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) <span cl
                 http.Redirect(w, r, "/results", http.StatusSeeOther)</span>
         case http.MethodGet:<span class="cov8" title="1">
                 if err := h.Renderer.RenderTemplateSimple(w, "import_results.html", func() map[string]string </span><span class="cov8" title="1">{
-                returnURL := r.URL.Query().Get("return_to")
-                if returnURL == "" </span><span class="cov8" title="1">{
-                        returnURL = "/results"
-                }</span>
-                <span class="cov8" title="1">return map[string]string{"ReturnURL": returnURL}</span>
-        }()); err != nil <span class="cov8" title="1">{
+                        returnURL := r.URL.Query().Get("return_to")
+                        if returnURL == "" </span><span class="cov8" title="1">{
+                                returnURL = "/results"
+                        }</span>
+                        <span class="cov8" title="1">return map[string]string{"ReturnURL": returnURL}</span>
+                }()); err != nil <span class="cov8" title="1">{
                         log.Printf("Error rendering template: %v", err)
                         http.Error(w, "Error rendering template", http.StatusInternalServerError)
                 }</span>
