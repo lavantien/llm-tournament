@@ -417,9 +417,9 @@ This tutorial will guide you through the essential workflows of LLM Tournament A
 
 After starting the server, open `http://localhost:8080`. You'll see:
 
-1. **Prompts page** - Your starting point for managing test prompts
-2. A default **suite** is created automatically
-3. Sample navigation menu on the left sidebar
+1. **Top navigation bar** - Contains links to Results, Stats, Prompts, Profiles, Evaluate, and Settings
+2. **Suite selector** - On the right side of the top bar, with New/Edit/Delete buttons
+3. **Prompts page** - Your starting point for managing test prompts (a default suite is created automatically)
 
 ![Prompts List](assets/ui-prompts.png)
 
@@ -427,21 +427,20 @@ After starting the server, open `http://localhost:8080`. You'll see:
 
 ### 7.2 Task: Add Your First Model
 
-1. Click **Models** in the sidebar
-2. Click **Add Model** button
-3. Fill in the model details:
-   - **Name**: e.g., "claude-3-5-sonnet-20241022"
-   - **Provider**: Select from dropdown (OpenAI, Anthropic, Google, Local)
-   - **API Key**: Enter your key (encrypted before storage)
-4. Click **Save**
+Models are added directly from the Results page:
 
-Repeat for each model you want to evaluate.
+1. Click **Results** in the top navigation bar
+2. At the top of the page, you'll see a form with "Enter new model name"
+3. Type the model name (e.g., "claude-3-5-sonnet-20241022", "gpt-4o", etc.)
+4. Click **Add**
+
+The model will appear in the results grid. Repeat for each model you want to evaluate.
 
 ### 7.3 Task: Create a Profile
 
 A **Profile** is a group of models that you want to evaluate together.
 
-1. Click **Profiles** in the sidebar
+1. Click **Profiles** in the top bar
 2. Click **Add Profile** button
 3. Enter a name for your profile
 4. Select the models you want to include
@@ -451,7 +450,7 @@ A **Profile** is a group of models that you want to evaluate together.
 
 ### 7.4 Task: Create a Test Prompt
 
-1. Navigate to **Prompts** in the sidebar
+1. Navigate to **Prompts** in the top bar
 2. Click **Add Prompt** button
 3. Enter prompt details:
    - **Title**: Short descriptive name
@@ -466,18 +465,20 @@ A **Profile** is a group of models that you want to evaluate together.
 
 The **Evaluate** page lets you score models one prompt at a time.
 
-1. Go to **Evaluate** in the sidebar
-2. You'll see:
+**How to access:** You typically navigate here by clicking a score cell in the Results page (see section 7.6), which automatically takes you to the evaluate page for that model and prompt.
+
+Once on the Evaluate page, you'll see:
    - The current **model name** at the top
    - The **prompt number** (e.g., "Prompt 3 of 10")
    - The **prompt text** and **expected solution**
    - The **model's response** (which you can save)
    - **Score buttons** (0, 20, 40, 60, 80, 100)
-3. To score:
+
+**To score:**
    - Click a score button to select it
    - Click ✅ to submit and move to the next prompt
-   - Use ⬅️➡️ to navigate between prompts without scoring
-4. Click ❌ to exit to the **Results** page
+   - Use ⬅️➡️ buttons to navigate between prompts without scoring
+   - Click ❌ to return to the **Results** page
 
 ![Evaluate](assets/ui-evaluate.png)
 
@@ -496,7 +497,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
    - Update your score and click ✅
    - Click ❌ to return to Results
 
-3. **Stats** (sidebar link):
+3. **Stats** (top bar link):
    - View score distributions
    - See model tier rankings
    - Compare performance across categories
@@ -534,22 +535,30 @@ POST /evaluate/prompt?id={prompt_id}
 
 Use a tool like `curl` or integrate these endpoints into your workflow. Results automatically populate the Results grid as evaluation progresses.
 
-### 7.9 Task: Import/Export Your Suite
+**Auto-evaluate setting:** In the Settings page, you can enable "Auto-evaluate new models" to automatically trigger evaluation when a new model is added (requires Python service running).
 
-1. Go to **Suites** in the sidebar
-2. **Export**: Click **Download JSON** to backup your suite
-3. **Import**: Click **Import Suite** and select a JSON file
-4. This includes all prompts, models, profiles, and results
+### 7.9 Task: Import/Export and Suite Management
+
+**Suite Management:**
+- The **Suite selector** is in the top-right of the top navigation bar
+- Use the dropdown to switch between suites
+- Click **New** to create a new suite
+- Click **Edit** to modify the current suite name
+- Click **Delete** to remove the current suite
+
+**Import/Export:**
+- **Results page**: Contains import/export buttons for evaluation results
+- **Prompts page**: Contains import/export buttons for prompt data
+- Export formats use JSON for backup and portability
 
 ### 7.10 Keyboard Shortcuts
 
 | Action | Shortcut |
 |--------|----------|
+| Navigate between cells (Results grid) | Arrow keys (when cell is focused) |
 | Submit score (Evaluate page) | Enter (when score selected) |
-| Navigate between prompts (Evaluate) | ⬅️➡️ buttons or links |
-| Navigate between cells (Results grid) | Arrow keys when cell is focused |
-| Save current form | Ctrl/Cmd + S |
-| Scroll to top/bottom | ↑↓ buttons (bottom-left corner) |
+
+**Note:** Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for scroll to top/bottom).
 
 ### 7.11 Tips for Efficient Usage
 
