@@ -29,7 +29,7 @@ get_coverage_color() {
 }
 
 get_coverage_percentage() {
-    echo -e "${CYAN}Running tests with coverage...${NC}"
+    echo -e "${CYAN}Running tests with coverage...${NC}" >&2
 
     # Set CGO_ENABLED=1 for SQLite support
     export CGO_ENABLED=1
@@ -55,7 +55,7 @@ get_coverage_percentage() {
 
         if [[ "$coverage_output" =~ total:[[:space:]]+\(statements\)[[:space:]]+([0-9.]+)% ]]; then
             local coverage="${BASH_REMATCH[1]}"
-            echo -e "${GREEN}Total coverage: ${coverage}%${NC}"
+            echo -e "${GREEN}Total coverage: ${coverage}%${NC}" >&2
 
             # Cleanup
             rm -f "$coverage_file"
@@ -65,7 +65,7 @@ get_coverage_percentage() {
         fi
     fi
 
-    echo -e "${RED}Could not parse coverage percentage from test output${NC}"
+    echo -e "${RED}Could not parse coverage percentage from test output${NC}" >&2
     return 1
 }
 
