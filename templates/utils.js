@@ -19,21 +19,6 @@ function safeJsonParse(json, defaultValue = {}) {
 }
 
 /**
- * Gets the appropriate score color from CSS variables
- * @param {number} score - Score value
- * @returns {string} Color for the score
- */
-function getScoreColor(score) {
-  // First try to get from CSS variables (they're in body)
-  const bodyStyles = getComputedStyle(document.body);
-  const varName = `--score-color-${score}`;
-  const cssColor = bodyStyles.getPropertyValue(varName).trim();
-
-  // Return CSS variable if available
-  return cssColor || "#808080";
-}
-
-/**
  * Gets the CSS class for a score
  * @param {number} score - Score value
  * @returns {string} CSS class for the score
@@ -61,43 +46,17 @@ function getScoreColorVar(score) {
 }
 
 /**
- * Initializes score color CSS variables
- */
-function initScoreColorVariables() {
-  SCORE_VALUES.forEach((score) => {
-    const defaultColor = document.body.style.getPropertyValue(
-      `--score-color-${score}`,
-    );
-    if (!defaultColor) {
-      // Set fallback colors if not defined in CSS
-      const fallbackColors = {
-        0: "#808080",
-        20: "#ffa500",
-        40: "#ffcc00",
-        60: "#ffff00",
-        80: "#ccff00",
-        100: "#00ff00",
-      };
-      document.body.style.setProperty(
-        `--score-color-${score}`,
-        fallbackColors[score],
-      );
-    }
-  });
-  console.log("Score color CSS variables initialized");
-}
-
-/**
- * Logs score colors for debugging
+ * Logs score colors for debugging (requires score-utils.js to be loaded first)
  */
 function logScoreColors() {
-  const rootStyles = getComputedStyle(document.documentElement);
+  if (typeof getScoreColor !== 'function') {
+    console.error("getScoreColor is not available. Make sure score-utils.js is loaded.");
+    return;
+  }
   console.log("Score colors used in chart:");
   SCORE_VALUES.forEach((score) => {
-    const varName = `--score-color-${score}`;
-    console.log(
-      `${score}: ${rootStyles.getPropertyValue(varName).trim() || "Not set"}`,
-    );
+    const color = getScoreColor(score);
+    console.log(`${score}: ${color}`);
   });
 }
 

@@ -163,17 +163,12 @@ jobs:
   commit-updates:
     name: Commit Updates
     runs-on: ubuntu-latest
-    needs: [test, lint, build]
+    needs: [test, lint, build, screenshots]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
 
       - name: Download screenshot artifacts
         uses: actions/download-artifact@v4
@@ -186,8 +181,10 @@ jobs:
         with:
           go-version: "1.25"
 
-      - name: Run coverage table update
-        run: make update-coverage-table
+      - name: Run coverage updates (badge and table)
+        run: |
+          make update-coverage
+          make update-coverage-table
 
       - name: Commit and push changes
         run: |
