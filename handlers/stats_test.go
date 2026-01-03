@@ -616,3 +616,45 @@ func TestCalculateTiersWithMaxScore_EmptyScores(t *testing.T) {
 		}
 	}
 }
+
+func TestStatsHandler_PromptCountQueryError(t *testing.T) {
+	restoreDir := changeToProjectRootStats(t)
+	defer restoreDir()
+
+	cleanup := setupStatsTestDB(t)
+	defer cleanup()
+
+	// Add test data
+	err := middleware.WritePromptSuite("default", []middleware.Prompt{
+		{Text: "Test Prompt 1"},
+		{Text: "Test Prompt 2"},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test prompts: %v", err)
+	}
+
+	suiteName := middleware.GetCurrentSuiteName()
+	err = middleware.WriteResults(suiteName, map[string]middleware.Result{
+		"TestModel": {Scores: []int{80, 100}},
+	})
+	if err != nil {
+		t.Fatalf("failed to write test results: %v", err)
+	}
+
+	// Drop the prompts table to trigger the error path
+	db := middleware.GetDB()
+	_, err = db.Exec("DROP TABLE prompts")
+	if err != nil {
+		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+
+	// The handler should fall back to default 50 prompts
+	req := httptest.NewRequest("GET", "/stats", nil)
+	rr := httptest.NewRecorder()
+	StatsHandler(rr, req)
+
+	// Should still succeed with fallback max score
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	}
+}

@@ -185,9 +185,6 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		"eqs": func(a, b string) bool {
 			return a == b
 		},
-		"tierClass": func(tier string) string {
-			return tier
-		},
 		"formatTierName": func(tier string) string {
 			return cases.Title(language.English).String(strings.ReplaceAll(tier, "-", " "))
 		},

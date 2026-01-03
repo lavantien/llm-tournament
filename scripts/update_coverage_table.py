@@ -132,7 +132,7 @@ def main():
     new_table = '\n'.join(table_lines)
 
     # Update README
-    with open(readme_path, 'r') as f:
+    with open(readme_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     # Find and replace coverage section (handles numbered or unnumbered subsections)
@@ -146,7 +146,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
     new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
 
-    with open(readme_path, 'w') as f:
+    with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
     # Count packages with actual coverage (excluding "no statements" ones)

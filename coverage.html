@@ -75,11 +75,11 @@
 				
 				<option value="file9">llm-tournament/handlers/prompt.go (100.0%)</option>
 				
-				<option value="file10">llm-tournament/handlers/results.go (96.6%)</option>
+				<option value="file10">llm-tournament/handlers/results.go (97.3%)</option>
 				
 				<option value="file11">llm-tournament/handlers/settings.go (100.0%)</option>
 				
-				<option value="file12">llm-tournament/handlers/stats.go (98.7%)</option>
+				<option value="file12">llm-tournament/handlers/stats.go (100.0%)</option>
 				
 				<option value="file13">llm-tournament/handlers/suites.go (100.0%)</option>
 				
@@ -3486,7 +3486,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) <spa
                                         "ON CONFLICT(model_id, prompt_id) DO UPDATE SET "+
                                         "response_text = excluded.response_text, response_source = 'mock', updated_at = CURRENT_TIMESTAMP",
                                 modelID, promptID, mockResponse)
-                        if err != nil </span><span class="cov0" title="0">{
+                        if err != nil </span><span class="cov8" title="1">{
                                 log.Printf("Error inserting mock response for model %s prompt %d: %v", modelName, promptIdx, err)
                         }</span>
                 }
@@ -3609,7 +3609,7 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) <span 
 
         <span class="cov8" title="1">db := middleware.GetDB()
         suiteID, err := middleware.GetCurrentSuiteID()
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 log.Printf("Error getting suite ID: %v", err)
                 http.Error(w, "Error getting suite ID", http.StatusInternalServerError)
                 return
@@ -4069,9 +4069,6 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) <span class="cov
                 }</span>,
                 "eqs": func(a, b string) bool <span class="cov8" title="1">{
                         return a == b
-                }</span>,
-                "tierClass": func(tier string) string <span class="cov0" title="0">{
-                        return tier
                 }</span>,
                 "formatTierName": func(tier string) string <span class="cov8" title="1">{
                         return cases.Title(language.English).String(strings.ReplaceAll(tier, "-", " "))
