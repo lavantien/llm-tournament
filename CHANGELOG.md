@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes are documented in this file. Entries for v4.0 to v4.2 and everything before v2.1 were reconstructed later from the tagged release notes and git history.
+All notable changes are documented in this file.
 
 ## [v4.5.1] - 2026-10-01
 
