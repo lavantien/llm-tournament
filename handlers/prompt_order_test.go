@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -39,6 +40,18 @@ func TestMovePromptHandler_POST_Success(t *testing.T) {
 
 	if moveRR.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, moveRR.Code)
+	}
+
+	// Verify the move persisted: moving index 0 of [A, B, C] to index 2
+	// reorders the suite to [B, A, C]
+	prompts := middleware.ReadPrompts()
+	texts := make([]string, 0, len(prompts))
+	for _, p := range prompts {
+		texts = append(texts, p.Text)
+	}
+	expected := []string{"Prompt B", "Prompt A", "Prompt C"}
+	if !reflect.DeepEqual(texts, expected) {
+		t.Errorf("expected prompt order %v after move, got %v", expected, texts)
 	}
 }
 
