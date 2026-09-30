@@ -245,10 +245,12 @@ func (e errorStringer) String() string {
 // errorWriter is a ResponseWriter that always returns an error on Write
 type errorWriter struct {
 	http.ResponseWriter
-	writeError error
+	writeError      error
+	writesAttempted int
 }
 
 func (ew *errorWriter) Write(b []byte) (int, error) {
+	ew.writesAttempted++
 	return 0, ew.writeError
 }
 
@@ -286,5 +288,25 @@ func TestSaveModelResponseHandler_EncodeError(t *testing.T) {
 
 	SaveModelResponseHandler(ew, req)
 
-	// Should still work, just log the error (no panic)
+	// The save itself must have persisted despite the encode failure
+	var savedText string
+	err := db.QueryRow("SELECT response_text FROM model_responses WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&savedText)
+	if err != nil {
+		t.Fatalf("model response should be persisted on encode error: %v", err)
+	}
+	if savedText != "This is a test response" {
+		t.Errorf("expected saved response text, got %q", savedText)
+	}
+
+	// The encoder must have attempted the write, and no payload may have
+	// reached the underlying recorder
+	if ew.writesAttempted == 0 {
+		t.Error("expected the response encoder to attempt a write")
+	}
+	if rec.Body.Len() != 0 {
+		t.Errorf("expected empty body on encode error, got %q", rec.Body.String())
+	}
+	if got := rec.Header().Get("Content-Type"); got != "application/json" {
+		t.Errorf("expected Content-Type application/json to be set, got %q", got)
+	}
 }

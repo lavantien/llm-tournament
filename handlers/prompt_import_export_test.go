@@ -675,8 +675,20 @@ func TestExportPromptsHandler_WriteError(t *testing.T) {
 	req := httptest.NewRequest("GET", "/export_prompts", nil)
 	handler.ExportPrompts(failingWriter, req)
 
-	// The handler logs the error and returns error status
-	// Due to how headers work, we check if the error was handled
+	// The failing writer must have been invoked and the handler must have
+	// reported the failure instead of a successful JSON download
+	if failingWriter.WritesAttempted == 0 {
+		t.Error("expected the handler to attempt writing the export payload")
+	}
+	if !failingWriter.HeaderWritten {
+		t.Error("expected the error response path to write a header")
+	}
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if rr.Body.Len() != 0 {
+		t.Errorf("expected no export payload on write error, got %q", rr.Body.String())
+	}
 }
 
 func TestImportPromptsHandler_WritePromptsError(t *testing.T) {
