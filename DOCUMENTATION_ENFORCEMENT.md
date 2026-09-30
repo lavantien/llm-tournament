@@ -26,6 +26,8 @@ Several documentation files are automatically validated by tests and CI scripts.
 
 **Required format:**
 
+The section must contain a `Package-level statement coverage from` line followed by a two-column package/coverage table. The check accepts the table with or without column padding (the generator pads columns):
+
 ```markdown
 ### Coverage
 
