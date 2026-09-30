@@ -85,9 +85,12 @@ func TestUpdateResultHandler_POST_MissingParams(t *testing.T) {
 	updateRR := httptest.NewRecorder()
 	UpdateResultHandler(updateRR, updateReq)
 
-	// Should still work (empty model name)
-	if updateRR.Code == http.StatusBadRequest {
-		t.Errorf("did not expect status %d", updateRR.Code)
+	// Missing model must be rejected without touching stored results
+	if updateRR.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d for missing model, got %d", http.StatusBadRequest, updateRR.Code)
+	}
+	if results := middleware.ReadResults(); len(results) != 0 {
+		t.Errorf("expected no results to be written, got %d models", len(results))
 	}
 }
 
@@ -95,12 +98,11 @@ func TestUpdateResultHandler_POST_NegativePromptIndex(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	// Add a model first
-	form := url.Values{}
-	form.Add("model", "TestModel")
-	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	AddModelHandler(httptest.NewRecorder(), req)
+	// Seed one prompt and one scored model so rejection leaves state untouched.
+	_ = middleware.WritePrompts([]middleware.Prompt{{Text: "Bounds prompt"}})
+	_ = middleware.WriteResults("default", map[string]middleware.Result{
+		"TestModel": {Scores: []int{40}},
+	})
 
 	updateForm := url.Values{}
 	updateForm.Add("model", "TestModel")
@@ -113,10 +115,17 @@ func TestUpdateResultHandler_POST_NegativePromptIndex(t *testing.T) {
 	updateRR := httptest.NewRecorder()
 	UpdateResultHandler(updateRR, updateReq)
 
-	// The handler may not validate negative indices strictly
-	// Just check that it doesn't crash
-	if updateRR.Code == http.StatusInternalServerError {
-		t.Errorf("unexpected internal server error")
+	// The bounds check must reject negative indices with 400, not write cell 0.
+	if updateRR.Code != http.StatusBadRequest {
+		t.Errorf("expected status %d for negative promptIndex, got %d", http.StatusBadRequest, updateRR.Code)
+	}
+	results := middleware.ReadResults()
+	if result, exists := results["TestModel"]; exists {
+		if len(result.Scores) != 1 || result.Scores[0] != 40 {
+			t.Errorf("expected score to stay 40 after rejected update, got %v", result.Scores)
+		}
+	} else {
+		t.Error("expected results for TestModel to still exist")
 	}
 }
 
