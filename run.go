@@ -68,14 +68,8 @@ func run(args []string, deps runDeps) int {
 		return 0
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", router)
-	mux.HandleFunc("/ws", middleware.HandleWebSocket)
-	mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-
 	log.Println("Server is listening on :8080")
-	if err := deps.listenAndServe(":8080", mux); err != nil {
+	if err := deps.listenAndServe(":8080", ServerHandler()); err != nil {
 		log.Printf("Error starting server: %v", err)
 		return 1
 	}

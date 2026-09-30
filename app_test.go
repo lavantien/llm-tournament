@@ -226,6 +226,75 @@ func TestNewServeMux(t *testing.T) {
 	}
 }
 
+func TestServerHandler_RejectsCrossOriginPost(t *testing.T) {
+	originalDir, _ := os.Getwd()
+	defer func() {
+		_ = os.Chdir(originalDir)
+	}()
+	if projectRoot := findProjectRoot(); projectRoot != "" {
+		if err := os.Chdir(projectRoot); err != nil {
+			t.Fatalf("failed to change dir: %v", err)
+		}
+	}
+
+	tmpDir := t.TempDir()
+	if err := InitDB(filepath.Join(tmpDir, "test.db")); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	defer CloseDB()
+
+	handler := ServerHandler()
+
+	req := httptest.NewRequest("POST", "/reset_results", nil)
+	req.Host = "localhost:8080"
+	req.Header.Set("Origin", "http://evil.example")
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusForbidden {
+		t.Errorf("expected cross-origin POST to be rejected with %d, got %d", http.StatusForbidden, rr.Code)
+	}
+
+	req = httptest.NewRequest("POST", "/reset_results", nil)
+	req.Host = "localhost:8080"
+	rr = httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code == http.StatusForbidden {
+		t.Errorf("expected same-origin POST without Origin header to pass, got %d", rr.Code)
+	}
+}
+
+func TestServerHandler_TemplatesStaticServing(t *testing.T) {
+	originalDir, _ := os.Getwd()
+	defer func() {
+		_ = os.Chdir(originalDir)
+	}()
+	if projectRoot := findProjectRoot(); projectRoot != "" {
+		if err := os.Chdir(projectRoot); err != nil {
+			t.Fatalf("failed to change dir: %v", err)
+		}
+	}
+
+	handler := ServerHandler()
+
+	for path, wantStatus := range map[string]int{
+		"/templates/output.css":          http.StatusOK,
+		"/templates/utils.js":            http.StatusOK,
+		"/templates/shared.go":           http.StatusNotFound,
+		"/templates/prompt_list.html":    http.StatusNotFound,
+		"/templates/design_preview.html": http.StatusNotFound,
+	} {
+		req := httptest.NewRequest("GET", path, nil)
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
+
+		if rr.Code != wantStatus {
+			t.Errorf("GET %s: expected status %d, got %d", path, wantStatus, rr.Code)
+		}
+	}
+}
+
 func TestApp_Router_KnownRoute(t *testing.T) {
 	// Save current directory and change to project root for template access
 	originalDir, _ := os.Getwd()

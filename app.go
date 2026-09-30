@@ -73,8 +73,15 @@ func SetupRoutes(mux *http.ServeMux) {
 	}
 	mux.HandleFunc("/", router)
 	mux.HandleFunc("/ws", middleware.HandleWebSocket)
-	mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	mux.Handle("/templates/", http.StripPrefix("/templates/", middleware.StaticFiles(http.Dir("templates"))))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", middleware.StaticFiles(http.Dir("assets"))))
+}
+
+// ServerHandler returns the fully wired HTTP handler: all routes behind the
+// cross-origin guard that blocks browser-driven cross-site posts against the
+// local server.
+func ServerHandler() http.Handler {
+	return middleware.CheckOrigin(NewServeMux())
 }
 
 // NewServeMux creates and configures a new ServeMux with all routes
