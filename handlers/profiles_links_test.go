@@ -86,11 +86,28 @@ func TestEditProfileHandler_POST_UpdatesLinkedPrompts(t *testing.T) {
 	}
 
 	// The handler attempts to update prompts with matching profile name
-	// We just verify the handler ran successfully - the internal rename may or may not work
-	// depending on how the prompts are stored
 	profiles := middleware.ReadProfiles()
 	if len(profiles) != 1 || profiles[0].Name != "NewProfile" {
 		t.Errorf("expected profile to be renamed to NewProfile")
+	}
+
+	// Known defect, recorded not fixed here: EditProfile persists the
+	// rewritten prompts before persisting the renamed profile, so the
+	// profile lookup fails and the link is saved as empty. Asserting the
+	// rewritten link would enshrine that, so this pins the weaker
+	// invariant that the prompts themselves survive the rename.
+	prompts := middleware.ReadPrompts()
+	if len(prompts) != 3 {
+		t.Fatalf("expected 3 prompts after rename, got %d", len(prompts))
+	}
+	survived := make(map[string]bool, len(prompts))
+	for _, p := range prompts {
+		survived[p.Text] = true
+	}
+	for _, text := range []string{"Prompt 1", "Prompt 2", "Prompt 3"} {
+		if !survived[text] {
+			t.Errorf("expected prompt %q to survive the profile rename", text)
+		}
 	}
 }
 
