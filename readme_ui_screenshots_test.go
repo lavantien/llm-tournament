@@ -15,8 +15,8 @@ func TestREADME_UsageTutorialIncludesScreenshots(t *testing.T) {
 	}
 	readme := string(readmeBytes)
 
-	if !strings.Contains(readme, "## 7. Usage Tutorial") {
-		t.Fatalf("README.md missing expected section header %q", "## 7. Usage Tutorial")
+	if !strings.Contains(readme, "## 7. Usage tutorial") {
+		t.Fatalf("README.md missing expected section header %q", "## 7. Usage tutorial")
 	}
 
 	required := []string{

@@ -2,7 +2,7 @@
 
 This directory contains utility scripts for development, testing, and automation.
 
-## Development Scripts
+## Development scripts
 
 ### update-badge.sh / update-badge.ps1
 
@@ -78,12 +78,13 @@ chmod +x .git/hooks/pre-commit
 
 **Prevents:** Committing documentation that fails enforcement tests or code that fails linting
 
-## Makefile Targets Related to Scripts
+## Makefile targets related to scripts
 
 ### make update-coverage
 
 - Runs tests with coverage
 - Generates coverage.html
+- Prints the `go tool cover -func` total
 - Updates coverage badge SVG
 
 ### make update-coverage-table
@@ -103,7 +104,7 @@ chmod +x .git/hooks/pre-commit
 - Runs Playwright screenshot generation
 - Generates UI screenshots in assets/
 
-## Documentation Enforcement
+## Documentation enforcement
 
 Several scripts and tests enforce specific documentation formats. See [DOCUMENTATION_ENFORCEMENT.md](../DOCUMENTATION_ENFORCEMENT.md) for:
 
@@ -112,7 +113,7 @@ Several scripts and tests enforce specific documentation formats. See [DOCUMENTA
 - How to update documentation without breaking automation
 - Troubleshooting common mistakes
 
-## Adding New Scripts
+## Adding new scripts
 
 When adding a new script to this directory:
 
@@ -122,7 +123,7 @@ When adding a new script to this directory:
 4. **Update CI** if it should run automatically: Edit `.github/workflows/ci.yml`
 5. **Test locally**: Verify script works before committing
 
-## Platform Support
+## Platform support
 
 - **Linux/Mac:** Bash scripts (`.sh`) with Python 3
 - **Windows:** PowerShell scripts (`.ps1`) with Python 3
@@ -130,4 +131,4 @@ When adding a new script to this directory:
 
 Makefile automatically detects OS and calls appropriate scripts.
 
-**Important:** All scripts are designed to work from any directory. They automatically locate the repository root and required files using relative paths to their own location. This ensures they work correctly in CI environments, even when the working directory varies.
+All scripts work from any directory. They locate the repository root and required files using relative paths to their own location, so they work in CI environments even when the working directory varies.

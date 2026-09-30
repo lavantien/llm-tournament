@@ -1,4 +1,4 @@
-# Documentation Enforcement Guidelines
+# Documentation enforcement guidelines
 
 This document describes the automated enforcement mechanisms that validate documentation structure. When editing documentation files, you must maintain the required sections and formats.
 
@@ -6,7 +6,7 @@ This document describes the automated enforcement mechanisms that validate docum
 
 Several documentation files are automatically validated by tests and CI scripts. These mechanisms ensure consistency and enable automated updates (e.g., coverage tables).
 
-## Enforced Documentation Files
+## Enforced documentation files
 
 ### README.md
 
@@ -67,7 +67,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 - Every page template must reference `href="/templates/output.css"`
 - Every page template must declare `<html lang="en"` and the responsive viewport meta (`arena_theme_test.go`, `TestArenaTheme_AllTemplatesDeclareLanguageAndViewport`)
-- No page template may load a script or stylesheet from a CDN; everything is served locally, including `templates/vendor/` (`arena_offline_test.go`, `TestTemplates_NoCDNScripts`)
+- No page template may load a script or stylesheet from a CDN. Everything is served locally, including `templates/vendor/` (`arena_offline_test.go`, `TestTemplates_NoCDNScripts`)
 - Nav anchors must not carry duplicate `class` attributes, which browsers silently drop (`arena_nav_test.go`, `TestArenaNav_NoDuplicateClassAttributes`)
 - `design_preview.html` and `nav.html` are exempt from the stylesheet and lang/viewport rules (preview page and partial)
 
@@ -82,7 +82,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 This file is not enforced by dedicated structure tests. Keep it consistent with the shipped UI when making design changes.
 
-## Automated Enforcement in CI
+## Automated enforcement in CI
 
 ### GitHub Actions
 
@@ -90,13 +90,13 @@ The CI pipeline (`.github/workflows/ci.yml`) includes:
 
 1. **Tests** - Run all Go tests, including the documentation enforcement tests listed above
 
-2. **Coverage updates** - Automatically updates README.md coverage table on main branch
-   - Runs `make update-coverage-table`
+2. **Coverage updates** - Automatically updates the README.md coverage table and badge on the main branch
+   - Runs `make update-coverage` and `make update-coverage-table`
    - Commits changes with `[skip ci]` tag
 
 UI screenshots are not generated in CI. Regenerate them offline with `make screenshots` before pushing UI changes.
 
-### Pre-commit Workflow (Recommended)
+### Pre-commit workflow (recommended)
 
 Before committing documentation changes:
 
@@ -113,11 +113,11 @@ Before committing documentation changes:
    make test
    ```
 
-**Note:** All scripts in `scripts/` directory work from any directory. They automatically find the repository root and required files, so you don't need to be in the repo root when running them.
+All scripts in the `scripts/` directory work from any directory. They automatically find the repository root and required files, so you don't need to be in the repo root when running them.
 
-## Common Mistakes
+## Common mistakes
 
-### Mistake 1: Renaming Section Headers
+### Mistake 1: Renaming section headers
 
 **Wrong:**
 
@@ -131,7 +131,7 @@ Before committing documentation changes:
 ### Coverage # Keep exact header text
 ```
 
-### Mistake 2: Removing Coverage Table Section
+### Mistake 2: Removing the coverage table section
 
 **Wrong:**
 
@@ -154,7 +154,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | ...
 ```
 
-## Adding New Enforcement
+## Adding new enforcement
 
 If you need to add enforcement for a new documentation file:
 

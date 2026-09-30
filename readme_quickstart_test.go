@@ -15,8 +15,8 @@ func TestREADME_QuickStartDoesNotUseRemovedMakeTargets(t *testing.T) {
 	}
 	readme := string(readmeBytes)
 
-	if !strings.Contains(readme, "## 1. Quick Start") {
-		t.Fatalf("README.md missing expected section header %q", "## 1. Quick Start")
+	if !strings.Contains(readme, "## 1. Quick start") {
+		t.Fatalf("README.md missing expected section header %q", "## 1. Quick start")
 	}
 
 	removed := []string{

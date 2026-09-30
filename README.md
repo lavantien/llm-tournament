@@ -6,9 +6,9 @@
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with manual scoring.
+A local-first benchmarking arena for evaluating and comparing large language models (LLMs) with manual scoring.
 
-**Highlights**
+**Summary**
 
 - SQLite-backed, single-binary Go server with SSR templates + WebSockets (`:8080`)
 - Prompt suites, profiles, models, results grid, and analytics
@@ -22,24 +22,24 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 
 ## Table of Contents
 
-- [1. Quick Start](#1-quick-start)
-- [2. UI Design](#2-ui-design)
+- [1. Quick start](#1-quick-start)
+- [2. UI design](#2-ui-design)
 - [3. Features](#3-features)
 - [4. Architecture](#4-architecture)
-- [5. Tech Stack](#5-tech-stack)
+- [5. Tech stack](#5-tech-stack)
 - [6. Installation](#6-installation)
-- [7. Usage Tutorial](#7-usage-tutorial)
+- [7. Usage tutorial](#7-usage-tutorial)
 - [8. Development](#8-development)
 - [9. Testing](#9-testing)
 - [10. Troubleshooting](#10-troubleshooting)
-- [11. API Reference](#11-api-reference)
-- [12. Project Structure](#12-project-structure)
-- [13. Environment Variables](#13-environment-variables)
-- [14. Documentation Guidelines](#14-documentation-guidelines)
+- [11. API reference](#11-api-reference)
+- [12. Project structure](#12-project-structure)
+- [13. Environment variables](#13-environment-variables)
+- [14. Documentation guidelines](#14-documentation-guidelines)
 - [15. License](#15-license)
 - [16. Contact](#16-contact)
 
-## 1. Quick Start
+## 1. Quick start
 
 ```bash
 git clone https://github.com/lavantien/llm-tournament.git
@@ -63,20 +63,17 @@ $env:CGO_ENABLED=1; go run .
 
 [↑ Back to top](#table-of-contents)
 
-## 2. UI Design
-
-**Updated: Tailwind v4 + DaisyUI v5**
+## 2. UI design
 
 The UI uses Tailwind v4 + DaisyUI v5 components.
 
-**Key Design Decisions:**
+**Design decisions:**
 
 - Styling is Tailwind utilities and DaisyUI semantic components, plus one exception: the fixed-size results-grid cells and profile spacers live in `templates/input.css`
 - Built-in DaisyUI `coffee` theme provides the warm dark palette
 - Tailwind v4 built-in animations (`animate-spin`, `animate-ping`, `animate-pulse`) replace custom keyframes
 - Dynamic score theming uses the server-side `ScoreColors` palette (`scoreColor` funcmap) mirrored in `templates/constants.js`
 - Panels use DaisyUI `.card` components without custom glow effects
-- Industry-standard approach using well-maintained tools (Tailwind + DaisyUI)
 
 **Trade-offs:**
 
@@ -89,7 +86,7 @@ The UI uses Tailwind v4 + DaisyUI v5 components.
 
 ## 3. Features
 
-### 3.1 Manual Evaluation
+### 3.1 Manual evaluation
 
 - Real-time scoring on 0-100 scale (increments: 0, 20, 40, 60, 80, 100)
 - Automatic model ranking with live leaderboard updates
@@ -98,7 +95,7 @@ The UI uses Tailwind v4 + DaisyUI v5 components.
 - Drag-and-drop prompt reordering and bulk operations
 - Save and edit each model's response per prompt
 
-### 3.2 Suite Management
+### 3.2 Suite management
 
 - Independent prompt suites with isolated profiles, prompts, and results
 - JSON import/export for suites and evaluation results
@@ -208,14 +205,14 @@ sequenceDiagram
 
 Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
-### 4.1 Bird's-Eye View
+### 4.1 Bird's-eye view
 
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
 - The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
 - **UI Migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`).
 
-### 4.2 Where To Look In 5 Seconds
+### 4.2 Where to look in 5 seconds
 
 - **HTTP routes / feature entrypoint:** `main.go:10` (every user-visible feature starts as a path here).
 - **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
@@ -226,7 +223,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - **UI Components:** Tailwind v4 + DaisyUI v5.
 - **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.
 
-### 4.3 Common Feature Map
+### 4.3 Common feature map
 
 - **Prompt suites:** `main.go:26` `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
 - **Prompts CRUD/order:** `main.go:16`-`main.go:23` `handlers/prompt.go:1` (+ reorder via `/update_prompts_order`)
@@ -234,7 +231,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - **Manual scoring/results UI:** `main.go:30`-`main.go:37` `handlers/results.go` (+ `templates/results.html`)
 - **Stats/analytics:** `main.go:43` `handlers/stats.go` (+ `templates/stats.html`)
 
-### 4.4 Search Cheats (copy/paste)
+### 4.4 Search cheats (copy/paste)
 
 - Find a feature by URL: `rg -n '"/results"|"/stats"|"/prompts"' main.go`
 - Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
@@ -243,7 +240,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
 [↑ Back to top](#table-of-contents)
 
-## 5. Tech Stack
+## 5. Tech stack
 
 Backend: Go 1.27+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite
 
@@ -258,12 +255,12 @@ Security: XSS sanitization, CORS protection, input validation
 ### 6.1 Prerequisites
 
 - Go 1.27+
-- A C toolchain for CGO/SQLite (e.g., gcc/clang; on Windows install MinGW-w64/MSYS2)
+- A C toolchain for CGO/SQLite (gcc or clang, MinGW-w64/MSYS2 on Windows)
 - Git
 - Make (optional, for convenience targets)
 - Node.js and npm (for CSS builds via `make build` and UI screenshots)
 
-### 6.2 Manual Evaluation (Go-only)
+### 6.2 Manual evaluation (Go-only)
 
 ```bash
 # Run from source
@@ -290,9 +287,9 @@ One-time migration (only if upgrading old result formats):
 CGO_ENABLED=1 go run . --migrate-results
 ```
 
-### 6.3 UI Installation (DaisyUI + Tailwind v4)
+### 6.3 UI installation (DaisyUI + Tailwind v4)
 
-The UI uses Tailwind CSS v4 + DaisyUI v5, configured CSS-first in `templates/input.css` (there is no `tailwind.config.js`; v4 reads `@theme` and `@plugin` from the CSS).
+The UI uses Tailwind CSS v4 + DaisyUI v5, configured CSS-first in `templates/input.css` (v4 reads `@theme` and `@plugin` from the CSS, so there is no `tailwind.config.js`).
 
 **Install dependencies:**
 
@@ -316,11 +313,11 @@ This generates `templates/output.css` from `templates/input.css` using PostCSS.
 
 [↑ Back to top](#table-of-contents)
 
-## 7. Usage Tutorial
+## 7. Usage tutorial
 
-This tutorial will guide you through the essential workflows of LLM Tournament Arena.
+This tutorial walks through the essential workflows of LLM Tournament Arena.
 
-### 7.1 Your First Run
+### 7.1 Your first run
 
 After starting the server, open `http://localhost:8080`. You'll see:
 
@@ -332,7 +329,7 @@ After starting the server, open `http://localhost:8080`. You'll see:
 
 [↑ Back to top](#table-of-contents)
 
-### 7.2 Task: Add Your First Model
+### 7.2 Task: add your first model
 
 Models are added directly from the Results page:
 
@@ -343,7 +340,7 @@ Models are added directly from the Results page:
 
 The model will appear in the results grid. Repeat for each model you want to evaluate.
 
-### 7.3 Task: Create a Profile
+### 7.3 Task: create a profile
 
 A **Profile** is a group of models that you want to evaluate together.
 
@@ -355,7 +352,7 @@ A **Profile** is a group of models that you want to evaluate together.
 
 ![Profiles](assets/ui-profiles.png)
 
-### 7.4 Task: Create a Test Prompt
+### 7.4 Task: create a test prompt
 
 1. Navigate to **Prompts** in the top bar
 2. Click **Add Prompt** button
@@ -368,7 +365,7 @@ A **Profile** is a group of models that you want to evaluate together.
 
 ![Edit Prompt](assets/ui-edit-prompt.png)
 
-### 7.5 Task: Run Manual Evaluation
+### 7.5 Task: run manual evaluation
 
 The **Evaluate** page lets you score models one prompt at a time.
 
@@ -391,7 +388,7 @@ Once on the Evaluate page, you'll see:
 
 ![Evaluate](assets/ui-evaluate.png)
 
-### 7.6 Task: View and Edit Results
+### 7.6 Task: view and edit results
 
 The **Results** page shows your scoring grid and lets you edit individual scores.
 
@@ -414,7 +411,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 ![Results](assets/ui-results.png)
 ![Stats](assets/ui-stats.png)
 
-### 7.7 Task: Import/Export and Suite Management
+### 7.7 Task: import/export and suite management
 
 **Suite Management:**
 
@@ -430,16 +427,16 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 - **Prompts page**: Contains import/export buttons for prompt data
 - Export formats use JSON for backup and portability
 
-### 7.8 Keyboard Shortcuts
+### 7.8 Keyboard shortcuts
 
 | Action                                | Shortcut                          |
 | ------------------------------------- | --------------------------------- |
 | Navigate between cells (Results grid) | Arrow keys (when cell is focused) |
 | Submit score (Evaluate page)          | Enter (when score selected)       |
 
-**Note:** Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for scroll to top/bottom).
+Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for scroll to top/bottom).
 
-### 7.9 Tips for Efficient Usage
+### 7.9 Tips for efficient usage
 
 - **Batch Operations**: Use checkboxes to select multiple prompts for bulk actions
 - **Drag to Reorder**: Reorder prompts by dragging them in the list
@@ -463,7 +460,7 @@ This project is part of a larger development environment. For a complete setup i
 
 See: **[lavantien/dotfiles](https://github.com/lavantien/dotfiles)**
 
-### 8.1 Local Development Setup
+### 8.1 Local development setup
 
 #### Prerequisites
 
@@ -471,7 +468,7 @@ See: **[lavantien/dotfiles](https://github.com/lavantien/dotfiles)**
 - Node.js 24+
 - CGO-enabled toolchain (gcc/clang/MinGW)
 
-#### Running the Development Server
+#### Running the development server
 
 ```bash
 # Clone the repository
@@ -490,7 +487,7 @@ CGO_ENABLED=1 go run .
 
 The server will start on `http://localhost:8080`.
 
-### 8.2 Running Tests
+### 8.2 Running tests
 
 ```bash
 # Full test suite with TDD guard
@@ -514,7 +511,7 @@ npm run build:css
 npm run watch:css
 ```
 
-### 8.4 Generating Screenshots
+### 8.4 Generating screenshots
 
 ```bash
 npm install
@@ -526,7 +523,7 @@ Screenshots are saved to `assets/ui-*.png`.
 
 CI does not generate screenshots (the Playwright job was removed for speed). Regenerate them locally with the commands above before pushing UI changes.
 
-### 8.5 Additional Documentation
+### 8.5 Additional documentation
 
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 
@@ -551,9 +548,9 @@ make coverage-enforce
 CGO_ENABLED=1 go test ./... -v -race -cover
 ```
 
-### 9.1 Testing Methodology (UI Components)
+### 9.1 Testing methodology (UI components)
 
-**Important**: Tailwind/DaisyUI classes are strings in your templates—no runtime JS needed for unit tests. You verify classes are present in rendered HTML without applying actual CSS.
+Tailwind/DaisyUI classes are strings in the templates, so unit tests need no runtime JS. Verify the classes are present in the rendered HTML without applying CSS.
 
 **Go SSR Testing**: Full SSR flow verification with `httptest`. Test handlers execute templates with data and verify DaisyUI classes are present in the rendered output.
 
@@ -563,7 +560,7 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 
 ### 9.2 Coverage
 
-The 100% total statement coverage is enforced, not aspirational: `make check` ends with the `coverage-enforce` gate and CI fails the build if the total drops below 100.0%.
+The total statement coverage gate is enforced at 100.0%: `make check` ends with `coverage-enforce`, and CI fails the build if the total drops below 100.0%.
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
@@ -582,16 +579,16 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 ## 10. Troubleshooting
 
-- `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO required it for SQLite).
+- `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO is required for SQLite).
 - Port already in use: stop the conflicting process, or start the server on another port with `-port` (validated 1-65535, default `:8080`, wired in `run.go`).
-- DB issues: default DB is `data/tournament.db`; you can point to another file with `--db <path>`.
-- **DaisyUI classes not rendering**: Run `npm run build:css`; Tailwind v4 reads its configuration (theme and the DaisyUI plugin) from `templates/input.css`, there is no `tailwind.config.js`.
+- DB issues: default DB is `data/tournament.db`. You can point to another file with `--db <path>`.
+- **DaisyUI classes not rendering**: run `npm run build:css`. Tailwind v4 reads its configuration (theme and the DaisyUI plugin) from `templates/input.css`. There is no `tailwind.config.js`.
 
 [↑ Back to top](#table-of-contents)
 
-## 11. API Reference
+## 11. API reference
 
-### 11.1 Core Endpoints
+### 11.1 Core endpoints
 
 - GET /prompts - Prompts list (default route)
 - GET /results - Results and scoring
@@ -602,11 +599,11 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 - POST /save_model_response - Save a model's response text for a prompt
 - WS /ws - WebSocket connection
 
-The full route map lives in `main.go:10`; every user-visible feature starts as a path there.
+The full route map lives in `main.go:10`. Every user-visible feature starts as a path there.
 
 [↑ Back to top](#table-of-contents)
 
-## 12. Project Structure
+## 12. Project structure
 
 ```
 llm-tournament/
@@ -631,13 +628,13 @@ llm-tournament/
 
 [↑ Back to top](#table-of-contents)
 
-## 13. Environment Variables
+## 13. Environment variables
 
 - CGO_ENABLED=1 (required for SQLite)
 
 [↑ Back to top](#table-of-contents)
 
-## 14. Documentation Guidelines
+## 14. Documentation guidelines
 
 When editing documentation files, be aware that several files are automatically validated by tests and CI scripts. See [DOCUMENTATION_ENFORCEMENT.md](DOCUMENTATION_ENFORCEMENT.md) for:
 
@@ -648,7 +645,7 @@ When editing documentation files, be aware that several files are automatically 
 
 **Quick reference:**
 
-- `README.md` - Coverage table regenerated by `scripts/update_coverage_table.py`; screenshot references enforced by `readme_ui_screenshots_test.go`
+- `README.md` - Coverage table regenerated by `scripts/update_coverage_table.py`. Screenshot references enforced by `readme_ui_screenshots_test.go`.
 - `templates/*.html` - Stylesheet references enforced by `arena_theme_test.go`
 
 **Pre-commit hook (recommended):**

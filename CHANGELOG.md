@@ -2,6 +2,12 @@
 
 All notable changes are documented in this file.
 
+## [v4.6] - 2026-10-01
+
+Documentation harmonization and repo hygiene, no behavior change. The stale v4.0 design planning docs (`DESIGN_CONCEPT.md`, `DESIGN_ROLLOUT.md`) are deleted with every reference cleaned up, and the legacy aider make targets plus the `dev.sh` and `dev.ps1` launchers are gone. The vestigial `data/current_suite.txt` is removed because the current suite lives in SQLite, the arena theme test only accepts `output.css` now that `arena.css` does not exist, and the stray `nul` and `$coverageFile` artifacts left the repo root along with their gitignore masks.
+
+README fixes: the mermaid diagram and the API list name the real `/update_result` endpoint, the listen port is documented as the `-port` flag wired in `run.go`, the stats anchor points at `main.go:43`, and the vendored Chart.js and Marked versions are pinned to 4.5.1 and 18.0.14. Every doc follows the writing standards now: sentence case headings, no em dashes or semicolons in prose, digits for numbers. The coverage note in README and `update_coverage_table.py` drops the enforced-versus-aspirational contrast, and the readme enforcement tests pin the sentence-cased section headers.
+
 ## [v4.5.1] - 2026-10-01
 
 Docs only. The changelog was rewritten in condensed prose, the versions were sorted, and the release descriptions follow the same style. No code changed and coverage stayed at 100.0%.
