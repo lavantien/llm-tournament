@@ -64,3 +64,94 @@ func TestGetCurrentSuiteID_InsertDefaultError_ReturnsError(t *testing.T) {
 		t.Fatalf("expected create default suite error, got %v", err)
 	}
 }
+
+// countCurrentSuites reports how many suites are flagged current.
+func countCurrentSuites(t *testing.T) int {
+	t.Helper()
+
+	var count int
+	if err := db.QueryRow("SELECT COUNT(*) FROM suites WHERE is_current = 1").Scan(&count); err != nil {
+		t.Fatalf("failed to count current suites: %v", err)
+	}
+	return count
+}
+
+// A concurrent SetCurrentSuite commit can land between the ErrNoRows read
+// and the recovery writes; the trigger emulates exactly that interleaving.
+// Recovery must end with a single current row, the default suite.
+func TestGetCurrentSuiteID_RecoveryIsExclusive(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	if _, err := db.Exec("DELETE FROM suites"); err != nil {
+		t.Fatalf("failed to empty suites table: %v", err)
+	}
+	if _, err := db.Exec(`CREATE TRIGGER race_make_other_current
+		BEFORE INSERT ON suites
+		BEGIN
+			INSERT INTO suites (name, is_current) VALUES ('race-x', 1);
+		END;`); err != nil {
+		t.Fatalf("failed to create trigger: %v", err)
+	}
+
+	suiteID, err := GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("GetCurrentSuiteID failed: %v", err)
+	}
+
+	if got := countCurrentSuites(t); got != 1 {
+		t.Fatalf("expected exactly 1 current suite after recovery, got %d", got)
+	}
+	var name string
+	var id int
+	if err := db.QueryRow("SELECT id, name FROM suites WHERE is_current = 1").Scan(&id, &name); err != nil {
+		t.Fatalf("failed to query current suite: %v", err)
+	}
+	if name != "default" {
+		t.Errorf("expected default to be the current suite, got %q", name)
+	}
+	if suiteID != id {
+		t.Errorf("returned ID %d, want %d", suiteID, id)
+	}
+}
+
+// On an emptied suites table the name resolver must run the same recovery as
+// the ID resolver, so the default suite actually exists afterwards instead
+// of the two resolvers disagreeing.
+func TestGetCurrentSuiteName_EmptySuitesTableAgreesWithIDPath(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+	if _, err := db.Exec("DELETE FROM suites"); err != nil {
+		t.Fatalf("failed to empty suites table: %v", err)
+	}
+
+	name := GetCurrentSuiteName()
+	if name != "default" {
+		t.Fatalf("expected 'default', got %q", name)
+	}
+	if !SuiteExists("default") {
+		t.Fatal("expected the default suite to be created by the name recovery")
+	}
+	if got := countCurrentSuites(t); got != 1 {
+		t.Fatalf("expected exactly 1 current suite after name recovery, got %d", got)
+	}
+
+	id, err := GetCurrentSuiteID()
+	if err != nil {
+		t.Fatalf("GetCurrentSuiteID failed after name recovery: %v", err)
+	}
+	var wantID int
+	if err := db.QueryRow("SELECT id FROM suites WHERE name = 'default'").Scan(&wantID); err != nil {
+		t.Fatalf("failed to query default suite: %v", err)
+	}
+	if id != wantID {
+		t.Errorf("name and id resolvers disagree: id %d, want %d", id, wantID)
+	}
+}

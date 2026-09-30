@@ -46,8 +46,11 @@ func TestGetCurrentSuiteID_UpdateDefaultError_ReturnsError(t *testing.T) {
 		t.Fatalf("clear current suite: %v", err)
 	}
 
+	// Only flagging a suite current may fail, so the recovery's
+	// clear-flags step (setting is_current to 0) still succeeds.
 	if _, err := db.Exec(`CREATE TRIGGER abort_suite_update
 		BEFORE UPDATE ON suites
+		WHEN NEW.is_current = 1
 		BEGIN
 			SELECT RAISE(FAIL, 'nope');
 		END;`); err != nil {
@@ -60,6 +63,67 @@ func TestGetCurrentSuiteID_UpdateDefaultError_ReturnsError(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "failed to set default suite as current") {
 		t.Fatalf("expected default-update error, got %v", err)
+	}
+}
+
+func TestGetCurrentSuiteID_ClearFlagsError_ReturnsError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	if _, err := db.Exec("UPDATE suites SET is_current = 0"); err != nil {
+		t.Fatalf("clear current suite: %v", err)
+	}
+
+	if _, err := db.Exec(`CREATE TRIGGER abort_suite_clear
+		BEFORE UPDATE ON suites
+		BEGIN
+			SELECT RAISE(FAIL, 'nope');
+		END;`); err != nil {
+		t.Fatalf("create trigger: %v", err)
+	}
+
+	_, err := GetCurrentSuiteID()
+	if err == nil {
+		t.Fatalf("expected GetCurrentSuiteID to return an error when clearing flags fails")
+	}
+	if !strings.Contains(err.Error(), "failed to clear current suite flags") {
+		t.Fatalf("expected clear-flags error, got %v", err)
+	}
+}
+
+func TestGetCurrentSuiteID_RecoveredSuiteQueryError_ReturnsError(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	if _, err := db.Exec("UPDATE suites SET is_current = 0"); err != nil {
+		t.Fatalf("clear current suite: %v", err)
+	}
+
+	// The row is deleted right after being flagged current, so the
+	// recovery's closing SELECT finds no current suite.
+	if _, err := db.Exec(`CREATE TRIGGER drop_flagged_suite
+		AFTER UPDATE OF is_current ON suites
+		WHEN NEW.is_current = 1
+		BEGIN
+			DELETE FROM suites WHERE id = NEW.id;
+		END;`); err != nil {
+		t.Fatalf("create trigger: %v", err)
+	}
+
+	_, err := GetCurrentSuiteID()
+	if err == nil {
+		t.Fatalf("expected GetCurrentSuiteID to return an error when the recovered suite query fails")
+	}
+	if !strings.Contains(err.Error(), "failed to query recovered suite") {
+		t.Fatalf("expected recovered-suite query error, got %v", err)
 	}
 }
 
