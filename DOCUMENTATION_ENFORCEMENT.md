@@ -65,7 +65,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 **Required elements:**
 
-- Every page template must reference `href="/templates/arena.css"` or `href="/templates/output.css"`
+- Every page template must reference `href="/templates/output.css"`
 - Every page template must declare `<html lang="en"` and the responsive viewport meta (`arena_theme_test.go`, `TestArenaTheme_AllTemplatesDeclareLanguageAndViewport`)
 - No page template may load a script or stylesheet from a CDN; everything is served locally, including `templates/vendor/` (`arena_offline_test.go`, `TestTemplates_NoCDNScripts`)
 - Nav anchors must not carry duplicate `class` attributes, which browsers silently drop (`arena_nav_test.go`, `TestArenaNav_NoDuplicateClassAttributes`)
