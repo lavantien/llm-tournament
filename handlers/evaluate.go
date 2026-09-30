@@ -103,12 +103,12 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	var modelID int
 	var promptID int
 
-	// Get model_id from model name
-	err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&modelID)
-	if err == nil {
-		// Get prompt_id from the current suite using prompt index (1-indexed)
-		var suiteID int
-		if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
+	var suiteID int
+	if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
+		// Get model_id from model name, scoped to the current suite
+		err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", model, suiteID).Scan(&modelID)
+		if err == nil {
+			// Get prompt_id from the current suite using prompt index (1-indexed)
 			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?", suiteID, promptIndex).Scan(&promptID)
 			if err == nil {
 				// Get the response for this model/prompt pair
