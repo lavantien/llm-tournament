@@ -694,6 +694,53 @@ func TestEvaluateResult_GET_WithTemplate(t *testing.T) {
 	}
 }
 
+func TestEvaluateResult_GET_ModelResponseUsesCurrentSuite(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	// Switch to a second suite so the current suite is not suite 1.
+	if err := middleware.SetCurrentSuite("second"); err != nil {
+		t.Fatalf("failed to switch suite: %v", err)
+	}
+
+	// Prompt and model are created in the current (second) suite.
+	prompts := []middleware.Prompt{{Text: "suite two prompt"}}
+	_ = middleware.WritePrompts(prompts)
+
+	form := url.Values{}
+	form.Add("model", "SuiteTwoModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	// Save a model response for the current suite's prompt.
+	db := middleware.GetDB()
+	var modelID, promptID int
+	err := db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = (SELECT id FROM suites WHERE is_current = 1)", "SuiteTwoModel").Scan(&modelID)
+	if err != nil {
+		t.Fatalf("failed to resolve model id: %v", err)
+	}
+	err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1) ORDER BY display_order LIMIT 1").Scan(&promptID)
+	if err != nil {
+		t.Fatalf("failed to resolve prompt id: %v", err)
+	}
+	_, _ = db.Exec("INSERT INTO model_responses (model_id, prompt_id, response_text, response_source) VALUES (?, ?, 'suite two response', 'manual')", modelID, promptID)
+
+	evalReq := httptest.NewRequest("GET", "/evaluate?model=SuiteTwoModel&prompt=0", nil)
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	if evalRR.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, evalRR.Code, evalRR.Body.String())
+	}
+	if !strings.Contains(evalRR.Body.String(), "suite two response") {
+		t.Error("expected the saved model response from the current suite to appear in the evaluate page body")
+	}
+}
+
 func TestEvaluateResult_POST_NewModel(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()

@@ -514,14 +514,17 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	// Get model_id from model name
 	err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&modelID)
 	if err == nil {
-		// Get prompt_id from database using prompt index (1-indexed)
-		err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = 1 ORDER BY display_order LIMIT 1 OFFSET ?", promptIndex).Scan(&promptID)
-		if err == nil {
-			// Get the response for this model/prompt pair
-			err = db.QueryRow("SELECT response_text FROM model_responses WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&modelResponse)
-			if err != nil {
-				// No response found, leave empty
-				modelResponse = ""
+		// Get prompt_id from the current suite using prompt index (1-indexed)
+		var suiteID int
+		if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
+			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?", suiteID, promptIndex).Scan(&promptID)
+			if err == nil {
+				// Get the response for this model/prompt pair
+				err = db.QueryRow("SELECT response_text FROM model_responses WHERE model_id = ? AND prompt_id = ?", modelID, promptID).Scan(&modelResponse)
+				if err != nil {
+					// No response found, leave empty
+					modelResponse = ""
+				}
 			}
 		}
 	}
