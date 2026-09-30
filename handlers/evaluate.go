@@ -23,6 +23,10 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 		return
 	}
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	if r.Method == http.MethodPost {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
@@ -83,7 +87,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	results := h.DataStore.ReadResults()
 	currentScore := 0
 	if result, exists := results[model]; exists {
-		if index, err := strconv.Atoi(promptIndexStr); err == nil && index < len(result.Scores) {
+		if index, err := strconv.Atoi(promptIndexStr); err == nil && index >= 0 && index < len(result.Scores) {
 			currentScore = result.Scores[index]
 		}
 	}
@@ -103,12 +107,12 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	var modelID int
 	var promptID int
 
-	// Get model_id from model name
-	err = db.QueryRow("SELECT id FROM models WHERE name = ?", model).Scan(&modelID)
-	if err == nil {
-		// Get prompt_id from the current suite using prompt index (1-indexed)
-		var suiteID int
-		if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
+	var suiteID int
+	if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
+		// Get model_id from model name, scoped to the current suite
+		err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", model, suiteID).Scan(&modelID)
+		if err == nil {
+			// Get prompt_id from the current suite using the 0-based prompt index
 			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?", suiteID, promptIndex).Scan(&promptID)
 			if err == nil {
 				// Get the response for this model/prompt pair

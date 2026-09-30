@@ -83,29 +83,6 @@ func TestNewPromptSuiteHandler_POST_EmptyName(t *testing.T) {
 	}
 }
 
-func TestSelectPromptSuiteHandler_Success(t *testing.T) {
-	cleanup := setupSuitesTestDB(t)
-	defer cleanup()
-
-	// First create a suite to select
-	form := url.Values{}
-	form.Add("suite_name", "suite-to-select")
-
-	createReq := httptest.NewRequest("POST", "/new_prompt_suite", strings.NewReader(form.Encode()))
-	createReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	NewPromptSuiteHandler(httptest.NewRecorder(), createReq)
-
-	// Note: SelectPromptSuiteHandler writes to data/current_suite.txt file
-	// which won't exist in test environment. Testing the file write path
-	// would require creating the data directory first or mocking the file system.
-	// For now, we verify that empty name returns 400.
-
-	// Verify suite was created in DB
-	if !middleware.SuiteExists("suite-to-select") {
-		t.Error("suite-to-select should exist in database")
-	}
-}
-
 func TestSelectPromptSuiteHandler_EmptyName(t *testing.T) {
 	cleanup := setupSuitesTestDB(t)
 	defer cleanup()

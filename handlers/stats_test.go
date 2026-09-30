@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -356,52 +355,6 @@ func TestStatsHandler_GET_WithScoreBreakdowns(t *testing.T) {
 	}
 }
 
-func TestStatsHandler_FixesScoreMismatchTotals(t *testing.T) {
-	mockDS := &MockDataStore{
-		Results: map[string]middleware.Result{
-			// Include an invalid score so the summed total differs from the bucketed total.
-			"ModelX": {Scores: []int{1, 20}},
-		},
-	}
-	renderer := &testutil.MockRenderer{}
-	handler := NewHandlerWithDeps(mockDS, renderer)
-
-	req := httptest.NewRequest("GET", "/stats", nil)
-	rr := httptest.NewRecorder()
-	handler.Stats(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
-	}
-	if len(renderer.RenderCalls) != 1 {
-		t.Fatalf("expected 1 render call, got %d", len(renderer.RenderCalls))
-	}
-
-	data := renderer.RenderCalls[0].Data
-	val := reflect.ValueOf(data)
-	if val.Kind() != reflect.Struct {
-		t.Fatalf("expected struct template data, got %T", data)
-	}
-
-	totalScores := val.FieldByName("TotalScores")
-	if !totalScores.IsValid() || totalScores.Kind() != reflect.Map {
-		t.Fatalf("expected TotalScores map on template data")
-	}
-
-	modelStats := totalScores.MapIndex(reflect.ValueOf("ModelX"))
-	if !modelStats.IsValid() {
-		t.Fatalf("expected ModelX in TotalScores")
-	}
-
-	total := modelStats.FieldByName("TotalScore")
-	if !total.IsValid() {
-		t.Fatalf("expected TotalScore field in ModelX stats")
-	}
-	if total.Int() != 20 {
-		t.Fatalf("expected TotalScore to be corrected to 20, got %d", total.Int())
-	}
-}
-
 func TestStatsHandler_GET_EmptyResults(t *testing.T) {
 	restoreDir := changeToProjectRootStats(t)
 	defer restoreDir()
@@ -648,13 +601,13 @@ func TestStatsHandler_PromptCountQueryError(t *testing.T) {
 		t.Fatalf("failed to drop prompts table: %v", err)
 	}
 
-	// The handler should fall back to default 50 prompts
 	req := httptest.NewRequest("GET", "/stats", nil)
 	rr := httptest.NewRecorder()
 	StatsHandler(rr, req)
 
-	// Should still succeed with fallback max score
-	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	// The query failure must propagate instead of silently tiering
+	// against a fabricated 50-prompt maximum
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

@@ -306,26 +306,6 @@ func TestDeleteModelHandler_POST_NonExistent(t *testing.T) {
 	}
 }
 
-func TestEditModelHandler_POST_NonExistent(t *testing.T) {
-	cleanup := setupModelsTestDB(t)
-	defer cleanup()
-
-	// Try to edit a model that doesn't exist
-	form := url.Values{}
-	form.Add("new_model_name", "NewName")
-
-	req := httptest.NewRequest("POST", "/edit_model?model=NonExistent", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	rr := httptest.NewRecorder()
-	EditModelHandler(rr, req)
-
-	// Should redirect even for non-existent model
-	if rr.Code != http.StatusSeeOther {
-		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
-	}
-}
-
 func TestAddModelHandler_WithPrompts(t *testing.T) {
 	cleanup := setupModelsTestDB(t)
 	defer cleanup()

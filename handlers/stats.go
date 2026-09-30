@@ -117,12 +117,11 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Double-check total score calculation to ensure consistency
+		// Non-standard scores (outside 20/40/60/80/100) are valid but land in
+		// no bucket, so the bucket sum can legitimately differ from the total.
 		calculatedTotal := stats.Count20*20 + stats.Count40*40 + stats.Count60*60 + stats.Count80*80 + stats.Count100*100
 		if calculatedTotal != stats.TotalScore {
 			log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", model, calculatedTotal, stats.TotalScore)
-			// Fix the total score if there's a discrepancy
-			stats.TotalScore = calculatedTotal
 		}
 		scoreStats[model] = stats
 	}
@@ -137,10 +136,10 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	// current suite so tier thresholds match the suite being viewed.
 	db := middleware.GetDB()
 	var promptCount int
-	err := db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1)").Scan(&promptCount)
-	if err != nil {
-		log.Printf("Warning: failed to get prompt count: %v, using default 50", err)
-		promptCount = 50
+	if err := db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1)").Scan(&promptCount); err != nil {
+		log.Printf("Error: failed to get prompt count: %v", err)
+		http.Error(w, "Failed to get prompt count", http.StatusInternalServerError)
+		return
 	}
 	maxScore := promptCount * 100
 
@@ -201,7 +200,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		"join": strings.Join,
 	}
 
-	err = h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
+	err := h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)

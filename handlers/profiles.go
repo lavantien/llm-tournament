@@ -156,12 +156,23 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 			profiles[index].Name = editedProfileName
 			profiles[index].Description = editedProfileDescription
 
-			// Update prompts that reference this profile
+			// Snapshot the prompt rewrite while the old profile rows still
+			// resolve the links
 			prompts := h.DataStore.ReadPrompts()
 			for i := range prompts {
 				if prompts[i].Profile == oldProfileName {
 					prompts[i].Profile = editedProfileName
 				}
+			}
+
+			// Persist the renamed profile before the rewritten prompts:
+			// profile storage regenerates IDs on every write, and the
+			// prompt write must resolve names against the fresh rows
+			err = h.DataStore.WriteProfiles(profiles)
+			if err != nil {
+				log.Printf("Error writing profiles: %v", err)
+				http.Error(w, "Error writing profiles", http.StatusInternalServerError)
+				return
 			}
 			err = h.DataStore.WritePrompts(prompts)
 			if err != nil {
@@ -169,12 +180,6 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Error updating prompts", http.StatusInternalServerError)
 				return
 			}
-		}
-		err = h.DataStore.WriteProfiles(profiles)
-		if err != nil {
-			log.Printf("Error writing profiles: %v", err)
-			http.Error(w, "Error writing profiles", http.StatusInternalServerError)
-			return
 		}
 		log.Println("Profile edited successfully")
 		http.Redirect(w, r, "/profiles", http.StatusSeeOther)

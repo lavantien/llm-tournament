@@ -100,11 +100,13 @@ func (m *MockRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl string, 
 // FailingResponseWriter is a ResponseWriter that can simulate write failures
 type FailingResponseWriter struct {
 	http.ResponseWriter
-	WriteError    error
-	HeaderWritten bool
+	WriteError      error
+	HeaderWritten   bool
+	WritesAttempted int
 }
 
 func (f *FailingResponseWriter) Write(p []byte) (int, error) {
+	f.WritesAttempted++
 	if f.WriteError != nil {
 		return 0, f.WriteError
 	}
