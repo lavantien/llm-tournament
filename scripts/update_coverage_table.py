@@ -142,6 +142,8 @@ def main():
 
     replacement = f"""{match.group(1)}
 
+The 100% total statement coverage is enforced, not aspirational: `make check` ends with the `coverage-enforce` gate and CI fails the build if the total drops below 100.0%.
+
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
 {new_table}
