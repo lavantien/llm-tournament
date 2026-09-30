@@ -13,11 +13,11 @@
   </div>
 
   <ul class="menu bg-transparent menu-horizontal flex-row px-2 flex-1 justify-center gap-1">
-    <li><a class="{{if eqs .PageName "Results"}}active{{end}}" href="/results" class="text-xs">Results</a></li>
-    <li><a class="{{if eqs .PageName "Statistics"}}active{{end}}" href="/stats" class="text-xs">Stats</a></li>
-    <li><a class="{{if eqs .PageName "Prompts"}}active{{end}}" href="/prompts" class="text-xs">Prompts</a></li>
-    <li><a class="{{if eqs .PageName "Profiles"}}active{{end}}" href="/profiles" class="text-xs">Profiles</a></li>
-    <li><a class="{{if eqs .PageName "Evaluate"}}active{{end}}" href="/evaluate" class="text-xs">Evaluate</a></li>
+    <li><a href="/results" class="text-xs {{if eqs .PageName "Results"}}active{{end}}">Results</a></li>
+    <li><a href="/stats" class="text-xs {{if eqs .PageName "Statistics"}}active{{end}}">Stats</a></li>
+    <li><a href="/prompts" class="text-xs {{if eqs .PageName "Prompts"}}active{{end}}">Prompts</a></li>
+    <li><a href="/profiles" class="text-xs {{if eqs .PageName "Profiles"}}active{{end}}">Profiles</a></li>
+    <li><a href="/evaluate" class="text-xs {{if eqs .PageName "Evaluate"}}active{{end}}">Evaluate</a></li>
   </ul>
 
   <div class="flex items-center gap-1 flex-shrink-0 flex-nowrap">
