@@ -525,19 +525,21 @@ CI does not generate screenshots (the Playwright job was removed for speed). Reg
 ### 8.5 Additional Documentation
 
 - UI design and migration: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
-- Changelog / release notes: [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES_v3.4.md](RELEASE_NOTES_v3.4.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 [↑ Back to top](#table-of-contents)
 
 ## 9. Testing
 
 ```bash
-# Run all tests with TDD-guard, race detection, and coverage
-# (requires `tdd-guard-go` on your PATH)
+# Run all tests with verbose output, race detection, and coverage
 make test
 
-# Run tests with verbose output (bypasses TDD-guard)
-make test-verbose
+# Quieter run that also writes coverage.out
+make testbrief
+
+# Lint + testbrief + per-function coverage report
+make check
 
 # Manual test run
 CGO_ENABLED=1 go test ./... -v -race -cover
@@ -547,7 +549,7 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 
 **Important**: Tailwind/DaisyUI classes are strings in your templates—no runtime JS needed for unit tests. You verify classes are present in rendered HTML without applying actual CSS.
 
-**Go SSR Testing**: Full SSR flow verification using `cmp` package (now part of Go standard lib). Test handlers execute templates with data and verify DaisyUI classes are present in output.
+**Go SSR Testing**: Full SSR flow verification with `httptest`. Test handlers execute templates with data and verify DaisyUI classes are present in the rendered output.
 
 **httptest Integration**: HTTP handler testing with rendered HTML output. Verify template rendering with real data structures.
 
