@@ -14,7 +14,15 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		// Non-browser clients (curl, CLI tools) send no Origin header.
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+		// Browsers must come from the host this server runs on, so a
+		// webpage in another tab cannot open the socket and drive
+		// state-changing messages like update_prompts_order.
+		return sameHost(origin, r.Host)
 	},
 }
 
