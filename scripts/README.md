@@ -71,7 +71,7 @@ chmod +x .git/hooks/pre-commit
 
 **What it does:**
 
-- Checks if documentation files (README.md, DESIGN_CONCEPT.md, design_preview.html) are staged
+- Checks if documentation files (README.md, design_preview.html, DOCUMENTATION_ENFORCEMENT.md) are staged
 - If yes, runs `make verify-docs`
 - Checks if Go files are staged
 - If yes, runs `make lint`

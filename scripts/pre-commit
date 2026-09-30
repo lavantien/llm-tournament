@@ -10,7 +10,7 @@ echo "Running documentation verification..."
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
 
 DOCS_CHANGED=false
-if echo "$STAGED_FILES" | grep -qE "(README\.md|DESIGN_CONCEPT\.md|design_preview\.html|DOCUMENTATION_ENFORCEMENT\.md)$"; then
+if echo "$STAGED_FILES" | grep -qE "(README\.md|design_preview\.html|DOCUMENTATION_ENFORCEMENT\.md)$"; then
     DOCS_CHANGED=true
 fi
 

@@ -67,7 +67,7 @@ $env:CGO_ENABLED=1; go run .
 
 **Updated: Tailwind v4 + DaisyUI v5**
 
-The UI uses Tailwind v4 + DaisyUI v5 components. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete design specifications and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for detailed migration plan.
+The UI uses Tailwind v4 + DaisyUI v5 components.
 
 **Key Design Decisions:**
 
@@ -213,7 +213,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
 - The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
-- **UI Migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`). See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
+- **UI Migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`).
 
 ### 4.2 Where To Look In 5 Seconds
 
@@ -223,7 +223,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/suites).
 - **WebSocket messages:** `middleware/socket.go:35` (server-side `/ws`, broadcasting and client tracking).
 - **Saved model responses:** `handlers/model_response.go` (stored in `model_responses`, edited from the Evaluate page).
-- **UI Components:** Tailwind v4 + DaisyUI v5. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete component mapping.
+- **UI Components:** Tailwind v4 + DaisyUI v5.
 - **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.
 
 ### 4.3 Common Feature Map
@@ -292,7 +292,7 @@ CGO_ENABLED=1 go run . --migrate-results
 
 ### 6.3 UI Installation (DaisyUI + Tailwind v4)
 
-The UI uses Tailwind CSS v4 + DaisyUI v5, configured CSS-first in `templates/input.css` (there is no `tailwind.config.js`; v4 reads `@theme` and `@plugin` from the CSS). See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
+The UI uses Tailwind CSS v4 + DaisyUI v5, configured CSS-first in `templates/input.css` (there is no `tailwind.config.js`; v4 reads `@theme` and `@plugin` from the CSS).
 
 **Install dependencies:**
 
@@ -528,7 +528,6 @@ CI does not generate screenshots (the Playwright job was removed for speed). Reg
 
 ### 8.5 Additional Documentation
 
-- UI design and migration: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 
 [↑ Back to top](#table-of-contents)

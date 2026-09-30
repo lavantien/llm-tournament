@@ -76,11 +76,11 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 - Adding a new page template without one of the required stylesheet references, the lang attribute, or the viewport meta
 - Pointing a template at a CDN-hosted script instead of `templates/vendor/`
 
-### DESIGN_CONCEPT.md / DESIGN_ROLLOUT.md / design_preview.html
+### design_preview.html
 
-**Purpose:** UI design system documentation and static preview (informational)
+**Purpose:** Static design preview (informational)
 
-These files are not enforced by dedicated structure tests. Keep them consistent with the shipped UI when making design changes.
+This file is not enforced by dedicated structure tests. Keep it consistent with the shipped UI when making design changes.
 
 ## Automated Enforcement in CI
 
