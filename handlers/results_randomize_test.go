@@ -757,16 +757,34 @@ func TestRandomizeScores_PromptScanContinuesOnError(t *testing.T) {
 		t.Fatalf("failed to insert model: %v", err)
 	}
 
-	// Create prompts with valid data
-	_, err = db.Exec("INSERT INTO prompts (text, display_order, suite_id) VALUES (?, ?, ?)", "Good Prompt", 0, suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert prompt: %v", err)
+	// Recreate prompts so the numeric TEXT ids still scan into int while the
+	// NULL id row fails the scan mid-iteration and must be skipped.
+	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
+		t.Fatalf("drop prompts table: %v", err)
 	}
-
-	// Add a second prompt
-	_, err = db.Exec("INSERT INTO prompts (text, display_order, suite_id) VALUES (?, ?, ?)", "Good Prompt 2", 1, suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert second prompt: %v", err)
+	if _, err := db.Exec(`
+		CREATE TABLE prompts (
+			id TEXT PRIMARY KEY,
+			text TEXT NOT NULL,
+			solution TEXT DEFAULT '',
+			profile_id INTEGER,
+			suite_id INTEGER NOT NULL,
+			display_order INTEGER NOT NULL DEFAULT 0,
+			type TEXT DEFAULT 'objective',
+			FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
+			FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL,
+			UNIQUE(text, suite_id)
+		)`); err != nil {
+		t.Fatalf("failed to create prompts table: %v", err)
+	}
+	if _, err := db.Exec(`INSERT INTO prompts (id, text, solution, suite_id, display_order) VALUES ('1', 'Good Prompt', '', ?, 0)`, suiteID); err != nil {
+		t.Fatalf("failed to insert first good prompt: %v", err)
+	}
+	if _, err := db.Exec(`INSERT INTO prompts (id, text, solution, suite_id, display_order) VALUES (NULL, 'Bad Prompt', '', ?, 1)`, suiteID); err != nil {
+		t.Fatalf("failed to insert scan-error prompt: %v", err)
+	}
+	if _, err := db.Exec(`INSERT INTO prompts (id, text, solution, suite_id, display_order) VALUES ('3', 'Good Prompt 2', '', ?, 2)`, suiteID); err != nil {
+		t.Fatalf("failed to insert second good prompt: %v", err)
 	}
 
 	req := httptest.NewRequest("POST", "/randomize_scores", nil)
@@ -774,7 +792,16 @@ func TestRandomizeScores_PromptScanContinuesOnError(t *testing.T) {
 	DefaultHandler.RandomizeScores(rr, req)
 
 	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+		t.Fatalf("expected status %d with the bad row skipped, got %d", http.StatusOK, rr.Code)
+	}
+
+	// The bad row is skipped while both scannable prompts still get scores.
+	var scoreCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("failed to count scores: %v", err)
+	}
+	if scoreCount != 2 {
+		t.Errorf("expected 2 scores for the scannable prompts, got %d", scoreCount)
 	}
 }
 
