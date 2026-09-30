@@ -17,11 +17,18 @@ var (
 	sqlOpen      = sql.Open
 	execPragmas  = func(conn *sql.DB) error {
 		_, err := conn.Exec(`PRAGMA journal_mode = WAL;
-                     PRAGMA synchronous = NORMAL;
-                     PRAGMA foreign_keys = ON;`)
+                     PRAGMA synchronous = NORMAL;`)
 		return err
 	}
 )
+
+// sqliteDSN appends the connection parameters that must apply to every
+// pooled connection. PRAGMA foreign_keys is per-connection, and database/sql
+// pools connections, so a one-shot PRAGMA at init leaves later connections
+// enforcing nothing and ON DELETE CASCADE / SET NULL become nondeterministic.
+func sqliteDSN(dbPath string) string {
+	return dbPath + "?_foreign_keys=on"
+}
 
 var (
 	createTablesFunc = createTables
@@ -42,7 +49,7 @@ func InitDB(dbPath string) error {
 	}
 
 	var err error
-	db, err = sqlOpen("sqlite3", dbPath)
+	db, err = sqlOpen("sqlite3", sqliteDSN(dbPath))
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
