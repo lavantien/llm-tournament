@@ -1,8 +1,12 @@
 package middleware
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 func TestDefaultDataStore_IsSet(t *testing.T) {
@@ -419,8 +423,19 @@ func TestSQLiteDataStore_UpdatePromptsOrder(t *testing.T) {
 	// Write some prompts first
 	_ = ds.WritePrompts([]Prompt{{Text: "P1"}, {Text: "P2"}})
 
-	// Update order - should not panic
+	// Update order through the DataStore wrapper and verify it applied.
 	ds.UpdatePromptsOrder([]int{1, 0})
+
+	prompts := ds.ReadPrompts()
+	if len(prompts) != 2 {
+		t.Fatalf("expected 2 prompts, got %d", len(prompts))
+	}
+	expectedSequence := []string{"P2", "P1"}
+	for i, want := range expectedSequence {
+		if prompts[i].Text != want {
+			t.Errorf("prompts[%d] = %q, want %q", i, prompts[i].Text, want)
+		}
+	}
 }
 
 func TestSQLiteDataStore_ReadWriteProfiles(t *testing.T) {
@@ -492,7 +507,63 @@ func TestSQLiteDataStore_BroadcastResults(t *testing.T) {
 	}
 
 	ds := &SQLiteDataStore{}
+	_ = ds.WritePrompts([]Prompt{{Text: "P1"}})
+	err = ds.WriteResults("default", map[string]Result{
+		"Model1": {Scores: []int{80}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
 
-	// Should not panic
-	ds.BroadcastResults()
+	clientsMutex.Lock()
+	clients = make(map[*websocket.Conn]bool)
+	clientsMutex.Unlock()
+
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer func() { _ = conn.Close() }()
+
+	waitForWebSocketClientRegistration(t, 1)
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+
+	go ds.BroadcastResults()
+
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatalf("failed to read broadcast: %v", err)
+	}
+
+	var payload struct {
+		Type string `json:"type"`
+		Data struct {
+			Results   map[string]Result `json:"results"`
+			Models    []string          `json:"models"`
+			SuiteName string            `json:"suiteName"`
+			Prompts   []string          `json:"prompts"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(msg, &payload); err != nil {
+		t.Fatalf("failed to unmarshal broadcast: %v", err)
+	}
+
+	if payload.Type != "results" {
+		t.Errorf("expected type 'results', got %q", payload.Type)
+	}
+	if payload.Data.SuiteName != "default" {
+		t.Errorf("expected suite 'default', got %q", payload.Data.SuiteName)
+	}
+	if len(payload.Data.Models) != 1 || payload.Data.Models[0] != "Model1" {
+		t.Errorf("expected models [Model1], got %v", payload.Data.Models)
+	}
+	if _, exists := payload.Data.Results["Model1"]; !exists {
+		t.Errorf("expected results entry for Model1, got %#v", payload.Data.Results)
+	}
+	if len(payload.Data.Prompts) != 1 || payload.Data.Prompts[0] != "P1" {
+		t.Errorf("expected prompts [P1], got %v", payload.Data.Prompts)
+	}
 }
