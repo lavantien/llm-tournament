@@ -2,6 +2,26 @@
 
 All notable changes are documented in this file.
 
+## [v4.3] - 2026-09-30
+
+### Removed
+
+- **Automated evaluation and third-party APIs (BREAKING):** Removed the entire auto-judge surface: the `evaluator/` Go package, the `python_service/` FastAPI judge service, `handlers/evaluation.go`, the settings page and its store, AES-256-GCM API-key encryption, the `evaluation_jobs`/`evaluation_history`/`cost_tracking`/`settings` tables, and all judge/evaluation routes and WebSocket broadcasts. The app is now manual-only: CRUD for prompts, models, profiles, and suites plus manual scoring, saved model responses, results, and stats. No third-party APIs, no API keys, fully offline.
+
+### Added
+
+- **100% statement coverage:** Every package now tests at 100.0%, including error paths for suite seeding, score writes, and prompt lookups.
+
+### Changed
+
+- **Sept 2026 toolchain refresh:** Go 1.27.1, go-sqlite3 v1.14.52, golangci-lint v2.14.0, Tailwind CSS v4.3.3, DaisyUI v5.7.47, PostCSS CLI 12, Node.js 24, and all GitHub Actions pinned to current majors (checkout v7, setup-go v7, cache v6, upload-artifact v7, codecov v7). CDN scripts (Marked, Chart.js) pinned to exact versions.
+- **CI slimming:** Dropped the screenshots job (regenerate offline with `npm run screenshots` before pushing UI changes). The `commit-updates` job now only refreshes the coverage badge and table, and write permissions are scoped to that job alone.
+
+### Fixed
+
+- **`WriteResults` transaction leak:** Error paths now roll back the open transaction instead of leaking it (which held the SQLite file on Windows and broke temp-dir cleanup).
+- **Screenshot capture:** `tools/screenshots/capture.mjs` was missing an `await` on parallel page operations.
+
 ## [v3.4] - 2025-12-20
 
 ### Added
