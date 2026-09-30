@@ -10,6 +10,7 @@ import (
 type MockDataStore struct {
 	// Function hooks for custom behavior
 	WriteResultsFunc     func(suiteName string, results map[string]middleware.Result) error
+	RenameModelFunc      func(suiteName, oldName, newName string) error
 	WritePromptsFunc     func(prompts []middleware.Prompt) error
 	WriteProfilesFunc    func(profiles []middleware.Profile) error
 	BroadcastResultsFunc func()
@@ -71,6 +72,15 @@ func (m *MockDataStore) WriteResults(suiteName string, results map[string]middle
 		return m.WriteResultsFunc(suiteName, results)
 	}
 	m.Results = results
+	return nil
+}
+
+// RenameModel only simulates the store-side row rename. Rebuilding the
+// results map stays the handler's job, so the mock leaves Results alone.
+func (m *MockDataStore) RenameModel(suiteName, oldName, newName string) error {
+	if m.RenameModelFunc != nil {
+		return m.RenameModelFunc(suiteName, oldName, newName)
+	}
 	return nil
 }
 

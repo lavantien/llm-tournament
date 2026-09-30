@@ -568,6 +568,21 @@ func WriteResults(suiteName string, results map[string]Result) (err error) {
 	return tx.Commit()
 }
 
+// RenameModel renames a model within a suite in place. Keeping the row id is
+// the point: model_responses cascade on model_id, so a rename done by delete
+// and reinsert would destroy every saved response.
+func RenameModel(suiteName, oldName, newName string) error {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	if _, err := db.Exec("UPDATE models SET name = ? WHERE name = ? AND suite_id = ?", newName, oldName, suiteID); err != nil {
+		return fmt.Errorf("failed to rename model: %w", err)
+	}
+	return nil
+}
+
 // MigrateResults converts old result formats to the current format
 func MigrateResults(results map[string]Result) map[string]Result {
 	migrated := make(map[string]Result)

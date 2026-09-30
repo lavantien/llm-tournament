@@ -53,6 +53,7 @@ type MockDataStore struct {
 	WriteProfilesFunc       func(profiles []Profile) error
 	ReadResultsFunc         func() map[string]Result
 	WriteResultsFunc        func(suiteName string, results map[string]Result) error
+	RenameModelFunc         func(suiteName, oldName, newName string) error
 	BroadcastResultsFunc    func()
 
 	Err      error
@@ -193,6 +194,16 @@ func (m *MockDataStore) WriteResults(suiteName string, results map[string]Result
 		return m.Err
 	}
 	m.Results = results
+	return nil
+}
+
+func (m *MockDataStore) RenameModel(suiteName, oldName, newName string) error {
+	if m.RenameModelFunc != nil {
+		return m.RenameModelFunc(suiteName, oldName, newName)
+	}
+	if m.Err != nil {
+		return m.Err
+	}
 	return nil
 }
 
