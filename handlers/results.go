@@ -118,7 +118,10 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
-		return modelScores[models[i]] > modelScores[models[j]]
+		if modelScores[models[i]] != modelScores[models[j]] {
+			return modelScores[models[i]] > modelScores[models[j]]
+		}
+		return models[i] < models[j]
 	})
 	log.Printf("Sorted models: %v", models)
 
@@ -234,15 +237,33 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 // UpdateResult handles AJAX requests to update results
 func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update result")
-	_ = r.ParseForm()
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		log.Printf("Error parsing form: %v", err)
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
 	model := r.Form.Get("model")
 	promptIndexStr := r.Form.Get("promptIndex")
 	passStr := r.Form.Get("pass")
-	promptIndex, _ := strconv.Atoi(promptIndexStr)
+	promptIndex, err := strconv.Atoi(promptIndexStr)
+	if err != nil {
+		log.Printf("Invalid prompt index %q: %v", promptIndexStr, err)
+		http.Error(w, "Invalid prompt index", http.StatusBadRequest)
+		return
+	}
 	pass, err := strconv.ParseBool(passStr)
 	if err != nil {
 		log.Printf("Invalid pass value: %v", err)
 		http.Error(w, "Invalid pass value", http.StatusBadRequest)
+		return
+	}
+	if model == "" {
+		log.Println("Missing model parameter")
+		http.Error(w, "Missing model", http.StatusBadRequest)
 		return
 	}
 
@@ -262,12 +283,15 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) {
 	if len(result.Scores) < len(prompts) {
 		result.Scores = append(result.Scores, make([]int, len(prompts)-len(result.Scores))...)
 	}
-	if promptIndex >= 0 && promptIndex < len(result.Scores) {
-		if pass {
-			result.Scores[promptIndex] = 100
-		} else {
-			result.Scores[promptIndex] = 0
-		}
+	if promptIndex < 0 || promptIndex >= len(result.Scores) {
+		log.Printf("Prompt index %d out of range for %d prompts", promptIndex, len(result.Scores))
+		http.Error(w, "Invalid prompt index", http.StatusBadRequest)
+		return
+	}
+	if pass {
+		result.Scores[promptIndex] = 100
+	} else {
+		result.Scores[promptIndex] = 0
 	}
 	results[model] = result
 	err = h.DataStore.WriteResults(suiteName, results)
