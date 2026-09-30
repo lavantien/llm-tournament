@@ -209,16 +209,16 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
-- The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
+- The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:79`.
 - **UI migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`).
 
 ### 4.2 Where to look in 5 seconds
 
 - **HTTP routes / feature entrypoint:** `main.go:10` (every user-visible feature starts as a path here).
 - **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
-- **DB tables & relationships:** `middleware/database.go:72` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `model_responses`).
+- **DB tables & relationships:** `middleware/database.go:79` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `model_responses`).
 - **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/suites).
-- **WebSocket messages:** `middleware/socket.go:35` (server-side `/ws`, broadcasting and client tracking).
+- **WebSocket messages:** `middleware/socket.go:43` (server-side `/ws`, broadcasting and client tracking).
 - **Saved model responses:** `handlers/model_response.go` (stored in `model_responses`, edited from the Evaluate page).
 - **UI components:** Tailwind v4 + DaisyUI v5.
 - **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.

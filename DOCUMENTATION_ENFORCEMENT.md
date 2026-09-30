@@ -17,8 +17,8 @@ Several documentation files are automatically validated by tests and CI scripts.
 - `scripts/update_coverage_table.py` via `make update-coverage-table` regenerates the coverage table
 - `make verify-docs` checks the Coverage section format with a regex
 - `make coverage-enforce` fails when total statement coverage drops below 100.0% (also part of `make check` and CI)
-- `readme_ui_screenshots_test.go` requires every `assets/ui-*.png` referenced in the Usage Tutorial to exist
-- `readme_quickstart_test.go` forbids references to removed Make targets in the Quick Start section
+- `readme_ui_screenshots_test.go` requires a fixed list of 6 `assets/ui-*.png` screenshots to be referenced in the README and to exist on disk
+- `readme_quickstart_test.go` forbids references to removed Make targets and flags anywhere in the file
 
 **Required sections:**
 
@@ -26,29 +26,29 @@ Several documentation files are automatically validated by tests and CI scripts.
 
 **Required format:**
 
-The section must contain a `Package-level statement coverage from` line followed by a two-column package/coverage table. The check accepts the table with or without column padding (the generator pads columns):
+The section must contain a `Package-level statement coverage from` line followed by a two-column package/coverage table. The check accepts the table with or without column padding (the generator emits unpadded cells):
 
 ```markdown
 ### Coverage
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
-| Package                                          |  Coverage |
-| ------------------------------------------------ | --------: |
-| llm-tournament                                   |     XX.X% |
-| llm-tournament/handlers                          |     XX.X% |
-| llm-tournament/integration                       |         - |
-| llm-tournament/middleware                        |     XX.X% |
-| llm-tournament/templates                         |     XX.X% |
-| llm-tournament/testutil                          |     XX.X% |
-| llm-tournament/tools/screenshots/cmd/demo-server |     XX.X% |
-| **Total**                                        | **XX.X%** |
+| Package | Coverage |
+| --- | ---: |
+| llm-tournament | XX.X% |
+| llm-tournament/handlers | XX.X% |
+| llm-tournament/integration | - |
+| llm-tournament/middleware | XX.X% |
+| llm-tournament/templates | XX.X% |
+| llm-tournament/testutil | XX.X% |
+| llm-tournament/tools/screenshots/cmd/demo-server | XX.X% |
+| **Total** | **XX.X%** |
 ```
 
 **How to update:**
 
 - Run `make update-coverage-table` locally to regenerate the table
-- Or run `make update-coverage` to update both badge and table
+- Or run `make update-coverage` to update the coverage badge
 
 **What breaks it:**
 
