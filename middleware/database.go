@@ -175,12 +175,17 @@ func GetCurrentSuiteID() (int, error) {
 	var suiteID int
 	err := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID)
 	if err == sql.ErrNoRows {
-		// If no current suite, set default as current
-		_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
-		if err != nil {
+		// No suite is current: ensure the default suite exists, mark it
+		// current, and read the ID back. This must not recurse; when the
+		// default row is missing the recursion would repeat the identical
+		// state forever.
+		if _, err := db.Exec("INSERT OR IGNORE INTO suites (name, is_current) VALUES ('default', 1)"); err != nil {
+			return 0, fmt.Errorf("failed to create default suite: %w", err)
+		}
+		if _, err := db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'"); err != nil {
 			return 0, fmt.Errorf("failed to set default suite as current: %w", err)
 		}
-		return GetCurrentSuiteID()
+		err = db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID)
 	}
 	return suiteID, err
 }
