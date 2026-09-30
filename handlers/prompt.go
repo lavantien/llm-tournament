@@ -185,6 +185,26 @@ func (h *Handler) UpdatePromptsOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing order", http.StatusBadRequest)
 		return
 	}
+
+	// The prompt list only builds the order array from rendered items, so a
+	// filter or search in effect posts a partial list. Require a full
+	// permutation of the current suite before touching display_order.
+	prompts := h.DataStore.ReadPrompts()
+	if len(order) != len(prompts) {
+		log.Printf("Order covers %d of %d prompts", len(order), len(prompts))
+		http.Error(w, "Order must list every prompt exactly once", http.StatusBadRequest)
+		return
+	}
+	seen := make(map[int]bool, len(order))
+	for _, idx := range order {
+		if idx < 0 || idx >= len(prompts) || seen[idx] {
+			log.Printf("Order contains invalid index %d", idx)
+			http.Error(w, "Order must list every prompt exactly once", http.StatusBadRequest)
+			return
+		}
+		seen[idx] = true
+	}
+
 	h.DataStore.UpdatePromptsOrder(order)
 	http.Redirect(w, r, "/prompts", http.StatusSeeOther)
 }
