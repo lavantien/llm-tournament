@@ -511,6 +511,10 @@ func UpdatePromptsOrder(order []int) {
 		log.Println("Invalid order length")
 		return
 	}
+	if !isPermutationOfIndices(order) {
+		log.Println("Invalid order: values must be a permutation of 0..n-1 without duplicates")
+		return
+	}
 
 	suiteID, err := GetCurrentSuiteID()
 	if err != nil {
@@ -570,4 +574,18 @@ func UpdatePromptsOrder(order []int) {
 
 	log.Println("Prompts order updated successfully")
 	BroadcastResults()
+}
+
+// isPermutationOfIndices reports whether order contains every index in
+// 0..len(order)-1 exactly once. A duplicate or omitted index would leave two
+// prompts sharing a display_order and corrupt ReadResults score indexing.
+func isPermutationOfIndices(order []int) bool {
+	seen := make([]bool, len(order))
+	for _, index := range order {
+		if index < 0 || index >= len(order) || seen[index] {
+			return false
+		}
+		seen[index] = true
+	}
+	return true
 }
