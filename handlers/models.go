@@ -80,6 +80,10 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Model with this name already exists", http.StatusBadRequest)
 			return
 		}
+		if _, exists := results[modelName]; !exists {
+			http.Error(w, "Model not found", http.StatusNotFound)
+			return
+		}
 
 		results[newModelName] = results[modelName]
 		delete(results, modelName)
