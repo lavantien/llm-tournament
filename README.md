@@ -520,6 +520,8 @@ npm run screenshots
 
 Screenshots are saved to `assets/ui-*.png`.
 
+CI does not generate screenshots (the Playwright job was removed for speed). Regenerate them locally with the commands above before pushing UI changes.
+
 ### 8.5 Additional Documentation
 
 - UI design and migration: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
