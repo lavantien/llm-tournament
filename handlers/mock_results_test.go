@@ -117,10 +117,12 @@ func TestUpdateMockResultsHandler_ValidatesScores(t *testing.T) {
 
 	// Verify score was corrected
 	results := middleware.ReadResults()
-	if result, exists := results["ValidateModel"]; exists {
-		if len(result.Scores) > 0 && result.Scores[0] != 0 {
-			t.Errorf("expected score 0 (corrected from invalid 77), got %d", result.Scores[0])
-		}
+	result, exists := results["ValidateModel"]
+	if !exists {
+		t.Fatal("expected results for ValidateModel to exist")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 0 {
+		t.Errorf("expected score 0 (corrected from invalid 77), got %v", result.Scores)
 	}
 }
 
@@ -194,11 +196,16 @@ func TestUpdateMockResultsHandler_ValidatesInvalidScores(t *testing.T) {
 
 	// Verify invalid scores were corrected
 	results := middleware.ReadResults()
-	if result, exists := results["TestModel"]; exists {
-		for i, score := range result.Scores {
-			if score != 0 {
-				t.Errorf("expected invalid score at index %d to be corrected to 0, got %d", i, score)
-			}
+	result, exists := results["TestModel"]
+	if !exists {
+		t.Fatal("expected results for TestModel to exist")
+	}
+	if len(result.Scores) != 1 {
+		t.Fatalf("expected 1 stored score for the single prompt, got %d", len(result.Scores))
+	}
+	for i, score := range result.Scores {
+		if score != 0 {
+			t.Errorf("expected invalid score at index %d to be corrected to 0, got %d", i, score)
 		}
 	}
 }
@@ -383,7 +390,11 @@ func TestUpdateMockResultsHandler_GeneratesMockModels(t *testing.T) {
 
 	// At least some expected tiers should be present
 	if len(foundTiers) < 3 {
-		t.Errorf("expected tier-based model names (Cosmic, Transcendent, etc.), got: %v", models[:5])
+		preview := models
+		if len(preview) > 5 {
+			preview = preview[:5]
+		}
+		t.Errorf("expected tier-based model names (Cosmic, Transcendent, etc.), got: %v", preview)
 	}
 }
 
@@ -432,7 +443,11 @@ func TestUpdateMockResultsHandler_GeneratesTierBasedModelNames(t *testing.T) {
 		}
 	}
 	if !foundCosmic {
-		t.Errorf("expected at least one model to contain 'Cosmic', got: %v", models[:5])
+		preview := models
+		if len(preview) > 5 {
+			preview = preview[:5]
+		}
+		t.Errorf("expected at least one model to contain 'Cosmic', got: %v", preview)
 	}
 }
 
@@ -909,8 +924,10 @@ func TestUpdateMockResultsHandler_PromptsHaveSolutions(t *testing.T) {
 		if err := rows.Scan(&text, &solution); err != nil {
 			t.Fatalf("failed to scan row: %v", err)
 		}
-		// Empty string is OK, NULL is not
-		_ = solution // Empty solution is acceptable
+		// Every seeded prompt carries a solution; NULL fails the scan above.
+		if solution == "" {
+			t.Errorf("expected prompt %q to have a non-empty solution", text)
+		}
 		count++
 	}
 

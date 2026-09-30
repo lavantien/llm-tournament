@@ -43,10 +43,12 @@ func TestUpdateResultHandler_Success(t *testing.T) {
 
 	// Verify result was updated
 	results := middleware.ReadResults()
-	if result, exists := results["TestModel"]; exists {
-		if len(result.Scores) > 0 && result.Scores[0] != 100 {
-			t.Errorf("expected score 100, got %d", result.Scores[0])
-		}
+	result, exists := results["TestModel"]
+	if !exists {
+		t.Fatal("expected results for TestModel to exist")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 100 {
+		t.Errorf("expected score 100, got %v", result.Scores)
 	}
 }
 

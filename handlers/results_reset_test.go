@@ -101,11 +101,16 @@ func TestConfirmRefreshResultsHandler_POST(t *testing.T) {
 
 	// Verify scores were zeroed
 	results := middleware.ReadResults()
-	if result, exists := results["RefreshModel"]; exists {
-		for i, score := range result.Scores {
-			if score != 0 {
-				t.Errorf("expected score 0 at index %d, got %d", i, score)
-			}
+	result, exists := results["RefreshModel"]
+	if !exists {
+		t.Fatal("expected RefreshModel to survive the refresh with zeroed scores")
+	}
+	if len(result.Scores) != 1 {
+		t.Fatalf("expected 1 score for RefreshModel after refresh, got %d", len(result.Scores))
+	}
+	for i, score := range result.Scores {
+		if score != 0 {
+			t.Errorf("expected score 0 at index %d, got %d", i, score)
 		}
 	}
 }
@@ -128,14 +133,15 @@ func TestResetResultsHandler_POST_AndVerify(t *testing.T) {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
 	}
 
-	// Verify results were reset
+	// Verify the reset emptied the results map entirely. Iterating over the
+	// map alone could not distinguish a reset from a wrong empty read, so
+	// assert the known seeded model is gone too.
 	results := middleware.ReadResults()
-	for _, result := range results {
-		for _, score := range result.Scores {
-			if score != 0 {
-				t.Error("expected all scores to be reset to 0")
-			}
-		}
+	if len(results) != 0 {
+		t.Errorf("expected reset to remove every model, got %d models", len(results))
+	}
+	if _, exists := results["Model1"]; exists {
+		t.Error("expected Model1 to be removed by the reset")
 	}
 }
 

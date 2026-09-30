@@ -42,10 +42,12 @@ func TestEvaluateResult_POST_Success(t *testing.T) {
 
 	// Verify score was updated
 	results := middleware.ReadResults()
-	if result, exists := results["EvalModel"]; exists {
-		if len(result.Scores) > 0 && result.Scores[0] != 80 {
-			t.Errorf("expected score 80, got %d", result.Scores[0])
-		}
+	result, exists := results["EvalModel"]
+	if !exists {
+		t.Fatal("expected results for EvalModel to exist")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 80 {
+		t.Errorf("expected score 80, got %v", result.Scores)
 	}
 }
 
@@ -118,10 +120,12 @@ func TestEvaluateResult_POST_ScoreClamping(t *testing.T) {
 	EvaluateResult(evalRR, evalReq)
 
 	results := middleware.ReadResults()
-	if result, exists := results["ClampModel"]; exists {
-		if len(result.Scores) > 0 && result.Scores[0] > 100 {
-			t.Errorf("expected score <= 100, got %d", result.Scores[0])
-		}
+	result, exists := results["ClampModel"]
+	if !exists {
+		t.Fatal("expected results for ClampModel to exist")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 100 {
+		t.Errorf("expected score clamped to 100, got %v", result.Scores)
 	}
 }
 
@@ -327,10 +331,12 @@ func TestEvaluateResult_POST_NegativeScore(t *testing.T) {
 
 	// Score should be clamped to 0
 	results := middleware.ReadResults()
-	if result, exists := results["NegModel"]; exists {
-		if len(result.Scores) > 0 && result.Scores[0] != 0 {
-			t.Errorf("expected score 0 (clamped from -10), got %d", result.Scores[0])
-		}
+	result, exists := results["NegModel"]
+	if !exists {
+		t.Fatal("expected results for NegModel to exist")
+	}
+	if len(result.Scores) != 1 || result.Scores[0] != 0 {
+		t.Errorf("expected score 0 (clamped from -10), got %v", result.Scores)
 	}
 }
 
