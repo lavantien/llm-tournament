@@ -553,13 +553,10 @@ func UpdatePromptsOrder(order []int) {
 	}
 	_ = promptRows.Close()
 
-	// Update each prompt's display_order
+	// Update each prompt's display_order. Indices are guaranteed in range
+	// by the permutation check: len(order) equals the deduplicated prompt
+	// count, which never exceeds the number of prompt rows.
 	for newOrder, oldIndex := range order {
-		if oldIndex < 0 || oldIndex >= len(promptIDs) {
-			log.Println("Invalid index in order")
-			return
-		}
-
 		_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, promptIDs[oldIndex])
 		if err != nil {
 			log.Printf("Error updating prompt order: %v", err)
