@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes are documented in this file.
+All notable changes are documented in this file. Entries for v4.0 to v4.2 and everything before v2.1 were reconstructed later from the tagged release notes and git history.
 
 ## [v4.5.1] - 2026-10-01
 
@@ -62,6 +62,18 @@ Toolchain refresh: Go 1.27.1, go-sqlite3 v1.14.52, golangci-lint v2.14.0, Tailwi
 
 `WriteResults` error paths roll back their transaction instead of leaking it, which held the SQLite file on Windows. `capture.mjs` was missing an `await` on parallel page operations.
 
+## [v4.2] - 2026-01-01
+
+The UI moved to Tailwind with DaisyUI and no custom CSS. Added a Randomize Scores button, profile-based mock prompt generation, confirmation dialogs, and scroll buttons on pages that lacked them. CI began updating the coverage badge, table, and screenshots automatically, parsing statement-level coverage after the badge had been reading function-level numbers. Screenshot capture gained the edit page, and error-case tests grew across results, evaluate, and mock handlers.
+
+## [v4.1] - 2025-12-23
+
+Added CI, fixed all lint findings, and standardized formatting. Coverage sat at 99.9%, down from 100.0%, an accepted balance at the time.
+
+## [v4.0] - 2025-12-20
+
+Total statement coverage reached 100.0%.
+
 ## [v3.4] - 2025-12-20
 
 README gained a per-package coverage table, entrypoints were refactored for testability with more error-path unit tests, and `SetCurrentSuite` updates `CurrentSuite` when no error hook is set.
@@ -81,6 +93,42 @@ Playwright screenshot automation (`npm run screenshots`) and Arena CSS regressio
 ## [v3.0] - 2025-12-19
 
 Added optional automated LLM evaluation with a Python FastAPI judge service, multi-judge consensus, job persistence, WebSocket progress, cost tracking, encrypted storage for API keys, the Arena UI overhaul, and coverage badge scripts. Templates standardized on a shared top bar and left rail, with handler dependency injection for broader testing. Removed the v2.0 JSON migration tooling, its CLI flags, and Gemini CLI integration.
+
+## [v2.0] - 2025-03-15
+
+Persistence moved from JSON files to SQLite. `middleware/database.go` arrived with go-sqlite3, profiles, prompts, and results state went through database queries, and the flags `--migrate-to-sqlite`, `--remigrate-scores`, and `--cleanup-duplicates` plus Makefile `setenv`, `migrate`, and `dedup` targets handled the transition. Tier definitions gained a transcendental tier with matching CSS, and state and database modules were reorganized with better transaction handling.
+
+## [v1.7] - 2025-03-10
+
+Scoring moved to an 11-tier system with names like Divine, Legendary, and Mythical over a 0-3000+ range, with reversed colors for hierarchy. Mock generation got even distribution, revised weights, and proper RNG seeding. phi-4-mini joined the roster and the random scores button stopped flickering and desyncing.
+
+## [v1.6] - 2025-03-07
+
+README gained screenshots, score buttons became emoji, results gained a Previous button to restore prior state, and evaluate rendered prompt and solution as markdown with a raw markdown copy button and previous and next navigation. Templates gained math functions. A batch of fixes covered results table rendering, websocket stability including first-load rendering, and the JSON parse error in random mock scores.
+
+## [v1.5] - 2025-03-02
+
+Added tools (openwebui, pipes, anthropic-claude-thinking-96k) and a tools section in the README, fixed the chart overflow, polished the UI, and updated screenshots.
+
+## [v1.4] - 2025-03-01
+
+The codebase was modularized. Scoring got granular schemes with matching cell colors, stats got a tiered ranking page, mock scores became persistent random with live updates, import and export switched from CSV to JSON, prompt suite rename was fixed, and websockets stabilized. Prompt and contestant counts settled at 20, with aider configs for o1 high, o3-mini high, v3, r1, 3.7 sonnet, and codestral.
+
+## [v1.3] - 2025-01-19
+
+The prompts page gained a profile filter. Added a full set of XML system prompts, a local TTS tool on Kokoro 82M and ONNX, contestant and default prompt lists at 33, and prompt and README quality work.
+
+## [v1.2] - 2025-01-19
+
+Project structure simplified, profile renames now reflect in prompt rendering and selection, and full text search on the profile page handles XML.
+
+## [v1.1] - 2025-01-18
+
+Copy button on profiles, contestant list at 32, default prompt list at 32.
+
+## [v1.0] - 2025-01-15
+
+First release. The manual tournament workflow with a 30-model contestant list, a 30-prompt suite, and profiles for chain-of-thought plus ReAct and Vietnamese translation.
 
 ## [v2.1] - 2025-03-16
 
