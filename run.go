@@ -88,11 +88,11 @@ func run(args []string, deps runDeps) int {
 }
 
 // normalizePort turns a port flag value ("8080" or ":8080") into a listen
-// address, rejecting anything that is not a valid TCP port number.
+// address, rejecting anything outside the usable TCP port range 1-65535.
 func normalizePort(port string) (string, error) {
 	trimmed := strings.TrimPrefix(port, ":")
 	n, err := strconv.Atoi(trimmed)
-	if err != nil || n < 0 || n > 65535 {
+	if err != nil || n < 1 || n > 65535 {
 		return "", fmt.Errorf("invalid port %q", port)
 	}
 	return fmt.Sprintf(":%d", n), nil
