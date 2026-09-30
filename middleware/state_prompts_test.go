@@ -472,14 +472,17 @@ func TestReadPromptSuite_NonExistent(t *testing.T) {
 		t.Fatalf("InitDB failed: %v", err)
 	}
 
+	// GetSuiteID auto-creates unknown suites, so reading a nonexistent
+	// suite yields empty prompts without an error.
 	prompts, err := ReadPromptSuite("non-existent-suite")
-	// Should return empty data for non-existent suite
 	if err != nil {
-		// Error is expected for non-existent suite
-		return
+		t.Fatalf("expected no error for non-existent suite, got %v", err)
 	}
-	if len(prompts) > 0 {
-		t.Error("expected empty prompts for non-existent suite")
+	if len(prompts) != 0 {
+		t.Errorf("expected 0 prompts for non-existent suite, got %d", len(prompts))
+	}
+	if !SuiteExists("non-existent-suite") {
+		t.Error("expected the suite to be created by the lookup")
 	}
 }
 
