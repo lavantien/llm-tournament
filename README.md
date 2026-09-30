@@ -3,18 +3,16 @@
 [![Coverage](./coverage-badge.svg)](./coverage.html)
 [![CI](https://github.com/lavantien/llm-tournament/workflows/CI/badge.svg)](https://github.com/lavantien/llm-tournament/actions)
 [![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![Python Version](https://img.shields.io/badge/Python-3.13+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with both manual scoring and optional automated evaluation.
+A local-first benchmarking arena for evaluating and comparing Large Language Models (LLMs) with manual scoring.
 
 **Highlights**
 
 - SQLite-backed, single-binary Go server with SSR templates + WebSockets (`:8080`)
 - Prompt suites, profiles, models, results grid, and analytics
-- Optional Python FastAPI "judge service" for automated evaluation (`:8001`)
-- Encrypted API key storage (AES-256-GCM) via `ENCRYPTION_KEY`
+- Fully offline: no third-party APIs, no API keys
 
 **UI Stack**
 
@@ -92,38 +90,30 @@ The UI has been migrated to use **100% pure Tailwind v4 + DaisyUI v5** component
 
 ## 3. Features
 
-### 3.1 Automated Evaluation
-
-- Multi-judge consensus scoring using Claude Opus 4.5, GPT-5.2, and Gemini 3 Pro with extended thinking
-- Dual evaluation modes: objective (semantic matching) and creative (quality assessment)
-- Async job queue with 3 concurrent workers and job persistence
-- Real-time progress tracking and cost management (provider pricing varies)
-- AES-256-GCM encrypted API key storage
-- Complete audit trail with judge reasoning and confidence scores
-
-### 3.2 Manual Evaluation
+### 3.1 Manual Evaluation
 
 - Real-time scoring on 0-100 scale (increments: 0, 20, 40, 60, 80, 100)
 - Automatic model ranking with live leaderboard updates
 - WebSocket-based instant updates across all clients
 - State backup and rollback support
 - Drag-and-drop prompt reordering and bulk operations
+- Save and edit each model's response per prompt
 
-### 3.3 Suite Management
+### 3.2 Suite Management
 
 - Independent prompt suites with isolated profiles, prompts, and results
 - JSON import/export for suites and evaluation results
 - Duplicate cleanup and SQLite migration support
 - One-click suite switching
 
-### 3.4 Analytics
+### 3.3 Analytics
 
 - 12-tier classification system: Transcendental (>=3780) to Primordial (<300)
 - Interactive visualizations using Chart.js
 - Score distributions and tier-based model grouping
 - Performance comparisons across models and prompt types
 
-### 3.5 Interface
+### 3.4 Interface
 
 - Markdown editor with live preview
 - Advanced search and filtering
@@ -135,10 +125,9 @@ The UI has been migrated to use **100% pure Tailwind v4 + DaisyUI v5** component
 ## 4. Architecture
 
 ```
-Go Server (:8080)              Python Service (:8001)
-├── HTTP Handlers              ├── AI Judge Service
-├── WebSocket Hub    ──HTTP──→ ├── 3 LLM Judges
-├── Job Queue                  └── Consensus Scoring
+Go Server (:8080)
+├── HTTP Handlers
+├── WebSocket Hub
 └── SQLite DB
 ```
 
@@ -156,13 +145,10 @@ graph LR
         end
 
         SQLite[("SQLite Database\n(Single Source of Truth)")]
-        PythonService["Python FastAPI\n(Judge Service)"]
     end
 
     Browser -- "HTTP Requests / WebSocket" --> HTTP_WS
     HTTP_WS -- "Reads/Writes Data" --> SQLite
-    HTTP_WS -- "HTTP Requests (Scoring)" --> PythonService
-    PythonService -- "Returns Scores" --> HTTP_WS
 ```
 
 **Layered Architecture Flow**
@@ -172,24 +158,17 @@ graph TD
     subgraph "Go Monolith Layers"
         Surface["1. Surface Layer\n(Templates: *.html, *.js)"]
         Handlers["2. HTTP Handlers\n(handlers/*.go)"]
-        Middleware["3. Middleware Layer\n(DB, State, Auth, Encryption)\n(middleware/*.go)"]
-        Evaluator["4. Evaluator Layer\n(Async Jobs, Python Client)\n(evaluator/*.go)"]
+        Middleware["3. Middleware Layer\n(DB, State, Render, WS)\n(middleware/*.go)"]
     end
 
     DB[("SQLite Database")]
-    ExternalJudge["Python FastAPI Judge Service\n(python_service/)"]
 
     %% Main Flow based on text description
     Surface --> Handlers
     Handlers --> Middleware
-    Middleware --> Evaluator
 
     %% Data Access
     Middleware <-->|"Read/Write Schema"| DB
-    Evaluator -..->|"Updates Job Status/Results"| Middleware
-
-    %% External Call
-    Evaluator -- "HTTP Calls for Scoring" --> ExternalJudge
 ```
 
 **Sequence: Manual Evaluation Flow**
@@ -211,33 +190,6 @@ sequenceDiagram
     Browser->>User: Live leaderboard refresh
 ```
 
-**Sequence: Automated Evaluation Flow**
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant GoServer
-    participant JobQueue
-    participant PythonService
-    participant AIJudges
-    participant SQLite
-
-    User->>GoServer: POST /evaluate/all
-    GoServer->>JobQueue: Create jobs for all model×prompt pairs
-    JobQueue->>JobQueue: Dispatch to workers (3 concurrent)
-
-    loop For each job
-        JobQueue->>PythonService: POST /evaluate/objective
-        PythonService->>AIJudges: Call Claude, GPT, Gemini
-        AIJudges-->>PythonService: Individual scores
-        PythonService->>PythonService: Consensus algorithm
-        PythonService-->>JobQueue: Final score + reasoning
-    end
-
-    JobQueue->>SQLite: Store results
-    JobQueue->>User: WebSocket progress updates
-```
-
 **Sequence: Prompt Management Flow**
 
 ```mermaid
@@ -256,12 +208,11 @@ sequenceDiagram
 ```
 
 Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
-Evaluation Flow: Job Queue -> Python Service -> AI Judges -> Consensus -> Score Update
 
 ### 4.1 Bird's-Eye View
 
-- This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth, plus an optional Python FastAPI "judge service" for automated scoring.
-- The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws/encryption) -> evaluator (async jobs + Python client) -> `python_service` (judge logic).
+- This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
+- The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
 - The fastest "index" is to URL handler map in `main.go:60`, and the DB schema is centralized in `middleware/database.go:58`.
 - **UI Migration**: All styling now uses Tailwind v4 + DaisyUI v5 components with zero custom CSS. See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
@@ -269,12 +220,12 @@ Evaluation Flow: Job Queue -> Python Service -> AI Judges -> Consensus -> Score 
 
 - **HTTP routes / feature entrypoint:** `main.go:60` (every user-visible feature starts as a path here).
 - **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
-- **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `settings`, `evaluation_jobs`, `evaluation_history`, etc.).
-- **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/settings/suites/evaluation).
+- **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `model_responses`).
+- **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/suites).
 - **WebSocket messages:** `middleware/socket.go:33` (server-side `/ws`, broadcasting and client tracking).
-- **Automated evaluation pipeline:** `handlers/evaluation.go:25` `evaluator/job_queue.go:11` (workers/jobs) `evaluator/litellm_client.go:12` (HTTP to Python) `python_service/main.py:87` (FastAPI endpoints).
+- **Saved model responses:** `handlers/model_response.go` (stored in `model_responses`, edited from the Evaluate page).
 - **UI Components:** Tailwind v4 + DaisyUI v5. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete component mapping.
-- **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `evaluator/*_test.go`, `integration/prompts_integration_test.go`.
+- **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.
 
 ### 4.3 Common Feature Map
 
@@ -283,12 +234,10 @@ Evaluation Flow: Job Queue -> Python Service -> AI Judges -> Consensus -> Score 
 - **Models CRUD:** `main.go:63` `handlers/models.go`
 - **Manual scoring/results UI:** `main.go:80`/`main.go:81` `handlers/results.go` (+ `templates/results.html`)
 - **Stats/analytics:** `main.go:93` `handlers/stats.go` (+ `templates/stats.html`)
-- **Settings + encrypted keys:** `main.go:95` `handlers/settings.go` (+ crypto in `middleware/encryption.go:13`)
-- **Automated evaluation:** `main.go:98` `handlers/evaluation.go:25` (jobs stored in `evaluation_jobs` in `middleware/database.go:115`)
 
 ### 4.4 Search Cheats (copy/paste)
 
-- Find a feature by URL: `rg -n '"/evaluate/all"|"/results"|"/settings"' main.go`
+- Find a feature by URL: `rg -n '"/results"|"/stats"|"/prompts"' main.go`
 - Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
 - Find everything touching a table: `rg -n "evaluation_jobs|evaluation_history|model_responses" -S .`
 - Find a websocket message type: `rg -n "update_prompts_order|results" middleware/templates -S`
@@ -297,13 +246,11 @@ Evaluation Flow: Job Queue -> Python Service -> AI Judges -> Consensus -> Score 
 
 ## 5. Tech Stack
 
-Backend: Go 1.24+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite, AES-256-GCM
-
-AI Service: Python 3.8+, FastAPI, LiteLLM, Anthropic/OpenAI/Google SDKs
+Backend: Go 1.24+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite
 
 Frontend: HTML5, Tailwind CSS v4.1.18, DaisyUI v5.0.0, JavaScript ES6+, Chart.js 4.x, Marked.js
 
-Security: XSS sanitization, CORS protection, input validation, encrypted API keys
+Security: XSS sanitization, CORS protection, input validation
 
 [↑ Back to top](#table-of-contents)
 
@@ -312,7 +259,6 @@ Security: XSS sanitization, CORS protection, input validation, encrypted API key
 ### 6.1 Prerequisites
 
 - Go 1.24+
-- Python 3.8+ (for automated evaluation)
 - A C toolchain for CGO/SQLite (e.g., gcc/clang; on Windows install MinGW-w64/MSYS2)
 - Git
 - Make (optional, for convenience targets)
@@ -345,45 +291,7 @@ One-time migration (only if upgrading old result formats):
 CGO_ENABLED=1 go run . --migrate-results
 ```
 
-### 6.3 Automated Evaluation (Go + Python)
-
-Install Python dependencies:
-
-```bash
-cd python_service
-pip install -r requirements.txt
-```
-
-Generate and export `ENCRYPTION_KEY` (64 hex chars / 32 bytes):
-
-```bash
-export ENCRYPTION_KEY=$(openssl rand -hex 32)
-```
-
-PowerShell:
-
-```powershell
-$env:ENCRYPTION_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
-```
-
-Start Python service (terminal 1):
-
-```bash
-python main.py  # Port 8001
-```
-
-Start Go server (terminal 2):
-
-```bash
-cd ..
-CGO_ENABLED=1 go run .  # Port 8080
-```
-
-Configure API keys at http://localhost:8080/settings
-
-Complete setup guide: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
-
-### 6.4 UI Installation (DaisyUI + Tailwind v4)
+### 6.3 UI Installation (DaisyUI + Tailwind v4)
 
 The UI now uses Tailwind CSS v4 + DaisyUI v5 with zero custom CSS. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
@@ -417,7 +325,7 @@ This tutorial will guide you through the essential workflows of LLM Tournament A
 
 After starting the server, open `http://localhost:8080`. You'll see:
 
-1. **Top navigation bar** - Contains links to Results, Stats, Prompts, Profiles, Evaluate, and Settings
+1. **Top navigation bar** - Contains links to Results, Stats, Prompts, Profiles, and Evaluate
 2. **Suite selector** - On the right side of the top bar, with New/Edit/Delete buttons
 3. **Prompts page** - Your starting point for managing test prompts (a default suite is created automatically)
 
@@ -505,39 +413,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 ![Results](assets/ui-results.png)
 ![Stats](assets/ui-stats.png)
 
-### 7.7 Task: Configure Automated Evaluation
-
-Automated evaluation uses AI judges (Claude, GPT, Gemini) to score responses via a Python service.
-
-1. Go to **Settings**
-2. Add your AI provider API keys (Claude, GPT, Gemini)
-3. Set the **Cost Alert Threshold** to limit spending
-4. Enable **Auto-evaluate new models** if desired
-5. Set the **Python Service URL** (default: `http://localhost:8001`)
-6. Start the Python judge service (see Installation section)
-
-![Settings](assets/ui-settings.png)
-
-### 7.8 Task: Run Automated Evaluation
-
-Automated evaluation is triggered via API endpoints:
-
-```bash
-# Evaluate all models × all prompts
-POST /evaluate/all
-
-# Evaluate one model × all prompts
-POST /evaluate/model?id={model_id}
-
-# Evaluate all models × one prompt
-POST /evaluate/prompt?id={prompt_id}
-```
-
-Use a tool like `curl` or integrate these endpoints into your workflow. Results automatically populate the Results grid as evaluation progresses.
-
-**Auto-evaluate setting:** In the Settings page, you can enable "Auto-evaluate new models" to automatically trigger evaluation when a new model is added (requires Python service running).
-
-### 7.9 Task: Import/Export and Suite Management
+### 7.7 Task: Import/Export and Suite Management
 
 **Suite Management:**
 - The **Suite selector** is in the top-right of the top navigation bar
@@ -551,7 +427,7 @@ Use a tool like `curl` or integrate these endpoints into your workflow. Results 
 - **Prompts page**: Contains import/export buttons for prompt data
 - Export formats use JSON for backup and portability
 
-### 7.10 Keyboard Shortcuts
+### 7.8 Keyboard Shortcuts
 
 | Action | Shortcut |
 |--------|----------|
@@ -560,7 +436,7 @@ Use a tool like `curl` or integrate these endpoints into your workflow. Results 
 
 **Note:** Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for scroll to top/bottom).
 
-### 7.11 Tips for Efficient Usage
+### 7.9 Tips for Efficient Usage
 
 - **Batch Operations**: Use checkboxes to select multiple prompts for bulk actions
 - **Drag to Reorder**: Reorder prompts by dragging them in the list
@@ -588,7 +464,6 @@ See: **[lavantien/dotfiles](https://github.com/lavantien/dotfiles)**
 
 #### Prerequisites
 - Go 1.24+
-- Python 3.8+
 - Node.js 20+
 - CGO-enabled toolchain (gcc/clang/MinGW)
 
@@ -648,7 +523,6 @@ Screenshots are saved to `assets/ui-*.png`.
 ### 8.5 Additional Documentation
 
 - UI design and migration: [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md), [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md)
-- Automated evaluation setup: [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md)
 - Changelog / release notes: [CHANGELOG.md](CHANGELOG.md), [RELEASE_NOTES_v3.4.md](RELEASE_NOTES_v3.4.md)
 
 [↑ Back to top](#table-of-contents)
@@ -665,9 +539,6 @@ make test-verbose
 
 # Manual test run
 CGO_ENABLED=1 go test ./... -v -race -cover
-
-# Test Python service health
-curl http://localhost:8001/health
 ```
 
 ### 9.1 Testing Methodology (UI Components)
@@ -701,9 +572,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 ## 10. Troubleshooting
 
 - `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO required it for SQLite).
-- `ENCRYPTION_KEY` environment variable not set: set `ENCRYPTION_KEY` before using encrypted API keys / automated evaluation.
-- Automated evaluation stuck/unavailable: confirm that Python service is running and healthy (`GET /health` on `:8001`).
-- Port already in use: stop conflicting process or run on different ports (Python: `PORT`; Go server currently listens on `:8080` in `main.go`).
+- Port already in use: stop conflicting process (Go server currently listens on `:8080` in `main.go`).
 - DB issues: default DB is `data/tournament.db`; you can point to another file with `--db <path>`.
 - **DaisyUI classes not rendering**: Verify `tailwind.config.js` includes DaisyUI plugin and `npm run build:css` has been run.
 
@@ -711,25 +580,14 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 ## 11. API Reference
 
-### 11.1 Evaluation Endpoints
-
-- POST /evaluate/all - Evaluate all models × all prompts
-- POST /evaluate/model?id={id} - Evaluate one model × all prompts
-- POST /evaluate/prompt?id={id} - Evaluate all models × one prompt
-- GET /evaluation/progress?id={job_id} - Get job status
-- POST /evaluation/cancel?id={job_id} - Cancel running job
-
-### 11.2 Settings Endpoints
-
-- GET /settings - Settings page
-- POST /settings/update - Update settings
-- POST /settings/test_key - Test API key validity
-
-### 11.3 Core Endpoints
+### 11.1 Core Endpoints
 
 - GET /prompts - Prompts list (default route)
 - GET /results - Results and scoring
 - GET /profiles - Profile management
+- GET /stats - Analytics dashboard
+- GET /evaluate?model={name}&prompt={index} - Manual scoring page
+- POST /save_model_response - Save a model's response text for a prompt
 - WS /ws - WebSocket connection
 
 [↑ Back to top](#table-of-contents)
@@ -739,10 +597,8 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 ```
 llm-tournament/
 ├── main.go              # Entry point, routing, server setup
-├── handlers/            # HTTP handlers (models, prompts, results, stats, evaluation, settings)
-├── middleware/          # Business logic (database, WebSocket, encryption, state)
-├── evaluator/           # Async job queue, LLM client, consensus algorithm
-├── python_service/      # FastAPI AI judge service (3 LLM judges)
+├── handlers/            # HTTP handlers (models, prompts, results, stats, suites, profiles)
+├── middleware/          # Business logic (database, WebSocket, state, rendering)
 ├── templates/           # HTML, CSS, JavaScript
 ├── assets/              # UI screenshots and static images
 ├── data/                # SQLite database
@@ -761,19 +617,6 @@ llm-tournament/
 ## 13. Environment Variables
 
 - CGO_ENABLED=1 (required for SQLite)
-- ENCRYPTION_KEY (64-char hex / 32 bytes; required for encrypted API key storage and automated evaluation)
-
-Python judge service (optional):
-
-- HOST (default `0.0.0.0`)
-- PORT (default `8001`)
-
-Generate encryption key:
-
-- `openssl rand -hex 32`
-- `python -c "import secrets; print(secrets.token_hex(32))"`
-
-See [AUTOMATED_EVALUATION_SETUP.md](AUTOMATED_EVALUATION_SETUP.md) for detailed configuration.
 
 [↑ Back to top](#table-of-contents)
 

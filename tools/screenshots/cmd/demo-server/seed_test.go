@@ -2,7 +2,6 @@ package main
 
 import (
 	"llm-tournament/middleware"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -10,8 +9,6 @@ import (
 
 func TestSeedDemoData_CreatesCoreRecords(t *testing.T) {
 	t.Helper()
-
-	ensureDemoEncryptionKey()
 
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "demo.db")
@@ -50,23 +47,10 @@ func TestSeedDemoData_CreatesCoreRecords(t *testing.T) {
 	if scoreCount < 3 {
 		t.Fatalf("expected scores seeded, got %d", scoreCount)
 	}
-
-	if v := os.Getenv("ENCRYPTION_KEY"); v == "" {
-		t.Fatalf("expected ENCRYPTION_KEY to be set for demo seeding")
-	}
-}
-
-func TestEnsureDemoEncryptionKey_DoesNotOverrideExistingValue(t *testing.T) {
-	t.Setenv("ENCRYPTION_KEY", "already-set")
-	ensureDemoEncryptionKey()
-	if got := os.Getenv("ENCRYPTION_KEY"); got != "already-set" {
-		t.Fatalf("expected ENCRYPTION_KEY to be preserved, got %q", got)
-	}
 }
 
 func TestSeedDemoData_ReturnsError_WhenDBClosed(t *testing.T) {
 	t.Helper()
-	ensureDemoEncryptionKey()
 
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "demo.db")
@@ -84,7 +68,6 @@ func TestSeedDemoData_ReturnsError_WhenDBClosed(t *testing.T) {
 
 func TestSeedDemoData_ReturnsError_WhenWriteProfilesFails(t *testing.T) {
 	t.Helper()
-	ensureDemoEncryptionKey()
 
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "demo.db")
@@ -108,7 +91,6 @@ func TestSeedDemoData_ReturnsError_WhenWriteProfilesFails(t *testing.T) {
 
 func TestSeedDemoData_ReturnsError_WhenWritePromptsFails(t *testing.T) {
 	t.Helper()
-	ensureDemoEncryptionKey()
 
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "demo.db")
@@ -132,7 +114,6 @@ func TestSeedDemoData_ReturnsError_WhenWritePromptsFails(t *testing.T) {
 
 func TestSeedDemoData_ReturnsError_WhenWriteResultsFails(t *testing.T) {
 	t.Helper()
-	ensureDemoEncryptionKey()
 
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "demo.db")

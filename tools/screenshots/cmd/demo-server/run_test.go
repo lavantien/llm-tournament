@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"errors"
 	"io"
 	"log"
@@ -60,9 +59,8 @@ func TestRun_FlagParseError_Returns2(t *testing.T) {
 
 func TestRun_Success_PrintsURL_RegistersShutdown_AndClosesDB(t *testing.T) {
 	var (
-		closeCalled         bool
-		seedCalled          bool
-		initEvaluatorCalled bool
+		closeCalled bool
+		seedCalled  bool
 	)
 
 	out := &bytes.Buffer{}
@@ -80,10 +78,6 @@ func TestRun_Success_PrintsURL_RegistersShutdown_AndClosesDB(t *testing.T) {
 			seedCalled = true
 			return nil
 		},
-		initEvaluator: func(*sql.DB) {
-			initEvaluatorCalled = true
-		},
-		getDB: func() *sql.DB { return nil },
 		listen: func(network, address string) (net.Listener, error) {
 			return stubListener{addr: stubAddr{network: network, address: "127.0.0.1:12345"}}, nil
 		},
@@ -122,9 +116,6 @@ func TestRun_Success_PrintsURL_RegistersShutdown_AndClosesDB(t *testing.T) {
 	if !seedCalled {
 		t.Fatalf("expected seedDemoData to be called when -seed is true by default")
 	}
-	if !initEvaluatorCalled {
-		t.Fatalf("expected initEvaluator to be called")
-	}
 	if !closeCalled {
 		t.Fatalf("expected closeDB to be called via defer")
 	}
@@ -140,9 +131,6 @@ func TestRun_ListenError_Returns1(t *testing.T) {
 		initDB:       func(string) error { return nil },
 		closeDB:      func() error { closeCalled = true; return nil },
 		seedDemoData: func() error { return nil },
-		initEvaluator: func(*sql.DB) {
-		},
-		getDB: func() *sql.DB { return nil },
 		listen: func(string, string) (net.Listener, error) {
 			return nil, errors.New("listen failed")
 		},
@@ -165,9 +153,6 @@ func TestRun_ServerError_Returns1(t *testing.T) {
 		initDB:       func(string) error { return nil },
 		closeDB:      func() error { closeCalled = true; return nil },
 		seedDemoData: func() error { return nil },
-		initEvaluator: func(*sql.DB) {
-		},
-		getDB: func() *sql.DB { return nil },
 		listen: func(string, string) (net.Listener, error) {
 			return stubListener{addr: stubAddr{network: "tcp", address: "127.0.0.1:1"}}, nil
 		},
@@ -197,17 +182,11 @@ func TestDefaultRunDeps_PopulatesDependencies(t *testing.T) {
 	if deps.seedDemoData == nil {
 		t.Fatalf("expected seedDemoData to be set")
 	}
-	if deps.initEvaluator == nil || deps.getDB == nil {
-		t.Fatalf("expected initEvaluator/getDB to be set")
-	}
 	if deps.listen == nil || deps.serve == nil {
 		t.Fatalf("expected listen/serve to be set")
 	}
 	if deps.setLogOutput == nil {
 		t.Fatalf("expected setLogOutput to be set")
-	}
-	if deps.ensureDemoKey == nil {
-		t.Fatalf("expected ensureDemoKey to be set")
 	}
 	if deps.registerRoutes == nil {
 		t.Fatalf("expected registerRoutes to be set")
@@ -222,9 +201,8 @@ func TestRun_StdoutNil_UsesDiscardAndReturnsMissingDBError(t *testing.T) {
 
 func TestRun_InitDBError_Returns1(t *testing.T) {
 	deps := runDeps{
-		stdout:        io.Discard,
-		ensureDemoKey: func() {},
-		initDB:        func(string) error { return errors.New("boom") },
+		stdout: io.Discard,
+		initDB: func(string) error { return errors.New("boom") },
 	}
 
 	if exitCode := run([]string{"-db", "db.sqlite", "-seed=false"}, deps); exitCode != 1 {
@@ -235,11 +213,10 @@ func TestRun_InitDBError_Returns1(t *testing.T) {
 func TestRun_SeedDemoDataError_Returns1_AndClosesDB(t *testing.T) {
 	var closeCalled bool
 	deps := runDeps{
-		stdout:        io.Discard,
-		ensureDemoKey: func() {},
-		initDB:        func(string) error { return nil },
-		closeDB:       func() error { closeCalled = true; return nil },
-		seedDemoData:  func() error { return errors.New("seed failed") },
+		stdout:       io.Discard,
+		initDB:       func(string) error { return nil },
+		closeDB:      func() error { closeCalled = true; return nil },
+		seedDemoData: func() error { return errors.New("seed failed") },
 	}
 
 	if exitCode := run([]string{"-db", "db.sqlite"}, deps); exitCode != 1 {
@@ -253,12 +230,9 @@ func TestRun_SeedDemoDataError_Returns1_AndClosesDB(t *testing.T) {
 func TestRun_NilSignalChannel_ExitsOnErrServerClosed(t *testing.T) {
 	var closeCalled bool
 	deps := runDeps{
-		stdout:        io.Discard,
-		ensureDemoKey: func() {},
-		initDB:        func(string) error { return nil },
-		closeDB:       func() error { closeCalled = true; return nil },
-		initEvaluator: func(*sql.DB) {},
-		getDB:         func() *sql.DB { return nil },
+		stdout:  io.Discard,
+		initDB:  func(string) error { return nil },
+		closeDB: func() error { closeCalled = true; return nil },
 		listen: func(network, address string) (net.Listener, error) {
 			return stubListener{addr: stubAddr{network: network, address: "127.0.0.1:0"}}, nil
 		},

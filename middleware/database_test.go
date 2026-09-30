@@ -574,34 +574,6 @@ func TestRenameSuite_DuplicateName(t *testing.T) {
 	}
 }
 
-func TestCreateTables_DefaultSettings(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	// Check default settings exist
-	expectedSettings := []string{
-		"api_key_anthropic",
-		"api_key_openai",
-		"api_key_google",
-		"cost_alert_threshold_usd",
-		"auto_evaluate_new_models",
-		"python_service_url",
-	}
-
-	for _, key := range expectedSettings {
-		var value string
-		err := db.QueryRow("SELECT value FROM settings WHERE key = ?", key).Scan(&value)
-		if err != nil {
-			t.Errorf("expected setting %q to exist: %v", key, err)
-		}
-	}
-}
-
 func TestForeignKeyConstraints(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()

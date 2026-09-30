@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	"io"
-	"llm-tournament/handlers"
 	"llm-tournament/middleware"
 	"log"
 	"net"
@@ -23,13 +21,10 @@ type runDeps struct {
 	initDB         func(string) error
 	closeDB        func() error
 	seedDemoData   func() error
-	initEvaluator  func(*sql.DB)
-	getDB          func() *sql.DB
 	listen         func(network, address string) (net.Listener, error)
 	serve          func(*http.Server, net.Listener) error
 	signalCh       <-chan os.Signal
 	setLogOutput   func(io.Writer)
-	ensureDemoKey  func()
 	registerRoutes func(*http.ServeMux)
 }
 
@@ -39,12 +34,9 @@ func defaultRunDeps() runDeps {
 		initDB:         middleware.InitDB,
 		closeDB:        middleware.CloseDB,
 		seedDemoData:   seedDemoData,
-		initEvaluator:  handlers.InitEvaluator,
-		getDB:          middleware.GetDB,
 		listen:         net.Listen,
 		serve:          func(s *http.Server, ln net.Listener) error { return s.Serve(ln) },
 		setLogOutput:   log.SetOutput,
-		ensureDemoKey:  ensureDemoEncryptionKey,
 		registerRoutes: registerRoutes,
 	}
 }
@@ -55,9 +47,6 @@ func run(args []string, deps runDeps) int {
 	}
 	if deps.setLogOutput == nil {
 		deps.setLogOutput = log.SetOutput
-	}
-	if deps.ensureDemoKey == nil {
-		deps.ensureDemoKey = ensureDemoEncryptionKey
 	}
 	if deps.registerRoutes == nil {
 		deps.registerRoutes = registerRoutes
@@ -79,8 +68,6 @@ func run(args []string, deps runDeps) int {
 		return 1
 	}
 
-	deps.ensureDemoKey()
-
 	if err := deps.initDB(*db); err != nil {
 		log.Printf("init db: %v", err)
 		return 1
@@ -93,8 +80,6 @@ func run(args []string, deps runDeps) int {
 			return 1
 		}
 	}
-
-	deps.initEvaluator(deps.getDB())
 
 	mux := http.NewServeMux()
 	deps.registerRoutes(mux)

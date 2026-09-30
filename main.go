@@ -42,16 +42,7 @@ var routes = map[string]http.HandlerFunc{
 	"/delete_profile":          handlers.DeleteProfileHandler,
 	"/reset_profiles":          handlers.ResetProfilesHandler,
 	"/stats":                   handlers.StatsHandler,
-	// New evaluation routes
-	"/settings":            handlers.SettingsHandler,
-	"/settings/update":     handlers.UpdateSettingsHandler,
-	"/settings/test_key":   handlers.TestAPIKeyHandler,
-	"/evaluate/all":        handlers.EvaluateAllHandler,
-	"/evaluate/model":      handlers.EvaluateModelHandler,
-	"/evaluate/prompt":     handlers.EvaluatePromptHandler,
-	"/evaluation/progress": handlers.EvaluationProgressHandler,
-	"/evaluation/cancel":   handlers.CancelEvaluationHandler,
-	"/save_model_response": handlers.SaveModelResponseHandler,
+	"/save_model_response":     handlers.SaveModelResponseHandler,
 }
 
 func router(w http.ResponseWriter, r *http.Request) {

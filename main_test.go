@@ -57,14 +57,7 @@ func TestRoutes_AllRoutesDefined(t *testing.T) {
 		"/delete_profile",
 		"/reset_profiles",
 		"/stats",
-		"/settings",
-		"/settings/update",
-		"/settings/test_key",
-		"/evaluate/all",
-		"/evaluate/model",
-		"/evaluate/prompt",
-		"/evaluation/progress",
-		"/evaluation/cancel",
+		"/save_model_response",
 	}
 
 	for _, route := range expectedRoutes {
@@ -128,7 +121,7 @@ func TestRouter_RootRoute_Redirects(t *testing.T) {
 
 func TestRoutesCount(t *testing.T) {
 	// Ensure we have the expected number of routes
-	expectedCount := 43
+	expectedCount := 35
 	if len(routes) != expectedCount {
 		t.Errorf("expected %d routes, got %d", expectedCount, len(routes))
 	}
@@ -147,7 +140,6 @@ func TestRouter_AllRoutesRespond(t *testing.T) {
 		{"/results", "GET"},
 		{"/profiles", "GET"},
 		{"/stats", "GET"},
-		{"/settings", "GET"},
 		{"/add_model", "GET"},
 		{"/add_prompt", "GET"},
 		{"/add_profile", "GET"},
@@ -174,11 +166,7 @@ func TestRouter_POSTRoutes(t *testing.T) {
 
 	// Test POST routes that require POST method
 	postRoutes := []string{
-		"/evaluate/all",
-		"/evaluate/model",
-		"/evaluate/prompt",
-		"/evaluation/cancel",
-		"/settings/update",
+		"/save_model_response",
 	}
 
 	for _, route := range postRoutes {

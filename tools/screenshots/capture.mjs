@@ -168,14 +168,6 @@ async function main() {
         waitForSelector: "canvas",
       },
     );
-    await capturePage(
-      page,
-      `${url}/settings`,
-      path.join(assetsDir, "ui-settings.png"),
-      {
-        waitForSelector: ".card",
-      },
-    );
 
     // Pick a stable model + prompt for Evaluate screenshot.
     await capturePage(

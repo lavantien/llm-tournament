@@ -142,20 +142,6 @@ func TestGetDB(t *testing.T) {
 	}
 }
 
-func TestInitEvaluator(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-	defer CloseDB()
-
-	// Should not panic
-	InitEvaluator(GetDB())
-}
-
 func TestRunMigration(t *testing.T) {
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "test.db")
@@ -213,7 +199,7 @@ func TestRoutes(t *testing.T) {
 		"/results",
 		"/profiles",
 		"/stats",
-		"/settings",
+		"/save_model_response",
 		"/add_model",
 		"/delete_model",
 	}
@@ -402,10 +388,8 @@ func TestRoutes_ReturnsMap(t *testing.T) {
 		"/results",
 		"/profiles",
 		"/stats",
-		"/settings",
-		"/evaluate/all",
-		"/evaluate/model",
-		"/evaluate/prompt",
+		"/evaluate",
+		"/save_model_response",
 	}
 
 	for _, route := range expectedRoutes {
@@ -431,7 +415,7 @@ func TestNewServeMux_AllRoutesRegistered(t *testing.T) {
 	knownRoutes := []string{
 		"/prompts",
 		"/results",
-		"/settings",
+		"/stats",
 	}
 
 	for _, route := range knownRoutes {

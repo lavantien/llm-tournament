@@ -13,14 +13,11 @@ type MockDataStore struct {
 	WritePromptsFunc     func(prompts []middleware.Prompt) error
 	WriteProfilesFunc    func(profiles []middleware.Profile) error
 	BroadcastResultsFunc func()
-	GetMaskedAPIKeysFunc func() (map[string]string, error)
-	SetAPIKeyFunc        func(provider, key string) error
 
 	// Mock data
 	Prompts      []middleware.Prompt
 	Profiles     []middleware.Profile
 	Results      map[string]middleware.Result
-	Settings     map[string]string
 	CurrentSuite string
 }
 
@@ -75,35 +72,6 @@ func (m *MockDataStore) WriteResults(suiteName string, results map[string]middle
 	}
 	m.Results = results
 	return nil
-}
-
-func (m *MockDataStore) GetSetting(key string) (string, error) {
-	if m.Settings != nil {
-		return m.Settings[key], nil
-	}
-	return "", nil
-}
-
-func (m *MockDataStore) SetSetting(key, value string) error {
-	if m.Settings == nil {
-		m.Settings = make(map[string]string)
-	}
-	m.Settings[key] = value
-	return nil
-}
-func (m *MockDataStore) GetAPIKey(provider string) (string, error) { return "", nil }
-func (m *MockDataStore) SetAPIKey(provider, key string) error {
-	if m.SetAPIKeyFunc != nil {
-		return m.SetAPIKeyFunc(provider, key)
-	}
-	return nil
-}
-
-func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) {
-	if m.GetMaskedAPIKeysFunc != nil {
-		return m.GetMaskedAPIKeysFunc()
-	}
-	return map[string]string{}, nil
 }
 
 func (m *MockDataStore) BroadcastResults() {

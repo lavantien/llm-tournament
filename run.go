@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"flag"
 	"io"
-	"llm-tournament/handlers"
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
@@ -18,7 +17,6 @@ type runDeps struct {
 	migrateResults      func(map[string]middleware.Result) map[string]middleware.Result
 	getCurrentSuiteName func() string
 	writeResults        func(string, map[string]middleware.Result) error
-	initEvaluator       func(*sql.DB)
 	getDB               func() *sql.DB
 	listenAndServe      func(string, http.Handler) error
 }
@@ -33,7 +31,6 @@ func defaultRunDeps() runDeps {
 		migrateResults:      middleware.MigrateResults,
 		getCurrentSuiteName: middleware.GetCurrentSuiteName,
 		writeResults:        middleware.WriteResults,
-		initEvaluator:       handlers.InitEvaluator,
 		getDB:               middleware.GetDB,
 		listenAndServe:      http.ListenAndServe,
 	}
@@ -70,9 +67,6 @@ func run(args []string, deps runDeps) int {
 		log.Println("Migration completed successfully")
 		return 0
 	}
-
-	log.Println("Initializing evaluator...")
-	deps.initEvaluator(deps.getDB())
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", router)

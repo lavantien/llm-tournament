@@ -26,7 +26,6 @@ func TestREADME_UsageTutorialIncludesScreenshots(t *testing.T) {
 		"assets/ui-profiles.png",
 		"assets/ui-evaluate.png",
 		"assets/ui-stats.png",
-		"assets/ui-settings.png",
 	}
 
 	for _, path := range required {

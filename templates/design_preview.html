@@ -67,7 +67,7 @@
             <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
             <span class="ml-1">WS: CONNECTED</span>
           </div>
-          <button class="btn btn-primary">Run Evaluation</button>
+          <button class="btn btn-primary">Run Tournament</button>
           <button class="btn btn-ghost">Export</button>
           <button class="btn btn-error">Reset</button>
         </div>
@@ -117,7 +117,7 @@
               class="flex justify-between gap-2 text-sm font-mono text-base-content/60 py-2 border-b border-base-content/10"
             >
               <span>CTRL</span><span>+ <b>ENTER</b></span>
-              <span class="opacity-65 text-right">Run Evaluation</span>
+              <span class="opacity-65 text-right">Submit Score</span>
             </div>
             <div
               class="flex justify-between gap-2 text-sm font-mono text-base-content/60 pt-2"
@@ -136,7 +136,7 @@
                   Tournament Telemetry
                 </h2>
                 <p class="text-xs font-mono text-base-content/60 mt-1">
-                  suite: "arena-v1" • judges: 3 • queue: 2 jobs
+                  suite: "arena-v1" • models: 6 • prompts: 18
                 </p>
               </div>
               <div class="flex gap-2">
@@ -255,7 +255,7 @@
                     <td class="text-left">
                       <span class="font-mono">Claude Opus 4.5</span>
                       <span class="text-base-content/40">•</span>
-                      <span class="text-base-content/60">judge</span>
+                      <span class="text-base-content/60">cloud</span>
                     </td>
                     <td>
                       <span class="badge badge-info badge-outline"
@@ -276,7 +276,7 @@
                     <td class="text-left">
                       <span class="font-mono">Gemini 3 Pro</span>
                       <span class="text-base-content/40">•</span>
-                      <span class="text-base-content/60">judge</span>
+                      <span class="text-base-content/60">cloud</span>
                     </td>
                     <td>
                       <span class="badge badge-secondary badge-outline"
@@ -361,10 +361,10 @@
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-base font-semibold tracking-wide">
-                  Consensus Matrix
+                  Score Matrix
                 </h2>
                 <p class="text-xs font-mono text-base-content/60 mt-1">
-                  judge verdicts + confidence • expandable reasoning
+                  manual scores per model • live leaderboard updates
                 </p>
               </div>
               <button class="btn btn-primary" id="toggleLog">Toggle Log</button>
@@ -375,7 +375,7 @@
                   <div class="flex justify-between items-center">
                     <span class="font-mono">Claude</span>
                     <span class="badge badge-success badge-outline"
-                      ><b>PASS</b> • 0.86</span
+                      ><b>SCORE</b> • 86</span
                     >
                   </div>
                   <progress
@@ -386,7 +386,7 @@
                   <div class="flex justify-between items-center">
                     <span class="font-mono">GPT</span>
                     <span class="badge badge-success badge-outline"
-                      ><b>PASS</b> • 0.79</span
+                      ><b>SCORE</b> • 79</span
                     >
                   </div>
                   <progress
@@ -397,7 +397,7 @@
                   <div class="flex justify-between items-center">
                     <span class="font-mono">Gemini</span>
                     <span class="badge badge-warning badge-outline"
-                      ><b>EDGE</b> • 0.61</span
+                      ><b>SCORE</b> • 61</span
                     >
                   </div>
                   <progress
@@ -411,7 +411,7 @@
               <div class="card bg-base-200 shadow-sm p-3">
                 <div class="flex items-center gap-2">
                   <span class="badge badge-primary badge-outline"
-                    ><b>CONSENSUS</b> • weighted median</span
+                    ><b>LEADER</b> • average score</span
                   >
                   <span class="badge badge-outline"
                     ><b class="font-mono">80</b> / 100</span
@@ -437,19 +437,19 @@
             >
               <div class="flex gap-2 py-1 border-b border-base-content/10">
                 <span class="text-base-content/50">00:00:01</span>
-                <span>Job <b>#EVAL-1042</b> started (suite arena-v1)</span>
+                <span>Suite <b>arena-v1</b> loaded (6 models • 18 prompts)</span>
               </div>
               <div class="flex gap-2 py-1 border-b border-base-content/10">
                 <span class="text-base-content/50">00:00:02</span>
-                <span>Judge <b>Claude</b> verdict PASS (0.86)</span>
+                <span>Score submitted for <b>Claude</b> → 86</span>
               </div>
               <div class="flex gap-2 py-1 border-b border-base-content/10">
                 <span class="text-base-content/50">00:00:02</span>
-                <span>Judge <b>GPT</b> verdict PASS (0.79)</span>
+                <span>Score submitted for <b>GPT</b> → 79</span>
               </div>
               <div class="flex gap-2 py-1">
                 <span class="text-base-content/50">00:00:03</span>
-                <span>Consensus computed → <b>80</b> (Pass)</span>
+                <span>Leaderboard updated → <b>Claude</b> leads (80)</span>
               </div>
             </div>
           </section>

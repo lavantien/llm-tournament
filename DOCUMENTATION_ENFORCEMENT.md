@@ -4,7 +4,7 @@ This document describes the automated enforcement mechanisms that validate docum
 
 ## Overview
 
-Several documentation files are automatically validated by tests and CI scripts. These mechanisms ensure consistency and enable automated updates (e.g., coverage tables, screenshots).
+Several documentation files are automatically validated by tests and CI scripts. These mechanisms ensure consistency and enable automated updates (e.g., coverage tables).
 
 ## Enforced Documentation Files
 
@@ -12,7 +12,12 @@ Several documentation files are automatically validated by tests and CI scripts.
 
 **Purpose:** Main project documentation
 
-**Enforcement mechanism:** `scripts/update_coverage_table.py` and `make update-coverage-table`
+**Enforcement mechanisms:**
+
+- `scripts/update_coverage_table.py` via `make update-coverage-table` regenerates the coverage table
+- `make verify-docs` checks the Coverage section format with a regex
+- `readme_ui_screenshots_test.go` requires every `assets/ui-*.png` referenced in the Usage Tutorial to exist
+- `readme_quickstart_test.go` forbids references to removed Make targets in the Quick Start section
 
 **Required sections:**
 
@@ -28,7 +33,6 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | Package                                          |  Coverage |
 | ------------------------------------------------ | --------: |
 | llm-tournament                                   |     XX.X% |
-| llm-tournament/evaluator                         |     XX.X% |
 | llm-tournament/handlers                          |     XX.X% |
 | llm-tournament/integration                       |         - |
 | llm-tournament/middleware                        |     XX.X% |
@@ -48,72 +52,28 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 - Removing or renaming the `### Coverage` section
 - Changing the table format (columns, headers, or package names)
 - Removing the backticks around the command
+- Deleting a screenshot file that the Usage Tutorial references
 
-### DESIGN_CONCEPT.md
+### templates/*.html
 
-**Purpose:** UI design specifications and migration plan
+**Purpose:** UI templates
 
-**Enforcement mechanism:** `design_preview_test.go:10` - `TestDesignConceptAndPreview_ExistAndStructured`
-
-**Required sections:**
-
-- `# LLM Tournament Arena — Design Concept` (header)
-- `## Color Palette` (exact string match)
-- `## Typography` (exact string match)
-- `## UI Elements` (exact string match)
-- `## Libraries (CDN Only)` (exact string match)
-
-**How to update:**
-
-- Maintain these exact section headers
-- Add content under sections as needed
-- Do not rename or remove these sections
-
-**What breaks it:**
-
-- Changing section header text (e.g., "## Color System" instead of "## Color Palette")
-- Using different header levels (e.g., "### Color Palette" instead of "## Color Palette")
-- Removing any of the required sections
-
-**To verify:**
-
-```bash
-CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v
-```
-
-### design_preview.html
-
-**Purpose:** Visual preview of the UI design
-
-**Enforcement mechanism:** `design_preview_test.go:10` - `TestDesignConceptAndPreview_ExistAndStructured`
+**Enforcement mechanism:** `arena_theme_test.go` - `TestArenaTheme_AllTemplatesUseArenaCSS`
 
 **Required elements:**
 
-- `<title>LLM Tournament Arena — Design Preview</title>` (exact string)
-- `href="/assets/favicon.ico"` (exact string)
-- `src="/assets/logo.webp"` (exact string)
-- Class names: `arena-shell`, `glass-panel`, `neon-button`
-- Library references: `Chart.js`
-
-**Constraints:**
-
-- Must be hardcoded HTML (no Go template actions like `{{` or `}}`)
-
-**How to update:**
-
-- Keep the required elements in the file
-- Do not convert to a Go template
+- Every page template must reference `href="/templates/arena.css"` or `href="/templates/output.css"`
+- `design_preview.html` and `nav.html` are exempt (preview page and partial)
 
 **What breaks it:**
 
-- Removing or changing the required strings or class names
-- Adding Go template syntax (`{{`, `}}`)
+- Adding a new page template without one of the required stylesheet references
 
-**To verify:**
+### DESIGN_CONCEPT.md / DESIGN_ROLLOUT.md / design_preview.html
 
-```bash
-CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v
-```
+**Purpose:** UI design system documentation and static preview (informational)
+
+These files are not enforced by dedicated structure tests. Keep them consistent with the shipped UI when making design changes.
 
 ## Automated Enforcement in CI
 
@@ -121,26 +81,19 @@ CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v
 
 The CI pipeline (`.github/workflows/ci.yml`) includes:
 
-1. **Tests** - Run all Go tests, including documentation enforcement tests
-   - `TestDesignConceptAndPreview_ExistAndStructured` validates DESIGN_CONCEPT.md and design_preview.html
+1. **Tests** - Run all Go tests, including the documentation enforcement tests listed above
 
 2. **Coverage updates** - Automatically updates README.md coverage table on main branch
    - Runs `make update-coverage-table`
    - Commits changes with `[skip ci]` tag
 
-3. **Screenshots** - Automatically generates UI screenshots on main branch
-   - Runs `make screenshots`
-   - Commits changes with `[skip ci]` tag
+UI screenshots are not generated in CI. Regenerate them offline with `make screenshots` before pushing UI changes.
 
 ### Pre-commit Workflow (Recommended)
 
 Before committing documentation changes:
 
-1. Run relevant enforcement test:
-
-   ```bash
-   CGO_ENABLED=1 go test -run <test_name> -v
-   ```
+1. Run `make verify-docs`
 
 2. If updating coverage-related sections:
 
@@ -155,17 +108,6 @@ Before committing documentation changes:
 
 **Note:** All scripts in `scripts/` directory work from any directory. They automatically find the repository root and required files, so you don't need to be in the repo root when running them.
 
-2. If updating coverage-related sections:
-
-   ```bash
-   make update-coverage-table
-   ```
-
-3. Run full test suite:
-   ```bash
-   make test
-   ```
-
 ## Common Mistakes
 
 ### Mistake 1: Renaming Section Headers
@@ -173,15 +115,13 @@ Before committing documentation changes:
 **Wrong:**
 
 ```markdown
-## Color Palette # Original
-
-## Color System # Changed (breaks regex matching)
+### Coverage Statistics # renamed (breaks regex matching)
 ```
 
 **Right:**
 
 ```markdown
-## Color Palette # Keep exact header text
+### Coverage # Keep exact header text
 ```
 
 ### Mistake 2: Removing Coverage Table Section
@@ -205,22 +145,6 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | ------- | -------: |
 
 | ...
-```
-
-### Mistake 3: Adding Go Template Syntax to Preview HTML
-
-**Wrong:**
-
-```html
-<title>{{.Title}}</title>
-<!-- Breaks test -->
-```
-
-**Right:**
-
-```html
-<title>LLM Tournament Arena — Design Preview</title>
-<!-- Hardcoded -->
 ```
 
 ## Adding New Enforcement
@@ -294,5 +218,7 @@ If you need to add enforcement for a new documentation file:
 
 For questions, refer to the enforcement test files:
 
-- `design_preview_test.go:10` - DESIGN_CONCEPT.md and design_preview.html
+- `readme_ui_screenshots_test.go` - README.md screenshot references
+- `readme_quickstart_test.go` - README.md quick start targets
+- `arena_theme_test.go` - template stylesheet references
 - `scripts/update_coverage_table.py` - README.md coverage table

@@ -4,18 +4,7 @@ import (
 	"fmt"
 	"llm-tournament/middleware"
 	"math/rand"
-	"os"
-	"time"
 )
-
-func ensureDemoEncryptionKey() {
-	if os.Getenv("ENCRYPTION_KEY") != "" {
-		return
-	}
-
-	// Deterministic key for screenshot generation only.
-	_ = os.Setenv("ENCRYPTION_KEY", "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")
-}
 
 func seedDemoData() error {
 	suiteName := "default"
@@ -110,8 +99,8 @@ func seedDemoData() error {
 		},
 		{
 			Profile:  "writing",
-			Text:     "Write a clear error message for a missing API key.",
-			Solution: "API key not configured. Add it in Settings to enable automated evaluation.",
+			Text:     "Write a clear error message for a missing database file.",
+			Solution: "Database file not found. Verify the path and run the server with --db <path>.",
 		},
 		{
 			Profile:  "writing",
@@ -140,17 +129,6 @@ func seedDemoData() error {
 	if err := middleware.WriteResults(suiteName, results); err != nil {
 		return fmt.Errorf("write results: %w", err)
 	}
-
-	// Populate masked API keys for a more representative Settings screenshot.
-	_ = middleware.SetAPIKey("openai", "sk-demo-openai-1234")
-	_ = middleware.SetAPIKey("anthropic", "sk-demo-anthropic-5678")
-	_ = middleware.SetAPIKey("google", "sk-demo-google-9012")
-	_ = middleware.SetSetting("auto_evaluate_new_models", "true")
-	_ = middleware.SetSetting("cost_alert_threshold_usd", "25.0")
-	_ = middleware.SetSetting("python_service_url", "http://localhost:8001")
-
-	// Make timestamps slightly more realistic in UI components that show recent times.
-	_ = middleware.SetSetting("demo_seeded_at", time.Now().UTC().Format(time.RFC3339))
 
 	return nil
 }

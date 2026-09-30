@@ -25,13 +25,6 @@ type DataStore interface {
 	ReadResults() map[string]Result
 	WriteResults(suiteName string, results map[string]Result) error
 
-	// Settings operations
-	GetSetting(key string) (string, error)
-	SetSetting(key, value string) error
-	GetAPIKey(provider string) (string, error)
-	SetAPIKey(provider, key string) error
-	GetMaskedAPIKeys() (map[string]string, error)
-
 	// Broadcast
 	BroadcastResults()
 }
@@ -112,31 +105,6 @@ func (s *SQLiteDataStore) ReadResults() map[string]Result {
 // WriteResults delegates to the package-level function
 func (s *SQLiteDataStore) WriteResults(suiteName string, results map[string]Result) error {
 	return WriteResults(suiteName, results)
-}
-
-// GetSetting delegates to the package-level function
-func (s *SQLiteDataStore) GetSetting(key string) (string, error) {
-	return GetSetting(key)
-}
-
-// SetSetting delegates to the package-level function
-func (s *SQLiteDataStore) SetSetting(key, value string) error {
-	return SetSetting(key, value)
-}
-
-// GetAPIKey delegates to the package-level function
-func (s *SQLiteDataStore) GetAPIKey(provider string) (string, error) {
-	return GetAPIKey(provider)
-}
-
-// SetAPIKey delegates to the package-level function
-func (s *SQLiteDataStore) SetAPIKey(provider, key string) error {
-	return SetAPIKey(provider, key)
-}
-
-// GetMaskedAPIKeys delegates to the package-level function
-func (s *SQLiteDataStore) GetMaskedAPIKeys() (map[string]string, error) {
-	return GetMaskedAPIKeys()
 }
 
 // BroadcastResults delegates to the package-level function

@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"llm-tournament/handlers"
 	"llm-tournament/middleware"
 	"net/http"
 )
@@ -52,11 +51,6 @@ func CloseDB() {
 // GetDB returns the database instance
 func GetDB() *sql.DB {
 	return middleware.GetDB()
-}
-
-// InitEvaluator initializes the evaluator with the given database
-func InitEvaluator(db *sql.DB) {
-	handlers.InitEvaluator(db)
 }
 
 // RunMigration performs the results migration

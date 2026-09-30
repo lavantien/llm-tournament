@@ -4,89 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"net/http/httptest"
-	"os"
 	"testing"
 )
-
-func TestValidEncryptionKey_HasExpectedFormat(t *testing.T) {
-	key := ValidEncryptionKey()
-	if len(key) != 64 {
-		t.Fatalf("expected 64-char key, got %d", len(key))
-	}
-	for i := 0; i < len(key); i++ {
-		ch := key[i]
-		isHex := (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f')
-		if !isHex {
-			t.Fatalf("key contains non-hex character at index %d: %q", i, ch)
-		}
-	}
-}
-
-func TestSetupEncryptionKey_RestoresOriginalValue(t *testing.T) {
-	const original = "original"
-	_ = os.Setenv("ENCRYPTION_KEY", original)
-	t.Cleanup(func() { _ = os.Setenv("ENCRYPTION_KEY", original) })
-
-	cleanup := SetupEncryptionKey(t)
-
-	if got := os.Getenv("ENCRYPTION_KEY"); got != ValidEncryptionKey() {
-		t.Fatalf("expected ENCRYPTION_KEY to be set to ValidEncryptionKey, got %q", got)
-	}
-
-	cleanup()
-	if got := os.Getenv("ENCRYPTION_KEY"); got != original {
-		t.Fatalf("expected ENCRYPTION_KEY to be restored, got %q", got)
-	}
-}
-
-func TestSetupEncryptionKey_UnsetsOnCleanupWhenOriginallyUnset(t *testing.T) {
-	_ = os.Unsetenv("ENCRYPTION_KEY")
-	t.Cleanup(func() { _ = os.Unsetenv("ENCRYPTION_KEY") })
-
-	cleanup := SetupEncryptionKey(t)
-
-	if got := os.Getenv("ENCRYPTION_KEY"); got != ValidEncryptionKey() {
-		t.Fatalf("expected ENCRYPTION_KEY to be set to ValidEncryptionKey, got %q", got)
-	}
-
-	cleanup()
-	if _, ok := os.LookupEnv("ENCRYPTION_KEY"); ok {
-		t.Fatalf("expected ENCRYPTION_KEY to be unset after cleanup")
-	}
-}
-
-func TestClearEncryptionKey_RestoresOriginalValue(t *testing.T) {
-	const original = "original"
-	_ = os.Setenv("ENCRYPTION_KEY", original)
-	t.Cleanup(func() { _ = os.Setenv("ENCRYPTION_KEY", original) })
-
-	cleanup := ClearEncryptionKey(t)
-
-	if _, ok := os.LookupEnv("ENCRYPTION_KEY"); ok {
-		t.Fatalf("expected ENCRYPTION_KEY to be unset")
-	}
-
-	cleanup()
-	if got := os.Getenv("ENCRYPTION_KEY"); got != original {
-		t.Fatalf("expected ENCRYPTION_KEY to be restored, got %q", got)
-	}
-}
-
-func TestClearEncryptionKey_StaysUnsetWhenOriginallyUnset(t *testing.T) {
-	_ = os.Unsetenv("ENCRYPTION_KEY")
-	t.Cleanup(func() { _ = os.Unsetenv("ENCRYPTION_KEY") })
-
-	cleanup := ClearEncryptionKey(t)
-
-	if _, ok := os.LookupEnv("ENCRYPTION_KEY"); ok {
-		t.Fatalf("expected ENCRYPTION_KEY to remain unset")
-	}
-
-	cleanup()
-	if _, ok := os.LookupEnv("ENCRYPTION_KEY"); ok {
-		t.Fatalf("expected ENCRYPTION_KEY to remain unset after cleanup")
-	}
-}
 
 func TestSetupTestDB_CreatesSchemaAndAllowsInserts(t *testing.T) {
 	db := SetupTestDB(t)
@@ -138,24 +57,6 @@ func TestSetupTestDB_CreatesSchemaAndAllowsInserts(t *testing.T) {
 	}
 	if score != 5 {
 		t.Fatalf("expected score=5, got %d", score)
-	}
-
-	CreateTestSetting(t, db, "key-1", "value-1")
-	var setting string
-	if err := db.QueryRow("SELECT value FROM settings WHERE key = ?", "key-1").Scan(&setting); err != nil {
-		t.Fatalf("failed to read setting: %v", err)
-	}
-	if setting != "value-1" {
-		t.Fatalf("expected setting value %q, got %q", "value-1", setting)
-	}
-
-	jobID := CreateTestEvaluationJob(t, db, suiteID, "job-type-1", "pending")
-	var jobStatus string
-	if err := db.QueryRow("SELECT status FROM evaluation_jobs WHERE id = ?", jobID).Scan(&jobStatus); err != nil {
-		t.Fatalf("failed to read evaluation job status: %v", err)
-	}
-	if jobStatus != "pending" {
-		t.Fatalf("expected job status %q, got %q", "pending", jobStatus)
 	}
 
 	CreateTestModelResponse(t, db, modelID, promptWithoutProfileID, "hello")
@@ -295,27 +196,6 @@ func TestMockDataStore_DefaultBehaviorAndState(t *testing.T) {
 		t.Fatalf("ReadResults() expected written results, got %#v", got)
 	}
 
-	if got, err := mock.GetSetting("missing"); err != nil || got != "" {
-		t.Fatalf("GetSetting() expected (\"\", nil), got (%q, %v)", got, err)
-	}
-	if err := mock.SetSetting("k", "v"); err != nil {
-		t.Fatalf("SetSetting returned error: %v", err)
-	}
-	if got, err := mock.GetSetting("k"); err != nil || got != "v" {
-		t.Fatalf("GetSetting() expected (\"v\", nil), got (%q, %v)", got, err)
-	}
-
-	if got, err := mock.GetAPIKey("provider"); err != nil || got != "" {
-		t.Fatalf("GetAPIKey() expected (\"\", nil), got (%q, %v)", got, err)
-	}
-	if err := mock.SetAPIKey("provider", "key"); err != nil {
-		t.Fatalf("SetAPIKey returned error: %v", err)
-	}
-
-	if got, err := mock.GetMaskedAPIKeys(); err != nil || got == nil || len(got) != 0 {
-		t.Fatalf("GetMaskedAPIKeys() expected (empty map, nil), got (%v, %v)", got, err)
-	}
-
 	mock.BroadcastResults()
 }
 
@@ -356,21 +236,6 @@ func TestMockDataStore_ErrorsWhenConfigured(t *testing.T) {
 	if err := mock.WriteResults("suite-x", map[string]Result{}); err != expectedErr {
 		t.Fatalf("WriteResults() expected error %v, got %v", expectedErr, err)
 	}
-	if got, err := mock.GetSetting("k"); err != expectedErr || got != "" {
-		t.Fatalf("GetSetting() expected (\"\", %v), got (%q, %v)", expectedErr, got, err)
-	}
-	if err := mock.SetSetting("k", "v"); err != expectedErr {
-		t.Fatalf("SetSetting() expected error %v, got %v", expectedErr, err)
-	}
-	if got, err := mock.GetAPIKey("provider"); err != expectedErr || got != "" {
-		t.Fatalf("GetAPIKey() expected (\"\", %v), got (%q, %v)", expectedErr, got, err)
-	}
-	if err := mock.SetAPIKey("provider", "key"); err != expectedErr {
-		t.Fatalf("SetAPIKey() expected error %v, got %v", expectedErr, err)
-	}
-	if got, err := mock.GetMaskedAPIKeys(); err != expectedErr || got != nil {
-		t.Fatalf("GetMaskedAPIKeys() expected (nil, %v), got (%v, %v)", expectedErr, got, err)
-	}
 }
 
 func TestMockDataStore_FunctionHooksTakePrecedence(t *testing.T) {
@@ -390,11 +255,6 @@ func TestMockDataStore_FunctionHooksTakePrecedence(t *testing.T) {
 		writeProfiles       bool
 		readResults         bool
 		writeResults        bool
-		getSetting          bool
-		setSetting          bool
-		getAPIKey           bool
-		setAPIKey           bool
-		getMaskedAPIKeys    bool
 		broadcastResults    bool
 	}
 
@@ -485,38 +345,6 @@ func TestMockDataStore_FunctionHooksTakePrecedence(t *testing.T) {
 			}
 			return nil
 		},
-		GetSettingFunc: func(key string) (string, error) {
-			called.getSetting = true
-			if key != "k" {
-				t.Fatalf("GetSettingFunc called with %q", key)
-			}
-			return "v", nil
-		},
-		SetSettingFunc: func(key, value string) error {
-			called.setSetting = true
-			if key != "k" || value != "v" {
-				t.Fatalf("SetSettingFunc called with (%q, %q)", key, value)
-			}
-			return nil
-		},
-		GetAPIKeyFunc: func(provider string) (string, error) {
-			called.getAPIKey = true
-			if provider != "provider" {
-				t.Fatalf("GetAPIKeyFunc called with %q", provider)
-			}
-			return "key", nil
-		},
-		SetAPIKeyFunc: func(provider, key string) error {
-			called.setAPIKey = true
-			if provider != "provider" || key != "key" {
-				t.Fatalf("SetAPIKeyFunc called with (%q, %q)", provider, key)
-			}
-			return nil
-		},
-		GetMaskedAPIKeysFunc: func() (map[string]string, error) {
-			called.getMaskedAPIKeys = true
-			return map[string]string{"provider": "****"}, nil
-		},
 		BroadcastResultsFunc: func() {
 			called.broadcastResults = true
 		},
@@ -567,21 +395,6 @@ func TestMockDataStore_FunctionHooksTakePrecedence(t *testing.T) {
 	}
 	if err := mock.WriteResults("suite-x", map[string]Result{"model": {Scores: []int{1}}}); err != nil || !called.writeResults {
 		t.Fatalf("WriteResults hook not applied: err=%v, called=%v", err, called.writeResults)
-	}
-	if got, err := mock.GetSetting("k"); err != nil || got != "v" || !called.getSetting {
-		t.Fatalf("GetSetting hook not applied: got (%q, %v), called=%v", got, err, called.getSetting)
-	}
-	if err := mock.SetSetting("k", "v"); err != nil || !called.setSetting {
-		t.Fatalf("SetSetting hook not applied: err=%v, called=%v", err, called.setSetting)
-	}
-	if got, err := mock.GetAPIKey("provider"); err != nil || got != "key" || !called.getAPIKey {
-		t.Fatalf("GetAPIKey hook not applied: got (%q, %v), called=%v", got, err, called.getAPIKey)
-	}
-	if err := mock.SetAPIKey("provider", "key"); err != nil || !called.setAPIKey {
-		t.Fatalf("SetAPIKey hook not applied: err=%v, called=%v", err, called.setAPIKey)
-	}
-	if got, err := mock.GetMaskedAPIKeys(); err != nil || got["provider"] != "****" || !called.getMaskedAPIKeys {
-		t.Fatalf("GetMaskedAPIKeys hook not applied: got (%v, %v), called=%v", got, err, called.getMaskedAPIKeys)
 	}
 	mock.BroadcastResults()
 	if !called.broadcastResults {

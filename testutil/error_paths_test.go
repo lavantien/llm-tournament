@@ -311,55 +311,6 @@ func TestDBHelper_ErrorPaths(t *testing.T) {
 		}
 	})
 
-	t.Run("CreateTestSetting exec error", func(t *testing.T) {
-		rec := withFatalRecorder(t)
-		db, err := sql.Open("sqlite3", ":memory:")
-		if err != nil {
-			t.Fatalf("open db: %v", err)
-		}
-		t.Cleanup(func() { _ = db.Close() })
-
-		CreateTestSetting(t, db, "k", "v")
-		if !rec.called {
-			t.Fatalf("expected fatalf to be called")
-		}
-	})
-
-	t.Run("CreateTestEvaluationJob exec error", func(t *testing.T) {
-		rec := withFatalRecorder(t)
-		db, err := sql.Open("sqlite3", ":memory:")
-		if err != nil {
-			t.Fatalf("open db: %v", err)
-		}
-		t.Cleanup(func() { _ = db.Close() })
-
-		if got := CreateTestEvaluationJob(t, db, 1, "job", "pending"); got != 0 {
-			t.Fatalf("expected 0, got %d", got)
-		}
-		if !rec.called {
-			t.Fatalf("expected fatalf to be called")
-		}
-	})
-
-	t.Run("CreateTestEvaluationJob lastInsertID error", func(t *testing.T) {
-		rec := withFatalRecorder(t)
-		db := SetupTestDB(t)
-		t.Cleanup(func() { _ = db.Close() })
-
-		suiteID := CreateTestSuite(t, db, "suite")
-
-		origLast := lastInsertID
-		lastInsertID = func(sql.Result) (int64, error) { return 0, errors.New("last insert failed") }
-		t.Cleanup(func() { lastInsertID = origLast })
-
-		if got := CreateTestEvaluationJob(t, db, suiteID, "job", "pending"); got != 0 {
-			t.Fatalf("expected 0, got %d", got)
-		}
-		if !rec.called {
-			t.Fatalf("expected fatalf to be called")
-		}
-	})
-
 	t.Run("CreateTestModelResponse exec error", func(t *testing.T) {
 		rec := withFatalRecorder(t)
 		db, err := sql.Open("sqlite3", ":memory:")

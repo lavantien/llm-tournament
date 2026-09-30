@@ -1087,33 +1087,6 @@ func TestReadResults_ScoreMismatch(t *testing.T) {
 	}
 }
 
-func TestGetMaskedAPIKeys_AllProviders(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	// Get masked keys (should have defaults)
-	masked, err := GetMaskedAPIKeys()
-	if err != nil {
-		t.Fatalf("GetMaskedAPIKeys failed: %v", err)
-	}
-
-	// Should have all three providers (keys are api_key_<provider>)
-	if _, ok := masked["api_key_anthropic"]; !ok {
-		t.Error("expected api_key_anthropic in masked keys")
-	}
-	if _, ok := masked["api_key_openai"]; !ok {
-		t.Error("expected api_key_openai in masked keys")
-	}
-	if _, ok := masked["api_key_google"]; !ok {
-		t.Error("expected api_key_google in masked keys")
-	}
-}
-
 func TestUpdatePromptsOrder_WithReordering(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()

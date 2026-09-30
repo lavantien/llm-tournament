@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"llm-tournament/middleware"
 	"net/http"
@@ -59,12 +58,6 @@ func TestRun_MigrateResults_UsesMigratedMap(t *testing.T) {
 			if !reflect.DeepEqual(results, migrated) {
 				t.Fatalf("writeResults called with non-migrated results: %#v", results)
 			}
-			return nil
-		},
-		initEvaluator: func(*sql.DB) {
-			t.Fatalf("initEvaluator should not be called when migrating results")
-		},
-		getDB: func() *sql.DB {
 			return nil
 		},
 		listenAndServe: func(string, http.Handler) error {
@@ -150,10 +143,6 @@ func TestRun_MigrateResults_WriteResultsError_Returns1(t *testing.T) {
 		writeResults: func(string, map[string]middleware.Result) error {
 			return errors.New("write failed")
 		},
-		initEvaluator: func(*sql.DB) {
-			t.Fatalf("initEvaluator should not be called when migrating results")
-		},
-		getDB: func() *sql.DB { return nil },
 		listenAndServe: func(string, http.Handler) error {
 			t.Fatalf("listenAndServe should not be called when migrating results")
 			return nil
@@ -169,10 +158,7 @@ func TestRun_MigrateResults_WriteResultsError_Returns1(t *testing.T) {
 }
 
 func TestRun_ServePath_CallsListenAndServeWithRouter(t *testing.T) {
-	var (
-		initEvaluatorCalled bool
-		closeDBCalled       bool
-	)
+	var closeDBCalled bool
 
 	deps := runDeps{
 		initDB: func(string) error {
@@ -182,10 +168,6 @@ func TestRun_ServePath_CallsListenAndServeWithRouter(t *testing.T) {
 			closeDBCalled = true
 			return nil
 		},
-		initEvaluator: func(*sql.DB) {
-			initEvaluatorCalled = true
-		},
-		getDB: func() *sql.DB { return nil },
 		listenAndServe: func(addr string, handler http.Handler) error {
 			if addr != ":8080" {
 				t.Fatalf("listenAndServe called with addr %q", addr)
@@ -212,9 +194,6 @@ func TestRun_ServePath_CallsListenAndServeWithRouter(t *testing.T) {
 	if exitCode := run([]string{"-db", "db.sqlite"}, deps); exitCode != 0 {
 		t.Fatalf("expected exit code 0, got %d", exitCode)
 	}
-	if !initEvaluatorCalled {
-		t.Fatalf("expected initEvaluator to be called")
-	}
 	if !closeDBCalled {
 		t.Fatalf("expected closeDB to be called via defer")
 	}
@@ -231,8 +210,6 @@ func TestRun_ServePath_ListenAndServeError_Returns1(t *testing.T) {
 			closeDBCalled = true
 			return nil
 		},
-		initEvaluator: func(*sql.DB) {},
-		getDB:         func() *sql.DB { return nil },
 		listenAndServe: func(string, http.Handler) error {
 			return errors.New("listen failed")
 		},
@@ -255,8 +232,6 @@ func TestDefaultRunDeps_HasRequiredDeps(t *testing.T) {
 		deps.migrateResults == nil ||
 		deps.getCurrentSuiteName == nil ||
 		deps.writeResults == nil ||
-		deps.initEvaluator == nil ||
-		deps.getDB == nil ||
 		deps.listenAndServe == nil {
 		t.Fatalf("expected all default run deps to be non-nil: %#v", deps)
 	}
