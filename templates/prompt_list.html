@@ -1,6 +1,7 @@
 <!doctype html>
-<html data-theme="coffee">
+<html lang="en" data-theme="coffee">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Prompt List</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <script src="/templates/vendor/marked.umd.js"></script>
@@ -42,6 +43,7 @@
               placeholder="Enter new prompt"
               class="textarea textarea-bordered w-64 min-w-[280px] h-20 resize-y"
               aria-label="Enter new prompt"
+              required
             ></textarea>
             <textarea
               name="solution"
@@ -226,6 +228,7 @@
             <input
               type="file"
               name="prompts_file"
+              accept=".json"
               class="file-input file-input-bordered file-input-xs"
               aria-label="Select prompts file to import"
             />

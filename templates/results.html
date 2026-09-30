@@ -1,6 +1,7 @@
 <!doctype html>
-<html data-theme="coffee">
+<html lang="en" data-theme="coffee">
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Results</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
@@ -919,6 +920,8 @@
               name="model"
               placeholder="Enter new model name"
               class="input input-bordered"
+              aria-label="Enter new model name"
+              required
             />
             <input type="submit" value="Add" class="btn btn-primary" />
           </form>
@@ -1103,7 +1106,9 @@
             <input
               type="file"
               name="results_file"
+              accept=".json"
               class="file-input file-input-bordered file-input-xs"
+              aria-label="Select results file to import"
             />
             <input
               type="submit"
