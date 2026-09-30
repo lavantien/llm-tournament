@@ -166,8 +166,8 @@ func (h *Handler) EditProfile(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Persist the renamed profile before the rewritten prompts:
-			// profile storage regenerates IDs on every write, and the
-			// prompt write must resolve names against the fresh rows
+			// the prompt write resolves profile names to rows, so the
+			// new name must exist by then or the links drop to NULL
 			err = h.DataStore.WriteProfiles(profiles)
 			if err != nil {
 				log.Printf("Error writing profiles: %v", err)
