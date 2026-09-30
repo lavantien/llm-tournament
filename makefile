@@ -21,7 +21,7 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: lint fmt test testbrief test-focus cover coverage-enforce check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
+.PHONY: lint fmt test testbrief test-focus cover coverage-enforce check run clean all build buildwindows buildlinux setenv update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
 
 all: lint test
 
@@ -57,15 +57,6 @@ buildlinux:
 
 setenv:
 	go env -w CGO_ENABLED=1
-
-aiderinstalllinux:
-	curl -LsSf https://aider.chat/install.sh | sh
-
-aiderinstallwindows:
-	powershell -ExecutionPolicy ByPass -c "irm https://aider.chat/install.ps1 | iex"
-
-aiderupdate:
-	aider --install-main-branch
 
 lint:
 	golangci-lint run --no-config ./...

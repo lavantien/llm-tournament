@@ -18,9 +18,8 @@ llm-tournament.exe
 
 .claude/settings.local.json
 .claude/tdd-guard/*
+.superpowers/
 node_modules/
-nul
-$coverageFile
 coverage
 *coverage*.html
 coverage.out
