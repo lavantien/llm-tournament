@@ -456,6 +456,9 @@ func WriteResults(suiteName string, results map[string]Result) (err error) {
 
 		// Insert scores
 		if len(result.Scores) > 0 {
+			if dropped := len(result.Scores) - len(promptIDs); dropped > 0 {
+				log.Printf("Warning: dropped %d score(s) for model %q: suite has only %d prompt(s)", dropped, modelName, len(promptIDs))
+			}
 			scoreStmt, err := tx.Prepare("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)")
 			if err != nil {
 				return fmt.Errorf("failed to prepare score insert: %w", err)

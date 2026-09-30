@@ -1,6 +1,10 @@
 package middleware
 
 import (
+	"bytes"
+	"log"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -690,5 +694,45 @@ func TestWriteResults_CreateNewModel(t *testing.T) {
 	}
 	if results["NewModel"].Scores[0] != 75 {
 		t.Errorf("expected score 75, got %d", results["NewModel"].Scores[0])
+	}
+}
+
+func TestWriteResults_LogsDroppedScores(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	if err := WritePromptSuite("default", []Prompt{{Text: "P1"}, {Text: "P2"}}); err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	var logs bytes.Buffer
+	log.SetOutput(&logs)
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+
+	// Four scores for two prompts: the last two must be dropped, not lost
+	// silently.
+	err := WriteResults("default", map[string]Result{
+		"OverflowModel": {Scores: []int{10, 20, 30, 40}},
+	})
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	output := logs.String()
+	if !strings.Contains(output, "OverflowModel") {
+		t.Errorf("expected dropped-score warning to name the model, got %q", output)
+	}
+	if !strings.Contains(output, "dropped 2") {
+		t.Errorf("expected dropped-score warning to report the dropped count, got %q", output)
+	}
+
+	// Truncated scores are still persisted for the prompts that exist.
+	results := ReadResults()
+	if got := results["OverflowModel"].Scores; len(got) != 2 || got[0] != 10 || got[1] != 20 {
+		t.Errorf("expected first two scores [10 20] to persist, got %v", got)
 	}
 }
