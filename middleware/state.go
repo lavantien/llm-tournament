@@ -23,6 +23,7 @@ type Result struct {
 }
 
 type Profile struct {
+	ID          int    `json:"-"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -47,7 +48,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 		return nil, fmt.Errorf("failed to get suite ID: %w", err)
 	}
 
-	rows, err := db.Query("SELECT name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
+	rows, err := db.Query("SELECT id, name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query profiles: %w", err)
 	}
@@ -56,7 +57,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	var profiles []Profile
 	for rows.Next() {
 		var p Profile
-		if err := rows.Scan(&p.Name, &p.Description); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Description); err != nil {
 			return nil, fmt.Errorf("failed to scan profile: %w", err)
 		}
 		profiles = append(profiles, p)
@@ -65,7 +66,10 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	return profiles, nil
 }
 
-// Write profile suite to database
+// Write profile suite to database. Surviving rows (matched by Profile.ID)
+// are updated in place so prompts keep pointing at them; rows absent from
+// profiles are deleted, and profiles carrying no current ID (fresh or stale)
+// are inserted.
 func WriteProfileSuite(suiteName string, profiles []Profile) error {
 	suiteID, err := GetSuiteID(suiteName)
 	if err != nil {
@@ -83,13 +87,29 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 		}
 	}()
 
-	// Delete existing profiles for this suite
-	_, err = tx.Exec("DELETE FROM profiles WHERE suite_id = ?", suiteID)
+	existing, err := suiteRowIDs(tx, "SELECT id FROM profiles WHERE suite_id = ?", suiteID)
 	if err != nil {
-		return fmt.Errorf("failed to delete profiles: %w", err)
+		return fmt.Errorf("failed to load profile IDs: %w", err)
 	}
 
-	// Insert new profiles
+	kept := make(map[int]bool)
+	for _, profile := range profiles {
+		if profile.ID != 0 && existing[profile.ID] {
+			kept[profile.ID] = true
+		}
+	}
+
+	// Delete removed rows before inserting, so a fresh profile can reuse the
+	// name of a replaced one without tripping UNIQUE(name, suite_id).
+	for id := range existing {
+		if !kept[id] {
+			if _, err = tx.Exec("DELETE FROM profiles WHERE id = ?", id); err != nil {
+				return fmt.Errorf("failed to delete removed profile: %w", err)
+			}
+		}
+	}
+
+	// Update surviving profiles and insert new ones
 	if len(profiles) > 0 {
 		stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
 		if err != nil {
@@ -98,6 +118,18 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 		defer func() { _ = stmt.Close() }()
 
 		for _, profile := range profiles {
+			if kept[profile.ID] {
+				_, err = tx.Exec(`
+				UPDATE profiles
+				SET name = ?, description = ?
+				WHERE id = ? AND suite_id = ?
+				`, profile.Name, profile.Description, profile.ID, suiteID)
+				if err != nil {
+					return fmt.Errorf("failed to update profile: %w", err)
+				}
+				continue
+			}
+
 			_, err = stmt.Exec(profile.Name, profile.Description, suiteID)
 			if err != nil {
 				return fmt.Errorf("failed to insert profile: %w", err)

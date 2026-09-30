@@ -64,7 +64,7 @@ func TestWriteProfileSuite_ErrorBranches(t *testing.T) {
 		}
 	})
 
-	t.Run("missing profiles table fails delete", func(t *testing.T) {
+	t.Run("missing profiles table fails id load", func(t *testing.T) {
 		dbPath, cleanup := setupTestDB(t)
 		defer cleanup()
 
@@ -80,8 +80,8 @@ func TestWriteProfileSuite_ErrorBranches(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected WriteProfileSuite to return an error when profiles table is missing")
 		}
-		if !strings.Contains(err.Error(), "failed to delete profiles") {
-			t.Fatalf("expected delete error, got %v", err)
+		if !strings.Contains(err.Error(), "failed to load profile IDs") {
+			t.Fatalf("expected load error, got %v", err)
 		}
 	})
 
