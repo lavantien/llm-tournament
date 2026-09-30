@@ -299,10 +299,17 @@ func TestUpdatePromptsOrder_ValidReorder(t *testing.T) {
 	newOrder := []int{2, 0, 1}
 	UpdatePromptsOrder(newOrder)
 
-	// Verify order changed
+	// Verify the actual sequence, not just the count: order [2, 0, 1]
+	// puts Third first, First second, and Second last.
 	readPrompts, _ := ReadPromptSuite("default")
 	if len(readPrompts) != 3 {
 		t.Fatalf("expected 3 prompts, got %d", len(readPrompts))
+	}
+	expectedSequence := []string{"Third", "First", "Second"}
+	for i, want := range expectedSequence {
+		if readPrompts[i].Text != want {
+			t.Errorf("readPrompts[%d] = %q, want %q", i, readPrompts[i].Text, want)
+		}
 	}
 }
 
@@ -442,10 +449,17 @@ func TestUpdatePromptsOrder_WithReordering(t *testing.T) {
 	newOrder := []int{2, 0, 1}
 	UpdatePromptsOrder(newOrder)
 
-	// Verify prompts were reordered
+	// Verify the actual sequence, not just the count: order [2, 0, 1]
+	// puts Prompt 3 first, Prompt 1 second, and Prompt 2 last.
 	prompts := ReadPrompts()
 	if len(prompts) != 3 {
-		t.Errorf("expected 3 prompts, got %d", len(prompts))
+		t.Fatalf("expected 3 prompts, got %d", len(prompts))
+	}
+	expectedSequence := []string{"Prompt 3", "Prompt 1", "Prompt 2"}
+	for i, want := range expectedSequence {
+		if prompts[i].Text != want {
+			t.Errorf("prompts[%d] = %q, want %q", i, prompts[i].Text, want)
+		}
 	}
 }
 
