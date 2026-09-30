@@ -236,7 +236,7 @@ func TestRun_ServePath_CustomPort(t *testing.T) {
 }
 
 func TestRun_InvalidPort_Returns2(t *testing.T) {
-	for _, portFlag := range []string{"not-a-port", "", "99999", "-1"} {
+	for _, portFlag := range []string{"not-a-port", "", "0", "99999", "-1"} {
 		t.Run(portFlag, func(t *testing.T) {
 			var initDBCalled bool
 
