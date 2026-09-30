@@ -472,12 +472,30 @@ func TestRandomizeScores_GetCurrentSuiteIDError(t *testing.T) {
 		t.Fatalf("failed to insert prompt: %v", err)
 	}
 
+	// Drop the suites table so the suite lookup fails before any writes.
+	_, err = db.Exec("DROP TABLE suites")
+	if err != nil {
+		t.Fatalf("failed to drop suites table: %v", err)
+	}
+
 	req := httptest.NewRequest("POST", "/randomize_scores", nil)
 	rr := httptest.NewRecorder()
 	DefaultHandler.RandomizeScores(rr, req)
 
-	if rr.Code == http.StatusInternalServerError || rr.Code == http.StatusOK {
-		t.Logf("GetCurrentSuiteID handled correctly: status %d", rr.Code)
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d when the suite lookup fails, got %d", http.StatusInternalServerError, rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Error getting suite ID") {
+		t.Fatalf("expected suite ID error body, got %q", rr.Body.String())
+	}
+
+	// The handler must return before writing any scores.
+	var scoreCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("failed to count scores: %v", err)
+	}
+	if scoreCount != 0 {
+		t.Errorf("expected no scores when the suite lookup fails, got %d", scoreCount)
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"llm-tournament/middleware"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -710,9 +711,34 @@ func TestUpdateMockResultsHandler_DatabaseError(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	// The handler should still succeed (errors are logged, not returned)
+	// Every profile insert fails, so no prompts are ever seeded; the mock
+	// model generation still runs and the request must succeed.
 	if rr.Code != http.StatusOK {
-		t.Logf("Got status %d when profiles table was dropped (acceptable if partial creation)", rr.Code)
+		t.Fatalf("expected status %d when profiles table is dropped, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	var promptCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount); err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+	if promptCount != 0 {
+		t.Errorf("expected no prompts without profiles, got %d", promptCount)
+	}
+
+	var modelCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM models").Scan(&modelCount); err != nil {
+		t.Fatalf("failed to count models: %v", err)
+	}
+	if modelCount != 36 {
+		t.Errorf("expected 24 generated models plus 12 second-suite models, got %d", modelCount)
+	}
+
+	var scoreCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("failed to count scores: %v", err)
+	}
+	if scoreCount != 0 {
+		t.Errorf("expected no scores without prompts, got %d", scoreCount)
 	}
 }
 
@@ -733,8 +759,29 @@ func TestUpdateMockResultsHandler_ModelsTableError(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Logf("Got status %d when models table was dropped", rr.Code)
+	// Seeding completes, but the final WriteResults cannot query the dropped
+	// models table, so the handler must report the save failure.
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d when models table is dropped, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "Error saving mock results") {
+		t.Errorf("expected WriteResults failure body, got %q", rr.Body.String())
+	}
+
+	var promptCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount); err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+	if promptCount != 70 {
+		t.Errorf("expected 70 seeded prompts, got %d", promptCount)
+	}
+
+	var profileCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount); err != nil {
+		t.Fatalf("failed to count profiles: %v", err)
+	}
+	if profileCount != 9 {
+		t.Errorf("expected 9 seeded profiles, got %d", profileCount)
 	}
 }
 
@@ -755,8 +802,30 @@ func TestUpdateMockResultsHandler_SuitesTableError(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Logf("Got status %d when suites table was dropped", rr.Code)
+	// Without the suites table every suite-dependent insert fails (foreign
+	// keys reference it) and WriteResults cannot resolve the suite, so the
+	// handler must report the save failure and seed nothing.
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d when suites table is dropped, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "Error saving mock results") {
+		t.Errorf("expected WriteResults failure body, got %q", rr.Body.String())
+	}
+
+	var promptCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount); err != nil {
+		t.Fatalf("failed to count prompts: %v", err)
+	}
+	if promptCount != 0 {
+		t.Errorf("expected no prompts when the suites table is missing, got %d", promptCount)
+	}
+
+	var profileCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount); err != nil {
+		t.Fatalf("failed to count profiles: %v", err)
+	}
+	if profileCount != 0 {
+		t.Errorf("expected no profiles when the suites table is missing, got %d", profileCount)
 	}
 }
 
@@ -784,8 +853,30 @@ func TestUpdateMockResultsHandler_PromptsTableError(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Logf("Got status %d when prompts table was dropped", rr.Code)
+	// Profile inserts succeed but every prompt insert fails, and the final
+	// WriteResults cannot query the dropped prompts table, so the handler
+	// must report the save failure.
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d when prompts table is dropped, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "Error saving mock results") {
+		t.Errorf("expected WriteResults failure body, got %q", rr.Body.String())
+	}
+
+	var profileCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM profiles").Scan(&profileCount); err != nil {
+		t.Fatalf("failed to count profiles: %v", err)
+	}
+	if profileCount != 10 {
+		t.Errorf("expected 10 profiles (1 existing plus 9 seeded), got %d", profileCount)
+	}
+
+	var modelCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM models").Scan(&modelCount); err != nil {
+		t.Fatalf("failed to count models: %v", err)
+	}
+	if modelCount != 12 {
+		t.Errorf("expected 12 second-suite models, got %d", modelCount)
 	}
 }
 
@@ -878,10 +969,20 @@ func TestUpdateMockResultsHandler_InsertErrorHandling(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	// Handler should still succeed (insert errors are logged but don't fail the request)
-	// The error logging path (line 1009-1011) gets exercised
+	// Insert errors are logged but must not fail the request, and the scores
+	// themselves are saved before the response generation runs.
 	if rr.Code != http.StatusOK {
-		t.Logf("Expected status %d, got %d - insert errors are logged, not failed", http.StatusOK, rr.Code)
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	results := middleware.ReadResults()
+	result, exists := results["TestModel"]
+	if !exists {
+		t.Fatal("expected results for TestModel to exist")
+	}
+	want := []int{100, 80, 60, 40, 20}
+	if !reflect.DeepEqual(result.Scores, want) {
+		t.Errorf("expected stored scores %v, got %v", want, result.Scores)
 	}
 }
 
@@ -892,7 +993,8 @@ func TestUpdateMockResultsHandler_PromptQueryRowError(t *testing.T) {
 	db := middleware.GetDB()
 	suiteID, _ := middleware.GetCurrentSuiteID()
 
-	// Create prompts using DataStore so ReadPrompts() returns them
+	// Create 5 prompts, then delete the last two so the database only
+	// resolves offsets 0-2 while the DataStore still reports 5 prompts.
 	promptsToCreate := []middleware.Prompt{}
 	for i := 0; i < 5; i++ {
 		promptsToCreate = append(promptsToCreate, middleware.Prompt{Text: fmt.Sprintf("Prompt %d", i)})
@@ -901,6 +1003,10 @@ func TestUpdateMockResultsHandler_PromptQueryRowError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to write prompts: %v", err)
 	}
+	_, err = db.Exec("DELETE FROM prompts WHERE display_order >= 3")
+	if err != nil {
+		t.Fatalf("failed to delete prompts: %v", err)
+	}
 
 	// Create a model
 	_, err = db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
@@ -908,14 +1014,10 @@ func TestUpdateMockResultsHandler_PromptQueryRowError(t *testing.T) {
 		t.Fatalf("failed to insert model: %v", err)
 	}
 
-	// Delete some prompts to cause QueryRow errors at specific offsets
-	// Delete prompts with display_order >= 3 (offsets 3 and 4 will fail)
-	_, err = db.Exec("DELETE FROM prompts WHERE display_order >= 3")
-	if err != nil {
-		t.Fatalf("failed to delete prompts: %v", err)
-	}
+	// The mock DataStore reports all 5 prompts, so the prompt lookups at
+	// offsets 3 and 4 fail with ErrNoRows and must be skipped.
+	handler := NewHandlerWithDeps(&MockDataStore{Prompts: promptsToCreate}, &MockRenderer{})
 
-	// Send request with 5 scores - offsets 3 and 4 will trigger QueryRow errors
 	reqBody := `{
 		"results": {
 			"TestModel": {"scores": [100, 80, 60, 40, 20]}
@@ -928,10 +1030,17 @@ func TestUpdateMockResultsHandler_PromptQueryRowError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 
-	DefaultHandler.UpdateMockResults(rr, req)
+	handler.UpdateMockResults(rr, req)
 
-	// Handler should still succeed (QueryRow errors are logged and continue)
 	if rr.Code != http.StatusOK {
-		t.Logf("Expected status %d, got %d", http.StatusOK, rr.Code)
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	var responseCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM model_responses").Scan(&responseCount); err != nil {
+		t.Fatalf("failed to count model responses: %v", err)
+	}
+	if responseCount != 3 {
+		t.Errorf("expected 3 mock responses from the resolvable offsets, got %d", responseCount)
 	}
 }

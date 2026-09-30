@@ -118,6 +118,18 @@ func TestExportResultsHandler_EmptyResults(t *testing.T) {
 	}
 }
 
+// recordingFailWriter fails every write like FailingResponseWriter but counts
+// the attempts, so tests can prove the handler actually tried to write.
+type recordingFailWriter struct {
+	http.ResponseWriter
+	writeCalls int
+}
+
+func (w *recordingFailWriter) Write(p []byte) (int, error) {
+	w.writeCalls++
+	return 0, errors.New("mock write error")
+}
+
 func TestExportResultsHandler_WriteError(t *testing.T) {
 	mockDS := &MockDataStore{
 		Results: map[string]middleware.Result{
@@ -130,21 +142,16 @@ func TestExportResultsHandler_WriteError(t *testing.T) {
 		Renderer:  &MockRenderer{},
 	}
 
-	// Use FailingResponseWriter to simulate write error
 	rr := httptest.NewRecorder()
-	failingWriter := &FailingResponseWriter{
-		ResponseWriter: rr,
-		WriteError:     errors.New("mock write error"),
-	}
+	failingWriter := &recordingFailWriter{ResponseWriter: rr}
 
 	req := httptest.NewRequest("GET", "/export_results", nil)
 	handler.ExportResults(failingWriter, req)
 
-	// The handler should fail when writing the response
-	// Check that no successful content was written
-	if failingWriter.HeaderWritten && rr.Code == http.StatusOK {
-		// Write error occurred after header was written
-		// This is expected behavior - the error is logged but header already sent
-		_ = failingWriter.HeaderWritten
+	if failingWriter.writeCalls == 0 {
+		t.Fatal("expected the handler to attempt writing the export body")
+	}
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d after the write fails, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
