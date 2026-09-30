@@ -2,7 +2,7 @@
 
 [![Coverage](./coverage-badge.svg)](./coverage.html)
 [![CI](https://github.com/lavantien/llm-tournament/workflows/CI/badge.svg)](https://github.com/lavantien/llm-tournament/actions)
-[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -16,7 +16,7 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 
 **UI Stack**
 
-- Tailwind CSS v4.1.18 + DaisyUI v5.0.0 (0% custom CSS)
+- Tailwind CSS v4.3.3 + DaisyUI v5.7.47 (0% custom CSS)
 - Built-in DaisyUI components and themes (coffee)
 - Industry-standard utility-first styling approach
 - Zero maintenance custom CSS codebase
@@ -246,9 +246,9 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
 ## 5. Tech Stack
 
-Backend: Go 1.24+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite
+Backend: Go 1.27+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite
 
-Frontend: HTML5, Tailwind CSS v4.1.18, DaisyUI v5.0.0, JavaScript ES6+, Chart.js 4.x, Marked.js
+Frontend: HTML5, Tailwind CSS v4.3.3, DaisyUI v5.7.47, JavaScript ES6+, Chart.js 4.x, Marked.js
 
 Security: XSS sanitization, CORS protection, input validation
 
@@ -258,7 +258,7 @@ Security: XSS sanitization, CORS protection, input validation
 
 ### 6.1 Prerequisites
 
-- Go 1.24+
+- Go 1.27+
 - A C toolchain for CGO/SQLite (e.g., gcc/clang; on Windows install MinGW-w64/MSYS2)
 - Git
 - Make (optional, for convenience targets)
@@ -303,8 +303,8 @@ npm install
 
 This installs:
 
-- Tailwind CSS v4.1.18
-- DaisyUI v5.0.0
+- Tailwind CSS v4.3.3
+- DaisyUI v5.7.47
 - PostCSS and build tools
 
 **Build CSS:**
@@ -463,8 +463,8 @@ See: **[lavantien/dotfiles](https://github.com/lavantien/dotfiles)**
 ### 8.1 Local Development Setup
 
 #### Prerequisites
-- Go 1.24+
-- Node.js 20+
+- Go 1.27+
+- Node.js 24+
 - CGO-enabled toolchain (gcc/clang/MinGW)
 
 #### Running the Development Server
@@ -560,12 +560,12 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | Package | Coverage |
 | --- | ---: |
 | llm-tournament | 100.0% |
-| llm-tournament/evaluator | 100.0% |
-| llm-tournament/handlers | 99.1% |
+| llm-tournament/evaluator | 0.0% |
+| llm-tournament/handlers | 99.2% |
 | llm-tournament/integration | - |
 | llm-tournament/middleware | 100.0% |
 | llm-tournament/templates | 100.0% |
-| llm-tournament/testutil | 99.6% |
+| llm-tournament/testutil | 99.4% |
 | llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
 | **Total** | **99.5%** |
 

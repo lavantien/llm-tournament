@@ -246,17 +246,17 @@ All templates are Go `html/template` files. We verify:
 
 ### Required
 
-- Tailwind CSS v4.1.18 (already installed)
-- DaisyUI v5.0.0 (will install)
+- Tailwind CSS v4.3.3 (already installed)
+- DaisyUI v5.7.47 (will install)
 - `@tailwindcss/forms` v0.5.11 (already installed)
-- `@tailwindcss/postcss` v4.1.18 (already installed)
+- `@tailwindcss/postcss` v4.3.3 (already installed)
 - PostCSS v8.5.6 (already installed)
 - Autoprefixer v10.4.23 (already installed)
 
 ### Optional
 
 - Font Awesome 6 (icons, if needed)
-- Playwright 1.57.0 (screenshot testing)
+- Playwright 1.63.0 (screenshot testing)
 
 ## Implementation Notes
 

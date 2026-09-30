@@ -312,13 +312,13 @@ export default {
 {
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/postcss": "^4.1.18",
+    "@tailwindcss/postcss": "^4.3.3",
     "autoprefixer": "^10.4.23",
     "playwright": "1.57.0",
     "postcss": "^8.5.6",
     "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.1.18",
-    "daisyui": "^5.0.0", // ← ADDED
+    "tailwindcss": "^4.3.3",
+    "daisyui": "^5.7.47", // ← ADDED
     "tdd-guard-jest": "^0.1.4",
     "tdd-guard-vitest": "^0.1.6"
   },

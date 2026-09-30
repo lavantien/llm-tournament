@@ -1,6 +1,10 @@
 # Detect operating system
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
+    # GNU Make picks sh.exe when present; the Windows recipes below are
+    # written for cmd.exe, so force it explicitly.
+    SHELL := cmd.exe
+    .SHELLFLAGS := /c
     RM := if exist release rmdir /s /q release
     MKDIR := if not exist release mkdir release
     CGO_PREFIX := set CGO_ENABLED=1 &&
@@ -11,7 +15,7 @@ ifeq ($(OS),Windows_NT)
     UPDATE_BADGE := powershell -ExecutionPolicy Bypass -File scripts\update-badge.ps1
 else
     DETECTED_OS := $(shell uname -s)
-    RM := rm -rf ./release/*
+    RM := rm -rf ./release
     MKDIR := mkdir -p ./release
     CGO_PREFIX := CGO_ENABLED=1
     SHELL_EXT := .sh
@@ -27,8 +31,13 @@ all: lint test
 
 clean:
 	$(RM)
-	rm data/tournament.db
-	rm -f templates/output.css templates/output.css.map
+ifeq ($(DETECTED_OS),Windows)
+	if exist data\tournament.db del /q data\tournament.db
+	if exist templates\output.css del /q templates\output.css
+	if exist templates\output.css.map del /q templates\output.css.map
+else
+	rm -f data/tournament.db templates/output.css templates/output.css.map
+endif
 
 build: build-css
 ifeq ($(DETECTED_OS),Windows)
@@ -87,18 +96,18 @@ update-coverage-table:
 	@$(CGO_PREFIX) go test ./... -coverprofile=coverage.out
 	@go tool cover -html coverage.out -o coverage.html
 	@go tool cover -func coverage.out | $(GREP) total
-	@if [ "$(DETECTED_OS)" = "Windows" ]; then \
-		powershell -ExecutionPolicy Bypass -File scripts/update-coverage-table.ps1; \
-	else \
-		chmod +x ./scripts/update-coverage-table.sh && ./scripts/update-coverage-table.sh; \
-	fi
+ifeq ($(DETECTED_OS),Windows)
+	@powershell -ExecutionPolicy Bypass -File scripts\update-coverage-table.ps1
+else
+	@chmod +x ./scripts/update-coverage-table.sh && ./scripts/update-coverage-table.sh
+endif
 
 screenshots:
 	npm run screenshots
 
 verify-docs:
 	@echo "Verifying documentation enforcement..."
-	@$(CGO_PREFIX) go test -run 'TestREADME_|TestArenaTheme_' -v
+	@$(CGO_PREFIX) go test -run "TestREADME_|TestArenaTheme_" -v
 	@echo "Checking README.md coverage table format..."
 	@python3 -c "import re, sys; f=open('README.md', encoding='utf-8'); c=f.read(); f.close(); m=re.search(r'###(?:\s+[\d.]+\s+)?Coverage.*?Package-level statement coverage from.*?\n\n\| Package \| Coverage \|\n\| --- \| ---: \|', c, re.DOTALL); sys.exit(0 if m else 1)" || (echo "ERROR: README.md Coverage section format is invalid" && exit 1)
 	@echo "Documentation verification passed!"
@@ -110,4 +119,9 @@ watch-css:
 	npm run watch:css
 
 clean-css:
+ifeq ($(DETECTED_OS),Windows)
+	if exist templates\output.css del /q templates\output.css
+	if exist templates\output.css.map del /q templates\output.css.map
+else
 	rm -f templates/output.css templates/output.css.map
+endif
