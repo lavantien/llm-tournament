@@ -117,12 +117,11 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Double-check total score calculation to ensure consistency
+		// Non-standard scores (outside 20/40/60/80/100) are valid but land in
+		// no bucket, so the bucket sum can legitimately differ from the total.
 		calculatedTotal := stats.Count20*20 + stats.Count40*40 + stats.Count60*60 + stats.Count80*80 + stats.Count100*100
 		if calculatedTotal != stats.TotalScore {
 			log.Printf("Warning: Score mismatch for %s: calculated=%d, summed=%d", model, calculatedTotal, stats.TotalScore)
-			// Fix the total score if there's a discrepancy
-			stats.TotalScore = calculatedTotal
 		}
 		scoreStats[model] = stats
 	}
