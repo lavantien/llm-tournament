@@ -181,7 +181,7 @@ sequenceDiagram
     participant WebSocket
 
     User->>Browser: Clicks score button
-    Browser->>GoServer: POST /results/update
+    Browser->>GoServer: POST /update_result
     GoServer->>SQLite: UPDATE scores SET score = ?
     SQLite-->>GoServer: Success
     GoServer->>WebSocket: Broadcast score_update
@@ -232,7 +232,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - **Prompts CRUD/order:** `main.go:16`-`main.go:23` `handlers/prompt.go:1` (+ reorder via `/update_prompts_order`)
 - **Models CRUD:** `main.go:13` `handlers/models.go`
 - **Manual scoring/results UI:** `main.go:30`-`main.go:37` `handlers/results.go` (+ `templates/results.html`)
-- **Stats/analytics:** `main.go:44` `handlers/stats.go` (+ `templates/stats.html`)
+- **Stats/analytics:** `main.go:43` `handlers/stats.go` (+ `templates/stats.html`)
 
 ### 4.4 Search Cheats (copy/paste)
 
@@ -247,7 +247,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
 Backend: Go 1.27+, Gorilla WebSocket, Blackfriday, Bluemonday, SQLite
 
-Frontend: HTML5, Tailwind CSS v4.3.3, DaisyUI v5.7.47, JavaScript ES6+, Chart.js 4.x, Marked.js
+Frontend: HTML5, Tailwind CSS v4.3.3, DaisyUI v5.7.47, JavaScript ES6+, Chart.js 4.5.1 (vendored), Marked 18.0.14 (vendored)
 
 Security: XSS sanitization, CORS protection, input validation
 
@@ -583,7 +583,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 ## 10. Troubleshooting
 
 - `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO required it for SQLite).
-- Port already in use: stop conflicting process (Go server currently listens on `:8080` in `main.go`).
+- Port already in use: stop the conflicting process, or start the server on another port with `-port` (validated 1-65535, default `:8080`, wired in `run.go`).
 - DB issues: default DB is `data/tournament.db`; you can point to another file with `--db <path>`.
 - **DaisyUI classes not rendering**: Run `npm run build:css`; Tailwind v4 reads its configuration (theme and the DaisyUI plugin) from `templates/input.css`, there is no `tailwind.config.js`.
 
@@ -595,11 +595,14 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 
 - GET /prompts - Prompts list (default route)
 - GET /results - Results and scoring
+- POST /update_result - AJAX score update from the results grid
 - GET /profiles - Profile management
 - GET /stats - Analytics dashboard
 - GET /evaluate?model={name}&prompt={index} - Manual scoring page
 - POST /save_model_response - Save a model's response text for a prompt
 - WS /ws - WebSocket connection
+
+The full route map lives in `main.go:10`; every user-visible feature starts as a path there.
 
 [↑ Back to top](#table-of-contents)
 
