@@ -564,20 +564,18 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 
 ### 9.2 Coverage
 
-The 100% total statement coverage is enforced, not aspirational: `make check` ends with the `coverage-enforce` gate and CI fails the build if the total drops below 100.0%.
-
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
-| Package                                          |   Coverage |
-| ------------------------------------------------ | ---------: |
-| llm-tournament                                   |     100.0% |
-| llm-tournament/handlers                          |     100.0% |
-| llm-tournament/integration                       |          - |
-| llm-tournament/middleware                        |     100.0% |
-| llm-tournament/templates                         |     100.0% |
-| llm-tournament/testutil                          |     100.0% |
-| llm-tournament/tools/screenshots/cmd/demo-server |     100.0% |
-| **Total**                                        | **100.0%** |
+| Package | Coverage |
+| --- | ---: |
+| llm-tournament | 100.0% |
+| llm-tournament/handlers | 100.0% |
+| llm-tournament/integration | - |
+| llm-tournament/middleware | 100.0% |
+| llm-tournament/templates | 100.0% |
+| llm-tournament/testutil | 100.0% |
+| llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
+| **Total** | **100.0%** |
 
 [↑ Back to top](#table-of-contents)
 
