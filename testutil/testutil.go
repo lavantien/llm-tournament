@@ -124,7 +124,6 @@ func createTestSchema(db *sql.DB) error {
 			prompt_id INTEGER NOT NULL,
 			response_text TEXT DEFAULT '',
 			response_source TEXT DEFAULT '',
-			api_config TEXT DEFAULT '',
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE,

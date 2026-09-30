@@ -77,7 +77,7 @@ Run `httptest` integration tests for each page after migration:
 
 **Tier 2 - Medium:** 4. `new_prompt_suite.html` - Verify `.card`, `.input`, `.select`, `.btn` 5. `edit_prompt_suite.html`, `edit_prompt.html`, `edit_profile.html`, `edit_model.html` - Verify forms with textarea 6. `reset_prompts.html`, `reset_profiles.html`, `reset_results.html` - Verify `.btn btn-error` 7. `import_error.html` - Verify `.alert` components
 
-**Tier 3 - Higher:** 8. `profiles.html` - Verify `.card`, `.table`, `.btn btn-square`, `.badge`, `.progress` 9. `prompt_list.html` - Verify drag-drop UI, tables, filtering 10. `results.html` - Verify large tables, badges, `.table-zebra` 11. `settings.html` - Verify `.input`, `.select`, `.checkbox`, `.range`
+**Tier 3 - Higher:** 8. `profiles.html` - Verify `.card`, `.table`, `.btn btn-square`, `.badge`, `.progress` 9. `prompt_list.html` - Verify drag-drop UI, tables, filtering 10. `results.html` - Verify large tables, badges, `.table-zebra`
 
 **Tier 4 - Hardest:** 12. `stats.html` - Verify chart rendering with DaisyUI colors 13. `evaluate.html` - Verify complex score theming, evaluation form 14. `design_preview.html` - Verify multiple `.card` components, layout
 
@@ -482,7 +482,6 @@ export default {
 - [ ] `profiles.html` - Verify tables, badges, progress, forms
 - [ ] `prompt_list.html` - Verify tables, drag-drop, filtering
 - [ ] `results.html` - Verify large tables, badges, status indicators
-- [ ] `settings.html` - Verify all form types (inputs, selects, checkboxes, ranges)
 
 **Tier 4 - Hardest:**
 

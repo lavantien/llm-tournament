@@ -123,7 +123,6 @@ func createTables() error {
 		prompt_id INTEGER NOT NULL,
 		response_text TEXT,
 		response_source TEXT NOT NULL DEFAULT 'manual',
-		api_config TEXT,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (model_id) REFERENCES models(id) ON DELETE CASCADE,

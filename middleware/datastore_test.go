@@ -49,18 +49,12 @@ type MockDataStore struct {
 	WriteProfilesFunc       func(profiles []Profile) error
 	ReadResultsFunc         func() map[string]Result
 	WriteResultsFunc        func(suiteName string, results map[string]Result) error
-	GetSettingFunc          func(key string) (string, error)
-	SetSettingFunc          func(key, value string) error
-	GetAPIKeyFunc           func(provider string) (string, error)
-	SetAPIKeyFunc           func(provider, key string) error
-	GetMaskedAPIKeysFunc    func() (map[string]string, error)
 	BroadcastResultsFunc    func()
 
 	Err      error
 	Prompts  []Prompt
 	Profiles []Profile
 	Results  map[string]Result
-	Settings map[string]string
 }
 
 func (m *MockDataStore) GetCurrentSuiteID() (int, error) {
@@ -198,60 +192,6 @@ func (m *MockDataStore) WriteResults(suiteName string, results map[string]Result
 	return nil
 }
 
-func (m *MockDataStore) GetSetting(key string) (string, error) {
-	if m.GetSettingFunc != nil {
-		return m.GetSettingFunc(key)
-	}
-	if m.Err != nil {
-		return "", m.Err
-	}
-	if m.Settings != nil {
-		return m.Settings[key], nil
-	}
-	return "", nil
-}
-
-func (m *MockDataStore) SetSetting(key, value string) error {
-	if m.SetSettingFunc != nil {
-		return m.SetSettingFunc(key, value)
-	}
-	if m.Err != nil {
-		return m.Err
-	}
-	if m.Settings == nil {
-		m.Settings = make(map[string]string)
-	}
-	m.Settings[key] = value
-	return nil
-}
-
-func (m *MockDataStore) GetAPIKey(provider string) (string, error) {
-	if m.GetAPIKeyFunc != nil {
-		return m.GetAPIKeyFunc(provider)
-	}
-	if m.Err != nil {
-		return "", m.Err
-	}
-	return "", nil
-}
-
-func (m *MockDataStore) SetAPIKey(provider, key string) error {
-	if m.SetAPIKeyFunc != nil {
-		return m.SetAPIKeyFunc(provider, key)
-	}
-	return m.Err
-}
-
-func (m *MockDataStore) GetMaskedAPIKeys() (map[string]string, error) {
-	if m.GetMaskedAPIKeysFunc != nil {
-		return m.GetMaskedAPIKeysFunc()
-	}
-	if m.Err != nil {
-		return nil, m.Err
-	}
-	return map[string]string{}, nil
-}
-
 func (m *MockDataStore) BroadcastResults() {
 	if m.BroadcastResultsFunc != nil {
 		m.BroadcastResultsFunc()
@@ -278,11 +218,6 @@ func TestMockDataStore_ReturnsError(t *testing.T) {
 	}
 
 	err = mock.WritePrompts(nil)
-	if err != expectedErr {
-		t.Errorf("expected error %v, got %v", expectedErr, err)
-	}
-
-	_, err = mock.GetMaskedAPIKeys()
 	if err != expectedErr {
 		t.Errorf("expected error %v, got %v", expectedErr, err)
 	}

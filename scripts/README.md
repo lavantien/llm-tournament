@@ -94,9 +94,8 @@ chmod +x .git/hooks/pre-commit
 
 ### make verify-docs
 
-- Runs documentation enforcement tests
+- Runs documentation enforcement tests (README references, template stylesheet links)
 - Validates README.md coverage table format
-- Checks DESIGN_CONCEPT.md and design_preview.html structure
 
 ### make screenshots
 

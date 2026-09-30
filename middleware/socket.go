@@ -234,18 +234,3 @@ func calculatePassPercentages(results map[string]Result, promptCount int) map[st
 	}
 	return passPercentages
 }
-
-// broadcastMessage sends a JSON message to all connected clients
-func broadcastMessage(payload interface{}) {
-	clientsMutex.Lock()
-	defer clientsMutex.Unlock()
-
-	for client := range clients {
-		err := client.WriteJSON(payload)
-		if err != nil {
-			log.Printf("Error broadcasting message: %v", err)
-			_ = client.Close()
-			delete(clients, client)
-		}
-	}
-}

@@ -177,7 +177,7 @@ async function main() {
       {
         waitForSelector: ".card",
         beforeScreenshot: async (p) => {
-          const buttons = p.locator("button[data-score]").all();
+          const buttons = await p.locator("button[data-score]").all();
           if (buttons.length > 0) {
             await buttons[3].click({ timeout: 30_000 });
             await p.waitForTimeout(150);

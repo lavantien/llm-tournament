@@ -524,45 +524,6 @@ func TestBroadcastResults_WithClient(t *testing.T) {
 	}
 }
 
-func TestBroadcastMessage_MarshalErrorCleansUpClient(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	clientsMutex.Lock()
-	clients = make(map[*websocket.Conn]bool)
-	clientsMutex.Unlock()
-
-	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
-	defer server.Close()
-
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("failed to connect: %v", err)
-	}
-	defer func() { _ = conn.Close() }()
-
-	waitForWebSocketClientRegistration(t, 1)
-
-	// Include a channel to force json.Marshal to fail inside WriteJSON.
-	payload := struct {
-		Ch chan int `json:"ch"`
-	}{Ch: make(chan int)}
-
-	broadcastMessage(payload)
-
-	clientsMutex.Lock()
-	got := len(clients)
-	clientsMutex.Unlock()
-	if got != 0 {
-		t.Fatalf("expected client to be removed after marshal error, got %d", got)
-	}
-}
-
 func TestBroadcastResults_UncategorizedStartColAfterProfile(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -787,58 +748,7 @@ func TestBroadcastResults_NoUncategorizedPrompts(t *testing.T) {
 	}
 }
 
-func TestBroadcastMessage_WriteJSONError(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
-	defer server.Close()
-
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("failed to connect: %v", err)
-	}
-
-	// Wait for client registration
-	time.Sleep(50 * time.Millisecond)
-
-	// Verify client was registered
-	clientsMutex.Lock()
-	initialCount := len(clients)
-	clientsMutex.Unlock()
-
-	if initialCount != 1 {
-		t.Fatalf("expected 1 client before close, got %d", initialCount)
-	}
-
-	// Close connection to trigger WriteJSON error
-	_ = conn.Close()
-
-	// Wait for close to take effect
-	time.Sleep(50 * time.Millisecond)
-
-	// Trigger broadcast - should handle closed connection gracefully
-	BroadcastResults()
-
-	// Wait for broadcast processing and cleanup
-	time.Sleep(100 * time.Millisecond)
-
-	// Verify client was cleaned up after WriteJSON error
-	clientsMutex.Lock()
-	finalCount := len(clients)
-	clientsMutex.Unlock()
-
-	if finalCount != 0 {
-		t.Errorf("expected 0 clients after WriteJSON error, got %d", finalCount)
-	}
-}
-
-func TestBroadcastMessage_ClientCleanupOnError(t *testing.T) {
+func TestBroadcastResults_ClientCleanupOnError(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
 

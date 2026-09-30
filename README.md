@@ -1,6 +1,6 @@
 # LLM Tournament Arena
 
-[![Coverage](./coverage-badge.svg)](./coverage.html)
+![Coverage](./coverage-badge.svg)
 [![CI](https://github.com/lavantien/llm-tournament/workflows/CI/badge.svg)](https://github.com/lavantien/llm-tournament/actions)
 [![Go Version](https://img.shields.io/badge/Go-1.27+-00ADD8?style=flat&logo=go)](https://go.dev/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org/)
@@ -200,10 +200,10 @@ sequenceDiagram
     participant SQLite
 
     User->>Browser: Drag prompt to reorder
-    Browser->>GoServer: WS message: reorder_prompts
-    GoServer->>SQLite: UPDATE prompts SET order = ?
+    Browser->>GoServer: POST /update_prompts_order
+    GoServer->>SQLite: UPDATE prompts SET display_order = ?
     SQLite-->>GoServer: Success
-    GoServer->>Browser: WS broadcast: update_prompts_order
+    GoServer->>Browser: WS broadcast: results refresh
     Browser->>User: Reorder animation completes
 ```
 
@@ -213,33 +213,33 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
-- The fastest "index" is to URL handler map in `main.go:60`, and the DB schema is centralized in `middleware/database.go:58`.
+- The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
 - **UI Migration**: All styling now uses Tailwind v4 + DaisyUI v5 components with zero custom CSS. See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
 ### 4.2 Where To Look In 5 Seconds
 
-- **HTTP routes / feature entrypoint:** `main.go:60` (every user-visible feature starts as a path here).
+- **HTTP routes / feature entrypoint:** `main.go:10` (every user-visible feature starts as a path here).
 - **HTML/JS for a page:** `templates/*.html` and `templates/*.js` (e.g. `templates/results.html`, `templates/prompt_list.html`).
-- **DB tables & relationships:** `middleware/database.go:58` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `model_responses`).
+- **DB tables & relationships:** `middleware/database.go:72` (schema includes `suites`, `profiles`, `prompts`, `models`, `scores`, `model_responses`).
 - **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/suites).
-- **WebSocket messages:** `middleware/socket.go:33` (server-side `/ws`, broadcasting and client tracking).
+- **WebSocket messages:** `middleware/socket.go:35` (server-side `/ws`, broadcasting and client tracking).
 - **Saved model responses:** `handlers/model_response.go` (stored in `model_responses`, edited from the Evaluate page).
 - **UI Components:** Tailwind v4 + DaisyUI v5. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete component mapping.
 - **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.
 
 ### 4.3 Common Feature Map
 
-- **Prompt suites:** `main.go:76` `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
-- **Prompts CRUD/order:** `main.go:62`/`main.go:66`/`main.go:73` `handlers/prompt.go:1` (+ reorder over WS in `middleware/socket.go:71`)
-- **Models CRUD:** `main.go:63` `handlers/models.go`
-- **Manual scoring/results UI:** `main.go:80`/`main.go:81` `handlers/results.go` (+ `templates/results.html`)
-- **Stats/analytics:** `main.go:93` `handlers/stats.go` (+ `templates/stats.html`)
+- **Prompt suites:** `main.go:26` `handlers/suites.go` (+ UI in `templates/*prompt_suite*.html`)
+- **Prompts CRUD/order:** `main.go:16`-`main.go:23` `handlers/prompt.go:1` (+ reorder via `/update_prompts_order`)
+- **Models CRUD:** `main.go:13` `handlers/models.go`
+- **Manual scoring/results UI:** `main.go:30`-`main.go:37` `handlers/results.go` (+ `templates/results.html`)
+- **Stats/analytics:** `main.go:44` `handlers/stats.go` (+ `templates/stats.html`)
 
 ### 4.4 Search Cheats (copy/paste)
 
 - Find a feature by URL: `rg -n '"/results"|"/stats"|"/prompts"' main.go`
 - Find which handler renders a template: `rg -n "results\\.html|prompt_list\\.html" handlers`
-- Find everything touching a table: `rg -n "evaluation_jobs|evaluation_history|model_responses" -S .`
+- Find everything touching a table: `rg -n "model_responses|FROM scores|UPDATE prompts" -S .`
 - Find a websocket message type: `rg -n "update_prompts_order|results" middleware/templates -S`
 
 [↑ Back to top](#table-of-contents)
@@ -478,7 +478,7 @@ cd llm-tournament
 npm install
 
 # Build CSS (watch mode for development)
-npm run build:css:watch
+npm run watch:css
 
 # Run the Go server
 CGO_ENABLED=1 go run .
@@ -507,7 +507,7 @@ go tool cover -html=coverage.out
 npm run build:css
 
 # Watch mode (rebuilds on changes)
-npm run build:css:watch
+npm run watch:css
 ```
 
 ### 8.4 Generating Screenshots
@@ -627,16 +627,15 @@ llm-tournament/
 
 When editing documentation files, be aware that several files are automatically validated by tests and CI scripts. See [DOCUMENTATION_ENFORCEMENT.md](DOCUMENTATION_ENFORCEMENT.md) for:
 
-- List of enforced documentation files (README.md, DESIGN_CONCEPT.md, design_preview.html)
+- List of enforced documentation files (README.md, templates)
 - Required sections and formats for each file
 - How to update documentation without breaking automation
 - Troubleshooting common mistakes
 
 **Quick reference:**
 
-- `README.md` - Coverage table enforced by `scripts/update_coverage_table.py`
-- `DESIGN_CONCEPT.md` - Section headers enforced by `design_preview_test.go`
-- `design_preview.html` - Required elements enforced by `design_preview_test.go`
+- `README.md` - Coverage table regenerated by `scripts/update_coverage_table.py`; screenshot references enforced by `readme_ui_screenshots_test.go`
+- `templates/*.html` - Stylesheet references enforced by `arena_theme_test.go`
 
 **Pre-commit hook (recommended):**
 
@@ -650,8 +649,8 @@ This will automatically run `make verify-docs` when you commit documentation cha
 **To verify documentation changes:**
 
 ```bash
-# Run specific enforcement test
-CGO_ENABLED=1 go test -run TestDesignConceptAndPreview_ExistAndStructured -v
+# Run the documentation enforcement tests
+make verify-docs
 
 # Update coverage table after editing README
 make update-coverage-table

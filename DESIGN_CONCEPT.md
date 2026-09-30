@@ -98,7 +98,7 @@ Dynamic score cells use Tailwind arbitrary values:
 ### Preserved from Original
 
 - **Top Bar**: Product identity + suite context + live connection state
-- **Left Rail**: Dense navigation (Results / Stats / Prompts / Profiles / Evaluate / Settings), quick actions, "hotkeys" hints
+- **Left Rail**: Dense navigation (Results / Stats / Prompts / Profiles / Evaluate), quick actions, "hotkeys" hints
 - **Main Grid**: 2-column dashboard (table-heavy left; charts/insights right)
 
 ### Updated with DaisyUI + Tailwind
@@ -311,7 +311,6 @@ All templates are Go `html/template` files. We verify:
 - `profiles.html` - Tables, forms, badges, progress
 - `prompt_list.html` - Tables, drag-drop, filtering
 - `results.html` - Large tables, badges, status
-- `settings.html` - All form types
 
 **Tier 4 - Hardest**:
 
