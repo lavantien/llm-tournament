@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -178,16 +179,10 @@ func TestGetProfileGroups_GoldenAngleColors(t *testing.T) {
 	}
 
 	for i, group := range groups {
-		expectedHue := expectedHues[i]
-		expectedColor := "hsl(" + strings.Split(group.Color, "(")[1]
-		if !strings.HasPrefix(expectedColor, "hsl(") {
-			t.Errorf("expected HSL color format, got %q", group.Color)
+		expectedColor := fmt.Sprintf("hsl(%d, 70%%, 50%%)", expectedHues[i])
+		if group.Color != expectedColor {
+			t.Errorf("group %d color = %q, want %q", i, group.Color, expectedColor)
 		}
-		// Just verify the format is correct
-		if !strings.Contains(group.Color, "hsl(") {
-			t.Errorf("group %d color should be HSL format, got %q", i, group.Color)
-		}
-		_ = expectedHue // We verify format, not exact values
 	}
 }
 
