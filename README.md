@@ -376,17 +376,19 @@ The **Evaluate** page lets you score models one prompt at a time.
 **How to access:** You typically navigate here by clicking a score cell in the Results page (see section 7.6), which automatically takes you to the evaluate page for that model and prompt.
 
 Once on the Evaluate page, you'll see:
-   - The current **model name** at the top
-   - The **prompt number** (e.g., "Prompt 3 of 10")
-   - The **prompt text** and **expected solution**
-   - The **model's response** (which you can save)
-   - **Score buttons** (0, 20, 40, 60, 80, 100)
+
+- The current **model name** at the top
+- The **prompt number** (e.g., "Prompt 3 of 10")
+- The **prompt text** and **expected solution**
+- The **model's response** (which you can save)
+- **Score buttons** (0, 20, 40, 60, 80, 100)
 
 **To score:**
-   - Click a score button to select it
-   - Click ✅ to submit and move to the next prompt
-   - Use ⬅️➡️ buttons to navigate between prompts without scoring
-   - Click ❌ to return to the **Results** page
+
+- Click a score button to select it
+- Click ✅ to submit and move to the next prompt
+- Use ⬅️➡️ buttons to navigate between prompts without scoring
+- Click ❌ to return to the **Results** page
 
 ![Evaluate](assets/ui-evaluate.png)
 
@@ -416,6 +418,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 ### 7.7 Task: Import/Export and Suite Management
 
 **Suite Management:**
+
 - The **Suite selector** is in the top-right of the top navigation bar
 - Use the dropdown to switch between suites
 - Click **New** to create a new suite
@@ -423,16 +426,17 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 - Click **Delete** to remove the current suite
 
 **Import/Export:**
+
 - **Results page**: Contains import/export buttons for evaluation results
 - **Prompts page**: Contains import/export buttons for prompt data
 - Export formats use JSON for backup and portability
 
 ### 7.8 Keyboard Shortcuts
 
-| Action | Shortcut |
-|--------|----------|
+| Action                                | Shortcut                          |
+| ------------------------------------- | --------------------------------- |
 | Navigate between cells (Results grid) | Arrow keys (when cell is focused) |
-| Submit score (Evaluate page) | Enter (when score selected) |
+| Submit score (Evaluate page)          | Enter (when score selected)       |
 
 **Note:** Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for scroll to top/bottom).
 
@@ -463,6 +467,7 @@ See: **[lavantien/dotfiles](https://github.com/lavantien/dotfiles)**
 ### 8.1 Local Development Setup
 
 #### Prerequisites
+
 - Go 1.27+
 - Node.js 24+
 - CGO-enabled toolchain (gcc/clang/MinGW)
@@ -559,16 +564,16 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
-| Package | Coverage |
-| --- | ---: |
-| llm-tournament | 100.0% |
-| llm-tournament/handlers | 100.0% |
-| llm-tournament/integration | - |
-| llm-tournament/middleware | 100.0% |
-| llm-tournament/templates | 100.0% |
-| llm-tournament/testutil | 100.0% |
-| llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
-| **Total** | **100.0%** |
+| Package                                          |   Coverage |
+| ------------------------------------------------ | ---------: |
+| llm-tournament                                   |     100.0% |
+| llm-tournament/handlers                          |     100.0% |
+| llm-tournament/integration                       |          - |
+| llm-tournament/middleware                        |     100.0% |
+| llm-tournament/templates                         |     100.0% |
+| llm-tournament/testutil                          |     100.0% |
+| llm-tournament/tools/screenshots/cmd/demo-server |     100.0% |
+| **Total**                                        | **100.0%** |
 
 [↑ Back to top](#table-of-contents)
 

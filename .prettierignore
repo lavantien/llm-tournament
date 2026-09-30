@@ -1,0 +1,8 @@
+# Generated or third-party files that must keep their exact bytes.
+templates/vendor/
+templates/output.css
+templates/output.css.map
+coverage.out
+coverage.html
+coverage-badge.svg
+package-lock.json

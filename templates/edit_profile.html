@@ -3,7 +3,7 @@
   <head>
     <title>Edit Profile</title>
     <link rel="stylesheet" href="/templates/output.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/marked.min.js"></script>
+    <script src="/templates/vendor/marked.umd.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
   <body>
@@ -29,8 +29,7 @@
                 rows="12"
                 class="textarea textarea-bordered"
               >
-{{.Profile.Description}}</textarea
-              >
+{{.Profile.Description}}</textarea>
               <div class="card-actions justify-start">
                 <button type="submit" class="btn btn-primary">Save</button>
                 <button type="submit" form="cancel-form" class="btn btn-ghost">

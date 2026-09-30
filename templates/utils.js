@@ -49,8 +49,10 @@ function getScoreColorVar(score) {
  * Logs score colors for debugging (requires score-utils.js to be loaded first)
  */
 function logScoreColors() {
-  if (typeof getScoreColor !== 'function') {
-    console.error("getScoreColor is not available. Make sure score-utils.js is loaded.");
+  if (typeof getScoreColor !== "function") {
+    console.error(
+      "getScoreColor is not available. Make sure score-utils.js is loaded.",
+    );
     return;
   }
   console.log("Score colors used in chart:");

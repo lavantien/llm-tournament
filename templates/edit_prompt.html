@@ -3,7 +3,7 @@
   <head>
     <title>Edit Prompt</title>
     <link rel="stylesheet" href="/templates/output.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/marked.min.js"></script>
+    <script src="/templates/vendor/marked.umd.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
   <body>
@@ -21,8 +21,7 @@
                 id="prompt"
                 class="textarea textarea-bordered"
               >
-{{.Prompt.Text}}</textarea
-              >
+{{.Prompt.Text}}</textarea>
               <label class="label mt-4" for="solution">Solution:</label>
               <textarea
                 name="solution"
@@ -30,8 +29,7 @@
                 id="solution"
                 class="textarea textarea-bordered"
               >
-{{.Prompt.Solution}}</textarea
-              >
+{{.Prompt.Solution}}</textarea>
               <label class="label mt-4" for="profile">Profile:</label>
               <select
                 name="profile"

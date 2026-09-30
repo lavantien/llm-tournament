@@ -387,12 +387,13 @@ All templates are Go `html/template` files. We verify:
 **Decision**: Use Tailwind v4 built-in animations only
 
 **Mapping**:
-| Old Custom Animation | New Built-in Animation | Context |
-|-------------------|---------------------|---------|
-| `slowGlow` | `animate-pulse` | Panel effects |
-| `shimmer` | `animate-pulse` | Heading effects |
-| `pulse-connected` | `animate-ping` | Status indicators |
-| Custom keyframes | Removed entirely | 0% custom CSS |
+
+| Old Custom Animation | New Built-in Animation | Context           |
+| -------------------- | ---------------------- | ----------------- |
+| `slowGlow`           | `animate-pulse`        | Panel effects     |
+| `shimmer`            | `animate-pulse`        | Heading effects   |
+| `pulse-connected`    | `animate-ping`         | Status indicators |
+| Custom keyframes     | Removed entirely       | 0% custom CSS     |
 
 **Rationale**: Tailwind v4 includes comprehensive animation utilities. Custom animations require CSS keyframes.
 

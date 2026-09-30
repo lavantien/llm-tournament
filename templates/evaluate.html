@@ -150,8 +150,7 @@
               placeholder="Model's response will appear here..."
               class="textarea textarea-bordered w-full"
             >
-{{.ModelResponse}}</textarea
-            >
+{{.ModelResponse}}</textarea>
             <div class="mt-2">
               <button
                 type="button"
@@ -165,7 +164,7 @@
           </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/marked.min.js"></script>
+        <script src="/templates/vendor/marked.umd.js"></script>
         <script src="/templates/score-utils.js"></script>
         <script>
           let rawPromptMarkdown = '';
