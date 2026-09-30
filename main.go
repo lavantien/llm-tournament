@@ -31,7 +31,6 @@ var routes = map[string]http.HandlerFunc{
 	"/update_result":           handlers.UpdateResultHandler,
 	"/reset_results":           handlers.ResetResultsHandler,
 	"/confirm_refresh_results": handlers.ConfirmRefreshResultsHandler,
-	"/refresh_results":         handlers.RefreshResultsHandler,
 	"/export_results":          handlers.ExportResultsHandler,
 	"/update_mock_results":     handlers.UpdateMockResultsHandler,
 	"/randomize_scores":        handlers.RandomizeScoresHandler,

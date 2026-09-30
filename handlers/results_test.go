@@ -157,27 +157,6 @@ func TestResetResultsHandler_POST(t *testing.T) {
 	}
 }
 
-func TestRefreshResultsHandler_POST(t *testing.T) {
-	cleanup := setupResultsTestDB(t)
-	defer cleanup()
-
-	// Add a model with results
-	form := url.Values{}
-	form.Add("model", "TestModel")
-	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	AddModelHandler(httptest.NewRecorder(), req)
-
-	// Refresh results
-	refreshReq := httptest.NewRequest("POST", "/refresh_results", nil)
-	refreshRR := httptest.NewRecorder()
-	RefreshResultsHandler(refreshRR, refreshReq)
-
-	if refreshRR.Code != http.StatusSeeOther {
-		t.Errorf("expected status %d, got %d", http.StatusSeeOther, refreshRR.Code)
-	}
-}
-
 func TestExportResultsHandler(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
@@ -642,22 +621,6 @@ func TestConfirmRefreshResultsHandler_POST(t *testing.T) {
 				t.Errorf("expected score 0 at index %d, got %d", i, score)
 			}
 		}
-	}
-}
-
-func TestRefreshResultsHandler_GET(t *testing.T) {
-	restoreDir := changeToProjectRootResults(t)
-	defer restoreDir()
-
-	cleanup := setupResultsTestDB(t)
-	defer cleanup()
-
-	req := httptest.NewRequest("GET", "/refresh_results", nil)
-	rr := httptest.NewRecorder()
-	RefreshResultsHandler(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -1255,7 +1218,7 @@ func TestConfirmRefreshResultsHandler_WithSearchQuery(t *testing.T) {
 	}
 }
 
-func TestRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
+func TestConfirmRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
@@ -1268,26 +1231,26 @@ func TestRefreshResultsHandler_POST_WithSelectedModels(t *testing.T) {
 	form := url.Values{}
 	form.Add("selected_models", "Model1")
 
-	req := httptest.NewRequest("POST", "/refresh_results", strings.NewReader(form.Encode()))
+	req := httptest.NewRequest("POST", "/confirm_refresh_results", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	RefreshResultsHandler(rr, req)
+	ConfirmRefreshResultsHandler(rr, req)
 
 	if rr.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
 	}
 }
 
-func TestRefreshResultsHandler_POST_NoModels(t *testing.T) {
+func TestConfirmRefreshResultsHandler_POST_NoModels(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	req := httptest.NewRequest("POST", "/refresh_results", nil)
+	req := httptest.NewRequest("POST", "/confirm_refresh_results", nil)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	RefreshResultsHandler(rr, req)
+	ConfirmRefreshResultsHandler(rr, req)
 
 	if rr.Code != http.StatusSeeOther {
 		t.Errorf("expected status %d, got %d", http.StatusSeeOther, rr.Code)
@@ -1634,32 +1597,6 @@ func TestConfirmRefreshResultsHandler_POST_WriteResultsError(t *testing.T) {
 	}
 }
 
-func TestRefreshResultsHandler_POST_WriteResultsError(t *testing.T) {
-	mockDS := &MockDataStore{
-		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
-		Results: map[string]middleware.Result{
-			"TestModel": {Scores: []int{80}},
-		},
-		CurrentSuite: "test-suite",
-		WriteResultsFunc: func(suiteName string, results map[string]middleware.Result) error {
-			return errors.New("mock write error")
-		},
-	}
-
-	handler := &Handler{
-		DataStore: mockDS,
-		Renderer:  &MockRenderer{},
-	}
-
-	req := httptest.NewRequest("POST", "/refresh_results", nil)
-	rr := httptest.NewRecorder()
-	handler.RefreshResults(rr, req)
-
-	if rr.Code != http.StatusInternalServerError {
-		t.Errorf("expected status %d on write error, got %d", http.StatusInternalServerError, rr.Code)
-	}
-}
-
 func TestEvaluateResultHandler_WriteResultsError(t *testing.T) {
 	mockDS := &MockDataStore{
 		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
@@ -1837,25 +1774,6 @@ func TestUpdateMockResults_ResponseEncodeError(t *testing.T) {
 	// Handler logs encode errors but doesn't return a different status code.
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, rr.Code)
-	}
-}
-
-func TestRefreshResultsHandler_GET_RenderError(t *testing.T) {
-	mockDS := &MockDataStore{
-		CurrentSuite: "test-suite",
-	}
-
-	handler := &Handler{
-		DataStore: mockDS,
-		Renderer:  &MockRenderer{RenderError: errors.New("mock render error")},
-	}
-
-	req := httptest.NewRequest("GET", "/refresh_results", nil)
-	rr := httptest.NewRecorder()
-	handler.RefreshResults(rr, req)
-
-	if rr.Code != http.StatusInternalServerError {
-		t.Errorf("expected status %d on render error, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }
 
@@ -3100,28 +3018,6 @@ func TestConfirmRefreshResultsHandler_MethodNotAllowed(t *testing.T) {
 	req := httptest.NewRequest("PUT", "/confirm_refresh_results", nil)
 	rr := httptest.NewRecorder()
 	handler.ConfirmRefreshResults(rr, req)
-
-	if rr.Code != http.StatusMethodNotAllowed {
-		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)
-	}
-}
-
-func TestRefreshResultsHandler_MethodNotAllowed(t *testing.T) {
-	mockDS := &MockDataStore{
-		Prompts: []middleware.Prompt{
-			{Text: "Prompt 1"},
-		},
-		Results: map[string]middleware.Result{
-			"Model1": {Scores: []int{100}},
-		},
-	}
-	renderer := &testutil.MockRenderer{}
-	handler := NewHandlerWithDeps(mockDS, renderer)
-
-	// Test DELETE method (not GET or POST)
-	req := httptest.NewRequest("DELETE", "/refresh_results", nil)
-	rr := httptest.NewRecorder()
-	handler.RefreshResults(rr, req)
 
 	if rr.Code != http.StatusMethodNotAllowed {
 		t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, rr.Code)

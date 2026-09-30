@@ -68,11 +68,6 @@ func ConfirmRefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
 	DefaultHandler.ConfirmRefreshResults(w, r)
 }
 
-// RefreshResultsHandler handles refresh results (backward compatible wrapper)
-func RefreshResultsHandler(w http.ResponseWriter, r *http.Request) {
-	DefaultHandler.RefreshResults(w, r)
-}
-
 // EvaluateResult handles evaluating individual results (backward compatible wrapper)
 func EvaluateResult(w http.ResponseWriter, r *http.Request) {
 	DefaultHandler.EvaluateResultHandler(w, r)
@@ -376,35 +371,6 @@ func (h *Handler) ConfirmRefreshResults(w http.ResponseWriter, r *http.Request) 
 			results[model] = middleware.Result{
 				Scores: make([]int, len(h.DataStore.ReadPrompts())),
 			}
-		}
-		suiteName := h.DataStore.GetCurrentSuiteName()
-		err := h.DataStore.WriteResults(suiteName, results)
-		if err != nil {
-			log.Printf("Error writing results: %v", err)
-			http.Error(w, "Error writing results", http.StatusInternalServerError)
-			return
-		}
-		log.Println("Results refreshed successfully")
-		h.DataStore.BroadcastResults()
-		http.Redirect(w, r, "/results", http.StatusSeeOther)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-// RefreshResults handles refresh results
-func (h *Handler) RefreshResults(w http.ResponseWriter, r *http.Request) {
-	log.Println("Handling refresh results")
-	switch r.Method {
-	case "GET":
-		if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil {
-			log.Printf("Error rendering template: %v", err)
-			http.Error(w, "Error rendering template", http.StatusInternalServerError)
-		}
-	case "POST":
-		results := h.DataStore.ReadResults()
-		for model := range results {
-			results[model] = middleware.Result{Scores: make([]int, len(h.DataStore.ReadPrompts()))}
 		}
 		suiteName := h.DataStore.GetCurrentSuiteName()
 		err := h.DataStore.WriteResults(suiteName, results)
