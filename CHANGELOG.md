@@ -2,6 +2,10 @@
 
 All notable changes are documented in this file.
 
+## [v4.5.1] - 2026-10-01
+
+Docs only. The changelog is compressed to plain prose, 209 lines to 85. No code changes, coverage stays at 100.0%.
+
 ## [v4.5] - 2026-10-01
 
 Logic-path and test-suite audit. Every fix landed test-first, statement coverage stays at 100.0%, no schema changed.
