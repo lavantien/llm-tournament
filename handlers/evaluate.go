@@ -83,7 +83,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	results := h.DataStore.ReadResults()
 	currentScore := 0
 	if result, exists := results[model]; exists {
-		if index, err := strconv.Atoi(promptIndexStr); err == nil && index < len(result.Scores) {
+		if index, err := strconv.Atoi(promptIndexStr); err == nil && index >= 0 && index < len(result.Scores) {
 			currentScore = result.Scores[index]
 		}
 	}
