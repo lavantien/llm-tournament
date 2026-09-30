@@ -42,6 +42,11 @@ jobs:
       - name: Run tests
         run: go test ./... -race -coverprofile=coverage.out
 
+      - name: Enforce 100% coverage
+        run: |
+          go tool cover -func=coverage.out | grep total
+          go tool cover -func=coverage.out | grep total | grep -v "100.0" > /dev/null && (echo "ERROR: total statement coverage is below 100.0%" && exit 1) || echo "Coverage gate passed."
+
       - name: Verify documentation
         run: make verify-docs
 

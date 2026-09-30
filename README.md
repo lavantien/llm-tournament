@@ -12,14 +12,13 @@ A local-first benchmarking arena for evaluating and comparing Large Language Mod
 
 - SQLite-backed, single-binary Go server with SSR templates + WebSockets (`:8080`)
 - Prompt suites, profiles, models, results grid, and analytics
-- Fully offline: no third-party APIs, no API keys
+- Fully offline: no third-party APIs, no API keys, and all browser scripts (Marked, Chart.js) vendored under `templates/vendor/`
 
 **UI Stack**
 
-- Tailwind CSS v4.3.3 + DaisyUI v5.7.47 (0% custom CSS)
-- Built-in DaisyUI components and themes (coffee)
-- Industry-standard utility-first styling approach
-- Zero maintenance custom CSS codebase
+- Tailwind CSS v4.3.3 + DaisyUI v5.7.47, configured CSS-first in `templates/input.css`
+- Built-in DaisyUI components and the `coffee` theme
+- One small island of custom CSS in `templates/input.css`: the fixed-size results-grid cells and profile spacer rules
 
 ## Table of Contents
 
@@ -66,17 +65,17 @@ $env:CGO_ENABLED=1; go run .
 
 ## 2. UI Design
 
-**Updated: Tailwind v4 + DaisyUI v5 (Zero Custom CSS)**
+**Updated: Tailwind v4 + DaisyUI v5**
 
-The UI has been migrated to use **100% pure Tailwind v4 + DaisyUI v5** components. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete design specifications and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for detailed migration plan.
+The UI uses Tailwind v4 + DaisyUI v5 components. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) for complete design specifications and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for detailed migration plan.
 
 **Key Design Decisions:**
 
-- Zero custom CSS - all styling uses Tailwind utilities or DaisyUI semantic components
-- Built-in DaisyUI `cyberpunk` theme provides dark backgrounds with neon accents
+- Styling is Tailwind utilities and DaisyUI semantic components, plus one exception: the fixed-size results-grid cells and profile spacers live in `templates/input.css`
+- Built-in DaisyUI `coffee` theme provides the warm dark palette
 - Tailwind v4 built-in animations (`animate-spin`, `animate-ping`, `animate-pulse`) replace custom keyframes
-- Dynamic score theming uses Tailwind arbitrary values (`bg-[#color]`) instead of CSS variables
-- Glass panels use DaisyUI `.card` components without custom glow effects
+- Dynamic score theming uses the server-side `ScoreColors` palette (`scoreColor` funcmap) mirrored in `templates/constants.js`
+- Panels use DaisyUI `.card` components without custom glow effects
 - Industry-standard approach using well-maintained tools (Tailwind + DaisyUI)
 
 **Trade-offs:**
@@ -214,7 +213,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
 - The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
-- **UI Migration**: All styling now uses Tailwind v4 + DaisyUI v5 components with zero custom CSS. See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
+- **UI Migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`). See [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
 ### 4.2 Where To Look In 5 Seconds
 
@@ -293,7 +292,7 @@ CGO_ENABLED=1 go run . --migrate-results
 
 ### 6.3 UI Installation (DaisyUI + Tailwind v4)
 
-The UI now uses Tailwind CSS v4 + DaisyUI v5 with zero custom CSS. See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
+The UI uses Tailwind CSS v4 + DaisyUI v5, configured CSS-first in `templates/input.css` (there is no `tailwind.config.js`; v4 reads `@theme` and `@plugin` from the CSS). See [DESIGN_CONCEPT.md](DESIGN_CONCEPT.md) and [DESIGN_ROLLOUT.md](DESIGN_ROLLOUT.md) for complete migration details.
 
 **Install dependencies:**
 
@@ -543,8 +542,11 @@ make test
 # Quieter run that also writes coverage.out
 make testbrief
 
-# Lint + testbrief + per-function coverage report
+# Lint + fmt + testbrief + per-function coverage report + 100% gate
 make check
+
+# Enforce the 100% total statement coverage gate on an existing coverage.out
+make coverage-enforce
 
 # Manual test run
 CGO_ENABLED=1 go test ./... -v -race -cover
@@ -561,6 +563,8 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 **Visual Regression**: Use existing screenshot system to compare before/after UI states.
 
 ### 9.2 Coverage
+
+The 100% total statement coverage is enforced, not aspirational: `make check` ends with the `coverage-enforce` gate and CI fails the build if the total drops below 100.0%.
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
@@ -582,7 +586,7 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 - `CGO_ENABLED=1` set but build fails: install a working C compiler toolchain (CGO required it for SQLite).
 - Port already in use: stop conflicting process (Go server currently listens on `:8080` in `main.go`).
 - DB issues: default DB is `data/tournament.db`; you can point to another file with `--db <path>`.
-- **DaisyUI classes not rendering**: Verify `tailwind.config.js` includes DaisyUI plugin and `npm run build:css` has been run.
+- **DaisyUI classes not rendering**: Run `npm run build:css`; Tailwind v4 reads its configuration (theme and the DaisyUI plugin) from `templates/input.css`, there is no `tailwind.config.js`.
 
 [↑ Back to top](#table-of-contents)
 
@@ -605,20 +609,23 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 ```
 llm-tournament/
 ├── main.go              # Entry point, routing, server setup
+├── app.go               # Route wiring, static file serving, origin guard
 ├── handlers/            # HTTP handlers (models, prompts, results, stats, suites, profiles)
-├── middleware/          # Business logic (database, WebSocket, state, rendering)
+├── middleware/          # Business logic (database, WebSocket, state, rendering, origin, static)
 ├── templates/           # HTML, CSS, JavaScript
+│   └── vendor/          # Vendored Marked and Chart.js builds (offline)
 ├── assets/              # UI screenshots and static images
 ├── data/                # SQLite database
-├── tailwind.config.js    # Tailwind v4 + DaisyUI v5 configuration
+├── playground/          # One-off scripts used during development
 └── postcss.config.js    # PostCSS configuration
 ```
 
 **UI-Specific:**
 
-- `templates/input.css` - Tailwind + DaisyUI imports only (zero custom CSS)
+- `templates/input.css` - Tailwind + DaisyUI CSS-first config plus the results-grid cell rules
 - `templates/output.css` - Generated CSS file (PostCSS output)
 - `templates/*.html` - All HTML templates using DaisyUI components
+- `templates/vendor/` - Pinned Marked and Chart.js builds with a provenance README
 
 [↑ Back to top](#table-of-contents)
 

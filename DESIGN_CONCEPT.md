@@ -1,5 +1,13 @@
 # LLM Tournament Arena — Design Concept (Tailwind v4 + DaisyUI v5 Edition)
 
+> Historical planning document for the v4.0 migration from the custom
+> arena.css system to Tailwind v4 + DaisyUI v5. The shipped UI follows it
+> except where noted in the README: `templates/input.css` carries a small
+> island of custom CSS for the fixed-size results-grid cells and profile
+> spacers, Tailwind v4 is configured CSS-first (no `tailwind.config.js`),
+> and score colors come from the shared Go/JS palette. Kept for context,
+> not as a binding spec.
+
 ## Goal
 
 Transform UI to **100% pure Tailwind v4 + DaisyUI v5** - zero custom CSS, built-in components only. Deliver a clean, maintainable dashboard using industry-standard tools while maintaining SSR Go template architecture.

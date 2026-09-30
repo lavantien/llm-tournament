@@ -1,5 +1,10 @@
 # UI Redesign Rollout — Tailwind v4 + DaisyUI v5 (Zero Custom CSS)
 
+> Historical rollout plan for the v4.0 migration. Completed except as noted
+> in the README: `templates/input.css` retains the results-grid cell rules,
+> and the Tailwind v4 setup is CSS-first, so `tailwind.config.js` was later
+> deleted. Kept for context, not as a binding spec.
+
 ## Goal
 
 Migrate from 1,065 lines of custom CSS to **100% pure Tailwind v4 + DaisyUI v5** built-in solutions. Deliver a clean, maintainable UI using only utility classes and DaisyUI semantic components while maintaining SSR Go template architecture.

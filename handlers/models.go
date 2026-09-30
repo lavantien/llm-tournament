@@ -68,7 +68,7 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == "POST" {
+	if r.Method == http.MethodPost {
 		newModelName := r.FormValue("new_model_name")
 		if newModelName == "" {
 			http.Error(w, "New model name cannot be empty", http.StatusBadRequest)
@@ -95,7 +95,7 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}

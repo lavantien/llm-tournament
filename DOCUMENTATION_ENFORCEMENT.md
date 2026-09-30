@@ -16,6 +16,7 @@ Several documentation files are automatically validated by tests and CI scripts.
 
 - `scripts/update_coverage_table.py` via `make update-coverage-table` regenerates the coverage table
 - `make verify-docs` checks the Coverage section format with a regex
+- `make coverage-enforce` fails when total statement coverage drops below 100.0% (also part of `make check` and CI)
 - `readme_ui_screenshots_test.go` requires every `assets/ui-*.png` referenced in the Usage Tutorial to exist
 - `readme_quickstart_test.go` forbids references to removed Make targets in the Quick Start section
 
@@ -63,11 +64,15 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 **Required elements:**
 
 - Every page template must reference `href="/templates/arena.css"` or `href="/templates/output.css"`
-- `design_preview.html` and `nav.html` are exempt (preview page and partial)
+- Every page template must declare `<html lang="en"` and the responsive viewport meta (`arena_theme_test.go`, `TestArenaTheme_AllTemplatesDeclareLanguageAndViewport`)
+- No page template may load a script or stylesheet from a CDN; everything is served locally, including `templates/vendor/` (`arena_offline_test.go`, `TestTemplates_NoCDNScripts`)
+- Nav anchors must not carry duplicate `class` attributes, which browsers silently drop (`arena_nav_test.go`, `TestArenaNav_NoDuplicateClassAttributes`)
+- `design_preview.html` and `nav.html` are exempt from the stylesheet and lang/viewport rules (preview page and partial)
 
 **What breaks it:**
 
-- Adding a new page template without one of the required stylesheet references
+- Adding a new page template without one of the required stylesheet references, the lang attribute, or the viewport meta
+- Pointing a template at a CDN-hosted script instead of `templates/vendor/`
 
 ### DESIGN_CONCEPT.md / DESIGN_ROLLOUT.md / design_preview.html
 
@@ -220,5 +225,7 @@ For questions, refer to the enforcement test files:
 
 - `readme_ui_screenshots_test.go` - README.md screenshot references
 - `readme_quickstart_test.go` - README.md quick start targets
-- `arena_theme_test.go` - template stylesheet references
+- `arena_theme_test.go` - template stylesheet references, lang attribute, viewport meta
+- `arena_nav_test.go` - nav.html structure and duplicate class attributes
+- `arena_offline_test.go` - no CDN script/stylesheet references in templates
 - `scripts/update_coverage_table.py` - README.md coverage table

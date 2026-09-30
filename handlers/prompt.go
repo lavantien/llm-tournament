@@ -399,7 +399,7 @@ func (h *Handler) ImportResults(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit prompt")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -432,7 +432,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	case "POST":
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -477,7 +477,7 @@ func (h *Handler) EditPrompt(w http.ResponseWriter, r *http.Request) {
 // BulkDeletePromptsPage handles bulk delete prompts page
 func (h *Handler) BulkDeletePromptsPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling bulk delete prompts page")
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -524,7 +524,7 @@ func (h *Handler) BulkDeletePromptsPage(w http.ResponseWriter, r *http.Request) 
 // BulkDeletePrompts handles bulk delete prompts
 func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling bulk delete prompts")
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -585,7 +585,7 @@ func (h *Handler) BulkDeletePrompts(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -615,7 +615,7 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	case "POST":
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -651,7 +651,7 @@ func (h *Handler) DeletePrompt(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling move prompt")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -683,7 +683,7 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	case "POST":
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -731,12 +731,12 @@ func (h *Handler) MovePrompt(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset prompts")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_prompts.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	case "POST":
+	case http.MethodPost:
 		err := h.DataStore.WritePrompts([]middleware.Prompt{})
 		if err != nil {
 			log.Printf("Error writing prompts: %v", err)

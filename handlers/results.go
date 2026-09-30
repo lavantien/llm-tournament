@@ -334,12 +334,12 @@ func (h *Handler) UpdateResult(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ResetResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling reset results")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		if err := h.Renderer.RenderTemplateSimple(w, "reset_results.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	case "POST":
+	case http.MethodPost:
 		emptyResults := make(map[string]middleware.Result)
 		suiteName := h.DataStore.GetCurrentSuiteName()
 		err := h.DataStore.WriteResults(suiteName, emptyResults)
@@ -360,12 +360,12 @@ func (h *Handler) ResetResults(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ConfirmRefreshResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling confirm refresh results")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		if err := h.Renderer.RenderTemplateSimple(w, "confirm_refresh_results.html", nil); err != nil {
 			log.Printf("Error rendering template: %v", err)
 			http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		}
-	case "POST":
+	case http.MethodPost:
 		results := h.DataStore.ReadResults()
 		for model := range results {
 			results[model] = middleware.Result{
@@ -397,7 +397,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 		return
 	}
-	if r.Method == "POST" {
+	if r.Method == http.MethodPost {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
 		if err != nil {
@@ -558,7 +558,7 @@ func (h *Handler) ExportResults(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling update mock results")
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -1093,7 +1093,7 @@ func RandomizeScoresHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling randomize scores")
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}

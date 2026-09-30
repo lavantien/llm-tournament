@@ -31,7 +31,7 @@ func EditPromptSuiteHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling delete prompt suite page")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		suiteName := r.URL.Query().Get("suite_name")
 		returnTo := r.URL.Query().Get("return_to")
 		if returnTo == "" {
@@ -43,7 +43,7 @@ func (h *Handler) DeletePromptSuite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Delete prompt suite page rendered successfully")
-	case "POST":
+	case http.MethodPost:
 		suiteName := r.FormValue("suite_name")
 		if suiteName == "" {
 			http.Error(w, "Suite name is required", http.StatusBadRequest)
@@ -117,7 +117,7 @@ func (h *Handler) SelectPromptSuite(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling new prompt suite")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		returnTo := r.URL.Query().Get("return_to")
 		if returnTo == "" {
 			returnTo = r.URL.Path
@@ -128,7 +128,7 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("New prompt suite page rendered successfully")
-	case "POST":
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)
@@ -163,7 +163,7 @@ func (h *Handler) NewPromptSuite(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 	log.Println("Handling edit prompt suite")
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		suiteName := r.URL.Query().Get("suite_name")
 		returnTo := r.URL.Query().Get("return_to")
 		if returnTo == "" {
@@ -175,7 +175,7 @@ func (h *Handler) EditPromptSuite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Println("Edit prompt suite page rendered successfully")
-	case "POST":
+	case http.MethodPost:
 		err := r.ParseForm()
 		if err != nil {
 			log.Printf("Error parsing form: %v", err)

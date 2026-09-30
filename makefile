@@ -21,9 +21,12 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: lint test testbrief cover check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
+.PHONY: lint fmt test testbrief cover coverage-enforce check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
 
 all: lint test
+
+fmt:
+	gofmt -l -w .
 
 clean:
 	$(RM)
@@ -76,7 +79,16 @@ testbrief:
 cover:
 	go tool cover -func coverage.out
 
-check: setenv lint testbrief cover
+coverage-enforce:
+	@go tool cover -func coverage.out | $(GREP) total
+ifeq ($(DETECTED_OS),Windows)
+	@go tool cover -func coverage.out | $(GREP) total | $(GREP) "100.0" > nul || (echo ERROR: total statement coverage is below 100.0 percent. Fix the gaps before committing. && exit 1)
+	@echo Coverage gate passed.
+else
+	@go tool cover -func coverage.out | $(GREP) total | $(GREP) -v "100.0" > /dev/null && (echo ERROR: total statement coverage is below 100.0 percent. Fix the gaps before committing. && exit 1) || echo "Coverage gate passed."
+endif
+
+check: setenv lint fmt testbrief cover coverage-enforce
 
 run:
 	$(CGO_PREFIX) go run .

@@ -1,15 +1,13 @@
 {
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/postcss": "^4.3.3",
-    "autoprefixer": "^10.6.1",
-    "daisyui": "^5.7.47",
+    "@tailwindcss/postcss": "4.3.3",
+    "daisyui": "5.7.47",
     "playwright": "1.62.0",
-    "postcss": "^8.5.28",
-    "postcss-cli": "^12.0.0",
-    "tailwindcss": "^4.3.3",
-    "tdd-guard-jest": "^0.1.4",
-    "tdd-guard-vitest": "^0.2.0"
+    "postcss": "8.5.28",
+    "postcss-cli": "12.0.0",
+    "tailwindcss": "4.3.3",
+    "tdd-guard-jest": "0.1.4",
+    "tdd-guard-vitest": "0.2.0"
   },
   "scripts": {
     "build:css": "postcss templates/input.css -o templates/output.css",

@@ -2,6 +2,33 @@
 
 All notable changes are documented in this file.
 
+## [v4.4] - 2026-10-01
+
+### Fixed
+
+- **Model responses in non-default suites:** the Evaluate page resolved prompt IDs against hardcoded `suite_id = 1`, so saving or loading responses in any other suite silently targeted the first suite's prompts. It now resolves the current suite.
+- **Stats MaxScore across suites:** the stats page counted prompts from every suite when computing tier thresholds; it now scopes to the current suite.
+- **Broken markdown preview:** the pinned CDN URL for marked pointed at `marked.min.js`, which does not exist in the marked 18 package. Marked 18.0.14 and Chart.js 4.5.1 are now vendored under `templates/vendor/`, so the app runs fully offline (enforced by a test that forbids CDN URLs in templates).
+- **Nav link styling:** five nav links carried duplicate `class` attributes; browsers drop the second one, so `text-xs` never applied.
+- **Duplicate refresh handler:** `/refresh_results` was a byte-identical copy of `/confirm_refresh_results`; the confirm page now posts to the surviving route and the duplicate is gone.
+- **Copy-prompt injection:** prompt text was interpolated into an inline `onclick` JS string; copy buttons now read from the page's JSON data via a delegated listener.
+
+### Added
+
+- **Cross-origin guard:** `middleware.CheckOrigin` rejects browser-driven cross-site POSTs against the local server.
+- **Static file allowlist:** `/templates` and `/assets` only serve css/js/image extensions; Go sources and templates are no longer downloadable.
+- **Coverage gate:** `make coverage-enforce` (part of `make check` and CI) fails when total statement coverage drops below 100.0%.
+- **UI essentials:** every page declares `html lang` and the responsive viewport meta (test-enforced), the stats page has an empty state, the results connection badge starts neutral with a Reconnect button after max WebSocket retries, the Evaluate submit stays disabled until a score is picked, and the save-response button shows pending state.
+- **Score palette single-sourced:** one constants file plus the Go `ScoreColors` map and `scoreColor` funcmap replace three conflicting copies with divergent labels.
+
+### Changed
+
+- **Evaluate page hardening:** prompt and solution render through the sanitized server markdown pipeline instead of re-parsing escaped text through marked into `innerHTML`; six duplicated score button blocks collapsed into one loop; emoji buttons carry aria-labels.
+- **JS cleanup:** 35 `console.log` calls removed from results.html, dead helpers and duplicated scroll functions deleted, score-utils.js and utils.js no longer define overlapping globals.
+- **Repo hygiene:** removed one-off debug scripts (`check.js`, `check_spacers.js`) and untracked personal tooling (`tools/tts`, `tools/bg_batch_eraser`, `tools/openwebui`, `tools/ragweb_agent`, root system prompt XMLs; files remain on disk, now gitignored). Deleted dead `tailwind.config.js` and the unused `@tailwindcss/forms` and `autoprefixer` deps (CSS output verified byte-identical), pinned all npm deps to exact versions, added `.prettierignore` for vendored and generated files.
+- **Docs honesty:** README no longer claims zero custom CSS, one theme, or CDN-backed operation; troubleshooting reflects the CSS-first Tailwind v4 setup; DESIGN_CONCEPT/DESIGN_ROLLOUT marked historical; handlers split (see below).
+- **handlers/results.go split** into results, evaluate, mock, and import/export files to stay under the 1000 SLOC limit, and `EvaluateResult` is now a `*Handler` method like every other handler.
+
 ## [v4.3] - 2026-09-30
 
 ### Removed
