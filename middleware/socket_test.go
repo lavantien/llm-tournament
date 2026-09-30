@@ -1,15 +1,53 @@
 package middleware
 
 import (
+	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// synchronizedBuffer is an io.Writer safe for the concurrent writes the
+// standard logger performs from websocket handler goroutines.
+type synchronizedBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *synchronizedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *synchronizedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// waitForLogLine polls captured log output until substr appears, so tests
+// can observe that async websocket processing actually fired.
+func waitForLogLine(t *testing.T, logs *synchronizedBuffer, substr string) {
+	t.Helper()
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(logs.String(), substr) {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("timed out waiting for log line containing %q; got %q", substr, logs.String())
+}
 
 func TestCalculatePassPercentages(t *testing.T) {
 	tests := []struct {
@@ -480,6 +518,10 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 
 		waitForWebSocketClientRegistration(t, 1)
 
+		var logs synchronizedBuffer
+		log.SetOutput(&logs)
+		t.Cleanup(func() { log.SetOutput(os.Stderr) })
+
 		// [2, 1] is not a permutation of [0, 1]: it must be rejected
 		// without touching any row.
 		msg := map[string]interface{}{
@@ -490,7 +532,10 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 			t.Fatalf("failed to send message: %v", err)
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		// The rejection log proves the message was consumed and processed,
+		// distinguishing rejection from a lost or unprocessed message.
+		waitForLogLine(t, &logs, "Invalid order: values must be a permutation")
+
 		waitForPromptSequence(t, []string{"Prompt 1", "Prompt 2"})
 	})
 }
