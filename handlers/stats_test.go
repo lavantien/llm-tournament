@@ -601,13 +601,13 @@ func TestStatsHandler_PromptCountQueryError(t *testing.T) {
 		t.Fatalf("failed to drop prompts table: %v", err)
 	}
 
-	// The handler should fall back to default 50 prompts
 	req := httptest.NewRequest("GET", "/stats", nil)
 	rr := httptest.NewRecorder()
 	StatsHandler(rr, req)
 
-	// Should still succeed with fallback max score
-	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, rr.Code)
+	// The query failure must propagate instead of silently tiering
+	// against a fabricated 50-prompt maximum
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d, got %d", http.StatusInternalServerError, rr.Code)
 	}
 }

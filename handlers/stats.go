@@ -136,10 +136,10 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	// current suite so tier thresholds match the suite being viewed.
 	db := middleware.GetDB()
 	var promptCount int
-	err := db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1)").Scan(&promptCount)
-	if err != nil {
-		log.Printf("Warning: failed to get prompt count: %v, using default 50", err)
-		promptCount = 50
+	if err := db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1)").Scan(&promptCount); err != nil {
+		log.Printf("Error: failed to get prompt count: %v", err)
+		http.Error(w, "Failed to get prompt count", http.StatusInternalServerError)
+		return
 	}
 	maxScore := promptCount * 100
 
@@ -200,7 +200,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		"join": strings.Join,
 	}
 
-	err = h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
+	err := h.Renderer.Render(w, "stats.html", funcMap, templateData, "templates/stats.html", "templates/nav.html")
 	if err != nil {
 		log.Printf("Error rendering template: %v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
