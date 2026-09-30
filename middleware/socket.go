@@ -99,7 +99,12 @@ func BroadcastResults() {
 		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
-		return modelTotalScores[models[i]] > modelTotalScores[models[j]]
+		if modelTotalScores[models[i]] != modelTotalScores[models[j]] {
+			return modelTotalScores[models[i]] > modelTotalScores[models[j]]
+		}
+		// Tie-break by name so equal totals keep a stable, deterministic
+		// order instead of following map iteration order.
+		return models[i] < models[j]
 	})
 
 	// Group prompts by profile

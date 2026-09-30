@@ -465,6 +465,79 @@ func TestBroadcastResults_NoClients(t *testing.T) {
 	BroadcastResults()
 }
 
+func TestBroadcastResults_DeterministicRankingOnTie(t *testing.T) {
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	err := InitDB(dbPath)
+	if err != nil {
+		t.Fatalf("InitDB failed: %v", err)
+	}
+
+	err = WritePromptSuite("default", []Prompt{{Text: "Prompt 1"}})
+	if err != nil {
+		t.Fatalf("WritePromptSuite failed: %v", err)
+	}
+
+	// Eight models with identical totals: the ranking must not depend on
+	// Go map iteration order.
+	modelNames := []string{"Tango", "Zulu", "Alpha", "Mike", "Quebec", "Bravo", "Oscar", "Delta"}
+	results := make(map[string]Result)
+	for _, name := range modelNames {
+		results[name] = Result{Scores: []int{50}}
+	}
+	err = WriteResults("default", results)
+	if err != nil {
+		t.Fatalf("WriteResults failed: %v", err)
+	}
+
+	clientsMutex.Lock()
+	clients = make(map[*websocket.Conn]bool)
+	clientsMutex.Unlock()
+
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer func() { _ = conn.Close() }()
+
+	waitForWebSocketClientRegistration(t, 1)
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+
+	go BroadcastResults()
+
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatalf("failed to read message: %v", err)
+	}
+
+	var payload struct {
+		Type string `json:"type"`
+		Data struct {
+			Models []string `json:"models"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(msg, &payload); err != nil {
+		t.Fatalf("failed to unmarshal message: %v", err)
+	}
+	if payload.Type != "results" {
+		t.Fatalf("expected type 'results', got %q", payload.Type)
+	}
+
+	expected := []string{"Alpha", "Bravo", "Delta", "Mike", "Oscar", "Quebec", "Tango", "Zulu"}
+	if len(payload.Data.Models) != len(expected) {
+		t.Fatalf("expected %d models, got %d", len(expected), len(payload.Data.Models))
+	}
+	for i, want := range expected {
+		if payload.Data.Models[i] != want {
+			t.Errorf("models[%d] = %q, want %q (full order: %v)", i, payload.Data.Models[i], want, payload.Data.Models)
+		}
+	}
+}
+
 func TestBroadcastResults_WithClient(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
