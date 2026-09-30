@@ -8,8 +8,6 @@ ifeq ($(OS),Windows_NT)
     RM := if exist release rmdir /s /q release
     MKDIR := if not exist release mkdir release
     CGO_PREFIX := set CGO_ENABLED=1 &&
-    SHELL_EXT := .bat
-    EXE_EXT := .exe
     GREP := findstr
     GRANT_PERMISSION := echo "Permission Granted"
     UPDATE_BADGE := powershell -ExecutionPolicy Bypass -File scripts\update-badge.ps1
@@ -18,8 +16,6 @@ else
     RM := rm -rf ./release
     MKDIR := mkdir -p ./release
     CGO_PREFIX := CGO_ENABLED=1
-    SHELL_EXT := .sh
-    EXE_EXT :=
     GREP := grep
     GRANT_PERMISSION := chmod +x ./scripts/update-badge.sh
     UPDATE_BADGE := ./scripts/update-badge.sh
@@ -54,13 +50,13 @@ buildwindows:
 
 buildlinux:
 	$(MKDIR)
-	CGO_ENABLED=1 go build -o ./release/llm-tournament .
+	$(CGO_PREFIX) go build -o ./release/llm-tournament .
 
 setenv:
 	go env -w CGO_ENABLED=1
 
 aiderinstalllinux:
-    curl -LsSf https://aider.chat/install.sh | sh
+	curl -LsSf https://aider.chat/install.sh | sh
 
 aiderinstallwindows:
 	powershell -ExecutionPolicy ByPass -c "irm https://aider.chat/install.ps1 | iex"

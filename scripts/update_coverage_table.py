@@ -44,6 +44,9 @@ def get_package_coverage(packages, repo_root):
                 if '[no statements]' in result.stdout:
                     coverage_map[pkg] = None
                 else:
+                    print(f"WARNING: go test failed for {pkg} "
+                          f"(exit {result.returncode}): {result.stdout.strip()}{result.stderr.strip()}",
+                          file=sys.stderr)
                     coverage_map[pkg] = 0.0
         except subprocess.TimeoutExpired:
             coverage_map[pkg] = None
@@ -131,15 +134,20 @@ def main():
         content = f.read()
 
     # Find and replace coverage section (handles numbered or unnumbered subsections)
-    pattern = r'###(?:\s+[\d.]+\s+)?Coverage.*?(?=\n\n##|\n\[)'
-    replacement = f"""### 9.2 Coverage
+    pattern = r'(###(?:\s+[\d.]+\s+)?Coverage).*?(?=\n\n##|\n\[)'
+    match = re.search(pattern, content, flags=re.DOTALL)
+    if not match:
+        print(f"ERROR: no Coverage section found in {readme_path}", file=sys.stderr)
+        sys.exit(1)
+
+    replacement = f"""{match.group(1)}
 
 Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile coverage.out`:
 
 {new_table}
 """
 
-    new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+    new_content = re.sub(pattern, replacement, content, count=1, flags=re.DOTALL)
 
     with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(new_content)

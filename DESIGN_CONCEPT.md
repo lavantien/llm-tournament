@@ -256,7 +256,7 @@ All templates are Go `html/template` files. We verify:
 ### Optional
 
 - Font Awesome 6 (icons, if needed)
-- Playwright 1.63.0 (screenshot testing)
+- Playwright 1.62.0 (screenshot testing)
 
 ## Implementation Notes
 

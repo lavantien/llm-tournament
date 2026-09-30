@@ -28,6 +28,17 @@ func TestUpdateMockResults_LastInsertIDError(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
 	}
+
+	// The suite row inserts, but the failed ID read skips its whole seeding
+	// branch: no models end up in the second suite.
+	var secondSuiteModels int
+	if err := middleware.GetDB().QueryRow(`
+		SELECT COUNT(*) FROM models WHERE suite_id = (SELECT id FROM suites WHERE name = 'Alternative Suite')`).Scan(&secondSuiteModels); err != nil {
+		t.Fatalf("count second-suite models: %v", err)
+	}
+	if secondSuiteModels != 0 {
+		t.Errorf("expected no second-suite models when its insert ID errors, got %d", secondSuiteModels)
+	}
 }
 
 func TestUpdateMockResults_SecondSuiteProfileLastInsertIDError(t *testing.T) {
@@ -56,6 +67,17 @@ func TestUpdateMockResults_SecondSuiteProfileLastInsertIDError(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// The suite insert succeeded (call 6) but its profile inserts failed,
+	// so the second suite exists while the first suite was never seeded.
+	var suites int
+	if err := middleware.GetDB().QueryRow(
+		"SELECT COUNT(*) FROM suites WHERE name = 'Alternative Suite'").Scan(&suites); err != nil {
+		t.Fatalf("count suites: %v", err)
+	}
+	if suites != 1 {
+		t.Errorf("expected the second suite to exist, got %d rows", suites)
 	}
 }
 
@@ -102,6 +124,9 @@ func TestUpdateMockResults_SecondSuitePromptScanError(t *testing.T) {
 	if rr.Code != http.StatusInternalServerError {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
 	}
+	if !strings.Contains(rr.Body.String(), "Error saving mock results") {
+		t.Errorf("expected WriteResults failure body, got %q", rr.Body.String())
+	}
 }
 
 func TestUpdateMockResults_SecondSuiteModelLookupError(t *testing.T) {
@@ -128,17 +153,29 @@ func TestUpdateMockResults_SecondSuiteModelLookupError(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
 	}
+
+	// The lookup misses skip score creation for every second-suite prompt.
+	var secondSuiteScores int
+	if err := middleware.GetDB().QueryRow(`
+		SELECT COUNT(*) FROM scores
+		WHERE prompt_id IN (SELECT id FROM prompts WHERE suite_id = 2)`).Scan(&secondSuiteScores); err != nil {
+		t.Fatalf("count second-suite scores: %v", err)
+	}
+	if secondSuiteScores != 0 {
+		t.Errorf("expected no scores for the second suite, got %d", secondSuiteScores)
+	}
 }
 
 func TestUpdateMockResults_SecondSuiteScoreInsertError(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
-	// First-suite prompts have ids 1-50, second-suite prompts 51-70 on a fresh DB.
+	// Fail every score insert; both suites keep seeding and the score-insert
+	// error branches (including the second suite's) log-and-continue. The
+	// final WriteResults also inserts scores, so it deterministically fails.
 	if _, err := middleware.GetDB().Exec(`
-		CREATE TRIGGER fail_second_suite_scores
+		CREATE TRIGGER fail_score_inserts
 		BEFORE INSERT ON scores
-		WHEN NEW.prompt_id > 50
 		BEGIN
 			SELECT RAISE(ABORT, 'score insert failed');
 		END;`); err != nil {
@@ -151,8 +188,19 @@ func TestUpdateMockResults_SecondSuiteScoreInsertError(t *testing.T) {
 
 	DefaultHandler.UpdateMockResults(rr, req)
 
-	if rr.Code != http.StatusOK {
-		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusInternalServerError, rr.Code, rr.Body.String())
+	}
+	if !strings.Contains(rr.Body.String(), "Error saving mock results") {
+		t.Errorf("expected WriteResults failure body, got %q", rr.Body.String())
+	}
+
+	var scoreCount int
+	if err := middleware.GetDB().QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("count scores: %v", err)
+	}
+	if scoreCount != 0 {
+		t.Errorf("expected no scores when every insert fails, got %d", scoreCount)
 	}
 }
 
@@ -184,5 +232,14 @@ func TestUpdateMockResults_PromptLookupContinuesWhenDBHasNoPrompts(t *testing.T)
 
 	if rr.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, rr.Code, rr.Body.String())
+	}
+
+	// Every prompt lookup missed, so no mock responses were generated.
+	var responseCount int
+	if err := middleware.GetDB().QueryRow("SELECT COUNT(*) FROM model_responses").Scan(&responseCount); err != nil {
+		t.Fatalf("count model responses: %v", err)
+	}
+	if responseCount != 0 {
+		t.Errorf("expected no model responses when prompt lookups fail, got %d", responseCount)
 	}
 }

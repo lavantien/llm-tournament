@@ -262,7 +262,7 @@ Security: XSS sanitization, CORS protection, input validation
 - A C toolchain for CGO/SQLite (e.g., gcc/clang; on Windows install MinGW-w64/MSYS2)
 - Git
 - Make (optional, for convenience targets)
-- Node.js and npm (for UI screenshots only)
+- Node.js and npm (for CSS builds via `make build` and UI screenshots)
 
 ### 6.2 Manual Evaluation (Go-only)
 

@@ -470,6 +470,9 @@ func TestUpdateResultHandler_POST_NegativePromptIndex(t *testing.T) {
 }
 
 func TestEvaluateResult_GET_Request(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()
 
@@ -484,15 +487,16 @@ func TestEvaluateResult_GET_Request(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	AddModelHandler(httptest.NewRecorder(), req)
 
-	// GET request should also work (handler may render template)
+	// GET request renders the manual scoring page
 	evalReq := httptest.NewRequest("GET", "/evaluate_result?model=GetModel&prompt=0", nil)
 	evalRR := httptest.NewRecorder()
 	EvaluateResult(evalRR, evalReq)
 
-	// GET request should fail (expects POST or template rendering)
-	if evalRR.Code == http.StatusMethodNotAllowed {
-		// That's fine, handler only supports POST
-		_ = evalRR.Code
+	if evalRR.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, evalRR.Code, evalRR.Body.String())
+	}
+	if !strings.Contains(evalRR.Body.String(), "data-score") {
+		t.Error("expected rendered evaluate page to contain score buttons")
 	}
 }
 
@@ -2921,6 +2925,15 @@ func TestRandomizeScores_ModelScanError(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Errorf("expected status %d with scan error skipped, got %d", http.StatusOK, rr.Code)
 	}
+
+	// The bad row is skipped, so no scores are randomized for it.
+	var scoreCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("failed to query score count: %v", err)
+	}
+	if scoreCount != 0 {
+		t.Errorf("expected 0 scores with the only model skipped, got %d", scoreCount)
+	}
 }
 
 func TestRandomizeScores_PromptScanError(t *testing.T) {
@@ -2965,6 +2978,15 @@ func TestRandomizeScores_PromptScanError(t *testing.T) {
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("expected status %d with scan error skipped, got %d", http.StatusOK, rr.Code)
+	}
+
+	// The bad row is skipped, so no prompt ids are collected and no scores land.
+	var scoreCount int
+	if err := db.QueryRow("SELECT COUNT(*) FROM scores").Scan(&scoreCount); err != nil {
+		t.Fatalf("failed to query score count: %v", err)
+	}
+	if scoreCount != 0 {
+		t.Errorf("expected 0 scores with the only prompt skipped, got %d", scoreCount)
 	}
 }
 
