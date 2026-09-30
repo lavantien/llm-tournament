@@ -560,14 +560,13 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
 | Package | Coverage |
 | --- | ---: |
 | llm-tournament | 100.0% |
-| llm-tournament/evaluator | 0.0% |
-| llm-tournament/handlers | 99.2% |
+| llm-tournament/handlers | 100.0% |
 | llm-tournament/integration | - |
 | llm-tournament/middleware | 100.0% |
 | llm-tournament/templates | 100.0% |
-| llm-tournament/testutil | 99.4% |
+| llm-tournament/testutil | 100.0% |
 | llm-tournament/tools/screenshots/cmd/demo-server | 100.0% |
-| **Total** | **99.5%** |
+| **Total** | **100.0%** |
 
 [↑ Back to top](#table-of-contents)
 

@@ -20,7 +20,7 @@ var (
 var (
 	createTestSchemaFunc = createTestSchema
 	lastInsertID         = func(result sql.Result) (int64, error) { return result.LastInsertId() }
-	fatalf               = func(t *testing.T, format string, args ...any) { t.Fatalf(format, args...) }
+	fatalf               = (*testing.T).Fatalf
 )
 
 // Prompt is a local type matching middleware.Prompt for testing

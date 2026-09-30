@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io"
 	"llm-tournament/middleware"
@@ -35,6 +36,9 @@ func initRand() *rand.Rand {
 	source := rand.NewSource(time.Now().UnixNano())
 	return rand.New(source)
 }
+
+// lastInsertID is swappable for error-path tests, mirroring middleware
+var lastInsertID = func(result sql.Result) (int64, error) { return result.LastInsertId() }
 
 // GroupedPrompt represents a prompt with its profile information
 type GroupedPrompt struct {
@@ -644,7 +648,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Error inserting mock profile: %v", err)
 				continue
 			}
-			profileID, err := result.LastInsertId()
+			profileID, err := lastInsertID(result)
 			if err != nil {
 				log.Printf("Error getting profile ID: %v", err)
 				continue
@@ -750,7 +754,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("Error creating second suite: %v", err)
 		} else {
-			secondSuiteID, err := result.LastInsertId()
+			secondSuiteID, err := lastInsertID(result)
 			if err != nil {
 				log.Printf("Error getting second suite ID: %v", err)
 			} else {
@@ -772,7 +776,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 						log.Printf("Error inserting second suite profile: %v", err)
 						continue
 					}
-					profileID, err := result.LastInsertId()
+					profileID, err := lastInsertID(result)
 					if err != nil {
 						log.Printf("Error getting second suite profile ID: %v", err)
 						continue
@@ -860,11 +864,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Printf("Error querying second suite prompts: %v", err)
 				} else {
-					defer func() {
-						if err := promptRows.Close(); err != nil {
-							log.Printf("Error closing prompt rows: %v", err)
-						}
-					}()
+					defer func() { _ = promptRows.Close() }()
 					var promptIDs []int
 					for promptRows.Next() {
 						var promptID int
@@ -1103,14 +1103,16 @@ func GetRandomScoreForTierWrapper(tierIndex int) int {
 
 	random := rand.Intn(totalWeight)
 	runningTotal := 0
+	index := len(weightValues) - 1
 	for i, w := range weights {
 		runningTotal += w
 		if random < runningTotal {
-			return weightValues[i]
+			index = i
+			break
 		}
 	}
 
-	return 0
+	return weightValues[index]
 }
 
 // RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)

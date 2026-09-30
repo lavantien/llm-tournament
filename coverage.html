@@ -67,7 +67,7 @@
 				
 				<option value="file5">llm-tournament/handlers/prompt.go (100.0%)</option>
 				
-				<option value="file6">llm-tournament/handlers/results.go (98.2%)</option>
+				<option value="file6">llm-tournament/handlers/results.go (100.0%)</option>
 				
 				<option value="file7">llm-tournament/handlers/stats.go (100.0%)</option>
 				
@@ -95,7 +95,7 @@
 				
 				<option value="file19">llm-tournament/templates/shared.go (100.0%)</option>
 				
-				<option value="file20">llm-tournament/testutil/testutil.go (99.4%)</option>
+				<option value="file20">llm-tournament/testutil/testutil.go (100.0%)</option>
 				
 				<option value="file21">llm-tournament/tools/screenshots/cmd/demo-server/main.go (100.0%)</option>
 				
@@ -1483,6 +1483,7 @@ func (h *Handler) ResetPrompts(w http.ResponseWriter, r *http.Request) {
 		<pre class="file" id="file6" style="display: none">package handlers
 
 import (
+        "database/sql"
         "encoding/json"
         "io"
         "llm-tournament/middleware"
@@ -1517,6 +1518,9 @@ func initRand() *rand.Rand {
         <span class="cov8" title="1">source := rand.NewSource(time.Now().UnixNano())
         return rand.New(source)
 </span>}
+
+// lastInsertID is swappable for error-path tests, mirroring middleware
+var lastInsertID = func(result sql.Result) (int64, error) { <span class="cov8" title="1">return result.LastInsertId() }</span>
 
 // GroupedPrompt represents a prompt with its profile information
 type GroupedPrompt struct {
@@ -2126,9 +2130,9 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                                 <span class="cov8" title="1">log.Printf("Error inserting mock profile: %v", err)
                                 continue</span>
                         }
-                        <span class="cov8" title="1">profileID, err := result.LastInsertId()
+                        <span class="cov8" title="1">profileID, err := lastInsertID(result)
                         if err != nil </span>{
-                                <span class="cov0" title="0">log.Printf("Error getting profile ID: %v", err)
+                                <span class="cov8" title="1">log.Printf("Error getting profile ID: %v", err)
                                 continue</span>
                         }
                         <span class="cov8" title="1">profileIDs[name] = profileID</span>
@@ -2232,9 +2236,9 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                 if err != nil </span>{
                         <span class="cov8" title="1">log.Printf("Error creating second suite: %v", err)
 </span>                } else {
-                        <span class="cov8" title="1">secondSuiteID, err := result.LastInsertId()
+                        <span class="cov8" title="1">secondSuiteID, err := lastInsertID(result)
                         if err != nil </span>{
-                                <span class="cov0" title="0">log.Printf("Error getting second suite ID: %v", err)
+                                <span class="cov8" title="1">log.Printf("Error getting second suite ID: %v", err)
 </span>                        } else {
                                 <span class="cov8" title="1">log.Printf("Created second suite: %s (ID: %d)", secondSuiteName, secondSuiteID)
 </span>
@@ -2254,9 +2258,9 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                                                 <span class="cov8" title="1">log.Printf("Error inserting second suite profile: %v", err)
                                                 continue</span>
                                         }
-                                        <span class="cov8" title="1">profileID, err := result.LastInsertId()
+                                        <span class="cov8" title="1">profileID, err := lastInsertID(result)
                                         if err != nil </span>{
-                                                <span class="cov0" title="0">log.Printf("Error getting second suite profile ID: %v", err)
+                                                <span class="cov8" title="1">log.Printf("Error getting second suite profile ID: %v", err)
                                                 continue</span>
                                         }
                                         <span class="cov8" title="1">secondSuiteProfileIDs[name] = profileID</span>
@@ -2342,16 +2346,12 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                                 if err != nil </span>{
                                         <span class="cov8" title="1">log.Printf("Error querying second suite prompts: %v", err)
 </span>                                } else {
-                                        <span class="cov8" title="1">defer func() </span>{
-                                                <span class="cov8" title="1">if err := promptRows.Close(); err != nil </span>{
-                                                        <span class="cov0" title="0">log.Printf("Error closing prompt rows: %v", err)
-</span>                                                }
-                                        }()
+                                        <span class="cov8" title="1">defer func() </span>{ <span class="cov8" title="1">_ = promptRows.Close() }</span>()
                                         <span class="cov8" title="1">var promptIDs []int
                                         for promptRows.Next() </span>{
                                                 <span class="cov8" title="1">var promptID int
                                                 if err := promptRows.Scan(&amp;promptID); err != nil </span>{
-                                                        <span class="cov0" title="0">log.Printf("Error scanning prompt ID: %v", err)
+                                                        <span class="cov8" title="1">log.Printf("Error scanning prompt ID: %v", err)
                                                         continue</span>
                                                 }
                                                 <span class="cov8" title="1">promptIDs = append(promptIDs, promptID)</span>
@@ -2362,7 +2362,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                                                 <span class="cov8" title="1">var modelID int
                                                 err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", modelName, secondSuiteID).Scan(&amp;modelID)
                                                 if err != nil </span>{
-                                                        <span class="cov0" title="0">log.Printf("Error getting model ID for %s: %v", modelName, err)
+                                                        <span class="cov8" title="1">log.Printf("Error getting model ID for %s: %v", modelName, err)
                                                         continue</span>
                                                 }
 
@@ -2373,7 +2373,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                                                         _, err = db.Exec("INSERT INTO scores (model_id, prompt_id, score) VALUES (?, ?, ?)",
                                                                 modelID, promptID, score)
                                                         if err != nil </span>{
-                                                                <span class="cov0" title="0">log.Printf("Error inserting score for model %s prompt %d: %v", modelName, promptID, err)
+                                                                <span class="cov8" title="1">log.Printf("Error inserting score for model %s prompt %d: %v", modelName, promptID, err)
 </span>                                                        }
                                                 }
                                         }
@@ -2461,7 +2461,7 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
                         err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?",
                                 suiteID, promptIdx).Scan(&amp;promptID)
                         if err != nil </span>{
-                                <span class="cov0" title="0">continue</span>
+                                <span class="cov8" title="1">continue</span>
                         }
 
                         // Generate Lorem ipsum mock response
@@ -2585,14 +2585,16 @@ func GetRandomScoreForTierWrapper(tierIndex int) int {
 
         <span class="cov8" title="1">random := rand.Intn(totalWeight)
         runningTotal := 0
+        index := len(weightValues) - 1
         for i, w := range weights </span>{
                 <span class="cov8" title="1">runningTotal += w
                 if random &lt; runningTotal </span>{
-                        <span class="cov8" title="1">return weightValues[i]
-</span>                }
+                        <span class="cov8" title="1">index = i
+                        break</span>
+                }
         }
 
-        <span class="cov0" title="0">return 0</span>
+        <span class="cov8" title="1">return weightValues[index]</span>
 }
 
 // RandomizeScoresHandler handles randomizing scores (backward compatible wrapper)
@@ -2636,7 +2638,7 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
                         Name string
 </span>                }
                 <span class="cov8" title="1">if err := modelRows.Scan(&amp;m.ID, &amp;m.Name); err != nil </span>{
-                        <span class="cov0" title="0">continue</span>
+                        <span class="cov8" title="1">continue</span>
                 }
                 <span class="cov8" title="1">models = append(models, m)</span>
         }
@@ -2652,7 +2654,7 @@ func (h *Handler) RandomizeScores(w http.ResponseWriter, r *http.Request) {
         for promptRows.Next() </span>{
                 <span class="cov8" title="1">var id int
                 if err := promptRows.Scan(&amp;id); err != nil </span>{
-                        <span class="cov0" title="0">continue</span>
+                        <span class="cov8" title="1">continue</span>
                 }
                 <span class="cov8" title="1">promptIDs = append(promptIDs, id)</span>
         }
@@ -4518,7 +4520,7 @@ func GetCurrentSuiteName() string {
 }
 
 // Write results to database
-func WriteResults(suiteName string, results map[string]Result) error {
+func WriteResults(suiteName string, results map[string]Result) (err error) {
         <span class="cov8" title="1">suiteID, err := GetSuiteID(suiteName)
         if err != nil </span>{
                 <span class="cov8" title="1">return fmt.Errorf("failed to get suite ID: %w", err)
@@ -4978,7 +4980,7 @@ var (
 var (
         createTestSchemaFunc = createTestSchema
         lastInsertID         = func(result sql.Result) (int64, error) { <span class="cov8" title="1">return result.LastInsertId() }</span>
-        fatalf               = func(t *testing.T, format string, args ...any) { <span class="cov0" title="0">t.Fatalf(format, args...) }</span>
+        fatalf               = (*testing.T).Fatalf
 )
 
 // Prompt is a local type matching middleware.Prompt for testing

@@ -360,7 +360,7 @@ func GetCurrentSuiteName() string {
 }
 
 // Write results to database
-func WriteResults(suiteName string, results map[string]Result) error {
+func WriteResults(suiteName string, results map[string]Result) (err error) {
 	suiteID, err := GetSuiteID(suiteName)
 	if err != nil {
 		return fmt.Errorf("failed to get suite ID: %w", err)

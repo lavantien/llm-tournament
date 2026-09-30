@@ -7,6 +7,17 @@ import re
 import subprocess
 import os
 
+def list_packages(repo_root):
+    """List all Go packages in the module via go list"""
+    result = subprocess.run(
+        ['go', 'list', './...'],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        cwd=repo_root
+    )
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
 def get_package_coverage(packages, repo_root):
     """Run go test on each package and extract statement coverage"""
     coverage_map = {}
@@ -16,14 +27,8 @@ def get_package_coverage(packages, repo_root):
 
     for pkg in packages:
         try:
-            # Use relative path from repo root
-            if pkg == '.':
-                pkg_path = '.'
-            else:
-                pkg_path = f'./{pkg}'
-
             result = subprocess.run(
-                ['go', 'test', pkg_path, f'-coverprofile={null_device}'],
+                ['go', 'test', pkg, f'-coverprofile={null_device}'],
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -81,9 +86,10 @@ def main():
     if not os.path.isabs(readme_path):
         readme_path = os.path.join(repo_root, readme_path)
 
-    # Packages to check
-    packages = ['.', 'evaluator', 'handlers', 'integration', 'middleware', 'templates', 'testutil', 'tools/screenshots/cmd/demo-server']
-    
+    # Packages to check (discovered from the module, so the table always
+    # matches the current tree)
+    packages = list_packages(repo_root)
+
     # Get statement-level coverage for each package
     package_coverage = get_package_coverage(packages, repo_root)
 
@@ -102,30 +108,19 @@ def main():
         if total_packages > 0:
             total_coverage = total_coverage / total_packages
 
-    # Generate ordered table output
-    ordered_packages = [
-        (".", "llm-tournament"),
-        ("evaluator", "llm-tournament/evaluator"),
-        ("handlers", "llm-tournament/handlers"),
-        ("integration", "llm-tournament/integration"),
-        ("middleware", "llm-tournament/middleware"),
-        ("templates", "llm-tournament/templates"),
-        ("testutil", "llm-tournament/testutil"),
-        ("tools/screenshots/cmd/demo-server", "llm-tournament/tools/screenshots/cmd/demo-server")
-    ]
-
+    # Generate ordered table output (go list order: root package, then
+    # subpackages sorted by import path)
     table_lines = []
     table_lines.append("| Package | Coverage |")
     table_lines.append("| --- | ---: |")
 
-    for pkg_key, pkg_name in ordered_packages:
-        if pkg_key in package_coverage:
-            coverage = package_coverage[pkg_key]
-            if coverage is None:
-                coverage_str = "-"
-            else:
-                coverage_str = f"{coverage:.1f}%"
-            table_lines.append(f"| {pkg_name} | {coverage_str} |")
+    for pkg in packages:
+        coverage = package_coverage.get(pkg)
+        if coverage is None:
+            coverage_str = "-"
+        else:
+            coverage_str = f"{coverage:.1f}%"
+        table_lines.append(f"| {pkg} | {coverage_str} |")
 
     table_lines.append(f"| **Total** | **{total_coverage:.1f}%** |")
 
@@ -150,9 +145,8 @@ Package-level statement coverage from `CGO_ENABLED=1 go test ./... -coverprofile
         f.write(new_content)
 
     # Count packages with actual coverage (excluding "no statements" ones)
-    packages_with_coverage = sum(1 for pkg in ordered_packages
-                                  if pkg[0] in package_coverage
-                                  and package_coverage[pkg[0]] is not None)
+    packages_with_coverage = sum(1 for pkg in packages
+                                  if package_coverage.get(pkg) is not None)
 
     print(f"Updated README.md successfully with {packages_with_coverage} packages and {total_coverage:.1f}% coverage")
 

@@ -2892,27 +2892,34 @@ func TestRandomizeScores_ModelScanError(t *testing.T) {
 
 	suiteID, _ := middleware.GetCurrentSuiteID()
 
-	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert model: %v", err)
-	}
-
-	_, err = db.Exec("INSERT INTO prompts (text, display_order, suite_id) VALUES (?, ?, ?)", "Prompt 1", 0, suiteID)
-	if err != nil {
+	if _, err := db.Exec("INSERT INTO prompts (text, display_order, suite_id) VALUES (?, ?, ?)", "Prompt 1", 0, suiteID); err != nil {
 		t.Fatalf("failed to insert prompt: %v", err)
 	}
 
-	_, err = db.Exec("DROP TABLE models")
-	if err != nil {
+	// Recreate models with a TEXT id so a row can fail the int scan while the query succeeds.
+	if _, err := db.Exec("DROP TABLE models"); err != nil {
 		t.Fatalf("failed to drop models table: %v", err)
+	}
+	if _, err := db.Exec(`
+		CREATE TABLE models (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			suite_id INTEGER NOT NULL,
+			FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
+			UNIQUE(name, suite_id)
+		)`); err != nil {
+		t.Fatalf("failed to create models table: %v", err)
+	}
+	if _, err := db.Exec(`INSERT INTO models (id, name, suite_id) VALUES ('bad', 'BadModel', ?)`, suiteID); err != nil {
+		t.Fatalf("failed to insert bad model row: %v", err)
 	}
 
 	req := httptest.NewRequest("POST", "/randomize_scores", nil)
 	rr := httptest.NewRecorder()
 	DefaultHandler.RandomizeScores(rr, req)
 
-	if rr.Code == http.StatusInternalServerError {
-		t.Log("Query error handled correctly (scan error not reachable due to query error)")
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d with scan error skipped, got %d", http.StatusOK, rr.Code)
 	}
 }
 
@@ -2924,27 +2931,40 @@ func TestRandomizeScores_PromptScanError(t *testing.T) {
 
 	suiteID, _ := middleware.GetCurrentSuiteID()
 
-	_, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID)
-	if err != nil {
+	if _, err := db.Exec("INSERT INTO models (name, suite_id) VALUES (?, ?)", "TestModel", suiteID); err != nil {
 		t.Fatalf("failed to insert model: %v", err)
 	}
 
-	_, err = db.Exec("INSERT INTO prompts (text, display_order, suite_id) VALUES (?, ?, ?)", "Prompt 1", 0, suiteID)
-	if err != nil {
-		t.Fatalf("failed to insert prompt: %v", err)
-	}
-
-	_, err = db.Exec("DROP TABLE prompts")
-	if err != nil {
+	// Recreate prompts with a TEXT id so a row can fail the int scan while the query succeeds.
+	if _, err := db.Exec("DROP TABLE prompts"); err != nil {
 		t.Fatalf("failed to drop prompts table: %v", err)
+	}
+	if _, err := db.Exec(`
+		CREATE TABLE prompts (
+			id TEXT PRIMARY KEY,
+			text TEXT NOT NULL,
+			solution TEXT DEFAULT '',
+			profile_id INTEGER,
+			suite_id INTEGER NOT NULL,
+			display_order INTEGER NOT NULL DEFAULT 0,
+			type TEXT DEFAULT 'objective',
+			FOREIGN KEY (suite_id) REFERENCES suites(id) ON DELETE CASCADE,
+			FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE SET NULL,
+			UNIQUE(text, suite_id)
+		)`); err != nil {
+		t.Fatalf("failed to create prompts table: %v", err)
+	}
+	if _, err := db.Exec(
+		`INSERT INTO prompts (id, text, solution, suite_id, display_order) VALUES ('bad', 'BadPrompt', '', ?, 0)`, suiteID); err != nil {
+		t.Fatalf("failed to insert bad prompt row: %v", err)
 	}
 
 	req := httptest.NewRequest("POST", "/randomize_scores", nil)
 	rr := httptest.NewRecorder()
 	DefaultHandler.RandomizeScores(rr, req)
 
-	if rr.Code == http.StatusInternalServerError {
-		t.Log("Query error handled correctly (scan error not reachable due to query error)")
+	if rr.Code != http.StatusOK {
+		t.Errorf("expected status %d with scan error skipped, got %d", http.StatusOK, rr.Code)
 	}
 }
 
