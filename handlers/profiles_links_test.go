@@ -52,10 +52,13 @@ func TestEditProfileHandler_POST_UpdatesLinkedPrompts(t *testing.T) {
 	cleanup := setupProfilesTestDB(t)
 	defer cleanup()
 
-	// Add a profile
-	err := middleware.WriteProfiles([]middleware.Profile{{Name: "OldProfile", Description: "Test"}})
+	// Add the profile to rename plus a second profile as an untouched control
+	err := middleware.WriteProfiles([]middleware.Profile{
+		{Name: "OldProfile", Description: "Test"},
+		{Name: "OtherProfile", Description: "Control"},
+	})
 	if err != nil {
-		t.Fatalf("failed to write profile: %v", err)
+		t.Fatalf("failed to write profiles: %v", err)
 	}
 
 	// Add prompts that reference this profile using WritePromptSuite to ensure correct suite
@@ -87,26 +90,35 @@ func TestEditProfileHandler_POST_UpdatesLinkedPrompts(t *testing.T) {
 
 	// The handler attempts to update prompts with matching profile name
 	profiles := middleware.ReadProfiles()
-	if len(profiles) != 1 || profiles[0].Name != "NewProfile" {
-		t.Errorf("expected profile to be renamed to NewProfile")
+	if len(profiles) != 2 {
+		t.Fatalf("expected 2 profiles, got %d", len(profiles))
+	}
+	renamed := false
+	for _, p := range profiles {
+		if p.Name == "NewProfile" {
+			renamed = true
+		}
+	}
+	if !renamed {
+		t.Error("expected profile to be renamed to NewProfile")
 	}
 
-	// Known defect, recorded not fixed here: EditProfile persists the
-	// rewritten prompts before persisting the renamed profile, so the
-	// profile lookup fails and the link is saved as empty. Asserting the
-	// rewritten link would enshrine that, so this pins the weaker
-	// invariant that the prompts themselves survive the rename.
+	// Prompts linked to the renamed profile must carry the new name,
+	// while prompts of other profiles stay untouched
 	prompts := middleware.ReadPrompts()
 	if len(prompts) != 3 {
 		t.Fatalf("expected 3 prompts after rename, got %d", len(prompts))
 	}
-	survived := make(map[string]bool, len(prompts))
 	for _, p := range prompts {
-		survived[p.Text] = true
-	}
-	for _, text := range []string{"Prompt 1", "Prompt 2", "Prompt 3"} {
-		if !survived[text] {
-			t.Errorf("expected prompt %q to survive the profile rename", text)
+		switch p.Text {
+		case "Prompt 1", "Prompt 2":
+			if p.Profile != "NewProfile" {
+				t.Errorf("expected %s profile rewritten to NewProfile, got %q", p.Text, p.Profile)
+			}
+		case "Prompt 3":
+			if p.Profile != "OtherProfile" {
+				t.Errorf("expected Prompt 3 profile to stay OtherProfile, got %q", p.Profile)
+			}
 		}
 	}
 }
