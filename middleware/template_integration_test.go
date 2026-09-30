@@ -3,6 +3,9 @@ package middleware
 import (
 	"html/template"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -255,25 +258,29 @@ func TestRenderTemplate_UnicodeData(t *testing.T) {
 
 // TestFileRenderer_Render_ExecuteError tests error during template execution
 func TestFileRenderer_Render_ExecuteError(t *testing.T) {
-	rr := httptest.NewRecorder()
+	dbPath, cleanup := setupTestDB(t)
+	defer cleanup()
 
-	// Create a template that will fail during execution
-	// Using a type assertion that will fail
-	tmpl := `{{define "test"}}{{ .MissingField.SubField }}{{end}}`
-
-	tmplParsed, err := template.New("test").Parse(tmpl)
-	if err != nil {
-		t.Fatalf("failed to parse test template: %v", err)
+	if err := InitDB(dbPath); err != nil {
+		t.Fatalf("InitDB failed: %v", err)
 	}
 
-	// Execute with nil data - this will cause an error when accessing .MissingField
-	err = tmplParsed.Execute(rr, nil)
+	// A template that parses cleanly but dereferences a field on a plain
+	// int, so the real renderer must fail at execute time. (A missing map
+	// key alone is lenient: templates render it as nil without error.)
+	tmplPath := filepath.Join(t.TempDir(), "execfail.html")
+	if err := os.WriteFile(tmplPath, []byte(`{{ .Count.Nested }}`), 0o644); err != nil {
+		t.Fatalf("failed to write template file: %v", err)
+	}
 
-	// Expecting an error due to nil pointer dereference
+	renderer := &FileRenderer{}
+	rr := httptest.NewRecorder()
+	err := renderer.Render(rr, "execfail.html", nil, map[string]interface{}{"Count": 0}, tmplPath)
 	if err == nil {
-		// Note: Go templates might not error on nil fields, they just output nothing
-		// This is actually expected behavior - templates are lenient
-		t.Log("Template execution did not return error as expected for nil data")
+		t.Fatal("expected FileRenderer.Render to return the execute error")
+	}
+	if !strings.Contains(err.Error(), "can't evaluate field Nested") {
+		t.Fatalf("expected error to reference the missing field, got %v", err)
 	}
 }
 

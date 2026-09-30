@@ -1,15 +1,53 @@
 package middleware
 
 import (
+	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// synchronizedBuffer is an io.Writer safe for the concurrent writes the
+// standard logger performs from websocket handler goroutines.
+type synchronizedBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *synchronizedBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *synchronizedBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// waitForLogLine polls captured log output until substr appears, so tests
+// can observe that async websocket processing actually fired.
+func waitForLogLine(t *testing.T, logs *synchronizedBuffer, substr string) {
+	t.Helper()
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(logs.String(), substr) {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("timed out waiting for log line containing %q; got %q", substr, logs.String())
+}
 
 func TestCalculatePassPercentages(t *testing.T) {
 	tests := []struct {
@@ -210,6 +248,28 @@ func waitForWebSocketClientRegistration(t *testing.T, wantAtLeast int) {
 	t.Fatalf("timed out waiting for %d websocket client(s); got %d", wantAtLeast, got)
 }
 
+// waitForClientCount polls the hub until exactly n clients are registered,
+// replacing fixed sleeps before client-cleanup assertions.
+func waitForClientCount(t *testing.T, want int) {
+	t.Helper()
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		clientsMutex.Lock()
+		got := len(clients)
+		clientsMutex.Unlock()
+		if got == want {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	clientsMutex.Lock()
+	got := len(clients)
+	clientsMutex.Unlock()
+	t.Fatalf("timed out waiting for %d websocket client(s); got %d", want, got)
+}
+
 func TestHandleWebSocket_Connection(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -291,17 +351,8 @@ func TestHandleWebSocket_CloseConnection(t *testing.T) {
 	// Close connection
 	_ = conn.Close()
 
-	// Wait for cleanup
-	time.Sleep(100 * time.Millisecond)
-
-	// Verify client was removed
-	clientsMutex.Lock()
-	clientCount := len(clients)
-	clientsMutex.Unlock()
-
-	if clientCount != 0 {
-		t.Errorf("expected 0 clients after close, got %d", clientCount)
-	}
+	// Wait for the handler to deregister the client
+	waitForClientCount(t, 0)
 }
 
 func TestHandleWebSocket_InvalidJSONMessage(t *testing.T) {
@@ -367,14 +418,7 @@ func TestHandleWebSocket_UnexpectedCloseErrorBranch(t *testing.T) {
 	_ = conn.Close()
 
 	// Wait for handler cleanup.
-	time.Sleep(100 * time.Millisecond)
-
-	clientsMutex.Lock()
-	got := len(clients)
-	clientsMutex.Unlock()
-	if got != 0 {
-		t.Fatalf("expected 0 clients after close, got %d", got)
-	}
+	waitForClientCount(t, 0)
 }
 
 // waitForPromptSequence polls ReadPrompts until the texts match the expected
@@ -480,6 +524,10 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 
 		waitForWebSocketClientRegistration(t, 1)
 
+		var logs synchronizedBuffer
+		log.SetOutput(&logs)
+		t.Cleanup(func() { log.SetOutput(os.Stderr) })
+
 		// [2, 1] is not a permutation of [0, 1]: it must be rejected
 		// without touching any row.
 		msg := map[string]interface{}{
@@ -490,7 +538,10 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 			t.Fatalf("failed to send message: %v", err)
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		// The rejection log proves the message was consumed and processed,
+		// distinguishing rejection from a lost or unprocessed message.
+		waitForLogLine(t, &logs, "Invalid order: values must be a permutation")
+
 		waitForPromptSequence(t, []string{"Prompt 1", "Prompt 2"})
 	})
 }
@@ -977,34 +1028,15 @@ func TestBroadcastResults_ClientCleanupOnError(t *testing.T) {
 		t.Fatalf("failed to connect client 2: %v", err)
 	}
 
-	// Wait for registration
-	time.Sleep(50 * time.Millisecond)
-
-	// Verify both clients registered
-	clientsMutex.Lock()
-	initialCount := len(clients)
-	clientsMutex.Unlock()
-
-	if initialCount != 2 {
-		t.Fatalf("expected 2 clients, got %d", initialCount)
-	}
+	// Wait for both clients to register
+	waitForClientCount(t, 2)
 
 	// Close one connection
 	_ = conn2.Close()
-	time.Sleep(50 * time.Millisecond)
 
 	// Trigger broadcast - should clean up the closed client
 	BroadcastResults()
 
-	// Wait for cleanup
-	time.Sleep(100 * time.Millisecond)
-
-	// Verify only the failed client was removed
-	clientsMutex.Lock()
-	finalCount := len(clients)
-	clientsMutex.Unlock()
-
-	if finalCount != 1 {
-		t.Errorf("expected 1 client after cleanup, got %d", finalCount)
-	}
+	// Wait for cleanup: only the failed client is removed.
+	waitForClientCount(t, 1)
 }

@@ -345,13 +345,14 @@ func GetCurrentSuiteName() string {
 	err := db.QueryRow("SELECT name FROM suites WHERE is_current = 1").Scan(&name)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Set default suite as current if none is set
-			_, err = db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'")
+			// Same recovery as GetCurrentSuiteID so the default suite is
+			// actually created and both resolvers agree on one current row.
+			_, name, err := recoverDefaultSuite()
 			if err != nil {
-				log.Printf("Error setting default suite as current: %v", err)
+				log.Printf("Error recovering default suite: %v", err)
 				return ""
 			}
-			return "default"
+			return name
 		}
 		log.Printf("Error getting current suite name: %v", err)
 		return ""

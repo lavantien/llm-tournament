@@ -17,11 +17,18 @@ var (
 	sqlOpen      = sql.Open
 	execPragmas  = func(conn *sql.DB) error {
 		_, err := conn.Exec(`PRAGMA journal_mode = WAL;
-                     PRAGMA synchronous = NORMAL;
-                     PRAGMA foreign_keys = ON;`)
+                     PRAGMA synchronous = NORMAL;`)
 		return err
 	}
 )
+
+// sqliteDSN appends the connection parameters that must apply to every
+// pooled connection. PRAGMA foreign_keys is per-connection, and database/sql
+// pools connections, so a one-shot PRAGMA at init leaves later connections
+// enforcing nothing and ON DELETE CASCADE / SET NULL become nondeterministic.
+func sqliteDSN(dbPath string) string {
+	return dbPath + "?_foreign_keys=on"
+}
 
 var (
 	createTablesFunc = createTables
@@ -42,7 +49,7 @@ func InitDB(dbPath string) error {
 	}
 
 	var err error
-	db, err = sqlOpen("sqlite3", dbPath)
+	db, err = sqlOpen("sqlite3", sqliteDSN(dbPath))
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
@@ -175,19 +182,50 @@ func GetCurrentSuiteID() (int, error) {
 	var suiteID int
 	err := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID)
 	if err == sql.ErrNoRows {
-		// No suite is current: ensure the default suite exists, mark it
-		// current, and read the ID back. This must not recurse; when the
-		// default row is missing the recursion would repeat the identical
-		// state forever.
-		if _, err := db.Exec("INSERT OR IGNORE INTO suites (name, is_current) VALUES ('default', 1)"); err != nil {
-			return 0, fmt.Errorf("failed to create default suite: %w", err)
-		}
-		if _, err := db.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'"); err != nil {
-			return 0, fmt.Errorf("failed to set default suite as current: %w", err)
-		}
-		err = db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID)
+		id, _, err := recoverDefaultSuite()
+		return id, err
 	}
 	return suiteID, err
+}
+
+// recoverDefaultSuite ensures exactly one suite is marked current, creating
+// the default suite when it is missing, and returns that suite's ID and
+// name. The whole recovery runs in a single transaction that clears every
+// current flag before flagging default, so a SetCurrentSuite commit that
+// lands after the caller's ErrNoRows read cannot leave two current rows.
+// It must not recurse: with no current row and no default row, recursion
+// would repeat the identical state forever.
+func recoverDefaultSuite() (int, string, error) {
+	tx, err := dbBegin()
+	if err != nil {
+		return 0, "", fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	if _, err = tx.Exec("INSERT OR IGNORE INTO suites (name) VALUES ('default')"); err != nil {
+		return 0, "", fmt.Errorf("failed to create default suite: %w", err)
+	}
+	if _, err = tx.Exec("UPDATE suites SET is_current = 0"); err != nil {
+		return 0, "", fmt.Errorf("failed to clear current suite flags: %w", err)
+	}
+	if _, err = tx.Exec("UPDATE suites SET is_current = 1 WHERE name = 'default'"); err != nil {
+		return 0, "", fmt.Errorf("failed to set default suite as current: %w", err)
+	}
+
+	var suiteID int
+	var suiteName string
+	if err = tx.QueryRow("SELECT id, name FROM suites WHERE is_current = 1").Scan(&suiteID, &suiteName); err != nil {
+		return 0, "", fmt.Errorf("failed to query recovered suite: %w", err)
+	}
+
+	if err = txCommit(tx); err != nil {
+		return 0, "", fmt.Errorf("failed to commit suite recovery: %w", err)
+	}
+	return suiteID, suiteName, nil
 }
 
 // SetCurrentSuite sets the specified suite as the current one
