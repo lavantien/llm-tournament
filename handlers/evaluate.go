@@ -27,6 +27,10 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	prompts := h.DataStore.ReadPrompts()
+	promptIndex, parseErr := strconv.Atoi(promptIndexStr)
+
 	if r.Method == http.MethodPost {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
@@ -43,14 +47,12 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		result, exists := results[model]
 		if !exists {
 			// Initialize new result with scores array matching prompts length
-			prompts := h.DataStore.ReadPrompts()
 			result = middleware.Result{
 				Scores: make([]int, len(prompts)),
 			}
 		}
 
-		index, err := strconv.Atoi(promptIndexStr)
-		if err != nil || index < 0 || index >= len(result.Scores) {
+		if parseErr != nil || promptIndex < 0 || promptIndex >= len(result.Scores) {
 			http.Error(w, "Invalid prompt index", http.StatusBadRequest)
 			return
 		}
@@ -61,7 +63,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		} else if score > 100 {
 			score = 100
 		}
-		result.Scores[index] = score
+		result.Scores[promptIndex] = score
 		results[model] = result
 
 		// Write updated results
@@ -75,7 +77,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		h.DataStore.BroadcastResults()
 
 		// Add debug logging
-		log.Printf("Updated score for model %s, prompt %d: %d", model, index, score)
+		log.Printf("Updated score for model %s, prompt %d: %d", model, promptIndex, score)
 		log.Printf("Current results for model %s: %v", model, result.Scores)
 
 		// Redirect back to results page
@@ -83,23 +85,23 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Validate the prompt index against the suite before rendering;
+	// anything unparseable or out of range redirects like a missing param
+	if parseErr != nil || promptIndex < 0 || promptIndex >= len(prompts) {
+		http.Redirect(w, r, "/results", http.StatusSeeOther)
+		return
+	}
+
 	// Get current score for this model/prompt
 	results := h.DataStore.ReadResults()
 	currentScore := 0
-	if result, exists := results[model]; exists {
-		if index, err := strconv.Atoi(promptIndexStr); err == nil && index >= 0 && index < len(result.Scores) {
-			currentScore = result.Scores[index]
-		}
+	if result, exists := results[model]; exists && promptIndex < len(result.Scores) {
+		currentScore = result.Scores[promptIndex]
 	}
 
 	// Get the prompt text and solution for display
-	prompts := h.DataStore.ReadPrompts()
-	var promptText, solution string
-	promptIndex, err := strconv.Atoi(promptIndexStr)
-	if err == nil && promptIndex >= 0 && promptIndex < len(prompts) {
-		promptText = prompts[promptIndex].Text
-		solution = prompts[promptIndex].Solution
-	}
+	promptText := prompts[promptIndex].Text
+	solution := prompts[promptIndex].Solution
 
 	// Get model response if available
 	var modelResponse string
@@ -110,7 +112,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 	var suiteID int
 	if suiteErr := db.QueryRow("SELECT id FROM suites WHERE is_current = 1").Scan(&suiteID); suiteErr == nil {
 		// Get model_id from model name, scoped to the current suite
-		err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", model, suiteID).Scan(&modelID)
+		err := db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", model, suiteID).Scan(&modelID)
 		if err == nil {
 			// Get prompt_id from the current suite using the 0-based prompt index
 			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?", suiteID, promptIndex).Scan(&promptID)
@@ -153,8 +155,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		CurrentPath:   "/evaluate",
 	}
 
-	err = h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html")
-	if err != nil {
+	if err := h.Renderer.Render(w, "evaluate.html", templates.FuncMap, data, "templates/evaluate.html", "templates/nav.html"); err != nil {
 		log.Printf("Error rendering template: %v", err)
 		http.Error(w, "Error rendering template", http.StatusInternalServerError)
 		return

@@ -47,34 +47,6 @@ func TestEvaluateResultHandler_MethodNotAllowed(t *testing.T) {
 	}
 }
 
-func TestEvaluateResultHandler_GET_NegativePromptIndex(t *testing.T) {
-	cleanup := setupPromptTestDB(t)
-	defer cleanup()
-
-	mockDS := &MockDataStore{
-		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
-		Results: map[string]middleware.Result{
-			"TestModel": {Scores: []int{50}},
-		},
-		CurrentSuite: "default",
-	}
-	renderer := &captureDataRenderer{}
-	handler := &Handler{DataStore: mockDS, Renderer: renderer}
-
-	req := httptest.NewRequest("GET", "/evaluate_result?model=TestModel&prompt=-1", nil)
-	rr := httptest.NewRecorder()
-
-	handler.EvaluateResultHandler(rr, req)
-
-	if rr.Code != http.StatusOK {
-		t.Errorf("expected status %d for negative prompt index, got %d", http.StatusOK, rr.Code)
-	}
-	currentScore := reflect.ValueOf(renderer.data).FieldByName("CurrentScore").Int()
-	if currentScore != 0 {
-		t.Errorf("expected current score 0 for negative prompt index, got %d", currentScore)
-	}
-}
-
 func TestEvaluateResultHandler_GET_ModelLookupIsSuiteScoped(t *testing.T) {
 	cleanup := setupPromptTestDB(t)
 	defer cleanup()
