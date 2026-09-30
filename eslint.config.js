@@ -14,7 +14,7 @@ export default [
     ],
   },
   {
-    files: ["templates/**/*.js", "check.js", "check_spacers.js"],
+    files: ["templates/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
