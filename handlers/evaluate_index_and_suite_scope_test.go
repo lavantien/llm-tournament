@@ -24,6 +24,29 @@ func (c *captureDataRenderer) RenderTemplateSimple(w http.ResponseWriter, tmpl s
 	return c.Render(w, tmpl, nil, data, "templates/"+tmpl)
 }
 
+func TestEvaluateResultHandler_MethodNotAllowed(t *testing.T) {
+	cleanup := setupPromptTestDB(t)
+	defer cleanup()
+
+	mockDS := &MockDataStore{
+		Prompts: []middleware.Prompt{{Text: "Test prompt"}},
+		Results: map[string]middleware.Result{
+			"TestModel": {Scores: []int{50}},
+		},
+	}
+	handler := &Handler{DataStore: mockDS, Renderer: &captureDataRenderer{}}
+
+	for _, method := range []string{http.MethodPut, http.MethodDelete} {
+		req := httptest.NewRequest(method, "/evaluate_result?model=TestModel&prompt=0", nil)
+		rr := httptest.NewRecorder()
+		handler.EvaluateResultHandler(rr, req)
+
+		if rr.Code != http.StatusMethodNotAllowed {
+			t.Errorf("expected status %d for %s, got %d", http.StatusMethodNotAllowed, method, rr.Code)
+		}
+	}
+}
+
 func TestEvaluateResultHandler_GET_NegativePromptIndex(t *testing.T) {
 	cleanup := setupPromptTestDB(t)
 	defer cleanup()

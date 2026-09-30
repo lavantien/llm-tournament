@@ -23,6 +23,10 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 		return
 	}
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	if r.Method == http.MethodPost {
 		scoreStr := r.FormValue("score")
 		score, err := strconv.Atoi(scoreStr)
