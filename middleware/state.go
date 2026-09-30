@@ -12,6 +12,7 @@ var (
 )
 
 type Prompt struct {
+	ID       int    `json:"-"`
 	Text     string `json:"text"`
 	Solution string `json:"solution"`
 	Profile  string `json:"profile"`
@@ -22,6 +23,7 @@ type Result struct {
 }
 
 type Profile struct {
+	ID          int    `json:"-"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
@@ -46,7 +48,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 		return nil, fmt.Errorf("failed to get suite ID: %w", err)
 	}
 
-	rows, err := db.Query("SELECT name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
+	rows, err := db.Query("SELECT id, name, description FROM profiles WHERE suite_id = ? ORDER BY id", suiteID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query profiles: %w", err)
 	}
@@ -55,7 +57,7 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	var profiles []Profile
 	for rows.Next() {
 		var p Profile
-		if err := rows.Scan(&p.Name, &p.Description); err != nil {
+		if err := rows.Scan(&p.ID, &p.Name, &p.Description); err != nil {
 			return nil, fmt.Errorf("failed to scan profile: %w", err)
 		}
 		profiles = append(profiles, p)
@@ -64,7 +66,10 @@ func ReadProfileSuite(suiteName string) ([]Profile, error) {
 	return profiles, nil
 }
 
-// Write profile suite to database
+// Write profile suite to database. Surviving rows (matched by Profile.ID)
+// are updated in place so prompts keep pointing at them; rows absent from
+// profiles are deleted, and profiles carrying no current ID (fresh or stale)
+// are inserted.
 func WriteProfileSuite(suiteName string, profiles []Profile) error {
 	suiteID, err := GetSuiteID(suiteName)
 	if err != nil {
@@ -82,13 +87,29 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 		}
 	}()
 
-	// Delete existing profiles for this suite
-	_, err = tx.Exec("DELETE FROM profiles WHERE suite_id = ?", suiteID)
+	existing, err := suiteRowIDs(tx, "SELECT id FROM profiles WHERE suite_id = ?", suiteID)
 	if err != nil {
-		return fmt.Errorf("failed to delete profiles: %w", err)
+		return fmt.Errorf("failed to load profile IDs: %w", err)
 	}
 
-	// Insert new profiles
+	kept := make(map[int]bool)
+	for _, profile := range profiles {
+		if profile.ID != 0 && existing[profile.ID] {
+			kept[profile.ID] = true
+		}
+	}
+
+	// Delete removed rows before inserting, so a fresh profile can reuse the
+	// name of a replaced one without tripping UNIQUE(name, suite_id).
+	for id := range existing {
+		if !kept[id] {
+			if _, err = tx.Exec("DELETE FROM profiles WHERE id = ?", id); err != nil {
+				return fmt.Errorf("failed to delete removed profile: %w", err)
+			}
+		}
+	}
+
+	// Update surviving profiles and insert new ones
 	if len(profiles) > 0 {
 		stmt, err := tx.Prepare("INSERT INTO profiles (name, description, suite_id) VALUES (?, ?, ?)")
 		if err != nil {
@@ -97,6 +118,18 @@ func WriteProfileSuite(suiteName string, profiles []Profile) error {
 		defer func() { _ = stmt.Close() }()
 
 		for _, profile := range profiles {
+			if kept[profile.ID] {
+				_, err = tx.Exec(`
+				UPDATE profiles
+				SET name = ?, description = ?
+				WHERE id = ? AND suite_id = ?
+				`, profile.Name, profile.Description, profile.ID, suiteID)
+				if err != nil {
+					return fmt.Errorf("failed to update profile: %w", err)
+				}
+				continue
+			}
+
 			_, err = stmt.Exec(profile.Name, profile.Description, suiteID)
 			if err != nil {
 				return fmt.Errorf("failed to insert profile: %w", err)
@@ -211,7 +244,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 
 	// Query to get prompts with profile names - ensure distinct results
 	query := `
-	SELECT p.text, p.solution, COALESCE(pr.name, '') as profile_name, p.display_order
+	SELECT p.id, p.text, p.solution, COALESCE(pr.name, '') as profile_name, p.display_order
 	FROM prompts p
 	LEFT JOIN profiles pr ON p.profile_id = pr.id
 	WHERE p.suite_id = ?
@@ -230,7 +263,7 @@ func ReadPromptSuite(suiteName string) ([]Prompt, error) {
 	for rows.Next() {
 		var p Prompt
 		var displayOrder int
-		if err := rows.Scan(&p.Text, &p.Solution, &p.Profile, &displayOrder); err != nil {
+		if err := rows.Scan(&p.ID, &p.Text, &p.Solution, &p.Profile, &displayOrder); err != nil {
 			return nil, fmt.Errorf("failed to scan prompt: %w", err)
 		}
 
@@ -259,7 +292,34 @@ func min(a, b int) int {
 	return b
 }
 
-// Write prompt suite to database
+// suiteRowIDs returns the set of row ids produced by a suite-scoped id query.
+// The suite writers use it to tell surviving rows (updated in place) from
+// removed rows (deleted so cascades clean up only their dependents).
+func suiteRowIDs(tx *sql.Tx, query string, suiteID int) (map[int]bool, error) {
+	rows, err := tx.Query(query, suiteID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query row IDs: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	ids := make(map[int]bool)
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("failed to scan row ID: %w", err)
+		}
+		ids[id] = true
+	}
+	if err := rowsErr(rows); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+	return ids, nil
+}
+
+// Write prompt suite to database. Surviving rows (matched by Prompt.ID) are
+// updated in place so cascaded scores and model responses survive the write.
+// Rows absent from prompts are deleted, and prompts carrying no current ID
+// (fresh or stale) are inserted.
 func WritePromptSuite(suiteName string, prompts []Prompt) error {
 	suiteID, err := GetSuiteID(suiteName)
 	if err != nil {
@@ -277,16 +337,32 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 		}
 	}()
 
-	// Delete existing prompts for this suite
-	_, err = tx.Exec("DELETE FROM prompts WHERE suite_id = ?", suiteID)
+	existing, err := suiteRowIDs(tx, "SELECT id FROM prompts WHERE suite_id = ?", suiteID)
 	if err != nil {
-		return fmt.Errorf("failed to delete prompts: %w", err)
+		return fmt.Errorf("failed to load prompt IDs: %w", err)
 	}
 
-	// Insert new prompts
+	kept := make(map[int]bool)
+	for _, prompt := range prompts {
+		if prompt.ID != 0 && existing[prompt.ID] {
+			kept[prompt.ID] = true
+		}
+	}
+
+	// Delete removed rows before inserting, so a fresh prompt can reuse the
+	// text of a replaced one without tripping UNIQUE(text, suite_id).
+	for id := range existing {
+		if !kept[id] {
+			if _, err = tx.Exec("DELETE FROM prompts WHERE id = ?", id); err != nil {
+				return fmt.Errorf("failed to delete removed prompt: %w", err)
+			}
+		}
+	}
+
+	// Update surviving prompts and insert new ones
 	if len(prompts) > 0 {
 		stmt, err := tx.Prepare(`
-		INSERT INTO prompts (text, solution, profile_id, suite_id, display_order) 
+		INSERT INTO prompts (text, solution, profile_id, suite_id, display_order)
 		VALUES (?, ?, ?, ?, ?)
 		`)
 		if err != nil {
@@ -306,6 +382,18 @@ func WritePromptSuite(suiteName string, prompts []Prompt) error {
 					profileID.Int64 = int64(id)
 					profileID.Valid = true
 				}
+			}
+
+			if kept[prompt.ID] {
+				_, err = tx.Exec(`
+				UPDATE prompts
+				SET text = ?, solution = ?, profile_id = ?, display_order = ?
+				WHERE id = ? AND suite_id = ?
+				`, prompt.Text, prompt.Solution, profileID, i, prompt.ID, suiteID)
+				if err != nil {
+					return fmt.Errorf("failed to update prompt: %w", err)
+				}
+				continue
 			}
 
 			_, err = stmt.Exec(prompt.Text, prompt.Solution, profileID, suiteID, i)
@@ -481,6 +569,21 @@ func WriteResults(suiteName string, results map[string]Result) (err error) {
 	return tx.Commit()
 }
 
+// RenameModel renames a model within a suite in place. Keeping the row id is
+// the point: model_responses cascade on model_id, so a rename done by delete
+// and reinsert would destroy every saved response.
+func RenameModel(suiteName, oldName, newName string) error {
+	suiteID, err := GetSuiteID(suiteName)
+	if err != nil {
+		return fmt.Errorf("failed to get suite ID: %w", err)
+	}
+
+	if _, err := db.Exec("UPDATE models SET name = ? WHERE name = ? AND suite_id = ?", newName, oldName, suiteID); err != nil {
+		return fmt.Errorf("failed to rename model: %w", err)
+	}
+	return nil
+}
+
 // MigrateResults converts old result formats to the current format
 func MigrateResults(results map[string]Result) map[string]Result {
 	migrated := make(map[string]Result)
@@ -520,12 +623,6 @@ func UpdatePromptsOrder(order []int) {
 		return
 	}
 
-	suiteID, err := GetCurrentSuiteID()
-	if err != nil {
-		log.Printf("Error getting current suite ID: %v", err)
-		return
-	}
-
 	// Begin transaction
 	tx, err := dbBegin()
 	if err != nil {
@@ -538,30 +635,12 @@ func UpdatePromptsOrder(order []int) {
 		}
 	}()
 
-	// Get all prompt IDs for this suite
-	promptRows, err := tx.Query("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order", suiteID)
-	if err != nil {
-		log.Printf("Error querying prompts: %v", err)
-		return
-	}
-
-	var promptIDs []int
-	for promptRows.Next() {
-		var id int
-		if err := promptRows.Scan(&id); err != nil {
-			_ = promptRows.Close()
-			log.Printf("Error scanning prompt ID: %v", err)
-			return
-		}
-		promptIDs = append(promptIDs, id)
-	}
-	_ = promptRows.Close()
-
-	// Update each prompt's display_order. Indices are guaranteed in range
-	// by the permutation check: len(order) equals the deduplicated prompt
-	// count, which never exceeds the number of prompt rows.
+	// Update each prompt's display_order. The prompts slice is ordered by
+	// display_order and the permutation check guarantees every index is in
+	// range. Updating by the row ID read with the prompt keeps the row
+	// identity, and with it the cascaded scores and responses.
 	for newOrder, oldIndex := range order {
-		_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, promptIDs[oldIndex])
+		_, err = tx.Exec("UPDATE prompts SET display_order = ? WHERE id = ?", newOrder, prompts[oldIndex].ID)
 		if err != nil {
 			log.Printf("Error updating prompt order: %v", err)
 			return

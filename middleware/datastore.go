@@ -24,6 +24,7 @@ type DataStore interface {
 	// Results operations
 	ReadResults() map[string]Result
 	WriteResults(suiteName string, results map[string]Result) error
+	RenameModel(suiteName, oldName, newName string) error
 
 	// Broadcast
 	BroadcastResults()
@@ -105,6 +106,11 @@ func (s *SQLiteDataStore) ReadResults() map[string]Result {
 // WriteResults delegates to the package-level function
 func (s *SQLiteDataStore) WriteResults(suiteName string, results map[string]Result) error {
 	return WriteResults(suiteName, results)
+}
+
+// RenameModel delegates to the package-level function
+func (s *SQLiteDataStore) RenameModel(suiteName, oldName, newName string) error {
+	return RenameModel(suiteName, oldName, newName)
 }
 
 // BroadcastResults delegates to the package-level function

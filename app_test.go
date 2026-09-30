@@ -177,7 +177,7 @@ func TestRunMigration_WithData(t *testing.T) {
 	// Verify the data survived: prompts unchanged, results readable and
 	// still holding the written score (1 prompt, in range, so unchanged)
 	gotPrompts := middleware.ReadPrompts()
-	wantPrompts := []middleware.Prompt{{Text: "Test prompt"}}
+	wantPrompts := []middleware.Prompt{{ID: 1, Text: "Test prompt"}}
 	if !reflect.DeepEqual(gotPrompts, wantPrompts) {
 		t.Errorf("prompts after migration: got %#v, want %#v", gotPrompts, wantPrompts)
 	}

@@ -85,9 +85,18 @@ func (h *Handler) EditModel(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		suiteName := h.DataStore.GetCurrentSuiteName()
+		// Rename the stored row in place before rewriting results, so
+		// WriteResults finds it under the new name and the model's saved
+		// responses survive the rename.
+		if err := h.DataStore.RenameModel(suiteName, modelName, newModelName); err != nil {
+			log.Printf("Error renaming model: %v", err)
+			http.Error(w, "Error renaming model", http.StatusInternalServerError)
+			return
+		}
+
 		results[newModelName] = results[modelName]
 		delete(results, modelName)
-		suiteName := h.DataStore.GetCurrentSuiteName()
 		if err := h.DataStore.WriteResults(suiteName, results); err != nil {
 			log.Printf("Error writing results: %v", err)
 			http.Error(w, "Error writing results", http.StatusInternalServerError)
