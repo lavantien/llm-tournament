@@ -54,14 +54,19 @@ func TestMigrateResults_ScoreClamping(t *testing.T) {
 		t.Fatalf("InitDB failed: %v", err)
 	}
 
-	// Test that scores above 100 are clamped
-	results := map[string]Result{
+	// Out-of-range scores are zeroed, not capped at the boundary.
+	high := MigrateResults(map[string]Result{
 		"Model": {Scores: []int{150, 200}},
+	})
+	if got := high["Model"].Scores; len(got) != 2 || got[0] != 0 || got[1] != 0 {
+		t.Errorf("expected [150 200] to migrate to [0 0], got %v", got)
 	}
 
-	migrated := MigrateResults(results)
-	if migrated["Model"].Scores[0] > 100 {
-		t.Errorf("expected score <= 100, got %d", migrated["Model"].Scores[0])
+	negative := MigrateResults(map[string]Result{
+		"Model": {Scores: []int{-10, 60}},
+	})
+	if got := negative["Model"].Scores; len(got) != 2 || got[0] != 0 || got[1] != 60 {
+		t.Errorf("expected [-10 60] to migrate to [0 60], got %v", got)
 	}
 }
 
