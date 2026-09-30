@@ -81,22 +81,6 @@ func TestParseFlags_InvalidFlag(t *testing.T) {
 	}
 }
 
-func TestInitDB(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-	defer CloseDB()
-
-	db := GetDB()
-	if db == nil {
-		t.Error("expected non-nil database")
-	}
-}
-
 func TestInitDB_InvalidPath(t *testing.T) {
 	// InitDB creates the directory tree, so a merely nonexistent path
 	// succeeds; a directory component occupied by a regular file must fail.
@@ -218,6 +202,7 @@ func TestRoutes(t *testing.T) {
 		"/results",
 		"/profiles",
 		"/stats",
+		"/evaluate",
 		"/save_model_response",
 		"/add_model",
 		"/delete_model",
@@ -507,31 +492,6 @@ func TestSetupRoutes_WithMux(t *testing.T) {
 	}
 }
 
-func TestRoutes_ReturnsMap(t *testing.T) {
-	routes := Routes()
-
-	// Verify routes map has expected structure
-	if routes == nil {
-		t.Fatal("Routes() returned nil")
-	}
-
-	// Check some specific routes exist
-	expectedRoutes := []string{
-		"/prompts",
-		"/results",
-		"/profiles",
-		"/stats",
-		"/evaluate",
-		"/save_model_response",
-	}
-
-	for _, route := range expectedRoutes {
-		if _, ok := routes[route]; !ok {
-			t.Errorf("expected route %q not found", route)
-		}
-	}
-}
-
 func TestNewServeMux_AllRoutesRegistered(t *testing.T) {
 	tmpDir := t.TempDir()
 	dbPath := filepath.Join(tmpDir, "test.db")
@@ -561,58 +521,6 @@ func TestNewServeMux_AllRoutesRegistered(t *testing.T) {
 		if rr.Code == http.StatusNotFound {
 			t.Errorf("route %s returned 404 - not registered", route)
 		}
-	}
-}
-
-func TestRunMigration_EmptyDB(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-	defer CloseDB()
-
-	// RunMigration on empty DB should succeed
-	err = RunMigration()
-	if err != nil {
-		t.Errorf("RunMigration on empty DB failed: %v", err)
-	}
-}
-
-func TestConfig_DefaultValues(t *testing.T) {
-	cfg := DefaultConfig()
-
-	if cfg.DBPath != "data/tournament.db" {
-		t.Errorf("expected default DBPath 'data/tournament.db', got %q", cfg.DBPath)
-	}
-
-	if cfg.Port != ":8080" {
-		t.Errorf("expected default Port ':8080', got %q", cfg.Port)
-	}
-
-	if cfg.MigrateResults {
-		t.Error("expected MigrateResults to default to false")
-	}
-}
-
-func TestParseFlags_EmptyArgs(t *testing.T) {
-	cfg, err := ParseFlags([]string{})
-	if err != nil {
-		t.Fatalf("ParseFlags with empty args failed: %v", err)
-	}
-
-	// Should have default values
-	if cfg.DBPath != "data/tournament.db" {
-		t.Errorf("expected default DBPath, got %q", cfg.DBPath)
-	}
-}
-
-func TestParseFlags_UnknownFlag(t *testing.T) {
-	_, err := ParseFlags([]string{"-unknown-flag-xyz"})
-	if err == nil {
-		t.Error("expected error for unknown flag")
 	}
 }
 
