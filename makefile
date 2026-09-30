@@ -21,7 +21,7 @@ else
     UPDATE_BADGE := ./scripts/update-badge.sh
 endif
 
-.PHONY: lint fmt test testbrief cover coverage-enforce check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
+.PHONY: lint fmt test testbrief test-focus cover coverage-enforce check run clean all build buildwindows buildlinux setenv aiderupdate aiderinstalllinux aiderinstallwindows update-coverage update-coverage-table screenshots build-css watch-css clean-css verify-docs
 
 all: lint test
 
@@ -75,6 +75,10 @@ test:
 
 testbrief:
 	$(CGO_PREFIX) go test ./... -race -cover --coverprofile=coverage.out
+
+# Scoped TDD loop: make test-focus PKG=./handlers RUN=TestUpdateResult
+test-focus:
+	$(CGO_PREFIX) go test $(PKG) -race -count=1 -v -run "$(RUN)"
 
 cover:
 	go tool cover -func coverage.out
