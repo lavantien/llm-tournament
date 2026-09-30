@@ -493,9 +493,12 @@ func (h *Handler) UpdateMockResults(w http.ResponseWriter, r *http.Request) {
 			model, totalScore, passPercentages[model])
 	}
 
-	// Sort models by total score in descending order
+	// Sort models by total score in descending order, alphabetical on ties
 	sort.Slice(models, func(i, j int) bool {
-		return totalScores[models[i]] > totalScores[models[j]]
+		if totalScores[models[i]] != totalScores[models[j]] {
+			return totalScores[models[i]] > totalScores[models[j]]
+		}
+		return models[i] < models[j]
 	})
 
 	log.Printf("Sorted models after mock generation: %v", models[:min(5, len(models))])

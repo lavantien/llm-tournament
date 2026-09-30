@@ -118,7 +118,10 @@ func (h *Handler) Results(w http.ResponseWriter, r *http.Request) {
 		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
-		return modelScores[models[i]] > modelScores[models[j]]
+		if modelScores[models[i]] != modelScores[models[j]] {
+			return modelScores[models[i]] > modelScores[models[j]]
+		}
+		return models[i] < models[j]
 	})
 	log.Printf("Sorted models: %v", models)
 
