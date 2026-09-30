@@ -377,7 +377,125 @@ func TestHandleWebSocket_UnexpectedCloseErrorBranch(t *testing.T) {
 	}
 }
 
+// waitForPromptSequence polls ReadPrompts until the texts match the expected
+// sequence, so tests do not depend on fixed sleeps for websocket processing.
+func waitForPromptSequence(t *testing.T, expected []string) {
+	t.Helper()
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if promptTextsMatch(expected) {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	prompts := ReadPrompts()
+	texts := make([]string, len(prompts))
+	for i, p := range prompts {
+		texts[i] = p.Text
+	}
+	t.Fatalf("timed out waiting for prompt order %v, got %v", expected, texts)
+}
+
+func promptTextsMatch(expected []string) bool {
+	prompts := ReadPrompts()
+	if len(prompts) != len(expected) {
+		return false
+	}
+	for i, want := range expected {
+		if prompts[i].Text != want {
+			return false
+		}
+	}
+	return true
+}
+
 func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
+	t.Run("valid order applies through the socket", func(t *testing.T) {
+		dbPath, cleanup := setupTestDB(t)
+		defer cleanup()
+
+		err := InitDB(dbPath)
+		if err != nil {
+			t.Fatalf("InitDB failed: %v", err)
+		}
+
+		err = WritePromptSuite("default", []Prompt{
+			{Text: "Prompt 1"},
+			{Text: "Prompt 2"},
+		})
+		if err != nil {
+			t.Fatalf("WritePromptSuite failed: %v", err)
+		}
+
+		server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+		defer server.Close()
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+		if err != nil {
+			t.Fatalf("failed to connect: %v", err)
+		}
+		defer func() { _ = conn.Close() }()
+
+		waitForWebSocketClientRegistration(t, 1)
+
+		// Swap the two prompts through the socket.
+		msg := map[string]interface{}{
+			"type":  "update_prompts_order",
+			"order": []int{1, 0},
+		}
+		if err := conn.WriteJSON(msg); err != nil {
+			t.Fatalf("failed to send message: %v", err)
+		}
+
+		waitForPromptSequence(t, []string{"Prompt 2", "Prompt 1"})
+	})
+
+	t.Run("invalid order leaves the database unchanged", func(t *testing.T) {
+		dbPath, cleanup := setupTestDB(t)
+		defer cleanup()
+
+		err := InitDB(dbPath)
+		if err != nil {
+			t.Fatalf("InitDB failed: %v", err)
+		}
+
+		err = WritePromptSuite("default", []Prompt{
+			{Text: "Prompt 1"},
+			{Text: "Prompt 2"},
+		})
+		if err != nil {
+			t.Fatalf("WritePromptSuite failed: %v", err)
+		}
+
+		server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+		defer server.Close()
+
+		conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+		if err != nil {
+			t.Fatalf("failed to connect: %v", err)
+		}
+		defer func() { _ = conn.Close() }()
+
+		waitForWebSocketClientRegistration(t, 1)
+
+		// [2, 1] is not a permutation of [0, 1]: it must be rejected
+		// without touching any row.
+		msg := map[string]interface{}{
+			"type":  "update_prompts_order",
+			"order": []int{2, 1},
+		}
+		if err := conn.WriteJSON(msg); err != nil {
+			t.Fatalf("failed to send message: %v", err)
+		}
+
+		time.Sleep(100 * time.Millisecond)
+		waitForPromptSequence(t, []string{"Prompt 1", "Prompt 2"})
+	})
+}
+
+func TestHandleWebSocket_UnknownMessageType(t *testing.T) {
 	dbPath, cleanup := setupTestDB(t)
 	defer cleanup()
 
@@ -386,12 +504,10 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 		t.Fatalf("InitDB failed: %v", err)
 	}
 
-	// Create prompts
-	prompts := []Prompt{
+	err = WritePromptSuite("default", []Prompt{
 		{Text: "Prompt 1"},
 		{Text: "Prompt 2"},
-	}
-	err = WritePromptSuite("default", prompts)
+	})
 	if err != nil {
 		t.Fatalf("WritePromptSuite failed: %v", err)
 	}
@@ -405,37 +521,7 @@ func TestHandleWebSocket_UpdatePromptsOrder(t *testing.T) {
 	}
 	defer func() { _ = conn.Close() }()
 
-	// Send update_prompts_order message
-	msg := map[string]interface{}{
-		"type":  "update_prompts_order",
-		"order": []int{2, 1},
-	}
-	err = conn.WriteJSON(msg)
-	if err != nil {
-		t.Fatalf("failed to send message: %v", err)
-	}
-
-	// Wait for processing
-	time.Sleep(100 * time.Millisecond)
-}
-
-func TestHandleWebSocket_UnknownMessageType(t *testing.T) {
-	dbPath, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-
-	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
-	defer server.Close()
-
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
-	if err != nil {
-		t.Fatalf("failed to connect: %v", err)
-	}
-	defer func() { _ = conn.Close() }()
+	waitForWebSocketClientRegistration(t, 1)
 
 	// Send unknown message type
 	msg := map[string]interface{}{
@@ -446,8 +532,24 @@ func TestHandleWebSocket_UnknownMessageType(t *testing.T) {
 		t.Fatalf("failed to send message: %v", err)
 	}
 
-	// Should not crash - wait a bit
 	time.Sleep(50 * time.Millisecond)
+
+	// The unknown message must not touch state...
+	if !promptTextsMatch([]string{"Prompt 1", "Prompt 2"}) {
+		t.Fatal("unknown message type must not change prompt order")
+	}
+
+	// ...and the read loop must keep running: a subsequent valid message
+	// is still processed.
+	valid := map[string]interface{}{
+		"type":  "update_prompts_order",
+		"order": []int{1, 0},
+	}
+	if err := conn.WriteJSON(valid); err != nil {
+		t.Fatalf("failed to send follow-up message: %v", err)
+	}
+
+	waitForPromptSequence(t, []string{"Prompt 2", "Prompt 1"})
 }
 
 func TestBroadcastResults_NoClients(t *testing.T) {
@@ -464,8 +566,35 @@ func TestBroadcastResults_NoClients(t *testing.T) {
 	clients = make(map[*websocket.Conn]bool)
 	clientsMutex.Unlock()
 
-	// Should not panic with no clients
+	// Should return cleanly with no clients
 	BroadcastResults()
+
+	clientsMutex.Lock()
+	got := len(clients)
+	clientsMutex.Unlock()
+	if got != 0 {
+		t.Fatalf("expected 0 clients after broadcast, got %d", got)
+	}
+
+	// The hub must stay functional: a client connecting afterwards still
+	// registers and receives a broadcast.
+	server, wsURL := createWebSocketTestServer(t, HandleWebSocket)
+	defer server.Close()
+
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to connect after clientless broadcast: %v", err)
+	}
+	defer func() { _ = conn.Close() }()
+
+	waitForWebSocketClientRegistration(t, 1)
+
+	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	go BroadcastResults()
+
+	if _, _, err := conn.ReadMessage(); err != nil {
+		t.Fatalf("expected hub to deliver a broadcast after running empty, got %v", err)
+	}
 }
 
 func TestBroadcastResults_DeterministicRankingOnTie(t *testing.T) {
