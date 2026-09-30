@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -187,6 +188,20 @@ func TestRunMigration_WithData(t *testing.T) {
 	err = RunMigration()
 	if err != nil {
 		t.Errorf("RunMigration failed: %v", err)
+	}
+
+	// Verify the data survived: prompts unchanged, results readable and
+	// still holding the written score (1 prompt, in range, so unchanged)
+	gotPrompts := middleware.ReadPrompts()
+	wantPrompts := []middleware.Prompt{{Text: "Test prompt"}}
+	if !reflect.DeepEqual(gotPrompts, wantPrompts) {
+		t.Errorf("prompts after migration: got %#v, want %#v", gotPrompts, wantPrompts)
+	}
+
+	gotResults := middleware.ReadResults()
+	wantResults := map[string]middleware.Result{"Model1": {Scores: []int{50}}}
+	if !reflect.DeepEqual(gotResults, wantResults) {
+		t.Errorf("results after migration: got %#v, want %#v", gotResults, wantResults)
 	}
 }
 
