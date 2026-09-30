@@ -16,7 +16,7 @@ Docs only. The changelog was rewritten in condensed prose, the versions were sor
 
 A logic-path and test-suite audit. Every fix landed test-first, coverage stayed at 100.0%, and no schema changed.
 
-The suite writers destroyed live data because they deleted every row and reinserted with fresh ids, which tripped `ON DELETE CASCADE`. Any prompt write wiped the suite's scores and model responses, any profile write severed every prompt link, and model rename deleted that model's saved responses. All three writers now upsert in place and keep row ids, so the cascade only fires for rows actually removed.
+The suite writers destroyed live data because they deleted every row and reinserted with fresh ids, which tripped `ON DELETE CASCADE`. Any prompt write wiped the suite's scores and model responses, any profile write severed every prompt link, and model rename deleted that model's saved responses. All 3 writers now upsert in place and keep row ids, so the cascade only fires for removed rows.
 
 Suite resolution could hang or land on the wrong suite. `GetCurrentSuiteID` recursed forever on a suites table with no current and no default row, and its recovery could race into two current rows, so recovery is now one transaction that leaves a single current row with name resolution going through it. Foreign keys ran on one pooled connection only, so cascades were nondeterministic under load, and the DSN now carries `_foreign_keys=on` for every connection.
 

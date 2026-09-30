@@ -14,11 +14,11 @@ A local-first benchmarking arena for evaluating and comparing large language mod
 - Prompt suites, profiles, models, results grid, and analytics
 - Fully offline: no third-party APIs, no API keys, and all browser scripts (Marked, Chart.js) vendored under `templates/vendor/`
 
-**UI Stack**
+**UI stack**
 
 - Tailwind CSS v4.3.3 + DaisyUI v5.7.47, configured CSS-first in `templates/input.css`
 - Built-in DaisyUI components and the `coffee` theme
-- One small island of custom CSS in `templates/input.css`: the fixed-size results-grid cells and profile spacer rules
+- One small set of custom CSS rules in `templates/input.css`: the fixed-size results-grid cells and the profile spacers
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ make run
 
 Open http://localhost:8080 (data is stored in `data/tournament.db` by default).
 
-No `make`? Run directly:
+Without `make`, run directly:
 
 ```bash
 CGO_ENABLED=1 go run .
@@ -127,7 +127,7 @@ Go Server (:8080)
 └── SQLite DB
 ```
 
-**High-Level System Context**
+**High-level system context**
 
 ```mermaid
 graph LR
@@ -147,7 +147,7 @@ graph LR
     HTTP_WS -- "Reads/Writes Data" --> SQLite
 ```
 
-**Layered Architecture Flow**
+**Layered architecture flow**
 
 ```mermaid
 graph TD
@@ -167,7 +167,7 @@ graph TD
     Middleware <-->|"Read/Write Schema"| DB
 ```
 
-**Sequence: Manual Evaluation Flow**
+**Sequence: manual evaluation flow**
 
 ```mermaid
 sequenceDiagram
@@ -186,7 +186,7 @@ sequenceDiagram
     Browser->>User: Live leaderboard refresh
 ```
 
-**Sequence: Prompt Management Flow**
+**Sequence: prompt management flow**
 
 ```mermaid
 sequenceDiagram
@@ -210,7 +210,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - This is a Go monolith (HTTP + WebSocket) with SQLite as a single source of truth.
 - The repo is organized by "layer": surface (templates) -> HTTP handlers -> middleware (DB/state/render/ws).
 - The fastest "index" is to URL handler map in `main.go:10`, and the DB schema is centralized in `middleware/database.go:72`.
-- **UI Migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`).
+- **UI migration**: Styling uses Tailwind v4 + DaisyUI v5 components (plus the results-grid rules in `templates/input.css`).
 
 ### 4.2 Where to look in 5 seconds
 
@@ -220,7 +220,7 @@ Request Flow: User -> Handlers -> Middleware -> SQLite -> WebSocket Broadcast
 - **Per-feature server logic:** `handlers/*.go` (files are feature-named: prompts/models/profiles/results/stats/suites).
 - **WebSocket messages:** `middleware/socket.go:35` (server-side `/ws`, broadcasting and client tracking).
 - **Saved model responses:** `handlers/model_response.go` (stored in `model_responses`, edited from the Evaluate page).
-- **UI Components:** Tailwind v4 + DaisyUI v5.
+- **UI components:** Tailwind v4 + DaisyUI v5.
 - **Test-as-documentation:** `handlers/*_test.go`, `middleware/*_test.go`, `integration/prompts_integration_test.go`.
 
 ### 4.3 Common feature map
@@ -360,7 +360,7 @@ A **Profile** is a group of models that you want to evaluate together.
    - **Title**: Short descriptive name
    - **Category**: e.g., "coding", "creative-writing", "reasoning"
    - **Content**: Your test prompt (Markdown supported)
-   - **Expected Answer**: Reference answer for manual comparison
+   - **Expected answer**: Reference answer for manual comparison
 4. Click **Save**
 
 ![Edit Prompt](assets/ui-edit-prompt.png)
@@ -392,7 +392,7 @@ Once on the Evaluate page, you'll see:
 
 The **Results** page shows your scoring grid and lets you edit individual scores.
 
-1. **Results Grid** overview:
+1. **Results grid** overview:
    - Rows show each model
    - Columns show each prompt
    - Cells show scores with color coding (green=high, red=low)
@@ -413,7 +413,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 
 ### 7.7 Task: import/export and suite management
 
-**Suite Management:**
+**Suite management:**
 
 - The **Suite selector** is in the top-right of the top navigation bar
 - Use the dropdown to switch between suites
@@ -421,7 +421,7 @@ The **Results** page shows your scoring grid and lets you edit individual scores
 - Click **Edit** to modify the current suite name
 - Click **Delete** to remove the current suite
 
-**Import/Export:**
+**Import/export:**
 
 - **Results page**: Contains import/export buttons for evaluation results
 - **Prompts page**: Contains import/export buttons for prompt data
@@ -438,11 +438,11 @@ Other navigation elements use UI buttons (⬅️➡️ for prompts, ↑↓ for s
 
 ### 7.9 Tips for efficient usage
 
-- **Batch Operations**: Use checkboxes to select multiple prompts for bulk actions
-- **Drag to Reorder**: Reorder prompts by dragging them in the list
-- **Real-time Updates**: Open multiple browser tabs - they sync automatically
-- **State Backup**: Save your evaluation state before long sessions
-- **Suite Isolation**: Use separate suites for different evaluation projects
+- **Batch operations**: Use checkboxes to select multiple prompts for bulk actions
+- **Drag to reorder**: Reorder prompts by dragging them in the list
+- **Real-time updates**: Open multiple browser tabs - they sync automatically
+- **State backup**: Save your evaluation state before long sessions
+- **Suite isolation**: Use separate suites for different evaluation projects
 
 [↑ Back to top](#table-of-contents)
 
@@ -552,11 +552,11 @@ CGO_ENABLED=1 go test ./... -v -race -cover
 
 Tailwind/DaisyUI classes are strings in the templates, so unit tests need no runtime JS. Verify the classes are present in the rendered HTML without applying CSS.
 
-**Go SSR Testing**: Full SSR flow verification with `httptest`. Test handlers execute templates with data and verify DaisyUI classes are present in the rendered output.
+**Go SSR testing**: Full SSR flow verification with `httptest`. Test handlers execute templates with data and verify DaisyUI classes are present in the rendered output.
 
-**httptest Integration**: HTTP handler testing with rendered HTML output. Verify template rendering with real data structures.
+**httptest integration**: HTTP handler testing with rendered HTML output. Verify template rendering with real data structures.
 
-**Visual Regression**: Use existing screenshot system to compare before/after UI states.
+**Visual regression**: Use existing screenshot system to compare before/after UI states.
 
 ### 9.2 Coverage
 
@@ -619,12 +619,12 @@ llm-tournament/
 └── postcss.config.js    # PostCSS configuration
 ```
 
-**UI-Specific:**
+**UI-specific:**
 
 - `templates/input.css` - Tailwind + DaisyUI CSS-first config plus the results-grid cell rules
 - `templates/output.css` - Generated CSS file (PostCSS output)
 - `templates/*.html` - All HTML templates using DaisyUI components
-- `templates/vendor/` - Pinned Marked and Chart.js builds with a provenance README
+- `templates/vendor/` - Pinned Marked and Chart.js builds with a README recording the pinned versions
 
 [↑ Back to top](#table-of-contents)
 

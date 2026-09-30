@@ -117,7 +117,7 @@ All scripts in the `scripts/` directory work from any directory. They automatica
 
 ## Common mistakes
 
-### Mistake 1: Renaming section headers
+### Mistake 1: renaming section headers
 
 **Wrong:**
 
@@ -131,7 +131,7 @@ All scripts in the `scripts/` directory work from any directory. They automatica
 ### Coverage # Keep exact header text
 ```
 
-### Mistake 2: Removing the coverage table section
+### Mistake 2: removing the coverage table section
 
 **Wrong:**
 
