@@ -97,13 +97,17 @@ func TestInitDB(t *testing.T) {
 }
 
 func TestInitDB_InvalidPath(t *testing.T) {
-	// Try to create DB in a path that doesn't exist and can't be created
-	// On most systems, this would fail
-	err := InitDB("/nonexistent/deeply/nested/path/that/should/fail/test.db")
-	// This might succeed on some systems if they auto-create dirs
-	// so we just check it doesn't panic
+	// InitDB creates the directory tree, so a merely nonexistent path
+	// succeeds; a directory component occupied by a regular file must fail.
+	blocker := filepath.Join(t.TempDir(), "blocker")
+	if err := os.WriteFile(blocker, []byte("not a directory"), 0o644); err != nil {
+		t.Fatalf("failed to create blocker file: %v", err)
+	}
+
+	err := InitDB(filepath.Join(blocker, "nested", "test.db"))
 	if err == nil {
 		CloseDB()
+		t.Fatal("expected InitDB to fail when a directory component is a regular file")
 	}
 }
 
@@ -214,8 +218,46 @@ func TestRoutes(t *testing.T) {
 func TestSetupRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	// Should not panic
 	SetupRoutes(mux)
+
+	// Every route in the routes map must be registered on the mux: an exact
+	// request for the pattern resolves back to that same pattern (duplicate
+	// registrations panic inside SetupRoutes, so a full census is impossible
+	// without an enumeration API; exact resolution is the observable contract).
+	for pattern := range routes {
+		req := httptest.NewRequest(http.MethodGet, pattern, nil)
+		handler, matched := mux.Handler(req)
+		if handler == nil {
+			t.Errorf("route pattern %q did not resolve to a handler", pattern)
+		}
+		if matched != pattern {
+			t.Errorf("path %q resolved to pattern %q, want %q", pattern, matched, pattern)
+		}
+	}
+
+	// Plus the four mux-level patterns registered by SetupRoutes itself
+	for path, wantPattern := range map[string]string{
+		"/":                     "/",
+		"/ws":                   "/ws",
+		"/templates/output.css": "/templates/",
+		"/assets/app.js":        "/assets/",
+	} {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		handler, matched := mux.Handler(req)
+		if handler == nil {
+			t.Errorf("path %q did not resolve to a handler", path)
+		}
+		if matched != wantPattern {
+			t.Errorf("path %q resolved to pattern %q, want %q", path, matched, wantPattern)
+		}
+	}
+
+	// An unregistered path must fall through to the catch-all "/" pattern
+	req := httptest.NewRequest(http.MethodGet, "/definitely/not/registered", nil)
+	_, matched := mux.Handler(req)
+	if matched != "/" {
+		t.Errorf("unregistered path resolved to pattern %q, want %q", matched, "/")
+	}
 }
 
 func TestNewServeMux(t *testing.T) {
@@ -423,23 +465,30 @@ func TestSetupRoutes_WithMux(t *testing.T) {
 	mux := http.NewServeMux()
 	SetupRoutes(mux)
 
-	// Test various routes through the mux
+	// End-to-end dispatch behavior through the mux (pattern registration is
+	// censused by TestSetupRoutes)
 	testCases := []struct {
-		path   string
-		method string
+		path       string
+		wantStatus int
+		location   string
 	}{
-		{"/", "GET"},
-		{"/prompts", "GET"},
-		{"/results", "GET"},
-		{"/unknown-route", "GET"},
+		{path: "/", wantStatus: http.StatusSeeOther, location: "/prompts"},
+		{path: "/unknown-route", wantStatus: http.StatusSeeOther, location: "/prompts"},
+		{path: "/save_model_response", wantStatus: http.StatusMethodNotAllowed},
 	}
 
 	for _, tc := range testCases {
-		req := httptest.NewRequest(tc.method, tc.path, nil)
+		req := httptest.NewRequest(http.MethodGet, tc.path, nil)
 		rr := httptest.NewRecorder()
 		mux.ServeHTTP(rr, req)
-		// Just ensure it doesn't panic
-		t.Logf("%s %s -> %d", tc.method, tc.path, rr.Code)
+		if rr.Code != tc.wantStatus {
+			t.Errorf("%s: expected status %d, got %d", tc.path, tc.wantStatus, rr.Code)
+		}
+		if tc.location != "" {
+			if location := rr.Header().Get("Location"); location != tc.location {
+				t.Errorf("%s: expected redirect to %q, got %q", tc.path, tc.location, location)
+			}
+		}
 	}
 }
 
