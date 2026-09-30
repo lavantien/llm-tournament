@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -93,9 +92,13 @@ func TestCalculatePassPercentages_ZeroPrompts(t *testing.T) {
 
 	got := calculatePassPercentages(results, 0)
 
-	// With zero prompts, percentage is NaN due to division by zero
-	if !math.IsNaN(got["Model A"]) {
-		t.Errorf("expected NaN for zero prompts, got %.2f", got["Model A"])
+	// With zero prompts the percentage must be 0, not NaN: NaN would make
+	// json.Marshal fail and take down the whole broadcast.
+	if got["Model A"] != 0 {
+		t.Errorf("expected 0 for zero prompts, got %.2f", got["Model A"])
+	}
+	if _, err := json.Marshal(got); err != nil {
+		t.Errorf("expected percentages to marshal without error, got %v", err)
 	}
 }
 

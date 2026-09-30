@@ -239,6 +239,12 @@ func promptsToStringArray(prompts []Prompt) []string {
 func calculatePassPercentages(results map[string]Result, promptCount int) map[string]float64 {
 	passPercentages := make(map[string]float64)
 	for model, result := range results {
+		if promptCount == 0 {
+			// Avoid division by zero: NaN would fail json.Marshal and
+			// break the whole broadcast.
+			passPercentages[model] = 0
+			continue
+		}
 		totalScore := 0
 		for _, score := range result.Scores {
 			totalScore += score
