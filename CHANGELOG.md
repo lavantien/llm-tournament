@@ -2,6 +2,36 @@
 
 All notable changes are documented in this file.
 
+## [v4.5] - 2026-10-01
+
+Logic-path and test-suite audit. Every fix landed test-first, statement coverage stays at 100.0%, and no schema changed.
+
+### Fixed
+
+- **Prompt writes destroyed all scores and saved responses:** the prompt suite writer deleted every prompt row and reinserted with fresh ids, so `ON DELETE CASCADE` wiped the suite's scores and model responses on any add, edit, delete, reorder, import, or profile-rename write. It now upserts in place: surviving rows keep their ids, new rows insert, and the cascade only fires for prompts actually removed.
+- **Profile writes severed every prompt link:** the profile suite writer used the same delete-plus-reinsert pattern with AUTOINCREMENT ids, so adding or deleting any one profile unlinked all prompts. It now preserves row ids the same way.
+- **Model rename deleted saved responses:** renaming deleted the old model row and inserted a fresh one, cascading away its responses. A new single-UPDATE rename keeps the row id.
+- **Profile rename severed links:** the prompt rewrite now resolves against the renamed profile by persisting profiles before the rewritten prompts, with the snapshot taken while the old rows still resolve.
+- **Suite resolution recursion and races:** `GetCurrentSuiteID` recursed forever on a suites table with no current and no default row; recovery is now a single transaction that clears other current flags, and name resolution routes through the same recovery so both paths agree.
+- **Foreign keys only enforced on one connection:** the `PRAGMA foreign_keys` exec applied to a single pooled connection, so cascades were nondeterministic under load. The DSN now carries `_foreign_keys=on` for every connection.
+- **Evaluate page input handling:** the GET branch rejected nothing, so a negative index rendered prompt 0's response under a "Prompt -4 of 2" header and non-numeric indexes silently fell back to 0. Invalid indexes now redirect, the model lookup is suite-scoped, and non-GET/POST methods get 405.
+- **UpdateResult accepted anything:** GET requests mutated scores, form-parse and index errors silently wrote cell 0. The endpoint is POST-only with strict validation (400s) and no writes on rejection.
+- **Stats totals and errors:** arbitrary 0-100 scores were overwritten by the tier bucket sum, hiding real totals; prompt-count query errors fell back to a hardcoded 50, silently skewing tiers. Totals now stay true and errors return 500.
+- **Phantom models and silent reorders:** renaming a missing model created an empty result row (now 404); a filtered prompt list posted a partial order that was silently dropped with a success redirect (now 400 with data untouched).
+- **Nondeterministic ranking:** equal-total models shuffled between renders; the results page, mock page, and websocket broadcast now tie-break alphabetically.
+- **Empty-suite broadcast failure:** zero-prompt suites produced NaN pass percentages that failed the whole JSON broadcast; they now report 0. `WriteResults` logs dropped scores beyond the prompt count.
+- **Dead port config:** the listen port was hardcoded to :8080 with `Config.Port` unused; `-port` now configures it with validation that rejects 0, negatives, and out-of-range values before the DB opens.
+
+### Security
+
+- **WebSocket origin enforcement:** upgrades now require a same-origin Origin header, with empty Origin still allowed for CLI clients.
+
+### Changed
+
+- **Test suite effectiveness:** log-only error tests assert exact statuses and table counts, silent-pass guards fail loudly, zero-assertion tests verify routing and data readback, duplicate test twins were dropped after confirming stronger successors, and a Go/JS parity test pins the score constants bidirectionally.
+- **Test file splits:** the four oversized test files (results, prompt, state, profiles) are split by feature, every result under the 1000 SLOC limit, verified move-only by function inventory.
+- **Dead scaffolding removed:** the unused testutil DB half (1135 lines) is deleted; only the consumed MockRenderer remains.
+
 ## [v4.4] - 2026-10-01
 
 ### Fixed
