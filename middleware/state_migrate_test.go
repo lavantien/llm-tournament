@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -16,22 +17,26 @@ func TestMigrateResults(t *testing.T) {
 	tests := []struct {
 		name  string
 		input map[string]Result
+		want  []int
 	}{
 		{
 			name:  "empty map",
 			input: map[string]Result{},
+			want:  nil,
 		},
 		{
 			name: "valid scores",
 			input: map[string]Result{
 				"Model": {Scores: []int{80, 60, 40}},
 			},
+			want: []int{80, 60, 40},
 		},
 		{
 			name: "nil scores converted to empty",
 			input: map[string]Result{
 				"Model": {Scores: nil},
 			},
+			want: []int{},
 		},
 	}
 
@@ -39,7 +44,10 @@ func TestMigrateResults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := MigrateResults(tt.input)
 			if got == nil {
-				t.Error("expected non-nil result")
+				t.Fatal("expected non-nil result")
+			}
+			if !reflect.DeepEqual(got["Model"].Scores, tt.want) {
+				t.Errorf("migrated scores = %#v, want %#v", got["Model"].Scores, tt.want)
 			}
 		})
 	}
