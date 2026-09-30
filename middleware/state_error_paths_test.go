@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"database/sql"
-	"errors"
 	"strings"
 	"testing"
 )
@@ -698,6 +696,21 @@ func TestUpdatePromptsOrder_ErrorBranches(t *testing.T) {
 		}
 
 		UpdatePromptsOrder([]int{})
+
+		// Reopen the same database file and verify nothing was written.
+		if err := InitDB(dbPath); err != nil {
+			t.Fatalf("re-init failed: %v", err)
+		}
+		prompts, err := ReadPromptSuite("default")
+		if err != nil {
+			t.Fatalf("ReadPromptSuite failed after reopen: %v", err)
+		}
+		if len(prompts) != 0 {
+			t.Fatalf("expected 0 prompts to remain, got %#v", prompts)
+		}
+		if !SuiteExists("default") {
+			t.Fatal("default suite must survive the failed reorder")
+		}
 	})
 
 	t.Run("query prompts error returns early", func(t *testing.T) {
@@ -712,6 +725,14 @@ func TestUpdatePromptsOrder_ErrorBranches(t *testing.T) {
 		}
 
 		UpdatePromptsOrder([]int{})
+
+		// The broken schema must be untouched and other tables unaffected.
+		if _, err := ReadPromptSuite("default"); err == nil {
+			t.Fatal("expected prompts table to still be missing")
+		}
+		if !SuiteExists("default") {
+			t.Fatal("default suite must survive the failed reorder")
+		}
 	})
 
 	t.Run("scan prompt id error returns early", func(t *testing.T) {
@@ -744,6 +765,16 @@ func TestUpdatePromptsOrder_ErrorBranches(t *testing.T) {
 		}
 
 		UpdatePromptsOrder([]int{0})
+
+		// The row must be exactly as inserted.
+		var text string
+		var displayOrder int
+		if err := db.QueryRow("SELECT text, display_order FROM prompts").Scan(&text, &displayOrder); err != nil {
+			t.Fatalf("select prompt: %v", err)
+		}
+		if text != "p1" || displayOrder != 0 {
+			t.Fatalf("expected row (\"p1\", 0) unchanged, got (%q, %d)", text, displayOrder)
+		}
 	})
 
 	t.Run("update error returns early", func(t *testing.T) {
@@ -768,17 +799,14 @@ func TestUpdatePromptsOrder_ErrorBranches(t *testing.T) {
 		}
 
 		UpdatePromptsOrder([]int{1, 0})
-	})
-}
 
-func TestStateErrorPaths_NoUnexpectedPanics(t *testing.T) {
-	// Guard against accidental panics if any helper leaves db in a surprising state.
-	defer func() {
-		if r := recover(); r != nil {
-			t.Fatalf("unexpected panic: %v", r)
+		// The aborted update must leave every display_order untouched.
+		orders := displayOrdersByPromptText(t)
+		expected := map[string]int{"p1": 0, "p2": 1}
+		for text, want := range expected {
+			if got := orders[text]; got != want {
+				t.Errorf("prompt %q display_order = %d, want unchanged %d", text, got, want)
+			}
 		}
-	}()
-
-	_ = errors.New("guard") // keep errors imported even if tests are refactored
-	_ = sql.ErrNoRows
+	})
 }
