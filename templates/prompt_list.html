@@ -4,6 +4,7 @@
     <title>Prompt List</title>
     <link rel="stylesheet" href="/templates/output.css" />
     <script src="/templates/vendor/marked.umd.js"></script>
+    <script src="/templates/utils.js"></script>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
   </head>
 
@@ -163,8 +164,8 @@
               </div>
               <div class="prompt-actions flex-shrink-0 flex gap-1.5 ml-2.5">
                 <button
-                  class="btn btn-ghost btn-sm"
-                  onclick="copyPrompt('{{$prompt.Text}}')"
+                  class="btn btn-ghost btn-sm copy-prompt"
+                  data-index="{{$index}}"
                   title="Copy prompt to clipboard"
                   aria-label="Copy prompt"
                 >
@@ -236,16 +237,29 @@
           </form>
         </div>
         <script>
-          function copyPrompt(text) {
-            navigator.clipboard.writeText(text).then(
+          const promptsData = safeJsonParse(
+            document.getElementById("prompts-data").textContent,
+            [],
+          );
+
+          document.addEventListener("click", function (e) {
+            const button = e.target.closest(".copy-prompt");
+            if (!button) return;
+            const index = parseInt(button.getAttribute("data-index"), 10);
+            const prompt = promptsData[index];
+            if (!prompt) return;
+            navigator.clipboard.writeText(prompt.Text).then(
               function () {
-                console.log("Async: Copying to clipboard was successful!");
+                button.textContent = "Copied!";
+                setTimeout(function () {
+                  button.textContent = "📋";
+                }, 2000);
               },
               function (err) {
-                console.error("Async: Could not copy text: ", err);
+                console.error("Could not copy text: ", err);
               },
             );
-          }
+          });
 
           function updateOrder() {
             const items = promptList.querySelectorAll("li");
@@ -348,46 +362,24 @@
             });
 
             updateBulkDeleteButton();
-
-            function bulkDeletePrompts(indices) {
-              var xhr = new XMLHttpRequest();
-              xhr.open("POST", "/bulk_delete_prompts", true);
-              xhr.setRequestHeader("Content-Type", "application/json");
-              xhr.onload = function () {
-                if (xhr.status === 200) {
-                  console.log("Prompts deleted successfully");
-                  window.location.reload();
-                } else {
-                  console.error("Error deleting prompts:", xhr.statusText);
-                }
-              };
-              xhr.onerror = function () {
-                console.error("Error deleting prompts");
-              };
-              xhr.send(JSON.stringify({ indices: indices }));
-            }
           }
         </script>
         <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-          <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-          <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+          <button
+            class="btn btn-info"
+            onclick="scrollToTop()"
+            aria-label="Scroll to top"
+          >
+            ↑
+          </button>
+          <button
+            class="btn btn-info"
+            onclick="scrollToBottom()"
+            aria-label="Scroll to bottom"
+          >
+            ↓
+          </button>
         </div>
-        <script>
-          function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-
-          function scrollToBottom() {
-            const footerHeight =
-              document.querySelector(".sticky-footer").offsetHeight;
-            const scrollHeight =
-              document.body.scrollHeight - window.innerHeight - footerHeight;
-            window.scrollTo({
-              top: scrollHeight,
-              behavior: "smooth",
-            });
-          }
-        </script>
         <div class="hidden">
           <span id="prompts-data">{{.Prompts | json}}</span>
         </div>

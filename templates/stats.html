@@ -5,14 +5,13 @@
     <link rel="stylesheet" href="/templates/output.css" />
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
     <script src="/templates/vendor/chart.umd.min.js"></script>
+    <script src="/templates/constants.js"></script>
     <script src="/templates/score-utils.js"></script>
     <script src="/templates/utils.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
           const scoreData = {{.TotalScores | json}};
           const models = Object.keys(scoreData);
-
-          console.log("Stats page data:", scoreData);
 
           let modelsData = [];
           for (const model of models) {
@@ -29,17 +28,11 @@
 
           modelsData.sort((a, b) => b.totalScore - a.totalScore);
 
-          const sortedModels = modelsData.map(item => item.name);
-          const sortedCount20 = modelsData.map(item => item.count20);
-          const sortedCount40 = modelsData.map(item => item.count40);
-          const sortedCount60 = modelsData.map(item => item.count60);
-          const sortedCount80 = modelsData.map(item => item.count80);
-          const sortedCount100 = modelsData.map(item => item.count100);
+          if (models.length === 0) {
+              return;
+          }
 
-          console.log("Available score colors:");
-          SCORE_VALUES.forEach(score => {
-              console.log(`${score}: ${getScoreColor(score)}`);
-          });
+          const sortedModels = modelsData.map(item => item.name);
 
           const datasets = SCORE_VALUES.map(score => {
               const bgColor = getScoreColor(score);
@@ -160,6 +153,18 @@
         <div class="card bg-base-100 shadow-lg p-6">
           <h1 class="text-2xl font-bold mb-4">Model Performance Statistics</h1>
 
+          {{if not .Models}}
+          <div class="card bg-base-200 shadow-md p-6 text-center">
+            <p class="text-base-content/70">
+              No scores yet. Add models on the Results page and score them on
+              the Evaluate page; statistics appear here once results exist.
+            </p>
+            <a href="/results" class="btn btn-primary mt-4 no-underline"
+              >Go to Results</a
+            >
+          </div>
+          {{else}}
+
           <div class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Tier List</h2>
             <div class="overflow-x-auto">
@@ -191,12 +196,25 @@
               <canvas id="totalScoresChart"></canvas>
             </div>
           </div>
+          {{end}}
         </div>
       </main>
 
       <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-        <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-        <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+        <button
+          class="btn btn-info"
+          onclick="scrollToTop()"
+          aria-label="Scroll to top"
+        >
+          ↑
+        </button>
+        <button
+          class="btn btn-info"
+          onclick="scrollToBottom()"
+          aria-label="Scroll to bottom"
+        >
+          ↓
+        </button>
       </div>
     </div>
   </body>

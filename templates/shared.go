@@ -38,6 +38,13 @@ var FuncMap = map[string]interface{}{
 		b, err := json.Marshal(v)
 		return string(b), err
 	},
+	"scoreColor": func(score int) string {
+		color, ok := ScoreColors[score]
+		if !ok {
+			return ScoreColors[0]
+		}
+		return color
+	},
 }
 
 const (
@@ -54,4 +61,15 @@ var ScoreOptions = map[string]int{
 	"3/5 (60)":  60,
 	"4/5 (80)":  80,
 	"5/5 (100)": 100,
+}
+
+// ScoreColors is the server-side half of the score palette; constants.js
+// mirrors it for client-side chart rendering.
+var ScoreColors = map[int]string{
+	0:   "#808080",
+	20:  "#ffa500",
+	40:  "#ffd700",
+	60:  "#00bfff",
+	80:  "#a77bff",
+	100: "#7cff6b",
 }

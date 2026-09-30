@@ -7,6 +7,7 @@ import (
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 
 	"golang.org/x/text/cases"
@@ -132,10 +133,11 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 		totalScores[model] = stats.TotalScore
 	}
 
-	// Get prompt count to calculate dynamic max score
+	// Get prompt count to calculate dynamic max score, scoped to the
+	// current suite so tier thresholds match the suite being viewed.
 	db := middleware.GetDB()
 	var promptCount int
-	err := db.QueryRow("SELECT COUNT(*) FROM prompts").Scan(&promptCount)
+	err := db.QueryRow("SELECT COUNT(*) FROM prompts WHERE suite_id = (SELECT id FROM suites WHERE is_current = 1)").Scan(&promptCount)
 	if err != nil {
 		log.Printf("Warning: failed to get prompt count: %v, using default 50", err)
 		promptCount = 50
@@ -145,10 +147,17 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	// Calculate tiers with dynamic max score
 	tiers, tierRanges := calculateTiersWithMaxScore(totalScores, maxScore)
 
+	models := make([]string, 0, len(scoreStats))
+	for model := range scoreStats {
+		models = append(models, model)
+	}
+	sort.Strings(models)
+
 	// Prepare template data
 	templateData := struct {
 		PageName     string
 		MaxScore     int
+		Models       []string
 		TotalScores  map[string]ScoreStats
 		Tiers        map[string][]string
 		TierRanges   map[string]string
@@ -157,6 +166,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	}{
 		PageName:    "Statistics",
 		MaxScore:    maxScore,
+		Models:      models,
 		TotalScores: scoreStats,
 		Tiers:       tiers,
 		TierRanges:  tierRanges,

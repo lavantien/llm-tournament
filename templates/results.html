@@ -23,8 +23,8 @@
           socket = new WebSocket("ws://" + window.location.host + "/ws");
 
           socket.onopen = function (e) {
-              console.log("[open] Connection established");
               connectionRetries = 0;
+              document.getElementById("reconnect-btn").classList.add("hidden");
               updateConnectionStatus("Connected", "connected");
           };
 
@@ -33,7 +33,6 @@
           socket.onmessage = function (event) {
               try {
                   const payload = JSON.parse(event.data);
-                  console.log('Received WebSocket update:', payload);
 
                   if (payload.type === 'results') {
                       const safeData = {
@@ -53,27 +52,29 @@
 
           socket.onclose = function (event) {
               if (event.wasClean) {
-                  console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
               } else {
-                  console.log("[close] Connection died");
               }
 
               updateConnectionStatus("Disconnected", "disconnected");
 
               if (connectionRetries < MAX_WS_RETRIES) {
                   connectionRetries++;
-                  console.log(`Attempting to reconnect (${connectionRetries}/${MAX_WS_RETRIES})...`);
                   setTimeout(connectWebSocket, WS_RETRY_DELAY_MS * connectionRetries);
               } else {
                   updateConnectionStatus("Connection failed", "failed");
-                  console.log("Max retries reached. Connection failed.");
+                  document.getElementById("reconnect-btn").classList.remove("hidden");
               }
           };
 
           socket.onerror = function (error) {
-              console.log(`[error] ${error.message}`);
               updateConnectionStatus("Error", "error");
           };
+      }
+
+      function resetConnection() {
+          connectionRetries = 0;
+          document.getElementById("reconnect-btn").classList.add("hidden");
+          connectWebSocket();
       }
 
       function updateConnectionStatus(text, state) {
@@ -102,7 +103,6 @@
       }
 
       function fetchInitialData() {
-          console.log("Fetching initial data...");
           try {
               const elements = {
                   results: document.getElementById('results-data'),
@@ -122,11 +122,6 @@
                   OrderedPrompts: safeJsonParse(elements.orderedPrompts?.textContent, [])
               };
 
-              console.log('Data loaded from DOM elements:', {
-                  models_length: payload.Models.length,
-                  firstModelData: payload.Models.length > 0 ? payload.Results[payload.Models[0]] : null,
-                  profileGroups: payload.ProfileGroups
-              });
 
               updateResults(payload);
               return Promise.resolve(payload);
@@ -164,24 +159,20 @@
               PassPercentages: safeJsonParse(document.getElementById('pass-percentages-data').textContent, {})
           };
 
-          console.log('Current state backed up');
 
           document.getElementById('restore-previous-btn').disabled = false;
       }
 
       function restorePrevious() {
           if (!previousState.Models || previousState.Models.length === 0) {
-              console.log('No previous state to restore');
               return;
           }
 
-          console.log('Restoring previous state');
 
           updateHiddenData(previousState);
 
           sendDataToServer(previousState)
               .then(data => {
-                  console.log('Previous state restored successfully');
                   updateResults(previousState);
               })
               .catch(error => {
@@ -207,10 +198,8 @@
       }
 
       function generateMockScores() {
-          console.log("Generating mock scores...");
 
           if (!confirm('Are you sure you want to generate mock data? This will override all current scores.')) {
-              console.log('Mock data generation cancelled by user');
               return;
           }
 
@@ -218,7 +207,6 @@
 
           const models = safeJsonParse(document.getElementById('models-data').textContent, []);
           if (models.length === 0) {
-              console.log('No existing models - backend will create mock models');
           }
 
           const promptsCount = {{len .Prompts}} || 0;
@@ -229,7 +217,6 @@
 
           sendDataToServer(newData)
               .then(data => {
-                  console.log('Mock data saved successfully');
                   location.reload();
               })
               .catch(error => {
@@ -239,7 +226,6 @@
       }
 
       function randomizeScores() {
-          console.log("Randomizing scores...");
 
           backupCurrentState();
 
@@ -256,7 +242,6 @@
               return response.json();
           })
           .then(data => {
-              console.log('Scores randomized successfully');
               location.reload();
           })
           .catch(error => {
@@ -388,7 +373,6 @@
           // Get all profile header cells (with profile-header class), skipping the empty cell and Total
           const headers = Array.from(profileRow.querySelectorAll('.profile-header'));
 
-          console.log('Updating profile header colspans, headers.length =', headers.length, 'profileGroups.length =', profileGroups.length);
 
           headers.forEach((header, index) => {
               if (index < profileGroups.length) {
@@ -405,7 +389,6 @@
                   }
 
                   header.setAttribute('colspan', colspan);
-                  console.log('Header', index, 'colspan set to', colspan);
               }
           });
       }
@@ -415,7 +398,6 @@
                        document.querySelector("table tbody");
 
           if (!tbody) {
-              console.log('Table body not found, creating one');
               const table = document.querySelector("table.results-table") || document.querySelector("table");
               if (table) {
                   const newTbody = document.createElement("tbody");
@@ -429,7 +411,6 @@
 
       function ensureModelsExist(models, results) {
           if (models.length === 0 && Object.keys(results).length > 0) {
-              console.log('Models array is empty, rebuilding from results keys');
               return Object.keys(results);
           }
           return models;
@@ -506,11 +487,9 @@
           // Insert colgroup at the start of table
           table.insertBefore(colgroup, table.firstChild);
 
-          console.log(`Table width set to ${tableWidth}px for ${promptsCount} score columns with ${spacerCount} spacers`);
       }
 
       function renderModelRows(tbody, models, results, totalScores, passPercentages, modelFilter, profileGroups = []) {
-          console.log(`Rendering ${models.length} models to table`);
 
           tbody.innerHTML = '';
 
@@ -537,7 +516,6 @@
 
           tbody.appendChild(fragment);
 
-          console.log(`Table updated with ${rowCount} rows`);
 
           if (rowCount > 0 && tbody.children.length === 0) {
               console.error("Rows not appearing in table despite being created. Forcing redraw...");
@@ -688,7 +666,6 @@
 
 
       document.addEventListener('DOMContentLoaded', () => {
-          console.log("DOM loaded, connecting to WebSocket...");
           const promptsCount = {{len .Prompts}} || 0;
 
           // Parse profile groups first
@@ -697,7 +674,6 @@
           if (profileGroupsData) {
               try {
                   profileGroups = JSON.parse(profileGroupsData.textContent);
-                  console.log("Parsed profile groups:", profileGroups);
               } catch (e) {
                   console.error("Failed to parse profile groups data:", e);
               }
@@ -708,9 +684,7 @@
 
           // Initialize profile headers
           if (profileGroups.length > 0) {
-              console.log("initializeProfileHeaders function:", typeof initializeProfileHeaders);
               initializeProfileHeaders(profileGroups);
-              console.log("profileColumnMap after init:", window.profileColumnMap);
               // Apply dividers to data cells
               setTimeout(applyDataCellStyling, 100);
           }
@@ -767,7 +741,6 @@
           // Check if spacers already exist - if so, don't add them again
           const existingSpacers = promptRow.querySelectorAll('.score-cell-spacer-header');
           if (existingSpacers.length > 0) {
-              console.log('Spacers already exist, skipping');
               return;
           }
 
@@ -775,7 +748,6 @@
           const promptCells = Array.from(promptRow.querySelectorAll('.prompt-col'));
           if (promptCells.length === 0) return;
 
-          console.log('addSpacersToPromptNumberRow: profileGroups.length =', profileGroups.length, 'promptCells.length =', promptCells.length);
 
           // Build set of indices where spacers should be inserted (after each profile group except last)
           const spacerAfterIndices = new Set();
@@ -789,7 +761,6 @@
               }
           }
 
-          console.log('spacerAfterIndices:', Array.from(spacerAfterIndices));
 
           // Insert spacers after the appropriate prompt cells
           // We need to iterate in reverse order to avoid index shifting issues
@@ -807,11 +778,9 @@
                   spacerCell.style.border = 'none';
                   spacerCell.style.backgroundColor = 'transparent';
                   cell.parentNode.insertBefore(spacerCell, cell.nextSibling);
-                  console.log('Inserted spacer after index', index);
               }
           });
 
-          console.log('Done inserting spacers, total cells now:', promptRow.children.length);
       }
 
       function createProfileHeader(group, index, parentRow) {
@@ -955,18 +924,26 @@
           </form>
           <span
             id="connection-status"
-            class="badge badge-success flex-shrink-0"
+            class="badge badge-info flex-shrink-0"
+            aria-live="polite"
           >
             <span class="relative flex h-3 w-3">
               <span
-                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-info opacity-75"
               ></span>
               <span
-                class="relative inline-flex rounded-full h-3 w-3 bg-success"
+                class="relative inline-flex rounded-full h-3 w-3 bg-info"
               ></span>
             </span>
-            <span class="ml-1 status-text"></span>
+            <span class="ml-1 status-text">Connecting...</span>
           </span>
+          <button
+            id="reconnect-btn"
+            class="btn btn-warning btn-xs flex-shrink-0 hidden"
+            onclick="resetConnection()"
+          >
+            Reconnect
+          </button>
         </div>
         <div
           class="card bg-base-100 shadow-lg p-4 m-0 flex flex-row items-center justify-between gap-3 title-row flex-nowrap"
@@ -1136,21 +1113,22 @@
           </form>
         </div>
         <div class="fixed left-4 bottom-4 flex flex-col gap-2 z-[1000]">
-          <button class="btn btn-info" onclick="scrollToTop()">↑</button>
-          <button class="btn btn-info" onclick="scrollToBottom()">↓</button>
+          <button
+            class="btn btn-info"
+            onclick="scrollToTop()"
+            aria-label="Scroll to top"
+          >
+            ↑
+          </button>
+          <button
+            class="btn btn-info"
+            onclick="scrollToBottom()"
+            aria-label="Scroll to bottom"
+          >
+            ↓
+          </button>
         </div>
         <script>
-          function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-
-          function scrollToBottom() {
-            window.scrollTo({
-              top: document.body.scrollHeight,
-              behavior: "smooth",
-            });
-          }
-
           document.addEventListener("keydown", function (e) {
             if (
               document.activeElement &&

@@ -704,6 +704,37 @@ func TestEvaluateResult_GET_ModelResponseUsesCurrentSuite(t *testing.T) {
 	}
 }
 
+func TestEvaluateResult_GET_RendersScoreColorsAndSanitizedMarkdown(t *testing.T) {
+	restoreDir := changeToProjectRootResults(t)
+	defer restoreDir()
+
+	cleanup := setupResultsTestDB(t)
+	defer cleanup()
+
+	prompts := []middleware.Prompt{{Text: "check **markdown** color"}}
+	_ = middleware.WritePrompts(prompts)
+
+	form := url.Values{}
+	form.Add("model", "ColorModel")
+	req := httptest.NewRequest("POST", "/add_model", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	AddModelHandler(httptest.NewRecorder(), req)
+
+	evalReq := httptest.NewRequest("GET", "/evaluate?model=ColorModel&prompt=0", nil)
+	evalRR := httptest.NewRecorder()
+	EvaluateResult(evalRR, evalReq)
+
+	if evalRR.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, evalRR.Code)
+	}
+	body := evalRR.Body.String()
+	for _, want := range []string{"background-color: #7cff6b", "background-color: #808080", "check <strong>markdown</strong>"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("missing %q in rendered evaluate body", want)
+		}
+	}
+}
+
 func TestEvaluateResult_POST_NewModel(t *testing.T) {
 	cleanup := setupResultsTestDB(t)
 	defer cleanup()

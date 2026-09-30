@@ -1,5 +1,5 @@
 /**
- * Utility functions for the results page
+ * Shared helpers for every page.
  */
 
 /**
@@ -16,50 +16,6 @@ function safeJsonParse(json, defaultValue = {}) {
     console.error("Error parsing JSON:", error);
     return defaultValue;
   }
-}
-
-/**
- * Gets the CSS class for a score
- * @param {number} score - Score value
- * @returns {string} CSS class for the score
- */
-function getScoreClass(score) {
-  return SCORE_VALUES.includes(score) ? `score-${score}` : "score-0";
-}
-
-/**
- * Gets the label for a score
- * @param {number} score - Score value
- * @returns {string} Label for the score
- */
-function getScoreLabel(score) {
-  return SCORE_LABELS[score] || "N/A";
-}
-
-/**
- * Gets the CSS variable name for a score color
- * @param {number} score - Score value
- * @returns {string} CSS variable name
- */
-function getScoreColorVar(score) {
-  return `--score-color-${score}`;
-}
-
-/**
- * Logs score colors for debugging (requires score-utils.js to be loaded first)
- */
-function logScoreColors() {
-  if (typeof getScoreColor !== "function") {
-    console.error(
-      "getScoreColor is not available. Make sure score-utils.js is loaded.",
-    );
-    return;
-  }
-  console.log("Score colors used in chart:");
-  SCORE_VALUES.forEach((score) => {
-    const color = getScoreColor(score);
-    console.log(`${score}: ${color}`);
-  });
 }
 
 /**
