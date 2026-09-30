@@ -3,11 +3,14 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"io"
 	"llm-tournament/middleware"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type runDeps struct {
@@ -42,8 +45,15 @@ func run(args []string, deps runDeps) int {
 
 	migrateResults := fs.Bool("migrate-results", false, "Migrate existing results to new scoring system")
 	dbPath := fs.String("db", "data/tournament.db", "SQLite database path")
+	port := fs.String("port", DefaultConfig().Port, "HTTP listen port")
 
 	if err := fs.Parse(args); err != nil {
+		return 2
+	}
+
+	addr, err := normalizePort(*port)
+	if err != nil {
+		log.Printf("Invalid port: %v", err)
 		return 2
 	}
 
@@ -68,13 +78,24 @@ func run(args []string, deps runDeps) int {
 		return 0
 	}
 
-	log.Println("Server is listening on :8080")
-	if err := deps.listenAndServe(":8080", ServerHandler()); err != nil {
+	log.Printf("Server is listening on %s", addr)
+	if err := deps.listenAndServe(addr, ServerHandler()); err != nil {
 		log.Printf("Error starting server: %v", err)
 		return 1
 	}
 
 	return 0
+}
+
+// normalizePort turns a port flag value ("8080" or ":8080") into a listen
+// address, rejecting anything that is not a valid TCP port number.
+func normalizePort(port string) (string, error) {
+	trimmed := strings.TrimPrefix(port, ":")
+	n, err := strconv.Atoi(trimmed)
+	if err != nil || n < 0 || n > 65535 {
+		return "", fmt.Errorf("invalid port %q", port)
+	}
+	return fmt.Sprintf(":%d", n), nil
 }
 
 func main() {

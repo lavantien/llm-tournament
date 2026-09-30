@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -80,30 +81,18 @@ func TestParseFlags_InvalidFlag(t *testing.T) {
 	}
 }
 
-func TestInitDB(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-	defer CloseDB()
-
-	db := GetDB()
-	if db == nil {
-		t.Error("expected non-nil database")
-	}
-}
-
 func TestInitDB_InvalidPath(t *testing.T) {
-	// Try to create DB in a path that doesn't exist and can't be created
-	// On most systems, this would fail
-	err := InitDB("/nonexistent/deeply/nested/path/that/should/fail/test.db")
-	// This might succeed on some systems if they auto-create dirs
-	// so we just check it doesn't panic
+	// InitDB creates the directory tree, so a merely nonexistent path
+	// succeeds; a directory component occupied by a regular file must fail.
+	blocker := filepath.Join(t.TempDir(), "blocker")
+	if err := os.WriteFile(blocker, []byte("not a directory"), 0o644); err != nil {
+		t.Fatalf("failed to create blocker file: %v", err)
+	}
+
+	err := InitDB(filepath.Join(blocker, "nested", "test.db"))
 	if err == nil {
 		CloseDB()
+		t.Fatal("expected InitDB to fail when a directory component is a regular file")
 	}
 }
 
@@ -184,6 +173,20 @@ func TestRunMigration_WithData(t *testing.T) {
 	if err != nil {
 		t.Errorf("RunMigration failed: %v", err)
 	}
+
+	// Verify the data survived: prompts unchanged, results readable and
+	// still holding the written score (1 prompt, in range, so unchanged)
+	gotPrompts := middleware.ReadPrompts()
+	wantPrompts := []middleware.Prompt{{Text: "Test prompt"}}
+	if !reflect.DeepEqual(gotPrompts, wantPrompts) {
+		t.Errorf("prompts after migration: got %#v, want %#v", gotPrompts, wantPrompts)
+	}
+
+	gotResults := middleware.ReadResults()
+	wantResults := map[string]middleware.Result{"Model1": {Scores: []int{50}}}
+	if !reflect.DeepEqual(gotResults, wantResults) {
+		t.Errorf("results after migration: got %#v, want %#v", gotResults, wantResults)
+	}
 }
 
 func TestRoutes(t *testing.T) {
@@ -199,6 +202,7 @@ func TestRoutes(t *testing.T) {
 		"/results",
 		"/profiles",
 		"/stats",
+		"/evaluate",
 		"/save_model_response",
 		"/add_model",
 		"/delete_model",
@@ -214,8 +218,46 @@ func TestRoutes(t *testing.T) {
 func TestSetupRoutes(t *testing.T) {
 	mux := http.NewServeMux()
 
-	// Should not panic
 	SetupRoutes(mux)
+
+	// Every route in the routes map must be registered on the mux: an exact
+	// request for the pattern resolves back to that same pattern (duplicate
+	// registrations panic inside SetupRoutes, so a full census is impossible
+	// without an enumeration API; exact resolution is the observable contract).
+	for pattern := range routes {
+		req := httptest.NewRequest(http.MethodGet, pattern, nil)
+		handler, matched := mux.Handler(req)
+		if handler == nil {
+			t.Errorf("route pattern %q did not resolve to a handler", pattern)
+		}
+		if matched != pattern {
+			t.Errorf("path %q resolved to pattern %q, want %q", pattern, matched, pattern)
+		}
+	}
+
+	// Plus the four mux-level patterns registered by SetupRoutes itself
+	for path, wantPattern := range map[string]string{
+		"/":                     "/",
+		"/ws":                   "/ws",
+		"/templates/output.css": "/templates/",
+		"/assets/app.js":        "/assets/",
+	} {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		handler, matched := mux.Handler(req)
+		if handler == nil {
+			t.Errorf("path %q did not resolve to a handler", path)
+		}
+		if matched != wantPattern {
+			t.Errorf("path %q resolved to pattern %q, want %q", path, matched, wantPattern)
+		}
+	}
+
+	// An unregistered path must fall through to the catch-all "/" pattern
+	req := httptest.NewRequest(http.MethodGet, "/definitely/not/registered", nil)
+	_, matched := mux.Handler(req)
+	if matched != "/" {
+		t.Errorf("unregistered path resolved to pattern %q, want %q", matched, "/")
+	}
 }
 
 func TestNewServeMux(t *testing.T) {
@@ -423,47 +465,29 @@ func TestSetupRoutes_WithMux(t *testing.T) {
 	mux := http.NewServeMux()
 	SetupRoutes(mux)
 
-	// Test various routes through the mux
+	// End-to-end dispatch behavior through the mux (pattern registration is
+	// censused by TestSetupRoutes)
 	testCases := []struct {
-		path   string
-		method string
+		path       string
+		wantStatus int
+		location   string
 	}{
-		{"/", "GET"},
-		{"/prompts", "GET"},
-		{"/results", "GET"},
-		{"/unknown-route", "GET"},
+		{path: "/", wantStatus: http.StatusSeeOther, location: "/prompts"},
+		{path: "/unknown-route", wantStatus: http.StatusSeeOther, location: "/prompts"},
+		{path: "/save_model_response", wantStatus: http.StatusMethodNotAllowed},
 	}
 
 	for _, tc := range testCases {
-		req := httptest.NewRequest(tc.method, tc.path, nil)
+		req := httptest.NewRequest(http.MethodGet, tc.path, nil)
 		rr := httptest.NewRecorder()
 		mux.ServeHTTP(rr, req)
-		// Just ensure it doesn't panic
-		t.Logf("%s %s -> %d", tc.method, tc.path, rr.Code)
-	}
-}
-
-func TestRoutes_ReturnsMap(t *testing.T) {
-	routes := Routes()
-
-	// Verify routes map has expected structure
-	if routes == nil {
-		t.Fatal("Routes() returned nil")
-	}
-
-	// Check some specific routes exist
-	expectedRoutes := []string{
-		"/prompts",
-		"/results",
-		"/profiles",
-		"/stats",
-		"/evaluate",
-		"/save_model_response",
-	}
-
-	for _, route := range expectedRoutes {
-		if _, ok := routes[route]; !ok {
-			t.Errorf("expected route %q not found", route)
+		if rr.Code != tc.wantStatus {
+			t.Errorf("%s: expected status %d, got %d", tc.path, tc.wantStatus, rr.Code)
+		}
+		if tc.location != "" {
+			if location := rr.Header().Get("Location"); location != tc.location {
+				t.Errorf("%s: expected redirect to %q, got %q", tc.path, tc.location, location)
+			}
 		}
 	}
 }
@@ -497,58 +521,6 @@ func TestNewServeMux_AllRoutesRegistered(t *testing.T) {
 		if rr.Code == http.StatusNotFound {
 			t.Errorf("route %s returned 404 - not registered", route)
 		}
-	}
-}
-
-func TestRunMigration_EmptyDB(t *testing.T) {
-	tmpDir := t.TempDir()
-	dbPath := filepath.Join(tmpDir, "test.db")
-
-	err := InitDB(dbPath)
-	if err != nil {
-		t.Fatalf("InitDB failed: %v", err)
-	}
-	defer CloseDB()
-
-	// RunMigration on empty DB should succeed
-	err = RunMigration()
-	if err != nil {
-		t.Errorf("RunMigration on empty DB failed: %v", err)
-	}
-}
-
-func TestConfig_DefaultValues(t *testing.T) {
-	cfg := DefaultConfig()
-
-	if cfg.DBPath != "data/tournament.db" {
-		t.Errorf("expected default DBPath 'data/tournament.db', got %q", cfg.DBPath)
-	}
-
-	if cfg.Port != ":8080" {
-		t.Errorf("expected default Port ':8080', got %q", cfg.Port)
-	}
-
-	if cfg.MigrateResults {
-		t.Error("expected MigrateResults to default to false")
-	}
-}
-
-func TestParseFlags_EmptyArgs(t *testing.T) {
-	cfg, err := ParseFlags([]string{})
-	if err != nil {
-		t.Fatalf("ParseFlags with empty args failed: %v", err)
-	}
-
-	// Should have default values
-	if cfg.DBPath != "data/tournament.db" {
-		t.Errorf("expected default DBPath, got %q", cfg.DBPath)
-	}
-}
-
-func TestParseFlags_UnknownFlag(t *testing.T) {
-	_, err := ParseFlags([]string{"-unknown-flag-xyz"})
-	if err == nil {
-		t.Error("expected error for unknown flag")
 	}
 }
 

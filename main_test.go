@@ -174,10 +174,20 @@ func TestRouter_POSTRoutes(t *testing.T) {
 			rr := httptest.NewRecorder()
 			router(rr, req)
 
-			// GET on POST-only routes should return method not allowed
-			if rr.Code != http.StatusMethodNotAllowed && rr.Code != http.StatusBadRequest {
-				// Some routes may allow GET, that's ok
-				t.Logf("route %s with GET returned %d", route, rr.Code)
+			// The route must reach its handler, which rejects GET
+			if rr.Code != http.StatusMethodNotAllowed {
+				t.Errorf("route %s with GET: expected %d, got %d", route, http.StatusMethodNotAllowed, rr.Code)
+			}
+		})
+		t.Run(route+"_POST", func(t *testing.T) {
+			req := httptest.NewRequest("POST", route, nil)
+			rr := httptest.NewRecorder()
+			router(rr, req)
+
+			// The route must reach its handler (validation error here, not
+			// the redirect the router emits for unknown paths)
+			if rr.Code != http.StatusBadRequest {
+				t.Errorf("route %s with POST: expected %d, got %d", route, http.StatusBadRequest, rr.Code)
 			}
 		})
 	}
@@ -208,9 +218,13 @@ func TestRouter_StaticPaths(t *testing.T) {
 	rr := httptest.NewRecorder()
 	router(rr, req)
 
-	// Static paths go through router, should redirect to /prompts
+	// Static assets are served by the mux-level /templates/ pattern in
+	// SetupRoutes, not by the router: the router must fall through to the
+	// /prompts redirect for them.
 	if rr.Code != http.StatusSeeOther {
-		// Could also be handled by static file server if configured
-		t.Logf("static path returned %d", rr.Code)
+		t.Errorf("static path through router: expected %d, got %d", http.StatusSeeOther, rr.Code)
+	}
+	if location := rr.Header().Get("Location"); location != "/prompts" {
+		t.Errorf("static path through router: expected redirect to /prompts, got %q", location)
 	}
 }

@@ -169,8 +169,8 @@ func TestRun_ServePath_CallsListenAndServeWithRouter(t *testing.T) {
 			return nil
 		},
 		listenAndServe: func(addr string, handler http.Handler) error {
-			if addr != ":8080" {
-				t.Fatalf("listenAndServe called with addr %q", addr)
+			if addr != DefaultConfig().Port {
+				t.Fatalf("listenAndServe called with addr %q, want default %q", addr, DefaultConfig().Port)
 			}
 			if handler == nil {
 				t.Fatalf("listenAndServe called with nil handler")
@@ -196,6 +196,72 @@ func TestRun_ServePath_CallsListenAndServeWithRouter(t *testing.T) {
 	}
 	if !closeDBCalled {
 		t.Fatalf("expected closeDB to be called via defer")
+	}
+}
+
+func TestRun_ServePath_CustomPort(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		portFlag string
+		wantAddr string
+	}{
+		{name: "bare number", portFlag: "9090", wantAddr: ":9090"},
+		{name: "colon-prefixed", portFlag: ":9091", wantAddr: ":9091"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			deps := runDeps{
+				initDB: func(string) error {
+					return nil
+				},
+				closeDB: func() error {
+					return nil
+				},
+				listenAndServe: func(addr string, handler http.Handler) error {
+					if addr != tc.wantAddr {
+						t.Fatalf("listenAndServe called with addr %q, want %q", addr, tc.wantAddr)
+					}
+					if handler == nil {
+						t.Fatalf("listenAndServe called with nil handler")
+					}
+					return nil
+				},
+			}
+
+			exitCode := run([]string{"-db", "db.sqlite", "-port", tc.portFlag}, deps)
+			if exitCode != 0 {
+				t.Fatalf("expected exit code 0, got %d", exitCode)
+			}
+		})
+	}
+}
+
+func TestRun_InvalidPort_Returns2(t *testing.T) {
+	for _, portFlag := range []string{"not-a-port", "", "99999", "-1"} {
+		t.Run(portFlag, func(t *testing.T) {
+			var initDBCalled bool
+
+			deps := runDeps{
+				initDB: func(string) error {
+					initDBCalled = true
+					return nil
+				},
+				closeDB: func() error {
+					return nil
+				},
+				listenAndServe: func(string, http.Handler) error {
+					t.Fatalf("listenAndServe should not be called for invalid port")
+					return nil
+				},
+			}
+
+			exitCode := run([]string{"-port", portFlag}, deps)
+			if exitCode != 2 {
+				t.Fatalf("expected exit code 2 for port %q, got %d", portFlag, exitCode)
+			}
+			if initDBCalled {
+				t.Fatalf("expected initDB to not be called for invalid port")
+			}
+		})
 	}
 }
 
