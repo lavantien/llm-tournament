@@ -108,7 +108,7 @@ func (h *Handler) EvaluateResultHandler(w http.ResponseWriter, r *http.Request) 
 		// Get model_id from model name, scoped to the current suite
 		err = db.QueryRow("SELECT id FROM models WHERE name = ? AND suite_id = ?", model, suiteID).Scan(&modelID)
 		if err == nil {
-			// Get prompt_id from the current suite using prompt index (1-indexed)
+			// Get prompt_id from the current suite using the 0-based prompt index
 			err = db.QueryRow("SELECT id FROM prompts WHERE suite_id = ? ORDER BY display_order LIMIT 1 OFFSET ?", suiteID, promptIndex).Scan(&promptID)
 			if err == nil {
 				// Get the response for this model/prompt pair
