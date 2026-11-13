@@ -5,9 +5,7 @@
     "playwright": "1.65.0",
     "postcss": "8.5.32",
     "postcss-cli": "12.0.0",
-    "tailwindcss": "4.3.5",
-    "tdd-guard-jest": "0.1.4",
-    "tdd-guard-vitest": "0.2.0"
+    "tailwindcss": "4.3.5"
   },
   "scripts": {
     "build:css": "postcss templates/input.css -o templates/output.css",
