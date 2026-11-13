@@ -1,11 +1,11 @@
 {
   "devDependencies": {
-    "@tailwindcss/postcss": "4.3.3",
-    "daisyui": "5.7.47",
-    "playwright": "1.62.0",
-    "postcss": "8.5.28",
+    "@tailwindcss/postcss": "4.3.5",
+    "daisyui": "5.8.0",
+    "playwright": "1.65.0",
+    "postcss": "8.5.32",
     "postcss-cli": "12.0.0",
-    "tailwindcss": "4.3.3",
+    "tailwindcss": "4.3.5",
     "tdd-guard-jest": "0.1.4",
     "tdd-guard-vitest": "0.2.0"
   },
